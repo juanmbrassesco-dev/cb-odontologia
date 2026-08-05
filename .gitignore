@@ -1,2 +1,6 @@
 .DS_Store
 .env
+
+# Supabase — archivos internos del CLI y claves de pruebas locales
+supabase/.temp/
+supabase/functions/.env
