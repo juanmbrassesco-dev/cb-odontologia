@@ -1,20 +1,22 @@
 // Portero de CB Odontología — endpoint público GET /tratamientos
 //
-// Pide la lista de tratamientos DOS veces, para ver la diferencia:
-//   - con los permisos del visitante  -> el RLS lo frena
-//   - con la llave maestra            -> el RLS lo deja pasar
+// Devuelve la lista de tratamientos que ofrece el consultorio.
+// Público a conciencia: es la misma lista que va publicada en la landing.
 
 import { withSupabase } from 'npm:@supabase/server@^1'
 
 export default {
   fetch: withSupabase({ auth: 'none' }, async (req, ctx) => {
 
-    // respeta el RLS: la tabla no tiene ninguna regla que permita leer
-    const conRLS = await ctx.supabase.from('tratamientos').select('nombre')
+    // llave maestra: es el único que puede leer la tabla
+    const respuesta = await ctx.supabaseAdmin.from('tratamientos').select('nombre')
 
-    // llave maestra: atraviesa el RLS
-    const sinRLS = await ctx.supabaseAdmin.from('tratamientos').select('nombre')
+    // si la base falló, se avisa SIN contar por qué:
+    // el detalle del error nombra tablas y roles, y esto lo ve cualquiera
+    if (respuesta.error) {
+      return Response.json({ error: 'No se pudo leer la lista' }, { status: 500 })
+    }
 
-    return Response.json({ conRLS, sinRLS })
+    return Response.json(respuesta.data)
   }),
 }
