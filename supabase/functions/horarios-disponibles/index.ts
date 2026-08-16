@@ -1,0 +1,205 @@
+// Portero de CB Odontología — endpoint público GET /horarios-disponibles
+//
+// Contesta una sola pregunta: qué bloques de media hora tiene ese profesional
+// en ese rango de fechas. Público a conciencia, igual que /tratamientos: el
+// paciente tiene que poder ver si hay turno ANTES de registrarse.
+//
+// PASO B de la etapa ②: devuelve la grilla CRUDA, todo `libre`. Todavía no
+// descuenta feriados (paso C), ni turnos ya tomados (paso D), ni la ventana de
+// reserva (paso E). Cada paso se despliega y se prueba antes del siguiente.
+//
+// Nada de lo que sale de acá viene de `turnos`: son horas y un estado. Quién
+// reservó qué no se publica.
+
+import { withSupabase } from 'npm:@supabase/server@^1'
+
+import {
+  esFechaValida,
+  listarDias,
+  diaSemanaISO,
+  desfaseDeSantaFe,
+  bloquesDelTramo,
+} from '../_shared/disponibilidad.ts'
+
+// Techo de días por pedido. Dos meses de calendario más un resto, que es el
+// horizonte máximo de reserva que fijó el consultorio. No es una regla de
+// negocio: es un tope para que un pedido de diez años no ponga a la función a
+// armar bloques hasta que se acabe el tiempo de ejecución.
+const DIAS_MAXIMOS_POR_PEDIDO = 62
+
+// Un pedido mal armado se contesta con el motivo: lo escribió quien está
+// construyendo la pantalla y necesita saber qué corregir.
+function pedidoInvalido( mensaje: string ): Response {
+
+  return Response.json(
+    { error: mensaje },
+    { status: 400 },
+  )
+}
+
+// Un fallo de la base se contesta SIN el detalle. El texto de Postgres nombra
+// tablas, columnas y roles, y esto lo ve cualquiera.
+function falloDeBase(): Response {
+
+  return Response.json(
+    { error: 'No se pudo leer la agenda' },
+    { status: 500 },
+  )
+}
+
+export default {
+
+  fetch: withSupabase(
+    { auth: 'none' },
+    async ( req, ctx ) => {
+
+      const url = new URL( req.url )
+
+      const profesionalPedido = url.searchParams.get( 'profesional' )
+      const tratamientoPedido = url.searchParams.get( 'tratamiento' )
+      const desde = url.searchParams.get( 'desde' )
+      const hasta = url.searchParams.get( 'hasta' )
+
+      // ── Lo que se puede rechazar sin preguntarle nada a la base ──────────
+      //
+      // Se valida TODO del lado del servidor, incluso lo que la pantalla ya
+      // va a validar. El navegador corre en la máquina del paciente y
+      // cualquiera edita lo que manda: la validación del front es comodidad
+      // para el que la usa bien, no una defensa.
+
+      if ( !profesionalPedido || !tratamientoPedido || !desde || !hasta ) {
+        return pedidoInvalido(
+          'Faltan datos: profesional, tratamiento, desde y hasta',
+        )
+      }
+
+      const profesionalId = Number( profesionalPedido )
+      const tratamientoId = Number( tratamientoPedido )
+
+      if ( !Number.isInteger( profesionalId ) || !Number.isInteger( tratamientoId ) ) {
+        return pedidoInvalido( 'profesional y tratamiento tienen que ser números' )
+      }
+
+      if ( !esFechaValida( desde ) || !esFechaValida( hasta ) ) {
+        return pedidoInvalido( 'Las fechas van en formato AAAA-MM-DD' )
+      }
+
+      if ( hasta < desde ) {
+        return pedidoInvalido( 'La fecha "hasta" no puede ser anterior a "desde"' )
+      }
+
+      const dias = listarDias( desde, hasta )
+
+      if ( dias.length > DIAS_MAXIMOS_POR_PEDIDO ) {
+        return pedidoInvalido(
+          `El rango no puede pasar de ${ DIAS_MAXIMOS_POR_PEDIDO } días`,
+        )
+      }
+
+      // ── Lo que hay que ir a preguntarle a la base ─────────────────────────
+      //
+      // Cuatro consultas, todas de lectura, todas con la llave maestra: el
+      // navegador no toca ninguna de estas tablas.
+
+      const profesional = await ctx.supabaseAdmin
+        .from( 'profesionales' )
+        .select( 'id, activo' )
+        .eq( 'id', profesionalId )
+        .maybeSingle()
+
+      if ( profesional.error ) {
+        return falloDeBase()
+      }
+
+      // Un profesional dado de baja se contesta igual que uno inexistente, y
+      // es deliberado: "existe pero no atiende más" es información del
+      // consultorio y no hay motivo para publicarla.
+      if ( !profesional.data || !profesional.data.activo ) {
+        return pedidoInvalido( 'Ese profesional no está disponible' )
+      }
+
+      const tratamiento = await ctx.supabaseAdmin
+        .from( 'tratamientos' )
+        .select( 'id, duracion_web_min' )
+        .eq( 'id', tratamientoId )
+        .maybeSingle()
+
+      if ( tratamiento.error ) {
+        return falloDeBase()
+      }
+
+      if ( !tratamiento.data ) {
+        return pedidoInvalido( 'Ese tratamiento no existe' )
+      }
+
+      // `duracion_web_min` vacío significa "no se reserva por la web": lo
+      // agenda el profesional después de la consulta previa. No es un error de
+      // datos, es la regla del consultorio, y por eso se contesta 400 y no 500.
+      if ( !tratamiento.data.duracion_web_min ) {
+        return pedidoInvalido( 'Ese tratamiento no se reserva por la web' )
+      }
+
+      const pareja = await ctx.supabaseAdmin
+        .from( 'profesional_tratamientos' )
+        .select( 'id' )
+        .eq( 'profesional_id', profesionalId )
+        .eq( 'tratamiento_id', tratamientoId )
+        .maybeSingle()
+
+      if ( pareja.error ) {
+        return falloDeBase()
+      }
+
+      if ( !pareja.data ) {
+        return pedidoInvalido( 'Ese profesional no hace ese tratamiento' )
+      }
+
+      // La agenda semanal entera, de una sola vez. Son pocas filas —siete, hoy—
+      // y volver a preguntar por cada día del rango serían sesenta consultas
+      // para el mismo dato.
+      const agenda = await ctx.supabaseAdmin
+        .from( 'horarios_base' )
+        .select( 'dia_semana, inicio, fin' )
+        .eq( 'profesional_id', profesionalId )
+        .order( 'dia_semana' )
+        .order( 'inicio' )
+
+      if ( agenda.error ) {
+        return falloDeBase()
+      }
+
+      // ── La grilla ─────────────────────────────────────────────────────────
+
+      const respuesta = dias.map( ( fecha ) => {
+
+        const desfase = desfaseDeSantaFe( fecha )
+        const dia = diaSemanaISO( fecha )
+
+        const tramosDelDia = agenda.data.filter(
+          ( tramo ) => tramo.dia_semana === dia,
+        )
+
+        const bloques = tramosDelDia.flatMap(
+          ( tramo ) => bloquesDelTramo( fecha, tramo.inicio, tramo.fin, desfase ),
+        )
+
+        return {
+          fecha: fecha,
+          bloques: bloques,
+        }
+      } )
+
+      // El día sin agenda viaja igual, con la lista vacía. Así la pantalla
+      // distingue "ese día no atiende" de "ese día no vino en la respuesta",
+      // que es la misma decisión del 6-ago sobre los bloques ocupados: se
+      // muestran, no se esconden.
+      return Response.json( {
+        profesional: profesionalId,
+        tratamiento: tratamientoId,
+        duracion_min: tratamiento.data.duracion_web_min,
+        dias: respuesta,
+      } )
+    },
+  ),
+
+}

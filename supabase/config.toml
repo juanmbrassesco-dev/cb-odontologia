@@ -414,6 +414,12 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 [functions.tratamientos]
 verify_jwt = false
 
+# `horarios-disponibles` también es público, y por el mismo motivo de fondo: el
+# paciente tiene que poder ver si hay turno ANTES de registrarse. Devuelve horas
+# y un estado — nada de `turnos`, ni quién reservó qué.
+[functions.horarios-disponibles]
+verify_jwt = false
+
 [experimental.pgdelta]
 enabled = true
 # Directory under `supabase/` where declarative files are written.
