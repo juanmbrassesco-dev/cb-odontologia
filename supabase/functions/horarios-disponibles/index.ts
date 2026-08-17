@@ -4,9 +4,11 @@
 // en ese rango de fechas. Público a conciencia, igual que /tratamientos: el
 // paciente tiene que poder ver si hay turno ANTES de registrarse.
 //
-// PASO B de la etapa ②: devuelve la grilla CRUDA, todo `libre`. Todavía no
-// descuenta feriados (paso C), ni turnos ya tomados (paso D), ni la ventana de
-// reserva (paso E). Cada paso se despliega y se prueba antes del siguiente.
+// PASO C de la etapa ②: la grilla ya descuenta los días que tapan las
+// `excepciones` (feriados, cierres, ausencias). Todavía no descuenta los turnos
+// ya tomados (paso D) ni la ventana de reserva (paso E), así que todo lo que
+// devuelve sigue saliendo `libre`. Cada paso se despliega y se prueba antes del
+// siguiente.
 //
 // Nada de lo que sale de acá viene de `turnos`: son horas y un estado. Quién
 // reservó qué no se publica.
@@ -19,6 +21,7 @@ import {
   diaSemanaISO,
   desfaseDeSantaFe,
   bloquesDelTramo,
+  diaTapado,
 } from '../_shared/disponibilidad.ts'
 
 // Techo de días por pedido. Dos meses de calendario más un resto, que es el
@@ -168,9 +171,41 @@ export default {
         return falloDeBase()
       }
 
+      // Las excepciones que pueden tapar un día de este profesional son de dos
+      // dueños: las de la CLÍNICA, que no tienen profesional y tapan a todos
+      // (feriados, cierres), y las de ÉL. Las de otro profesional no se piden.
+      //
+      // `activa` es el interruptor: una excepción terminada se apaga, no se
+      // borra. Una fila borrada no deja rastro de por qué esa semana estuvo
+      // cerrada durante meses.
+      //
+      // El filtro se arma pegando el número del profesional adentro del texto,
+      // y eso es seguro acá porque `profesionalId` ya pasó por `Number.isInteger`
+      // más arriba: lo que llega es un número, no lo que haya escrito el que
+      // arma la dirección.
+      const excepciones = await ctx.supabaseAdmin
+        .from( 'excepciones' )
+        .select( 'tipo, fecha_desde, fecha_hasta, semana_del_mes' )
+        .eq( 'activa', true )
+        .or( `profesional_id.is.null,profesional_id.eq.${ profesionalId }` )
+
+      if ( excepciones.error ) {
+        return falloDeBase()
+      }
+
       // ── La grilla ─────────────────────────────────────────────────────────
 
       const respuesta = dias.map( ( fecha ) => {
+
+        // Un día tapado no devuelve bloques, y es una distinción que el
+        // paciente necesita ver: "acá no se atiende" no es lo mismo que "acá
+        // está todo tomado", que sí devuelve sus bloques y se pinta rojo.
+        if ( diaTapado( fecha, excepciones.data ) ) {
+          return {
+            fecha: fecha,
+            bloques: [],
+          }
+        }
 
         const desfase = desfaseDeSantaFe( fecha )
         const dia = diaSemanaISO( fecha )
