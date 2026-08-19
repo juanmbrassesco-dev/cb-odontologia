@@ -4,11 +4,11 @@
 // en ese rango de fechas. Público a conciencia, igual que /tratamientos: el
 // paciente tiene que poder ver si hay turno ANTES de registrarse.
 //
-// PASO C de la etapa ②: la grilla ya descuenta los días que tapan las
-// `excepciones` (feriados, cierres, ausencias). Todavía no descuenta los turnos
-// ya tomados (paso D) ni la ventana de reserva (paso E), así que todo lo que
-// devuelve sigue saliendo `libre`. Cada paso se despliega y se prueba antes del
-// siguiente.
+// PASO D de la etapa ②: la grilla descuenta los días que tapan las
+// `excepciones` (feriados, cierres, ausencias) y marca `ocupado` lo que ya
+// tiene turno. Todavía no aplica la ventana de reserva (paso E), así que un
+// bloque de ayer sigue saliendo `libre`. Cada paso se despliega y se prueba
+// antes del siguiente.
 //
 // Nada de lo que sale de acá viene de `turnos`: son horas y un estado. Quién
 // reservó qué no se publica.
@@ -22,6 +22,9 @@ import {
   desfaseDeSantaFe,
   bloquesDelTramo,
   diaTapado,
+  sumarDias,
+  bloqueOcupado,
+  unificarBloques,
 } from '../_shared/disponibilidad.ts'
 
 // Techo de días por pedido. Dos meses de calendario más un resto, que es el
@@ -101,7 +104,7 @@ export default {
 
       // ── Lo que hay que ir a preguntarle a la base ─────────────────────────
       //
-      // Cuatro consultas, todas de lectura, todas con la llave maestra: el
+      // Cinco consultas, todas de lectura, todas con la llave maestra: el
       // navegador no toca ninguna de estas tablas.
 
       const profesional = await ctx.supabaseAdmin
@@ -193,7 +196,41 @@ export default {
         return falloDeBase()
       }
 
+      // Los turnos que ya tiene tomados este profesional en el rango.
+      //
+      // `activo` es el filtro que hace que un turno cancelado no ocupe nada: la
+      // fila sigue existiendo —acá no se borra— pero el hueco vuelve entero a
+      // la grilla (§ 9.3).
+      //
+      // El rango se pide con UN DÍA DE MARGEN para atrás. Un turno que arrancó
+      // el día anterior y se estiró hasta hoy igual ocupa, y la consulta filtra
+      // por el ARRANQUE. Hoy ningún tramo cruza la medianoche, así que no puede
+      // pasar; el margen está para que la respuesta no dependa de eso.
+      //
+      // Se piden dos columnas y nada más. `observaciones_paciente` puede tener
+      // datos de salud: lo que no se lee no se puede publicar por accidente.
+      const primerDia = sumarDias( desde, -1 )
+      const diaSiguiente = sumarDias( hasta, 1 )
+
+      const turnos = await ctx.supabaseAdmin
+        .from( 'turnos' )
+        .select( 'inicio, duracion_min' )
+        .eq( 'profesional_id', profesionalId )
+        .eq( 'activo', true )
+        .gte( 'inicio', `${ primerDia }T00:00:00${ desfaseDeSantaFe( primerDia ) }` )
+        .lt( 'inicio', `${ diaSiguiente }T00:00:00${ desfaseDeSantaFe( diaSiguiente ) }` )
+
+      if ( turnos.error ) {
+        return falloDeBase()
+      }
+
       // ── La grilla ─────────────────────────────────────────────────────────
+
+      // Cuánto dura el turno que se está buscando. Es lo que decide si un
+      // bloque se pisa con lo ya tomado: no alcanza con mirar la media hora del
+      // bloque, porque una limpieza de 60 minutos que empieza a las 12:00 se
+      // pisa con un turno de las 12:30.
+      const duracion = tratamiento.data.duracion_web_min
 
       const respuesta = dias.map( ( fecha ) => {
 
@@ -214,9 +251,26 @@ export default {
           ( tramo ) => tramo.dia_semana === dia,
         )
 
-        const bloques = tramosDelDia.flatMap(
-          ( tramo ) => bloquesDelTramo( fecha, tramo.inicio, tramo.fin, desfase ),
+        const bloquesDelDia = unificarBloques(
+          tramosDelDia.flatMap(
+            ( tramo ) => bloquesDelTramo( fecha, tramo.inicio, tramo.fin, desfase ),
+          ),
         )
+
+        // El bloque ocupado se MARCA, no se saca. Es la decisión del 6-ago: un
+        // día con todo tomado tiene que verse distinto de un día en que no se
+        // atiende, y esconder los rojos los deja iguales.
+        const bloques = bloquesDelDia.map( ( bloque ) => {
+
+          if ( bloqueOcupado( bloque.inicio, duracion, turnos.data ) ) {
+            return {
+              inicio: bloque.inicio,
+              estado: 'ocupado',
+            }
+          }
+
+          return bloque
+        } )
 
         return {
           fecha: fecha,

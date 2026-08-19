@@ -322,3 +322,91 @@ export function bloquesDelTramo(
 
   return bloques
 }
+
+
+// ── Turnos ya tomados ───────────────────────────────────────────────────────
+
+// Una fila de `turnos`, con lo único que hace falta para saber si ocupa.
+//
+// Nombre, nota y observaciones NO se piden. No es prolijidad: lo que no se lee
+// no se puede publicar por accidente, y `observaciones_paciente` puede tener
+// datos de salud.
+export type Turno = {
+  inicio: string,
+  duracion_min: number,
+}
+
+
+// Correr una fecha unos días, sin horas de por medio.
+//
+// Se suman días de 24 horas exactas en UTC, que es correcto por lo mismo que en
+// `listarDias`: acá no hay horas, hay fechas de calendario.
+export function sumarDias( fecha: string, dias: number ): string {
+
+  const base = new Date( `${ fecha }T00:00:00Z` )
+  const movida = new Date( base.getTime() + dias * 24 * 60 * 60 * 1000 )
+
+  return movida.toISOString().slice( 0, 10 )
+}
+
+
+// ¿Se pisa con algún turno ya tomado un turno que empezara en `inicio` y durara
+// `duracion` minutos?
+//
+// 🔴 Las dos desigualdades van ESTRICTAS, y no es un detalle de estilo: es la
+// misma comparación que hace la base con `tstzrange`, que incluye el arranque y
+// excluye el final. Un turno de 12:00 a 13:00 y otro de 13:00 a 13:30 NO se
+// pisan. Si acá se escribiera `<=`, la grilla marcaría ocupado un bloque que la
+// base acepta sin chistar: el error no falla, contesta mal en silencio.
+//
+// La comparación va sobre el RANGO ENTERO del turno, no bloque por bloque. Así
+// un turno de 90 minutos tapa los tres bloques que toca, y la media hora que se
+// estira más allá del cierre también ocupa — si no, la pantalla ofrecería un
+// hueco y el `POST /reservar` lo rechazaría con un 409 que el paciente no puede
+// entender.
+//
+// Un turno cancelado no llega hasta acá: se filtran por `activo` al pedirlos.
+// El hueco vuelve entero a la grilla, que es la decisión del § 9.3.
+export function bloqueOcupado(
+  inicio: string,
+  duracion: number,
+  turnos: Turno[],
+): boolean {
+
+  const arranca = Date.parse( inicio )
+  const termina = arranca + duracion * 60 * 1000
+
+  return turnos.some( ( turno ) => {
+
+    const turnoArranca = Date.parse( turno.inicio )
+    const turnoTermina = turnoArranca + turno.duracion_min * 60 * 1000
+
+    return turnoArranca < termina && turnoTermina > arranca
+  } )
+}
+
+
+// El mismo horario, una sola vez.
+//
+// Dos tramos del mismo día que se pisen son un error de carga —hoy nada lo
+// impide en la base— y sin esto el paciente vería las 11:00 dos veces en la
+// pantalla. Se defiende acá porque el dato lo carga una persona a mano.
+export function unificarBloques(
+  bloques: { inicio: string, estado: string }[],
+): { inicio: string, estado: string }[] {
+
+  const vistos = new Set< string >()
+  const unicos: { inicio: string, estado: string }[] = []
+
+  bloques.forEach( ( bloque ) => {
+
+    if ( vistos.has( bloque.inicio ) ) {
+      return
+    }
+
+    vistos.add( bloque.inicio )
+    unicos.push( bloque )
+  } )
+
+  return unicos
+}
