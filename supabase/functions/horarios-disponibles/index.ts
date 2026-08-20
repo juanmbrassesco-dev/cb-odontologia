@@ -4,11 +4,16 @@
 // en ese rango de fechas. Público a conciencia, igual que /tratamientos: el
 // paciente tiene que poder ver si hay turno ANTES de registrarse.
 //
-// PASO D de la etapa ②: la grilla descuenta los días que tapan las
-// `excepciones` (feriados, cierres, ausencias) y marca `ocupado` lo que ya
-// tiene turno. Todavía no aplica la ventana de reserva (paso E), así que un
-// bloque de ayer sigue saliendo `libre`. Cada paso se despliega y se prueba
-// antes del siguiente.
+// PASO E de la etapa ②, el último: la grilla descuenta los días que tapan las
+// `excepciones` (feriados, cierres, ausencias), marca `ocupado` lo que ya tiene
+// turno y aplica la ventana de reserva — piso de 12 horas, techo de dos meses y
+// la pregunta de si el tratamiento entra antes del cierre.
+//
+// Un bloque sale con uno de cuatro estados: `libre`, `ocupado`, `no_entra` (el
+// tratamiento no cabe ahí) o `fuera_de_plazo` (falta menos que el margen de
+// anticipación). La pantalla pinta los dos últimos con el mismo gris; el
+// endpoint los distingue igual, porque distinguir cuesta cero y mezclar es
+// irreversible.
 //
 // Nada de lo que sale de acá viene de `turnos`: son horas y un estado. Quién
 // reservó qué no se publica.
@@ -23,8 +28,12 @@ import {
   bloquesDelTramo,
   diaTapado,
   sumarDias,
+  sumarMeses,
+  fechaEnSantaFe,
+  fueraDePlazo,
   bloqueOcupado,
   unificarBloques,
+  MESES_DE_HORIZONTE,
 } from '../_shared/disponibilidad.ts'
 
 // Techo de días por pedido. Dos meses de calendario más un resto, que es el
@@ -94,13 +103,35 @@ export default {
         return pedidoInvalido( 'La fecha "hasta" no puede ser anterior a "desde"' )
       }
 
-      const dias = listarDias( desde, hasta )
+      const diasPedidos = listarDias( desde, hasta )
 
-      if ( dias.length > DIAS_MAXIMOS_POR_PEDIDO ) {
+      if ( diasPedidos.length > DIAS_MAXIMOS_POR_PEDIDO ) {
         return pedidoInvalido(
           `El rango no puede pasar de ${ DIAS_MAXIMOS_POR_PEDIDO } días`,
         )
       }
+
+      // ── El techo de la ventana de reserva ────────────────────────────────
+      //
+      // El reloj se mira UNA sola vez y el instante viaja de mano en mano. Si
+      // cada bloque preguntara la hora por su cuenta, dos bloques de la misma
+      // respuesta podrían quedar calculados con relojes distintos.
+      const ahora = new Date()
+
+      const ultimoDiaReservable = sumarMeses(
+        fechaEnSantaFe( ahora ),
+        MESES_DE_HORIZONTE,
+      )
+
+      // Los días de más NO viajan, ni siquiera vacíos: el calendario no llega
+      // hasta ahí. Es distinto de un día cerrado, que sí viaja con la lista de
+      // bloques vacía.
+      //
+      // Las fechas se comparan como texto, y es correcto por lo mismo de
+      // siempre: AAAA-MM-DD ordena igual alfabéticamente que en el almanaque.
+      const dias = diasPedidos.filter(
+        ( fecha ) => fecha <= ultimoDiaReservable,
+      )
 
       // ── Lo que hay que ir a preguntarle a la base ─────────────────────────
       //
@@ -165,7 +196,7 @@ export default {
       // para el mismo dato.
       const agenda = await ctx.supabaseAdmin
         .from( 'horarios_base' )
-        .select( 'dia_semana, inicio, fin' )
+        .select( 'dia_semana, inicio, fin, fin_maximo' )
         .eq( 'profesional_id', profesionalId )
         .order( 'dia_semana' )
         .order( 'inicio' )
@@ -251,16 +282,37 @@ export default {
           ( tramo ) => tramo.dia_semana === dia,
         )
 
+        // El tramo entero entra a la función porque su `fin_maximo` es lo que
+        // decide si el tratamiento cabe: `fin` corta la grilla, el techo dice
+        // hasta dónde puede terminar lo que arrancó adentro.
         const bloquesDelDia = unificarBloques(
           tramosDelDia.flatMap(
-            ( tramo ) => bloquesDelTramo( fecha, tramo.inicio, tramo.fin, desfase ),
+            ( tramo ) => bloquesDelTramo( fecha, tramo, duracion, desfase ),
           ),
         )
 
-        // El bloque ocupado se MARCA, no se saca. Es la decisión del 6-ago: un
-        // día con todo tomado tiene que verse distinto de un día en que no se
-        // atiende, y esconder los rojos los deja iguales.
+        // Ningún bloque se saca: se MARCA. Es la decisión del 6-ago — un día
+        // con todo tomado tiene que verse distinto de un día en que no se
+        // atiende, y esconder lo que no se puede reservar los deja iguales.
+        //
+        // 🔴 El ORDEN de estos tres `if` es la regla, no una casualidad: se
+        // informa el motivo que el paciente NO puede destrabar. Decir "ocupado"
+        // en un bloque que además ya venció insinúa que si alguien cancela se
+        // libera, y es falso: aunque se libere, sigue siendo tarde.
         const bloques = bloquesDelDia.map( ( bloque ) => {
+
+          if ( fueraDePlazo( bloque.inicio, ahora ) ) {
+            return {
+              inicio: bloque.inicio,
+              estado: 'fuera_de_plazo',
+            }
+          }
+
+          // `no_entra` ya viene decidido desde el tramo: es el único de los
+          // tres que no depende de nada de afuera.
+          if ( bloque.estado === 'no_entra' ) {
+            return bloque
+          }
 
           if ( bloqueOcupado( bloque.inicio, duracion, turnos.data ) ) {
             return {

@@ -13,6 +13,23 @@
 // donde mirar.
 export const MINUTOS_POR_BLOQUE = 30
 
+// Cuánto antes hay que reservar. El bloque que arranca dentro de las próximas
+// 12 horas se muestra igual, pero no se puede tomar: es el margen que pidió el
+// consultorio para organizar el día.
+//
+// Es un piso DESLIZANTE, no "desde mañana": a las 20:00 de un lunes, el martes
+// a las 9:00 ya no se puede reservar y el martes a las 15:00 sí.
+export const HORAS_DE_ANTICIPACION = 12
+
+// Hasta cuándo se puede reservar hacia adelante. Los días que caen más allá del
+// techo no viajan en la respuesta: el calendario, sencillamente, no llega hasta
+// ahí.
+//
+// Se cuenta en MESES de almanaque y no en una cantidad fija de días para que el
+// techo signifique lo mismo que dice la frase con la que se decidió: "el mismo
+// día, dos meses después".
+export const MESES_DE_HORIZONTE = 2
+
 // Toda la Argentina usa la misma hora: UTC-3, sin horario de verano desde 2009.
 // Ninguna cuenta de este archivo depende de qué provincia sea, y esta constante
 // no está acá por eso.
@@ -79,6 +96,51 @@ export function listarDias( desde: string, hasta: string ): string[] {
 }
 
 
+// La misma fecha, unos meses más adelante.
+//
+// No se puede hacer sumando días: los meses no miden todos lo mismo, así que
+// "dos meses" no es un número fijo de días. Se cuenta en el almanaque.
+//
+// El caso que obliga a escribirla con cuidado es el 31: el 31 de diciembre más
+// dos meses sería el 31 de febrero, que no existe. JavaScript, librado a su
+// suerte, se pasa al 3 de marzo — o sea que el techo de reserva quedaría TRES
+// DÍAS más lejos de lo que el consultorio autorizó, en silencio. Acá se recorta
+// al último día del mes de destino.
+export function sumarMeses( fecha: string, meses: number ): string {
+
+  const partes = fecha.split( '-' )
+
+  const anio = Number( partes[ 0 ] )
+  const mes = Number( partes[ 1 ] )
+  const dia = Number( partes[ 2 ] )
+
+  // El mes de destino, apuntando al día 1, que existe en todos los meses.
+  // `Date.UTC` numera los meses desde 0 y acepta que el número se pase de 11:
+  // el mes 13 de 2026 es febrero de 2027. El fin de año se resuelve solo.
+  const destino = new Date( Date.UTC( anio, ( mes - 1 ) + meses, 1 ) )
+
+  // Cuántos días tiene ese mes: se pide el día 0 del mes SIGUIENTE, que es el
+  // último día del mes de destino.
+  const ultimoDelMes = new Date(
+    Date.UTC(
+      destino.getUTCFullYear(),
+      destino.getUTCMonth() + 1,
+      0,
+    ),
+  ).getUTCDate()
+
+  let diaDestino = dia
+
+  if ( diaDestino > ultimoDelMes ) {
+    diaDestino = ultimoDelMes
+  }
+
+  destino.setUTCDate( diaDestino )
+
+  return destino.toISOString().slice( 0, 10 )
+}
+
+
 // Qué día de la semana es esa fecha, en la numeración ISO 8601: lunes 1 …
 // domingo 7. Es la misma que guarda `horarios_base.dia_semana` desde la
 // migración del 7-ago, así que el número que sale de acá se compara directo
@@ -124,6 +186,39 @@ export function desfaseDeSantaFe( fecha: string ): string {
   // 'longOffset' devuelve 'GMT-03:00'. Sacado el prefijo queda lo que va
   // pegado al final de la fecha.
   return nombreDeZona.value.replace( 'GMT', '' )
+}
+
+
+// Qué día del almanaque es en Santa Fe en ese instante.
+//
+// Hace falta porque "hoy" no tiene una sola respuesta: a las 22:00 de un lunes
+// de Santa Fe, en UTC ya es martes. El techo de reserva se cuenta desde el día
+// del consultorio, no desde el del servidor, que corre en otro país y ni se
+// sabe en cuál.
+//
+// El instante ENTRA POR PARÁMETRO, no se pregunta acá adentro, y es a
+// propósito: una función que mira el reloj por su cuenta devuelve algo distinto
+// cada vez que se la llama y no se la puede probar. El reloj se mira una sola
+// vez, arriba de todo, y el instante se pasa de mano en mano.
+export function fechaEnSantaFe( instante: Date ): string {
+
+  const formato = new Intl.DateTimeFormat(
+    'en-US',
+    {
+      timeZone: ZONA,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    },
+  )
+
+  const partes = formato.formatToParts( instante )
+
+  const anio = partes.find( ( parte ) => parte.type === 'year' )
+  const mes = partes.find( ( parte ) => parte.type === 'month' )
+  const dia = partes.find( ( parte ) => parte.type === 'day' )
+
+  return `${ anio.value }-${ mes.value }-${ dia.value }`
 }
 
 
@@ -287,34 +382,70 @@ export function diaTapado( fecha: string, excepciones: Excepcion[] ): boolean {
 
 // ── La grilla ───────────────────────────────────────────────────────────────
 
-// Los bloques de media hora que entran en un tramo de agenda.
+// Un tramo de la agenda semanal, tal como viene de `horarios_base`.
+//
+// `fin_maximo` puede venir vacío, y eso NO es un dato faltante: significa "no
+// hay nada después, el turno no se puede estirar". Cinco de los siete tramos de
+// Cecilia tienen techo; los dos que cierran el día, no.
+export type Tramo = {
+  inicio: string,
+  fin: string,
+  fin_maximo: string | null,
+}
+
+
+// Los bloques de media hora que entran en un tramo de agenda, cada uno con el
+// estado que le corresponde MIRANDO SÓLO EL TRAMO: acá no se sabe nada de
+// turnos ya tomados ni de qué hora es ahora.
 //
 // El corte va con `fin`, NUNCA con `fin_maximo`. Un turno no puede EMPEZAR
 // después del horario de cierre: `fin_maximo` sólo permite que uno que empezó
-// a horario termine más tarde. Si esta función usara el techo, los lunes se
-// ofrecería un turno a las 14:00, que es horario que la profesional no dio.
+// a horario termine más tarde. Si esta función usara el techo para cortar, los
+// lunes se ofrecería un turno a las 14:00, que es horario que la profesional no
+// dio.
 //
-// La condición es "el bloque entero entra": el de las 13:30 termina 14:00 y
-// entra justo; el de las 14:00 terminaría 14:30 y queda afuera.
+// La condición del corte es "el bloque entero entra": el de las 13:30 termina
+// 14:00 y entra justo; el de las 14:00 terminaría 14:30 y queda afuera.
+//
+// Y una vez que el bloque existe, la segunda pregunta es si el TRATAMIENTO cabe
+// ahí. Una limpieza de 60 minutos que arranca el martes a las 16:30 termina
+// 17:30, y ese martes no hay nada después de las 17:00: el bloque existe, se
+// muestra, y sale `no_entra`. La cuenta va sobre el RANGO del turno, no sobre
+// cuántos bloques ocupa — con `fin_maximo` de por medio, el turno puede
+// terminar donde ya no hay bloques.
 export function bloquesDelTramo(
   fecha: string,
-  inicio: string,
-  fin: string,
+  tramo: Tramo,
+  duracion: number,
   desfase: string,
 ): { inicio: string, estado: string }[] {
 
   const bloques: { inicio: string, estado: string }[] = []
 
-  const primerMinuto = aMinutos( inicio )
-  const ultimoMinuto = aMinutos( fin )
+  const primerMinuto = aMinutos( tramo.inicio )
+  const ultimoMinuto = aMinutos( tramo.fin )
+
+  // Hasta dónde puede TERMINAR un turno de este tramo. Sin techo cargado, el
+  // límite es la hora de cierre.
+  let techo = ultimoMinuto
+
+  if ( tramo.fin_maximo ) {
+    techo = aMinutos( tramo.fin_maximo )
+  }
 
   let minuto = primerMinuto
 
   while ( minuto + MINUTOS_POR_BLOQUE <= ultimoMinuto ) {
 
+    let estado = 'libre'
+
+    if ( minuto + duracion > techo ) {
+      estado = 'no_entra'
+    }
+
     bloques.push( {
       inicio: `${ fecha }T${ aHora( minuto ) }:00${ desfase }`,
-      estado: 'libre',
+      estado: estado,
     } )
 
     minuto = minuto + MINUTOS_POR_BLOQUE
@@ -409,4 +540,25 @@ export function unificarBloques(
   } )
 
   return unicos
+}
+
+
+// ── La ventana de reserva ───────────────────────────────────────────────────
+
+// ¿Ese bloque cae adentro del margen de anticipación, o sea demasiado cerca
+// como para reservarlo?
+//
+// Se comparan dos INSTANTES, los dos en milisegundos desde 1970, así que acá no
+// hay husos ni almanaques de por medio: `inicio` ya trae el `-03:00` puesto y da
+// igual dónde esté el reloj del servidor.
+//
+// El bloque vencido no se saca de la respuesta, se marca. Si a las 10 de la
+// mañana desaparecieran todos los bloques de hoy, el día de hoy se vería
+// idéntico a un día en que el consultorio no atiende — que es exactamente lo
+// que se decidió evitar el 6-ago con los bloques ocupados.
+export function fueraDePlazo( inicio: string, ahora: Date ): boolean {
+
+  const limite = ahora.getTime() + HORAS_DE_ANTICIPACION * 60 * 60 * 1000
+
+  return Date.parse( inicio ) < limite
 }
