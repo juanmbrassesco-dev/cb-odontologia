@@ -35,15 +35,29 @@ This project covers the full digital presence: a brand-aligned website and the i
 
 All booking channels (the web today, WhatsApp later) read and write through one backend that owns the rules: no double-bookings, availability is respected, and a cancellation frees the slot again. Centralizing the logic keeps the channels from stepping on each other and makes the system straightforward to grow.
 
+**The browser never talks to the database.** Every table has row-level security on with no policies at all, so the client-side key reads nothing; the backend — Supabase Edge Functions — holds the only key that gets through. Table permissions are granted one verb at a time, in a versioned migration that ships alongside the feature needing it, so no grant exists without a written reason next to it.
+
 _An architecture diagram will be added here._
+
+## API
+
+The gatekeeper endpoints built so far:
+
+| Endpoint | Session | What it answers |
+|---|---|---|
+| `GET /tratamientos` | not required | The treatments the practice offers. Public on purpose — the same list appears on the landing page. |
+| `GET /horarios-disponibles` | not required | The half-hour grid for one practitioner over a date range, each block marked `libre`, `ocupado`, `no_entra` or `fuera_de_plazo`. Public on purpose too: a patient should see whether a slot exists *before* signing up. |
+| `GET /mis-pacientes` | **required** | The patients booked under the caller's address — one address can cover several people, such as a parent booking for their children. Returns id and name only. |
+
+Appointment length is never accepted from the request: the backend looks it up by treatment id. Otherwise a hand-crafted request could book a four-hour checkup and wreck the calendar.
 
 ## Project status
 
 In active development.
 
-- **Done** — data model, brand identity, system architecture.
-- **In progress** — front-end build and Supabase setup.
-- **Next** — booking flow, deployment, and (later) WhatsApp bot integration.
+- **Done** — data model (7 tables, integrity constraints and an exclusion constraint that makes overlapping appointments impossible at the database level), brand identity, system architecture, access-control model.
+- **In progress** — the booking endpoint (`POST /reservar`) and its three notification emails.
+- **Next** — cancellation by non-guessable link, the admin panel, deployment, and (later) WhatsApp bot integration.
 
 ## Author
 
