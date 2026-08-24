@@ -28,6 +28,23 @@
 # DEJA RASTRO: un turno y varios pacientes de prueba. El comando para borrarlos
 # se imprime al final; no se ejecuta solo.
 
+# 🔴 EL USUARIO DE PRUEBA NO ES EL LOGIN DE LOS PACIENTES, Y POR ESO ESTA
+# BATERÍA NO SE ARREGLA SOLA. El token sale más abajo con `grant_type=password`,
+# o sea correo y contraseña. La identidad del paciente en la web va a ser cuenta
+# de Google (sección 6 del doc de estado) y Google NO tiene ese flujo: el día que
+# exista el login de verdad, esto sigue necesitando SU PROPIA cuenta de correo y
+# contraseña, con un correo aparte del de cualquier paciente. Los dos proveedores
+# conviven en el mismo proyecto de Supabase; lo único que hay que sostener es esa
+# cuenta y el `.env` apuntándole.
+#
+# Lo que NO hay que hacer es pegar a mano un token sacado de una sesión real:
+# vence, y entonces la batería se pone en rojo sola — exactamente lo que el
+# comentario de las fechas, más arriba, dice que no puede pasar.
+#
+# ⏰ Y tiene final: esa cuenta se borra ANTES DE PRODUCCIÓN. Es una credencial de
+# larga vida (long-lived credential) viva en el mismo proyecto que va a guardar
+# datos de salud.
+
 set -u
 
 set -a
