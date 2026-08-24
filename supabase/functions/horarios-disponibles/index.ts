@@ -20,6 +20,12 @@
 
 import { withSupabase } from 'npm:@supabase/server@^1'
 
+// Los tipos de la base entran por acá. No cambian NADA de lo que el endpoint
+// hace: son para que TypeScript sepa qué columnas existen y avise en el editor
+// cuando una consulta pide algo que no está.
+
+import type { Database } from '../_shared/tipos-de-la-base.ts'
+
 import {
   esFechaValida,
   listarDias,
@@ -64,7 +70,7 @@ function falloDeBase(): Response {
 
 export default {
 
-  fetch: withSupabase(
+  fetch: withSupabase< Database >(
     { auth: 'none' },
     async ( req, ctx ) => {
 

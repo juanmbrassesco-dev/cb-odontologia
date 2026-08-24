@@ -74,6 +74,37 @@ export function esFechaValida( texto: string ): boolean {
 }
 
 
+// ¿El texto es un INSTANTE de verdad — un momento único, sin ambigüedad?
+//
+// Es la hermana de la de arriba, y la diferencia es todo el punto. Una FECHA
+// ('2026-09-01') es un día del almanaque y significa lo mismo en cualquier
+// lugar del mundo. Un INSTANTE es un día CON hora, y una hora sin huso no
+// dice nada: las 09:00 de Santa Fe y las 09:00 de Madrid son dos momentos
+// distintos.
+//
+// 🔴 Por eso el desfase es OBLIGATORIO y ésta es la mitad que importa. Si
+// llegara '2026-09-01T09:00:00' pelado, JavaScript lo lee con el reloj del
+// servidor —que en la nube está en UTC— y lo convierte en las 06:00 de Santa
+// Fe. El turno entraría tres horas corrido, sin ningún error de por medio.
+// Con el desfase puesto, el texto significa lo mismo lo lea quien lo lea.
+//
+// Se aceptan las dos formas que existen: '-03:00' (la que devuelve
+// `GET /horarios-disponibles`) y 'Z', que es el nombre corto de '+00:00'.
+export function esInstanteValido( texto: string ): boolean {
+
+  const molde = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}:\d{2})$/
+
+  if ( !molde.test( texto ) ) {
+    return false
+  }
+
+  // El molde deja pasar el 31 de febrero y las 25:00; esto no. `Date.parse`
+  // devuelve NaN cuando el texto tiene la forma correcta y el almanaque no lo
+  // admite.
+  return !Number.isNaN( Date.parse( texto ) )
+}
+
+
 // Todos los días del rango, de punta a punta, incluidos los dos extremos.
 //
 // La cuenta se hace en UTC —sumando un día de 24 horas exactas— y eso es
@@ -170,6 +201,32 @@ export function diaSemanaISO( fecha: string ): number {
 // El mediodía UTC es a propósito: se pregunta por un instante lo bastante
 // lejos de las dos medianoches como para que ningún desfase lo empuje al día
 // anterior o al siguiente.
+// Una pieza suelta de las que devuelve `formatToParts`, buscada por nombre.
+//
+// `formatToParts` no devuelve un objeto con casilleros rotulados: devuelve una
+// LISTA de piezas, y hay que ir a buscar la que se quiere. TypeScript no puede
+// saber que la pieza está —depende de las opciones con que se armó el
+// formato—, así que la pregunta se hace UNA vez acá adentro y no cuatro veces
+// desparramadas por el archivo.
+//
+// Si la pieza faltara, sería un bug de este archivo y no un dato del mundo:
+// por eso se rompe fuerte y con nombre, en vez de dejar que un vacío se cuele
+// adentro de una fecha y arme un '2026-undefined-01' que nadie va a rastrear.
+function parteDelFormato(
+  partes: Intl.DateTimeFormatPart[],
+  tipo: string,
+): string {
+
+  const parte = partes.find( ( candidata ) => candidata.type === tipo )
+
+  if ( !parte ) {
+    throw new Error( `El formato de fecha no devolvió la parte "${ tipo }"` )
+  }
+
+  return parte.value
+}
+
+
 export function desfaseDeSantaFe( fecha: string ): string {
 
   const formato = new Intl.DateTimeFormat(
@@ -181,11 +238,10 @@ export function desfaseDeSantaFe( fecha: string ): string {
   )
 
   const partes = formato.formatToParts( new Date( `${ fecha }T12:00:00Z` ) )
-  const nombreDeZona = partes.find( ( parte ) => parte.type === 'timeZoneName' )
 
   // 'longOffset' devuelve 'GMT-03:00'. Sacado el prefijo queda lo que va
   // pegado al final de la fecha.
-  return nombreDeZona.value.replace( 'GMT', '' )
+  return parteDelFormato( partes, 'timeZoneName' ).replace( 'GMT', '' )
 }
 
 
@@ -214,11 +270,11 @@ export function fechaEnSantaFe( instante: Date ): string {
 
   const partes = formato.formatToParts( instante )
 
-  const anio = partes.find( ( parte ) => parte.type === 'year' )
-  const mes = partes.find( ( parte ) => parte.type === 'month' )
-  const dia = partes.find( ( parte ) => parte.type === 'day' )
+  const anio = parteDelFormato( partes, 'year' )
+  const mes = parteDelFormato( partes, 'month' )
+  const dia = parteDelFormato( partes, 'day' )
 
-  return `${ anio.value }-${ mes.value }-${ dia.value }`
+  return `${ anio }-${ mes }-${ dia }`
 }
 
 
