@@ -48,6 +48,11 @@ import {
   MESES_DE_HORIZONTE,
 } from '../_shared/disponibilidad.ts'
 
+// Los avisos por correo. Van al final de todo y no pueden cambiar la
+// respuesta: el detalle, abajo, donde se llaman.
+
+import { enviarAvisos } from '../_shared/avisos.ts'
+
 // El error que devuelve Postgres cuando la fila nueva se pisa con una que ya
 // está. Es el código de "violación de exclusión", y en esta base sólo lo puede
 // producir `turnos_sin_solapar`: no hay otra restricción de ese tipo.
@@ -243,7 +248,7 @@ export default {
 
       const profesional = await ctx.supabaseAdmin
         .from( 'profesionales' )
-        .select( 'id, activo' )
+        .select( 'id, activo, nombre, apellido, email' )
         .eq( 'id', profesionalId )
         .maybeSingle()
 
@@ -260,7 +265,7 @@ export default {
 
       const tratamiento = await ctx.supabaseAdmin
         .from( 'tratamientos' )
-        .select( 'id, duracion_web_min' )
+        .select( 'id, duracion_web_min, nombre' )
         .eq( 'id', tratamientoId )
         .maybeSingle()
 
@@ -393,6 +398,8 @@ export default {
       // ── Para quién es el turno ────────────────────────────────────────────
 
       let pacienteId: number
+      let pacienteNombre: string
+      let pacienteApellido: string
 
       if ( tienePacienteId ) {
 
@@ -409,7 +416,7 @@ export default {
         // saber cuál de las dos falló.
         const paciente = await ctx.supabaseAdmin
           .from( 'pacientes' )
-          .select( 'id' )
+          .select( 'id, nombre, apellido' )
           .eq( 'id', pedido )
           .eq( 'email', correo )
           .maybeSingle()
@@ -423,6 +430,8 @@ export default {
         }
 
         pacienteId = paciente.data.id
+        pacienteNombre = paciente.data.nombre
+        pacienteApellido = paciente.data.apellido
       }
       else {
 
@@ -508,6 +517,8 @@ export default {
         }
 
         pacienteId = alta.data.id
+        pacienteNombre = nombre
+        pacienteApellido = apellido
       }
 
       // ── La reserva ────────────────────────────────────────────────────────
@@ -539,6 +550,29 @@ export default {
 
         return falloDeBase()
       }
+
+      // ── Los avisos ────────────────────────────────────────────────────────
+      //
+      // 🔴 LO QUE PASE ACÁ NO CAMBIA LA RESPUESTA. Se espera a que salgan —para
+      // que un fallo se vea en el momento y no suelto media hora después—, pero
+      // salgan o no, abajo se contesta 201: el turno YA está anotado. Si esto
+      // devolviera 500, el paciente reservaría de nuevo y quedarían dos turnos
+      // para la misma persona.
+      //
+      // `enviarAvisos` no lanza nunca, así que no lleva `try`: ya trae el suyo.
+      await enviarAvisos( {
+        turnoId: turno.data.id,
+        inicio: turno.data.inicio,
+        duracionMin: turno.data.duracion_min,
+        tratamiento: tratamiento.data.nombre,
+        pacienteNombre: pacienteNombre,
+        pacienteApellido: pacienteApellido,
+        pacienteCorreo: correo,
+        profesionalNombre: profesional.data.nombre,
+        profesionalApellido: profesional.data.apellido,
+        profesionalCorreo: profesional.data.email,
+        tieneObservaciones: observaciones !== null,
+      } )
 
       // Lo mínimo, y nada de lo que entró por el cuerpo: ni el nombre del
       // paciente ni las observaciones vuelven.
