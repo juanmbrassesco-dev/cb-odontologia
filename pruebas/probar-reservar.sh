@@ -19,7 +19,7 @@
 # QUÉ NECESITA:
 #   - el `.env` en la raíz del repo (claves del proyecto y usuario de prueba)
 #   - `jq`
-#   - la CLI de Supabase con el proyecto enlazado (sólo para el caso 14)
+#   - la CLI de Supabase con el proyecto enlazado (para los casos 14 y 18)
 #
 # CÓMO SE CORRE, parado en la raíz del repo:
 #
@@ -71,6 +71,30 @@ sumar_dias () {
 # Qué día de la semana es una fecha, numerado como la base: lunes 1 … domingo 7.
 dia_de_semana () {
   date -j -f %Y-%m-%d "$1" +%u 2>/dev/null || date -d "$1" +%u
+}
+
+# Una consulta a la base, con la salida siempre en la misma forma.
+#
+# 🔴 LOS DOS FLAGS SON OBLIGATORIOS Y CADA UNO TAPA UN AGUJERO DISTINTO. La CLI
+# de Supabase contesta la MISMA consulta de tres maneras según quién la corra, y
+# las tres se vieron el 25-ago-2026 sobre esta misma línea:
+#
+#   sin flags                     → una tabla dibujada con caracteres (┌─┐│└─┘)
+#   --output-format json          → JSON, pero envuelto en un objeto con `rows`
+#                                   si la corre un agente, y pelado si la corre
+#                                   una persona
+#   + --agent no                  → siempre el array de filas pelado
+#
+# `--output-format json` saca la tabla; `--agent no` saca la detección de quién
+# está del otro lado. Sin los dos, este script anda en una terminal y falla en
+# la otra — que fue exactamente lo que pasó, dos veces seguidas.
+#
+# El `if type == "array"` de abajo es la red por si la CLI vuelve a cambiar de
+# forma: venga pelado o venga envuelto, de acá sale el array de filas.
+consultar () {
+
+  supabase db query --linked --output-format json --agent no "$1" \
+  | jq 'if type == "array" then . else .rows end'
 }
 
 # $1 = qué se prueba · $2 = qué tiene que dar · $3 = el cuerpo del pedido
@@ -249,11 +273,28 @@ probar "13. paciente_id que NO existe" \
 echo "───────────────────────────────────────────────────────────────"
 echo "▶ Cargando un paciente de OTRA casilla, para el caso 14…"
 
-AJENO=$(
-  supabase db query --linked \
-    "insert into pacientes ( nombre, apellido, email ) values ( 'Carla', 'Mendez', 'otra-casilla@example.com' ) returning id;" \
-  2>/dev/null | jq -r '.rows[0].id'
+# La consulta va por `consultar`, que es donde está explicado por qué la salida
+# de la CLI necesita dos flags para ser siempre la misma.
+#
+# Lo de acá es la misma red que el token allá arriba: la salida se guarda ANTES
+# de pasarla por `jq`, el id se verifica, y si algo salió mal se muestra crudo.
+# El 25-ago-2026 el `insert` andaba —el paciente quedaba creado— pero el id no
+# se podía leer, viajaba VACÍO, y el pedido salía roto: se leía como un endpoint
+# que falla cuando el roto era este script. El caso 14 es la prueba de
+# ENUMERACIÓN DE PACIENTES (patient enumeration) y que se saltee en silencio es
+# exactamente lo que no puede pasar.
+SALIDA_AJENO=$(
+  consultar "insert into pacientes ( nombre, apellido, email ) values ( 'Carla', 'Mendez', 'otra-casilla@example.com' ) returning id;"
 )
+
+AJENO=$( echo "$SALIDA_AJENO" | jq -r '.[0].id' 2>/dev/null )
+
+if [ "$AJENO" = "null" ] || [ -z "$AJENO" ]; then
+  echo "❌ No se pudo dar de alta el paciente ajeno, así que el caso 14 no prueba nada."
+  echo "   Esto es lo que contestó la CLI, crudo:"
+  echo "$SALIDA_AJENO"
+  exit 1
+fi
 
 echo "  paciente ajeno = id $AJENO"
 echo
@@ -286,9 +327,14 @@ echo
 echo "───────────────────────────────────────────────────────────────"
 echo "▶ 18. Lo que quedó en la base"
 
-supabase db query --linked \
-  "select ( select count(*) from turnos ) as turnos, ( select count(*) from pacientes ) as pacientes;" \
-  2>/dev/null | jq -c '.rows'
+# Va por `consultar` igual que el caso 14, por el mismo motivo explicado allá.
+# Acá NO se corta la corrida: es el resumen del final, no una prueba.
+SALIDA_CUENTAS=$(
+  consultar "select ( select count(*) from turnos ) as turnos, ( select count(*) from pacientes ) as pacientes;"
+)
+
+echo "$SALIDA_CUENTAS" | jq -c '.' 2>/dev/null \
+  || { echo "  ⚠ La CLI no contestó JSON. Crudo:"; echo "$SALIDA_CUENTAS"; }
 
 echo
 echo "⚠ Los pacientes van a ser MÁS que los turnos, y no es un bug: el caso 16"
