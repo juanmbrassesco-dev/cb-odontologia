@@ -11,7 +11,7 @@
 // deja un poco más vieja, y una foto vencida es peor que no tenerla porque se
 // lee como un hecho verificado.
 //
-// GENERADA EL 23-ago-2026, contra la base real, con:
+// GENERADA EL 25-ago-2026, contra la base real, con:
 //
 //   supabase gen types typescript --linked --schema public
 //
@@ -153,16 +153,19 @@ export type Database = {
       }
       profesional_tratamientos: {
         Row: {
+          activo: boolean
           id: number
           profesional_id: number
           tratamiento_id: number
         }
         Insert: {
+          activo?: boolean
           id?: number
           profesional_id: number
           tratamiento_id: number
         }
         Update: {
+          activo?: boolean
           id?: number
           profesional_id?: number
           tratamiento_id?: number

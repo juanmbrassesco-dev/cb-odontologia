@@ -42,6 +42,8 @@ import {
   MESES_DE_HORIZONTE,
 } from '../_shared/disponibilidad.ts'
 
+import { estadoDeLaPareja } from '../_shared/parejas.ts'
+
 // Techo de días por pedido. Dos meses de calendario más un resto, que es el
 // horizonte máximo de reserva que fijó el consultorio. No es una regla de
 // negocio: es un tope para que un pedido de diez años no ponga a la función a
@@ -182,18 +184,19 @@ export default {
         return pedidoInvalido( 'Ese tratamiento no se reserva por la web' )
       }
 
-      const pareja = await ctx.supabaseAdmin
-        .from( 'profesional_tratamientos' )
-        .select( 'id' )
-        .eq( 'profesional_id', profesionalId )
-        .eq( 'tratamiento_id', tratamientoId )
-        .maybeSingle()
+      // La consulta vive en `_shared/parejas.ts`: la hacen los dos endpoints y
+      // la condición `activo` tiene que valer en los dos o no vale en ninguno.
+      const pareja = await estadoDeLaPareja(
+        ctx,
+        profesionalId,
+        tratamientoId,
+      )
 
-      if ( pareja.error ) {
+      if ( pareja === 'error-de-base' ) {
         return falloDeBase()
       }
 
-      if ( !pareja.data ) {
+      if ( pareja === 'no-la-hace' ) {
         return pedidoInvalido( 'Ese profesional no hace ese tratamiento' )
       }
 
