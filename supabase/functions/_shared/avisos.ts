@@ -1,15 +1,27 @@
-// Portero de CB Odontología — los avisos por correo de una reserva
+// Portero de CB Odontología — los avisos por correo de un turno
+//
+// DOS MOTIVOS, EL MISMO CAMINO: se reservó un turno, o se canceló. Cambian los
+// textos y el asunto; NO cambia nada más — el remitente, la lectura del
+// entorno, el formato de la fecha, la deduplicación consultorio/profesional y
+// la redirección a la casilla de prueba son los mismos para los dos.
+//
+// 🔴 POR QUÉ UN SOLO ARCHIVO CON UN `motivo` Y NO DOS ARCHIVOS CALCADOS: es el
+// mismo motivo por el que la consulta de la pareja se mudó a `parejas.ts` el
+// 25-ago-2026. Todo lo de arriba tiene que valer para los dos avisos o no vale
+// para ninguno; con dos copias, el día que se borre `CORREO_DE_PRUEBA` habría
+// que acordarse de tocar las dos, y olvidarse de una NO FALLA CON ERROR: manda
+// correos de verdad a pacientes de verdad desde el archivo que quedó viejo.
 //
 // UN SOLO DISPARO, TRES DESTINATARIOS: el paciente (confirmación), el
-// consultorio y el profesional al que le reservaron (aviso operativo). Van en
-// un ÚNICO pedido al proveedor —un "lote"— y aun así cada uno recibe su propio
-// texto: el paciente lee "tu turno quedó reservado", los otros dos leen "entró
-// un turno".
+// consultorio y el profesional (aviso operativo). Van en un ÚNICO pedido al
+// proveedor —un "lote"— y aun así cada uno recibe su propio texto: el paciente
+// lee "tu turno quedó reservado", los otros dos leen "entró un turno".
 //
-// 🔴 ESTE MÓDULO NO PUEDE HACER FALLAR UNA RESERVA. Si el proveedor está caído,
-// si la clave venció o si falta un dato, devuelve `false` y se acabó. El turno
-// ya está anotado en la base y un correo caído no puede desanotarlo. Por eso
-// NINGUNA función de acá lanza un error: todas devuelven algo.
+// 🔴 ESTE MÓDULO NO PUEDE HACER FALLAR NI UNA RESERVA NI UNA CANCELACIÓN. Si el
+// proveedor está caído, si la clave venció o si falta un dato, devuelve `false`
+// y se acabó. El turno ya está anotado —o ya está apagado— y un correo caído no
+// lo puede deshacer. Por eso NINGUNA función de acá lanza un error: todas
+// devuelven algo.
 //
 // ⚠ LAS OBSERVACIONES DEL PACIENTE NO VIAJAN EN NINGÚN CORREO, y no es un
 // olvido. Pueden traer datos de salud, y un correo se copia solo: queda en el
@@ -31,6 +43,14 @@ const RESEND_LOTE = 'https://api.resend.com/emails/batch'
 const REMITENTE_DE_PRUEBA = 'CB Odontología <onboarding@resend.dev>'
 
 const FIRMA = 'CB Odontología y Estética — Santa Fe'
+
+// Por qué salió este correo. Es un texto de dos valores y no un `true`/`false`
+// a propósito: `enviarAvisos( datos, true )` no se entiende sin ir a leer la
+// función, y `enviarAvisos( datos, 'cancelacion' )` se entiende solo. Misma
+// forma que `EstadoDeLaPareja` en `parejas.ts`.
+export type MotivoDelAviso =
+  | 'reserva'
+  | 'cancelacion'
 
 // Un dato del entorno, o `null` si no está cargado.
 //
@@ -87,8 +107,37 @@ function cuandoCompacto( inicio: string ): string {
   ).format( new Date( inicio ) )
 }
 
-// Todo lo que hace falta para escribir los tres correos. Se arma en
-// `reservar/index.ts`, que es el único que tuvo todos estos datos a mano.
+// Cómo se le dice al paciente dónde ve y cancela sus turnos.
+//
+// 🔴 LA DIRECCIÓN NO ESTÁ CLAVADA EN EL CÓDIGO Y NO LLEVA NINGÚN TOKEN.
+//
+//   - No está clavada porque la pantalla todavía no existe: el día que el sitio
+//     se publique se carga `URL_MIS_TURNOS` como secreto y este correo la
+//     nombra, sin volver a desplegar la función. Anotado en § 14 con disparador.
+//   - No lleva token porque un correo se reenvía. Un link con token adentro es
+//     una CREDENCIAL AL PORTADOR (bearer credential): el que lo tiene, entra.
+//     Ésta es pelada: del otro lado hay que iniciar sesión igual, así que si se
+//     filtra no sirve para nada. (Decisión del 25-ago-2026, § 6.)
+//
+// ⚠ Si el secreto no está cargado, el correo cae en la frase de siempre. No
+// falla con error, que es exactamente por qué está anotado como pendiente.
+function comoSeCancela(): string {
+
+  const pantalla = delEntorno( 'URL_MIS_TURNOS' )
+
+  if ( !pantalla ) {
+    return 'Si no vas a poder venir, escribinos y lo cancelamos.'
+  }
+
+  return [
+    'Si no vas a poder venir, podés cancelarlo vos desde:',
+    `  ${ pantalla }`,
+    'Entrá con el mismo correo con el que reservaste.',
+  ].join( '\n' )
+}
+
+// Todo lo que hace falta para escribir los tres correos. Lo arma el endpoint,
+// que es el único que tuvo todos estos datos a mano.
 export type DatosDelAviso = {
   turnoId: number
   inicio: string
@@ -111,19 +160,64 @@ type Mensaje = {
   text: string
 }
 
-function correoParaElPaciente( datos: DatosDelAviso, remitente: string ): Mensaje {
+// La ficha del turno: los cuatro renglones que van igual en los dos correos del
+// paciente. Lo único que cambia es el tiempo del verbo — 'Cuándo' mientras el
+// turno va a pasar, 'Cuándo era' cuando ya no va a pasar.
+function fichaDelTurno( datos: DatosDelAviso, motivo: MotivoDelAviso ): string[] {
+
+  let cuando = 'Cuándo'
+
+  if ( motivo === 'cancelacion' ) {
+    cuando = 'Cuándo era'
+  }
+
+  return [
+    `  Tratamiento: ${ datos.tratamiento }`,
+    `  Profesional: ${ datos.profesionalNombre } ${ datos.profesionalApellido }`,
+    `  ${ cuando }: ${ cuandoEnPalabras( datos.inicio ) }`,
+    `  Duración: ${ datos.duracionMin } minutos`,
+  ]
+}
+
+function correoParaElPaciente(
+  datos: DatosDelAviso,
+  remitente: string,
+  motivo: MotivoDelAviso,
+): Mensaje {
+
+  const ficha = fichaDelTurno( datos, motivo )
+
+  if ( motivo === 'cancelacion' ) {
+
+    const texto = [
+      `Hola ${ datos.pacienteNombre },`,
+      '',
+      'Tu turno quedó cancelado.',
+      '',
+      ...ficha,
+      '',
+      'El horario vuelve a estar disponible para quien lo necesite. Si querés',
+      'sacar otro turno, entrá al sitio cuando quieras.',
+      '',
+      FIRMA,
+    ].join( '\n' )
+
+    return {
+      from: remitente,
+      to: [ datos.pacienteCorreo ],
+      subject: 'Tu turno en CB Odontología quedó cancelado',
+      text: texto,
+    }
+  }
 
   const texto = [
     `Hola ${ datos.pacienteNombre },`,
     '',
     'Tu turno quedó reservado.',
     '',
-    `  Tratamiento: ${ datos.tratamiento }`,
-    `  Profesional: ${ datos.profesionalNombre } ${ datos.profesionalApellido }`,
-    `  Cuándo: ${ cuandoEnPalabras( datos.inicio ) }`,
-    `  Duración: ${ datos.duracionMin } minutos`,
+    ...ficha,
     '',
-    'Si no vas a poder venir, escribinos y lo cancelamos.',
+    comoSeCancela(),
     '',
     FIRMA,
   ].join( '\n' )
@@ -142,23 +236,39 @@ function avisoOperativo(
   datos: DatosDelAviso,
   remitente: string,
   destino: string,
+  motivo: MotivoDelAviso,
 ): Mensaje {
 
+  let titular = 'Entró un turno nuevo por la web.'
+  let encabezadoDelAsunto = 'Nuevo turno'
+
+  if ( motivo === 'cancelacion' ) {
+    titular = 'Se canceló un turno desde la web.'
+    encabezadoDelAsunto = 'Turno cancelado'
+  }
+
   const renglones = [
-    'Entró un turno nuevo por la web.',
+    titular,
     '',
     `  Paciente: ${ datos.pacienteNombre } ${ datos.pacienteApellido }`,
     `  Contacto: ${ datos.pacienteCorreo }`,
-    `  Tratamiento: ${ datos.tratamiento }`,
-    `  Profesional: ${ datos.profesionalNombre } ${ datos.profesionalApellido }`,
-    `  Cuándo: ${ cuandoEnPalabras( datos.inicio ) }`,
-    `  Duración: ${ datos.duracionMin } minutos`,
+    ...fichaDelTurno( datos, motivo ),
     `  Turno número: ${ datos.turnoId }`,
   ]
 
+  if ( motivo === 'cancelacion' ) {
+    renglones.push(
+      '',
+      'El horario vuelve a estar disponible en la grilla.',
+    )
+  }
+
   // Se avisa QUE HAY una observación y no CUÁL es. El motivo está arriba de
   // todo, en el encabezado del archivo.
-  if ( datos.tieneObservaciones ) {
+  //
+  // Va sólo en la reserva: una vez cancelado el turno, recordar que había una
+  // observación no le sirve a nadie para nada.
+  if ( motivo === 'reserva' && datos.tieneObservaciones ) {
     renglones.push(
       '',
       'El paciente dejó una observación. Se lee en la ficha del turno.',
@@ -170,14 +280,15 @@ function avisoOperativo(
   return {
     from: remitente,
     to: [ destino ],
-    subject: `Nuevo turno — ${ cuandoCompacto( datos.inicio ) } — ${ datos.pacienteApellido }`,
+    subject: `${ encabezadoDelAsunto } — ${ cuandoCompacto( datos.inicio ) } — ${ datos.pacienteApellido }`,
     text: renglones.join( '\n' ),
   }
 }
 
 // Los tres mensajes, ya con los destinatarios definitivos.
 //
-// Acá pasan las dos cosas que decidimos el 24-ago-2026:
+// Acá pasan las dos cosas que decidimos el 24-ago-2026, y las dos valen para
+// los DOS motivos, que es justamente por qué esta función no se duplicó:
 //
 //   1. SI ESTÁ CARGADO `CORREO_DE_PRUEBA`, TODO VA A ESA CASILLA. Es la única
 //      forma de probar tres destinatarios mientras el proveedor sólo entregue a
@@ -190,15 +301,15 @@ function avisoOperativo(
 //   2. SI EL PROFESIONAL Y EL CONSULTORIO COMPARTEN CASILLA —hoy es el caso,
 //      Cecilia es los dos— se manda UNO SOLO. Dos correos idénticos a la misma
 //      persona no informan el doble.
-function armarMensajes( datos: DatosDelAviso ): Mensaje[] {
+function armarMensajes( datos: DatosDelAviso, motivo: MotivoDelAviso ): Mensaje[] {
 
   const remitente = delEntorno( 'CORREO_REMITENTE' ) ?? REMITENTE_DE_PRUEBA
   const consultorio = delEntorno( 'CORREO_DEL_CONSULTORIO' )
   const casillaDePrueba = delEntorno( 'CORREO_DE_PRUEBA' )
 
   const mensajes: Mensaje[] = [
-    correoParaElPaciente( datos, remitente ),
-    avisoOperativo( datos, remitente, datos.profesionalCorreo ),
+    correoParaElPaciente( datos, remitente, motivo ),
+    avisoOperativo( datos, remitente, datos.profesionalCorreo, motivo ),
   ]
 
   // El consultorio puede no estar cargado todavía: es un aviso menos, no un
@@ -207,7 +318,7 @@ function armarMensajes( datos: DatosDelAviso ): Mensaje[] {
     console.error( 'avisos: falta CORREO_DEL_CONSULTORIO, va sin ese aviso' )
   }
   else if ( consultorio.toLowerCase() !== datos.profesionalCorreo.toLowerCase() ) {
-    mensajes.push( avisoOperativo( datos, remitente, consultorio ) )
+    mensajes.push( avisoOperativo( datos, remitente, consultorio, motivo ) )
   }
 
   if ( !casillaDePrueba ) {
@@ -228,7 +339,10 @@ function armarMensajes( datos: DatosDelAviso ): Mensaje[] {
 // Lo que se escribe en el registro cuando falla es el motivo y nada más: ni el
 // cuerpo de los mensajes, ni la clave, ni los correos de nadie. Un registro lo
 // lee cualquiera que tenga acceso al panel.
-export async function enviarAvisos( datos: DatosDelAviso ): Promise< boolean > {
+export async function enviarAvisos(
+  datos: DatosDelAviso,
+  motivo: MotivoDelAviso,
+): Promise< boolean > {
 
   const clave = delEntorno( 'RESEND_API_KEY' )
 
@@ -237,7 +351,7 @@ export async function enviarAvisos( datos: DatosDelAviso ): Promise< boolean > {
     return false
   }
 
-  const mensajes = armarMensajes( datos )
+  const mensajes = armarMensajes( datos, motivo )
 
   try {
 
@@ -261,10 +375,10 @@ export async function enviarAvisos( datos: DatosDelAviso ): Promise< boolean > {
       //
       // ⚠ Lo que se registra es la respuesta DE ELLOS, nunca los mensajes
       // nuestros: ahí no hay datos de ningún paciente, hay un texto de error.
-      const motivo = await respuesta.text()
+      const motivoDelFallo = await respuesta.text()
 
       console.error(
-        `avisos: el proveedor contestó ${ respuesta.status } — ${ motivo }`,
+        `avisos: el proveedor contestó ${ respuesta.status } — ${ motivoDelFallo }`,
       )
 
       return false

@@ -563,6 +563,9 @@ export default {
       // para la misma persona.
       //
       // `enviarAvisos` no lanza nunca, así que no lleva `try`: ya trae el suyo.
+      // El segundo argumento —el MOTIVO— es lo que decide qué textos salen.
+      // `_shared/avisos.ts` sabe escribir los de reserva y los de cancelación;
+      // acá se le dice cuál de los dos. Sumado el 25-ago-2026, con ④.
       await enviarAvisos( {
         turnoId: turno.data.id,
         inicio: turno.data.inicio,
@@ -575,7 +578,8 @@ export default {
         profesionalApellido: profesional.data.apellido,
         profesionalCorreo: profesional.data.email,
         tieneObservaciones: observaciones !== null,
-      } )
+      },
+      'reserva' )
 
       // Lo mínimo, y nada de lo que entró por el cuerpo: ni el nombre del
       // paciente ni las observaciones vuelven.
