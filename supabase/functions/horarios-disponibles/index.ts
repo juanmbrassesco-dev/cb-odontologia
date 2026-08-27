@@ -44,6 +44,8 @@ import {
 
 import { estadoDeLaPareja } from '../_shared/parejas.ts'
 
+import { conQueArranca } from '../_shared/arranque.ts'
+
 // Techo de días por pedido. Dos meses de calendario más un resto, que es el
 // horizonte máximo de reserva que fijó el consultorio. No es una regla de
 // negocio: es un tope para que un pedido de diez años no ponga a la función a
@@ -165,7 +167,7 @@ export default {
 
       const tratamiento = await ctx.supabaseAdmin
         .from( 'tratamientos' )
-        .select( 'id, duracion_web_min' )
+        .select( 'id, nombre, duracion_web_min' )
         .eq( 'id', tratamientoId )
         .maybeSingle()
 
@@ -177,11 +179,19 @@ export default {
         return pedidoInvalido( 'Ese tratamiento no existe' )
       }
 
-      // `duracion_web_min` vacío significa "no se reserva por la web": lo
-      // agenda el profesional después de la consulta previa. No es un error de
-      // datos, es la regla del consultorio, y por eso se contesta 400 y no 500.
-      if ( !tratamiento.data.duracion_web_min ) {
-        return pedidoInvalido( 'Ese tratamiento no se reserva por la web' )
+      // 🔴 ACÁ HABÍA UN 400 QUE YA NO EXISTE: hasta el 27-ago-2026, un
+      // tratamiento sin `duracion_web_min` se rechazaba con "no se reserva por
+      // la web". Ahora se convierte, y la grilla se dibuja con el largo de lo
+      // que SE VA A AGENDAR, no con el del elegido.
+      //
+      // La regla vive en `_shared/arranque.ts` y la aplica también `reservar`.
+      // Tiene que ser la misma en los dos: si acá se dibujaran bloques de 30 y
+      // allá se agendaran 60, el paciente se enteraría al chocar contra el
+      // turno siguiente, no al reservar.
+      const arranque = await conQueArranca( ctx, tratamiento.data )
+
+      if ( !arranque ) {
+        return falloDeBase()
       }
 
       // La consulta vive en `_shared/parejas.ts`: la hacen los dos endpoints y
@@ -270,7 +280,7 @@ export default {
       // bloque se pisa con lo ya tomado: no alcanza con mirar la media hora del
       // bloque, porque una limpieza de 60 minutos que empieza a las 12:00 se
       // pisa con un turno de las 12:30.
-      const duracion = tratamiento.data.duracion_web_min
+      const duracion = arranque.duracionMin
 
       const respuesta = dias.map( ( fecha ) => {
 
@@ -343,10 +353,17 @@ export default {
       // distingue "ese día no atiende" de "ese día no vino en la respuesta",
       // que es la misma decisión del 6-ago sobre los bloques ocupados: se
       // muestran, no se esconden.
+      // 🔑 VIAJAN LOS DOS TRATAMIENTOS, y la pantalla necesita los dos para
+      // poder avisar ANTES de que el paciente confirme: "elegiste ortodoncia,
+      // reservás una consulta de 30 minutos". Sin el par, o le miente el
+      // nombre o le miente la duración.
       return Response.json( {
         profesional: profesionalId,
         tratamiento: tratamientoId,
-        duracion_min: tratamiento.data.duracion_web_min,
+        tratamiento_nombre: tratamiento.data.nombre,
+        se_agenda: arranque.tratamientoId,
+        se_agenda_nombre: arranque.nombre,
+        duracion_min: arranque.duracionMin,
         dias: respuesta,
       } )
     },

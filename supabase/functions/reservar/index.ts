@@ -50,6 +50,8 @@ import {
 
 import { estadoDeLaPareja } from '../_shared/parejas.ts'
 
+import { conQueArranca } from '../_shared/arranque.ts'
+
 // Los avisos por correo. Van al final de todo y no pueden cambiar la
 // respuesta: el detalle, abajo, donde se llaman.
 
@@ -283,14 +285,24 @@ export default {
       // el front, un pedido armado a mano pediría una limpieza de 60 minutos
       // declarando que dura 30, y el turno siguiente quedaría pisado (§ 6).
       //
-      // Y `duracion_web_min` vacío significa "no se reserva por la web": lo
-      // agenda el profesional después de la consulta previa. No es un error de
-      // datos, es la regla del consultorio, y por eso es 400 y no 500.
-      if ( !tratamiento.data.duracion_web_min ) {
-        return pedidoInvalido( 'Ese tratamiento no se reserva por la web' )
+      // 🔴 Y ACÁ HABÍA UN 400 QUE YA NO EXISTE: hasta el 27-ago-2026, un
+      // tratamiento sin `duracion_web_min` se rechazaba con "no se reserva por
+      // la web". Ahora NO SE RECHAZA: SE CONVIERTE. El paciente que entra por
+      // ortodoncia consigue su turno, y lo que se agenda es la consulta de 30
+      // que el consultorio le pone adelante a todo. La regla vive en
+      // `_shared/arranque.ts` porque `horarios-disponibles` tiene que aplicar
+      // exactamente la misma o la grilla ofrecería bloques de un largo y el
+      // turno saldría de otro.
+      const arranque = await conQueArranca( ctx, tratamiento.data )
+
+      // `null` significa que el catálogo se quedó sin envase —alguien renombró,
+      // borró o vació la fila `consulta`—. Es un fallo de base y no un pedido
+      // inválido: el paciente pidió bien, lo que está roto es de este lado.
+      if ( !arranque ) {
+        return falloDeBase()
       }
 
-      const duracion = tratamiento.data.duracion_web_min
+      const duracion = arranque.duracionMin
 
       // La consulta vive en `_shared/parejas.ts`: la hacen los dos endpoints y
       // la condición `activo` tiene que valer en los dos o no vale en ninguno.
@@ -525,13 +537,27 @@ export default {
       }
 
       // ── La reserva ────────────────────────────────────────────────────────
+      //
+      // 🔑 LAS DOS COLUMNAS DE TRATAMIENTO GUARDAN COSAS DISTINTAS, y confundirlas
+      // rompe la agenda o la ficha, según cuál se invierta:
+      //
+      //   tratamiento_id       → lo que SE AGENDA. Manda sobre la duración y
+      //                          sobre el hueco que ocupa en la grilla.
+      //   motivo_consulta_id   → lo que el paciente ELIGIÓ. No ocupa tiempo:
+      //                          es para que Cecilia sepa a qué vino.
+      //
+      // En una limpieza los dos valen lo mismo, y se guarda igual. La regla es
+      // sin excepciones a propósito: así el vacío de `motivo_consulta_id` nunca
+      // es ambiguo — significa "no eligió nadie", o sea un turno cargado por el
+      // consultorio, nunca "eligió lo mismo".
 
       const turno = await ctx.supabaseAdmin
         .from( 'turnos' )
         .insert( {
           paciente_id: pacienteId,
           profesional_id: profesionalId,
-          tratamiento_id: tratamientoId,
+          tratamiento_id: arranque.tratamientoId,
+          motivo_consulta_id: tratamientoId,
           inicio: inicio,
           duracion_min: duracion,
           canal: 'web',
@@ -570,7 +596,11 @@ export default {
         turnoId: turno.data.id,
         inicio: turno.data.inicio,
         duracionMin: turno.data.duracion_min,
-        tratamiento: tratamiento.data.nombre,
+        // El correo nombra LO QUE SE AGENDA. Si dijera el elegido, un turno
+        // de 30 minutos llegaría anunciado como "ortodoncia" y la agenda del
+        // consultorio no coincidiría con la ficha. El motivo entra aparte, en
+        // su propio renglón (fase 3).
+        tratamiento: arranque.nombre,
         pacienteNombre: pacienteNombre,
         pacienteApellido: pacienteApellido,
         pacienteCorreo: correo,
@@ -590,6 +620,7 @@ export default {
           duracion_min: turno.data.duracion_min,
           profesional: profesionalId,
           tratamiento: tratamientoId,
+          se_agenda: arranque.tratamientoId,
         },
         { status: 201 },
       )

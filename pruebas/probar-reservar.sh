@@ -152,6 +152,11 @@ GRILLA_LIMPIEZA=$( grilla $LIMPIEZA )
 HORA_LIBRE=$( echo "$GRILLA_CONSULTA" | jq -r '[ .dias[].bloques[] | select( .estado == "libre" ) ][0].inicio' )
 DIA_LIBRE=$( echo "$HORA_LIBRE" | cut -c1-10 )
 
+# 🔴 UN SEGUNDO HUECO, Y ES NUEVO DESDE EL 27-ago-2026. La prueba 7 dejó de
+# rechazar y ahora RESERVA de verdad: si usara el mismo bloque que la 15, le
+# ocuparía el hueco a la reserva feliz y la 15 daría 409 sin que nada esté roto.
+HORA_DERIVADA=$( echo "$GRILLA_CONSULTA" | jq -r '[ .dias[].bloques[] | select( .estado == "libre" ) ][1].inicio' )
+
 # Un bloque donde la limpieza de 60 minutos NO entra antes del cierre. También
 # lo decide el endpoint.
 HORA_NO_ENTRA=$( echo "$GRILLA_LIMPIEZA" | jq -r '[ .dias[].bloques[] | select( .estado == "no_entra" ) ][0].inicio' )
@@ -180,9 +185,9 @@ for FECHA in $( echo "$GRILLA_CONSULTA" | jq -r '.dias[] | select( .bloques | le
   fi
 done
 
-if [ "$HORA_LIBRE" = "null" ] || [ -z "$DIA_TAPADO" ] || [ "$HORA_NO_ENTRA" = "null" ]; then
+if [ "$HORA_LIBRE" = "null" ] || [ "$HORA_DERIVADA" = "null" ] || [ -z "$DIA_TAPADO" ] || [ "$HORA_NO_ENTRA" = "null" ]; then
   echo "❌ No se pudo armar el escenario desde /horarios-disponibles."
-  echo "   libre=$HORA_LIBRE · no_entra=$HORA_NO_ENTRA · tapado=$DIA_TAPADO"
+  echo "   libre=$HORA_LIBRE · derivada=$HORA_DERIVADA · no_entra=$HORA_NO_ENTRA · tapado=$DIA_TAPADO"
   exit 1
 fi
 
@@ -239,9 +244,28 @@ probar "6. Profesional que no existe" \
   "400 — ese profesional no está disponible" \
   "{ \"profesional\": 99, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_LIBRE\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
 
-probar "7. Tratamiento que NO se reserva por la web" \
-  "400 — ese tratamiento no se reserva por la web" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": 2, \"inicio\": \"$HORA_LIBRE\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+# 🔴 ESTA PRUEBA CAMBIÓ DE SIGNIFICADO EL 27-ago-2026, Y NO SE BORRÓ.
+#
+# Hasta ese día esperaba un `400 — ese tratamiento no se reserva por la web`.
+# Ese rechazo dejó de existir: ahora el tratamiento SE CONVIERTE. El paciente
+# que entra por cualquiera de los nueve consigue turno, y lo que se agenda es
+# la consulta de 30 que el consultorio le pone adelante a todo.
+#
+# Se conserva porque sigue cubriendo el mismo riesgo, del otro lado: antes
+# vigilaba que no entrara, ahora vigila que entre BIEN — con la duración del
+# envase, no la del elegido.
+probar "7. Tratamiento que NO se reserva solo — AHORA SE CONVIERTE" \
+  "201 — se agenda una consulta de 30, no el tratamiento elegido" \
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": 2, \"inicio\": \"$HORA_DERIVADA\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+
+# Y la respuesta sola no alcanza: dice lo que el endpoint contestó, no lo que
+# la base guardó. Las dos columnas se leen de la fila recién escrita.
+echo "───────────────────────────────────────────────────────────────"
+echo "▶ 7.b LO QUE QUEDÓ GUARDADO, leído de la base"
+echo "  esperado: tratamiento_id=$CONSULTA (el envase) · motivo_consulta_id=2 (lo elegido) · duracion_min=30"
+consultar "select tratamiento_id, motivo_consulta_id, duracion_min
+           from turnos order by id desc limit 1;" | jq -c '.[0]'
+echo
 
 probar "8. Más allá de los 2 meses" \
   "400 — todavía no se puede reservar tan lejos" \
