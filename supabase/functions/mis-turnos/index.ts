@@ -69,6 +69,12 @@ export default {
       // vacío —un turno que Cecilia cargó a mano sin tratamiento asignado—, y
       // con `!inner` ese turno desaparecería de la lista. El paciente dejaría de
       // ver un turno que existe, y no fallaría con error.
+      // ⚠ `!turnos_tratamiento_id_fkey` NO ES ADORNO Y NO SE PUEDE ACORTAR.
+      // Desde la migración 20260827135537, `turnos` tiene DOS referencias a
+      // `tratamientos` —`tratamiento_id` y `motivo_consulta_id`—, así que
+      // `tratamientos ( nombre )` a secas es ambiguo: PostgREST no sabe cuál de
+      // las dos seguir y corta con un error. El `!` nombra la relación por su
+      // constraint. Falla ruidoso, no en silencio, pero falla.
       const turnos = await ctx.supabaseAdmin
         .from( 'turnos' )
         .select( `
@@ -77,7 +83,7 @@ export default {
           duracion_min,
           paciente:pacientes!inner ( id, nombre, apellido ),
           profesional:profesionales ( nombre, apellido ),
-          tratamiento:tratamientos ( nombre )
+          tratamiento:tratamientos!turnos_tratamiento_id_fkey ( nombre )
         ` )
         .eq( 'pacientes.email', correo )
         .eq( 'activo', true )

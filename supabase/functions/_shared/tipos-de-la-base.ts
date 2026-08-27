@@ -11,7 +11,7 @@
 // deja un poco más vieja, y una foto vencida es peor que no tenerla porque se
 // lee como un hecho verificado.
 //
-// GENERADA EL 25-ago-2026, contra la base real, con:
+// GENERADA EL 27-ago-2026, contra la base real, con:
 //
 //   supabase gen types typescript --linked --schema public
 //
@@ -32,7 +32,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -249,6 +249,7 @@ export type Database = {
           duracion_min: number
           id: number
           inicio: string
+          motivo_consulta_id: number | null
           nota: string | null
           observaciones_paciente: string | null
           paciente_id: number
@@ -262,6 +263,7 @@ export type Database = {
           duracion_min?: number
           id?: number
           inicio: string
+          motivo_consulta_id?: number | null
           nota?: string | null
           observaciones_paciente?: string | null
           paciente_id: number
@@ -275,6 +277,7 @@ export type Database = {
           duracion_min?: number
           id?: number
           inicio?: string
+          motivo_consulta_id?: number | null
           nota?: string | null
           observaciones_paciente?: string | null
           paciente_id?: number
@@ -282,6 +285,13 @@ export type Database = {
           tratamiento_id?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "turnos_motivo_consulta_id_fkey"
+            columns: ["motivo_consulta_id"]
+            isOneToOne: false
+            referencedRelation: "tratamientos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "turnos_paciente_id_fkey"
             columns: ["paciente_id"]
