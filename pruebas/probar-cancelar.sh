@@ -194,17 +194,39 @@ AJENO=$( id_de_insert \
 echo "  paciente propio = id $MIO · paciente ajeno = id $AJENO"
 
 # Los dos turnos que NO se pueden crear por la web, escritos directo en la base.
-# `canal` dice 'panel' porque es exactamente lo que serían: turnos cargados a
-# mano por el consultorio.
+# `canal` dice 'manual' porque es exactamente lo que serían: turnos cargados a
+# mano por el consultorio. Decía 'panel' hasta el 28-ago-2026, y la migración
+# `restringir_canal_de_turnos` lo dejó fuera de la lista de valores válidos: los
+# dos inserts pasaron a fallar y con ellos cuatro casos de esta batería. Es el
+# valor el que se corrige, no la migración — 'panel' y 'manual' nombraban lo
+# mismo, y ahora hay un solo nombre.
 TURNO_PASADO=$( id_de_insert \
   "insert into turnos ( paciente_id, profesional_id, tratamiento_id, inicio, duracion_min, canal )
-   values ( $MIO, $PROFESIONAL, $CONSULTA, '$AYER', 30, 'panel' ) returning id;" \
+   values ( $MIO, $PROFESIONAL, $CONSULTA, '$AYER', 30, 'manual' ) returning id;" \
   "el turno ya pasado" )
 
 TURNO_AJENO=$( id_de_insert \
   "insert into turnos ( paciente_id, profesional_id, tratamiento_id, inicio, duracion_min, canal )
-   values ( $AJENO, $PROFESIONAL, $CONSULTA, '$HORA_AJENO', 30, 'panel' ) returning id;" \
+   values ( $AJENO, $PROFESIONAL, $CONSULTA, '$HORA_AJENO', 30, 'manual' ) returning id;" \
   "el turno ajeno" )
+
+# 🔴 LA RED QUE FALTABA — puesta el 28-ago-2026, después de que la batería
+# siguiera corriendo con el escenario roto.
+#
+# `id_de_insert` termina en `exit 1` cuando el insert falla, pero se la llama
+# dentro de `$( … )`: ese `exit` mata al SUBSHELL, no a la batería. El resultado
+# medido: los dos inserts fallaron, se imprimieron los dos ❌, y la corrida siguió
+# igual con las variables vacías — los casos 6 y 8 mandaron un cuerpo sin id y
+# contestaron "el cuerpo del pedido no es JSON válido", que no tiene nada que ver
+# con lo que esos casos prueban. Una prueba que no corta cuando dice que corta
+# manda a buscar el bug al lugar equivocado.
+
+if [ -z "$TURNO_PASADO" ] || [ -z "$TURNO_AJENO" ]; then
+  echo "❌ El escenario quedó incompleto y los casos 6, 8 y 9 no probarían nada."
+  echo "   Mirá los errores de arriba: sin esos dos turnos no tiene sentido seguir."
+  exit 1
+fi
+
 
 # Los dos que SÍ salen por la web, para que el camino feliz se pruebe entero.
 reservar () {

@@ -65,6 +65,13 @@ import { enviarAvisos } from '../_shared/avisos.ts'
 // caracteres no dice nada al que lo lee dentro de un año.
 const CHOQUE_DE_TURNOS = '23P01'
 
+// El error que levanta el trigger `turnos_limite_por_paciente` cuando el
+// paciente ya tiene dos turnos web abiertos con ese profesional. No es un código
+// de Postgres: lo elegimos nosotros en la migración, y por eso no se parece a
+// ninguno de los estándar. Cualquier cadena de cinco caracteres vale mientras no
+// termine en tres ceros, que son códigos de categoría.
+const LIMITE_DE_TURNOS = 'CB001'
+
 // Topes de largo para lo que escribe una persona. No son reglas del
 // consultorio: son el freno para que un pedido armado a mano no meta un texto
 // de un megabyte en una columna que no tiene límite.
@@ -120,6 +127,26 @@ function horaTomada(): Response {
 
   return Response.json(
     { error: 'Esa hora se acaba de ocupar. Elegí otra, por favor' },
+    { status: 409 },
+  )
+}
+
+// El tope: ya tiene dos turnos abiertos con ese profesional. Comparte el 409 con
+// el choque de horarios porque es la misma familia —el pedido estaba bien armado
+// y el estado del sistema lo rechaza—, pero el texto tiene que ser distinto: al
+// que llegó segundo se le dice que elija otra hora, y acá elegir otra hora no
+// arregla nada. Se le dice qué hacer.
+//
+// La pantalla además se lo va a avisar ANTES de mostrarle la grilla, con los
+// turnos que ya le devuelve `GET /mis-turnos`. Esto sigue existiendo igual: la
+// pantalla es una comodidad, la garantía está en la base.
+function limiteAlcanzado(): Response {
+
+  return Response.json(
+    {
+      error: 'Ya tenés dos turnos con este profesional. '
+        + 'Cancelá uno o escribinos.',
+    },
     { status: 409 },
   )
 }
@@ -575,6 +602,10 @@ export default {
         // una falla del sistema: es el sistema funcionando.
         if ( turno.error.code === CHOQUE_DE_TURNOS ) {
           return horaTomada()
+        }
+
+        if ( turno.error.code === LIMITE_DE_TURNOS ) {
+          return limiteAlcanzado()
         }
 
         return falloDeBase()
