@@ -420,6 +420,12 @@ verify_jwt = false
 [functions.horarios-disponibles]
 verify_jwt = false
 
+# `profesionales` es público por la MISMA razón, y es el paso previo a la
+# grilla: el paciente elige a qué viene, ve quién lo hace y recién después
+# mira horarios. Devuelve id, nombre y apellido — ni un correo.
+[functions.profesionales]
+verify_jwt = false
+
 [experimental.pgdelta]
 enabled = true
 # Directory under `supabase/` where declarative files are written.

@@ -18,10 +18,16 @@ export default {
     async (req, ctx) => {
 
       // llave maestra: es el único que puede leer la tabla.
-      // el orden lo manda la columna `orden` de la base, no el código
+      // el orden lo manda la columna `orden` de la base, no el código.
+      //
+      // `id` lo necesita el desplegable de la pantalla: es lo que después viaja
+      // a /profesionales y a /reservar. `duracion_web_min` dice cuánto espacio
+      // ocupa el bloque (30 o 60) y viene en null en los que no se reservan por
+      // la web. Ninguno de los dos es dato del paciente ni precio: publicarlos
+      // no filtra nada.
       const respuesta = await ctx.supabaseAdmin
         .from('tratamientos')
-        .select('nombre')
+        .select('id, nombre, duracion_web_min')
         .order('orden')
 
       // si la base falló, se avisa SIN contar por qué:
