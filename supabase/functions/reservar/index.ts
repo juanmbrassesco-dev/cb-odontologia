@@ -623,7 +623,7 @@ export default {
       // El segundo argumento —el MOTIVO— es lo que decide qué textos salen.
       // `_shared/avisos.ts` sabe escribir los de reserva y los de cancelación;
       // acá se le dice cuál de los dos. Sumado el 25-ago-2026, con ④.
-      await enviarAvisos( {
+      const avisosSalieron = await enviarAvisos( {
         turnoId: turno.data.id,
         inicio: turno.data.inicio,
         duracionMin: turno.data.duracion_min,
@@ -644,6 +644,32 @@ export default {
         tieneObservaciones: observaciones !== null,
       },
       'reserva' )
+
+      // ── La marca ──────────────────────────────────────────────────────────
+      //
+      // 🔴 VA DESPUÉS DEL ENVÍO Y CONDICIONADA A QUE HAYA SALIDO. Ese `if` es
+      // toda la pieza. `aviso_estado` no dice qué ES el turno —eso lo dice
+      // `activo`—: dice lo último que el paciente SABE de él. Marcarlo sin que
+      // el correo hubiera salido sería anotar una mentira, y la repesca de la
+      // fase 6 —que busca justamente los turnos sin marca— pasaría de largo
+      // sobre el único paciente que no se enteró de nada.
+      //
+      // Al revés no hay drama: si el correo salió y esta escritura falla, la
+      // marca queda vacía y la repesca vuelve a mandar. Un correo repetido es
+      // el lado benigno del error; un turno del que nadie avisó, no.
+      //
+      // Y no cambia la respuesta, por lo mismo que los avisos: el turno ya
+      // está anotado.
+      if ( avisosSalieron ) {
+
+        await ctx.supabaseAdmin
+          .from( 'turnos' )
+          .update( {
+            aviso_estado: 'reservado',
+            aviso_at: new Date().toISOString(),
+          } )
+          .eq( 'id', turno.data.id )
+      }
 
       // Lo mínimo, y nada de lo que entró por el cuerpo: ni el nombre del
       // paciente ni las observaciones vuelven.

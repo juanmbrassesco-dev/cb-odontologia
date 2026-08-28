@@ -11,7 +11,7 @@
 // deja un poco más vieja, y una foto vencida es peor que no tenerla porque se
 // lee como un hecho verificado.
 //
-// GENERADA EL 27-ago-2026, contra la base real, con:
+// GENERADA EL 28-ago-2026, contra la base real, con:
 //
 //   supabase gen types typescript --linked --schema public
 //
@@ -19,7 +19,6 @@
 // encabezado: al regenerar hay que volver a pegarlo arriba.
 //
 // SE REGENERA al aplicar cualquier migración que toque tablas o columnas.
-
 export type Json =
   | string
   | number
@@ -32,7 +31,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -244,6 +243,8 @@ export type Database = {
       turnos: {
         Row: {
           activo: boolean
+          aviso_at: string | null
+          aviso_estado: string | null
           canal: string
           created_at: string
           duracion_min: number
@@ -258,6 +259,8 @@ export type Database = {
         }
         Insert: {
           activo?: boolean
+          aviso_at?: string | null
+          aviso_estado?: string | null
           canal: string
           created_at?: string
           duracion_min?: number
@@ -272,6 +275,8 @@ export type Database = {
         }
         Update: {
           activo?: boolean
+          aviso_at?: string | null
+          aviso_estado?: string | null
           canal?: string
           created_at?: string
           duracion_min?: number

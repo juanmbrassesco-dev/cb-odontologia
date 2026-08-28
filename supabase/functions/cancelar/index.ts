@@ -224,7 +224,7 @@ export default {
         nombreDelTratamiento = turno.data.tratamiento.nombre
       }
 
-      await enviarAvisos( {
+      const avisosSalieron = await enviarAvisos( {
         turnoId: turno.data.id,
         inicio: turno.data.inicio,
         duracionMin: turno.data.duracion_min,
@@ -238,6 +238,32 @@ export default {
         tieneObservaciones: false,
       },
       'cancelacion' )
+
+      // ── La marca ──────────────────────────────────────────────────────────
+      //
+      // 🔴 VA DESPUÉS DEL ENVÍO Y CONDICIONADA A QUE HAYA SALIDO. Ese `if` es
+      // toda la pieza. `aviso_estado` no dice qué ES el turno —eso lo dice
+      // `activo`—: dice lo último que el paciente SABE de él. Marcarlo sin que
+      // el correo hubiera salido sería anotar una mentira, y la repesca de la
+      // fase 6 —que busca justamente los turnos sin marca— pasaría de largo
+      // sobre el único paciente que no se enteró de nada.
+      //
+      // Al revés no hay drama: si el correo salió y esta escritura falla, la
+      // marca queda vacía y la repesca vuelve a mandar. Un correo repetido es
+      // el lado benigno del error; un turno del que nadie avisó, no.
+      //
+      // Y no cambia la respuesta, por lo mismo que los avisos: el turno ya
+      // está apagado.
+      if ( avisosSalieron ) {
+
+        await ctx.supabaseAdmin
+          .from( 'turnos' )
+          .update( {
+            aviso_estado: 'cancelado',
+            aviso_at: new Date().toISOString(),
+          } )
+          .eq( 'id', turnoId )
+      }
 
       // Lo mínimo. El turno cancelado no vuelve con sus datos: el que canceló
       // ya los tenía en pantalla, y `GET /mis-turnos` es el que manda sobre qué
