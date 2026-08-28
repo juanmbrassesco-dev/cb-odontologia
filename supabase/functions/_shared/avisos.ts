@@ -143,6 +143,11 @@ export type DatosDelAviso = {
   inicio: string
   duracionMin: number
   tratamiento: string
+  // A qué vino el paciente, que NO siempre es lo que se agenda: el que pide
+  // ortodoncia se lleva una consulta de 30 (`_shared/arranque.ts`). Opcional
+  // porque la cancelación no lo manda: ahí lo que importa es el hueco que se
+  // libera, y un dato de salud que no hace falta no viaja.
+  motivoConsulta?: string | null
   pacienteNombre: string
   pacienteApellido: string
   pacienteCorreo: string
@@ -247,12 +252,29 @@ function avisoOperativo(
     encabezadoDelAsunto = 'Turno cancelado'
   }
 
+  // 🔴 EL MOTIVO VA ACÁ Y SÓLO ACÁ — en el aviso operativo, nunca en el correo
+  // del paciente. "Vengo por ortodoncia" es un DATO DE SALUD: el paciente ya
+  // sabe a qué viene, y cada correo que se lo repite lo saca del sistema hacia
+  // un buzón que no controlamos. El término es INFORMATION DISCLOSURE
+  // (divulgación de información). Cecilia y el profesional sí lo necesitan:
+  // les dice, antes de que la persona entre, si en esa consulta pueden
+  // ofrecerle ese tratamiento sin que resulte invasivo.
+  //
+  // Y sólo cuando DIFIERE de lo que se agenda: al que pidió una limpieza y se
+  // agendó una limpieza, repetírselo es ruido.
+  const motivoAnotado: string[] = []
+
+  if ( datos.motivoConsulta && datos.motivoConsulta !== datos.tratamiento ) {
+    motivoAnotado.push( `  Vino por: ${ datos.motivoConsulta }` )
+  }
+
   const renglones = [
     titular,
     '',
     `  Paciente: ${ datos.pacienteNombre } ${ datos.pacienteApellido }`,
     `  Contacto: ${ datos.pacienteCorreo }`,
     ...fichaDelTurno( datos, motivo ),
+    ...motivoAnotado,
     `  Turno número: ${ datos.turnoId }`,
   ]
 

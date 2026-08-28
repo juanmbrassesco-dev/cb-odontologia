@@ -83,7 +83,8 @@ export default {
           duracion_min,
           paciente:pacientes!inner ( id, nombre, apellido ),
           profesional:profesionales ( nombre, apellido ),
-          tratamiento:tratamientos!turnos_tratamiento_id_fkey ( nombre )
+          tratamiento:tratamientos!turnos_tratamiento_id_fkey ( nombre ),
+          motivo:tratamientos!turnos_motivo_consulta_id_fkey ( nombre )
         ` )
         .eq( 'pacientes.email', correo )
         .eq( 'activo', true )
@@ -111,11 +112,44 @@ export default {
       // teléfono. Un dato que no sale no se puede filtrar por accidente mañana,
       // cuando alguien arme otra pantalla con esta misma respuesta.
 
+      // 🔴 POR QUÉ EL MOTIVO SÍ SALE ACÁ, si en el correo se decidió que NO.
+      // La diferencia no es el dato, es el CANAL: acá es el propio paciente
+      // mirando su propio turno con la sesión iniciada, no un mensaje viajando
+      // a un buzón que se puede reenviar.
+      //
+      // Y el problema que resuelve es concreto: el paciente pide ORTODONCIA,
+      // el sistema le agenda una CONSULTA de 30, y en su pantalla lee
+      // "consulta" a secas. Va a creer que se equivocó y va a reservar de
+      // nuevo — dos huecos ocupados por una sola persona.
+      //
+      // La comparación se hace ACÁ y no en la pantalla, por dos motivos: la
+      // regla queda escrita una sola vez, y lo que no difiere ni siquiera sale
+      // de la base.
+      const conMotivo = turnos.data.map(
+        ( turno ) => {
+
+          const seAgenda = turno.tratamiento?.nombre
+          const vinoPor = turno.motivo?.nombre
+
+          // Coinciden: el que pidió una limpieza se agendó una limpieza. El
+          // motivo se apaga y el turno sale con `motivo: null`, igual que uno
+          // que nunca lo tuvo.
+          if ( vinoPor === seAgenda ) {
+            return {
+              ...turno,
+              motivo: null,
+            }
+          }
+
+          return turno
+        },
+      )
+
       // La lista vacía es una respuesta válida, no un error: es el paciente que
       // no tiene turnos. La pantalla que la reciba dice "no tenés turnos
       // activos" y —esto lo pidió el caso de las dos cuentas de Google—
       // pregunta si no habrá reservado con otra casilla.
-      return Response.json( turnos.data )
+      return Response.json( conMotivo )
     },
   ),
 

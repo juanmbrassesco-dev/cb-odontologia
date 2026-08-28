@@ -599,8 +599,11 @@ export default {
         // El correo nombra LO QUE SE AGENDA. Si dijera el elegido, un turno
         // de 30 minutos llegaría anunciado como "ortodoncia" y la agenda del
         // consultorio no coincidiría con la ficha. El motivo entra aparte, en
-        // su propio renglón (fase 3).
+        // su propio renglón (fase 3), que es este de abajo.
         tratamiento: arranque.nombre,
+        // A qué vino. `avisos.ts` lo escribe SÓLO en el aviso operativo y sólo
+        // cuando difiere de lo que se agenda.
+        motivoConsulta: tratamiento.data.nombre,
         pacienteNombre: pacienteNombre,
         pacienteApellido: pacienteApellido,
         pacienteCorreo: correo,
