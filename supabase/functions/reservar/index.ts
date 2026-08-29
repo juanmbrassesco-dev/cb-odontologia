@@ -627,6 +627,10 @@ export default {
         turnoId: turno.data.id,
         inicio: turno.data.inicio,
         duracionMin: turno.data.duracion_min,
+        // Todo lo que entra por acá es 'web' por definición: éste ES el
+        // endpoint de la web. No se lee de la fila, se afirma — y la fila dice
+        // lo mismo, porque unas líneas más arriba la escribe este mismo código.
+        canal: 'web',
         // El correo nombra LO QUE SE AGENDA. Si dijera el elegido, un turno
         // de 30 minutos llegaría anunciado como "ortodoncia" y la agenda del
         // consultorio no coincidiría con la ficha. El motivo entra aparte, en
@@ -667,6 +671,12 @@ export default {
           .update( {
             aviso_estado: 'reservado',
             aviso_at: new Date().toISOString(),
+            // Qué hora se le dijo. Se escribe acá, junto a la marca y con su
+            // misma condición, porque las dos anotan lo mismo desde ángulos
+            // distintos: QUÉ sabe el paciente y CUÁNDO le dijimos que era.
+            // Separarlas en dos escrituras abriría un hueco donde una entra y
+            // la otra no.
+            inicio_avisado: turno.data.inicio,
           } )
           .eq( 'id', turno.data.id )
       }

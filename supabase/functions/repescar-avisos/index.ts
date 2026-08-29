@@ -151,6 +151,16 @@ export default {
         const salio = await enviarAvisos( {
           turnoId: turno.turno_id,
           inicio: turno.turno_inicio,
+          // La hora que se le avisó la vez anterior. Es lo único que separa un
+          // «tu turno quedó agendado» de un «cambió el horario de tu turno», y
+          // sólo la repesca la manda: `reservar` avisa de turnos que acaban de
+          // nacer, donde no hay nada anterior que comparar.
+          inicioAvisado: turno.turno_inicio_avisado,
+          // Cómo entró el turno. Acá es donde hace falta de verdad: la repesca
+          // avisa de turnos que existían desde antes, y buena parte de ésos los
+          // cargó Cecilia a mano. Sin este dato el aviso operativo decía
+          // «entró un turno nuevo por la web» de todos ellos.
+          canal: turno.turno_canal,
           duracionMin: turno.turno_duracion_min,
           tratamiento: nombreDelTratamiento,
           motivoConsulta: turno.motivo_nombre,
@@ -183,6 +193,25 @@ export default {
         if ( !salio && !turno.turno_activo ) { marca = 'reservado' }
 
 
+        // 🔴 LA HORA COMUNICADA SÓLO CAMBIA SI EL CORREO SALIÓ, y no es lo
+        // mismo que la marca.
+        //
+        // Si el envío falló, la última hora que se le dijo al paciente sigue
+        // siendo la anterior: pisarla con la de hoy sería anotar que le
+        // dijimos algo que no le dijimos, y la próxima corrida mandaría un
+        // «tu turno quedó agendado» donde correspondía «cambió el horario».
+        //
+        // Cuando no salió se vuelve a escribir el mismo valor que ya tenía.
+        // Es deliberado: deja UNA sola escritura para los dos casos, y el
+        // trigger no se inmuta —sólo mira los cinco datos del turno, y esta
+        // columna no es ninguno de ellos—.
+        let horaComunicada = turno.turno_inicio_avisado
+
+        if ( salio ) {
+          horaComunicada = turno.turno_inicio
+        }
+
+
         // 🔴 EL SEGUNDO `.eq` NO ES ADORNO Y ES LA LÍNEA MÁS FÁCIL DE BORRAR.
         //
         // Entre el reclamo y esta escritura pasan segundos, y en ese hueco el
@@ -194,6 +223,7 @@ export default {
           .update( {
             aviso_estado: marca,
             aviso_at: new Date().toISOString(),
+            inicio_avisado: horaComunicada,
           } )
           .eq( 'id', turno.turno_id )
           .eq( 'aviso_estado', 'enviando' )

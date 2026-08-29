@@ -265,6 +265,11 @@ export default {
           .update( {
             aviso_estado: 'cancelado',
             aviso_at: new Date().toISOString(),
+            // Acá también, y no es al pedir: si a este turno le habían movido
+            // la hora sin llegar a avisarle, la hora comunicada era la vieja.
+            // El correo que acaba de salir nombra la nueva, así que ésa pasa a
+            // ser la última que se le dijo.
+            inicio_avisado: turno.data.inicio,
           } )
           .eq( 'id', turnoId )
       }
