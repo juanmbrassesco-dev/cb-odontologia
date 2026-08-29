@@ -1,0 +1,112 @@
+# LA SEGUNDA PATA DE LA REPESCA — cada hora, por si la primera se cayó.
+#
+# Qué hace: le pega al endpoint `repescar-avisos`, que busca los turnos cuyo
+# paciente todavía no se enteró de algo —una reserva cuyo correo no salió, una
+# cancelación, un turno al que le movieron la hora— y manda lo que falte. De
+# paso, cada pedido de estos mantiene despierto al proyecto: el plan gratuito de
+# Supabase lo pausa después de 7 días sin pedidos EXTERNOS a la API.
+#
+# 🔴 NO ES EL DISPARADOR PRINCIPAL, Y ESO ES DELIBERADO. El que corre cada 15
+# minutos es un servicio externo al repositorio, porque **GitHub DESACTIVA las
+# tareas programadas de un repositorio público después de 60 días sin actividad**
+# —sin push, sin release, sin merge—. O sea que este archivo tiene fecha de
+# vencimiento escrita: se apaga solo el día que el proyecto esté terminado y
+# nadie vuelva a tocar el repositorio, que es justo cuando más falta hace.
+#
+# 🔑 Por eso está acá igual, como SEGUNDA pata: mientras se siga trabajando en el
+# repositorio funciona, no cuesta nada, y para quedarse sin avisos tienen que
+# fallar dos servicios independientes a la vez.
+#
+# ⚠ CORRER DOS DISPARADORES ES SEGURO, y no por suerte: la función de la base
+# reclama los turnos MARCÁNDOLOS y devolviéndolos en una sola operación, y saltea
+# los que otra corrida ya tomó. Dos corridas nunca se llevan el mismo turno.
+# Está probado en `pruebas/probar-repesca.sql`, caso C10.
+#
+# Y quién avisa si se callan las dos: la propia función manda una señal de vida
+# después de cada corrida buena, y del otro lado hay un servicio que escribe
+# cuando esa señal DEJA de llegar. El porqué está en `repescar-avisos/index.ts`.
+
+name: Repesca de avisos (respaldo)
+
+on:
+  schedule:
+    # Cada hora, no cada quince minutos: el que marca el ritmo es el disparador
+    # principal, y éste sólo tiene que cubrir el hueco si aquél se cayó. Una hora
+    # de demora en un correo atrasado no le cambia nada a nadie; lo que importa
+    # es que salga.
+    #
+    # El horario de GitHub es UTC y las tareas programadas pueden salir con
+    # demora cuando hay cola: no es un reloj de precisión, y para esto no hace
+    # falta que lo sea — la repesca es la red de abajo, no el camino principal.
+    # Los avisos del momento los mandan `reservar` y `cancelar` cuando el turno
+    # se toca.
+    - cron: '0 * * * *'
+
+  # Para poder correrla a mano desde la pestaña Actions, que es como se prueba
+  # sin esperar quince minutos.
+  workflow_dispatch:
+
+# Sin esto, dos corridas demoradas pueden encimarse. No sería grave —el reclamo
+# de la base está hecho a prueba de eso, marca y devuelve en una sola operación—
+# pero no tiene sentido gastar dos corridas en el mismo lote.
+concurrency:
+  group: repesca-de-avisos
+  cancel-in-progress: false
+
+jobs:
+
+  repescar:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Pedirle a la repesca que mande lo que falta
+        env:
+          # 🔒 Los dos son secretos del repositorio y NO se escriben acá.
+          #
+          #   URL_FUNCIONES   la dirección de las Edge Functions del proyecto
+          #   SECRETO_REPESCA la llave propia del endpoint
+          #
+          # ⚠ El secreto es PROPIO a propósito, no la llave maestra del
+          # proyecto. Mandar la llave maestra desde un archivo de CI sería
+          # entregar el proyecto entero para conseguir una sola cosa. El
+          # criterio se llama PRINCIPIO DE MENOR PRIVILEGIO (least privilege).
+          URL_FUNCIONES: ${{ secrets.URL_FUNCIONES }}
+          SECRETO_REPESCA: ${{ secrets.SECRETO_REPESCA }}
+
+        run: |
+          set -euo pipefail
+
+          respuesta=$(
+            curl \
+              --silent \
+              --show-error \
+              --max-time 60 \
+              --request POST \
+              --header "x-secreto-repesca: ${SECRETO_REPESCA}" \
+              --write-out '\n%{http_code}' \
+              "${URL_FUNCIONES}/repescar-avisos"
+          )
+
+          codigo=$( printf '%s' "$respuesta" | tail -n 1 )
+          cuerpo=$( printf '%s' "$respuesta" | sed '$d' )
+
+          # 🔴 NÚMEROS, NUNCA NOMBRES.
+          #
+          # Este registro lo lee cualquiera: el de un repositorio público es
+          # público. La respuesta del endpoint ya viene sin nombres —está
+          # escrito así a propósito—, pero acá se filtra igual y sólo pasan las
+          # parejas "palabra": número. Si algún día alguien le agrega un dato
+          # de un paciente a esa respuesta, por este filtro no sale.
+          numeros=$( printf '%s' "$cuerpo" | grep -o '"[a-z_]*":[0-9][0-9]*' | tr '\n' ' ' || true )
+
+          echo "HTTP ${codigo} — ${numeros}"
+
+          # ⚠ SIN ESTO, EL TRABAJO QUEDA EN VERDE MIENTRAS NO SALE UN SOLO
+          # CORREO. El endpoint contesta 500 cuando tomó turnos y no pudo avisar
+          # a ninguno; que Actions lo marque en verde sería justo la clase de
+          # fallo mudo que este proyecto viene esquivando.
+          if [ "${codigo}" != "200" ]; then
+            echo "La repesca no terminó bien."
+            exit 1
+          fi

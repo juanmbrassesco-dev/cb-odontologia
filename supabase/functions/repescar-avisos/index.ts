@@ -262,6 +262,46 @@ export default {
         estado = 500
       }
 
+
+      // ── La señal de vida ────────────────────────────────────────────────────
+      //
+      // 🔴 QUIÉN VIGILA AL VIGILANTE. Los disparadores de esta función pueden
+      // morirse solos: GitHub desactiva las tareas programadas de un repositorio
+      // público a los 60 días sin actividad, y un servicio gratuito puede
+      // cerrar. Si se callan los dos, no falla nada — simplemente deja de pasar,
+      // y eso no se nota hasta que un paciente reclama.
+      //
+      // Acá se avisa "estoy vivo" después de cada corrida buena. Del otro lado
+      // hay un servicio que espera esos avisos y **manda un correo cuando DEJAN
+      // de llegar**. Se llama INTERRUPTOR DE HOMBRE MUERTO (dead man's switch):
+      // vigila el silencio, no el error.
+      //
+      // 🔑 Va ACÁ ADENTRO y no en el disparador a propósito. Si lo avisara cada
+      // disparador por su cuenta, el día que uno se apague el otro seguiría
+      // avisando bien —o al revés, saltaría una alarma por una pata caída
+      // estando el sistema sano—. Poniéndolo en la función, **el aviso llega si
+      // corrió CUALQUIERA de los dos**, que es exactamente lo que hay que
+      // vigilar: que el trabajo se haga, no quién lo dispara.
+      //
+      // ⚠ Una corrida sin nada que mandar TAMBIÉN avisa. Que no hubiera avisos
+      // pendientes no es un problema: es la respuesta correcta, y sigue siendo
+      // prueba de que la función corrió.
+      //
+      // ⚠ Y si esto falla, no cambia nada: el trabajo ya está hecho. Que se caiga
+      // el vigilante no puede voltear lo vigilado.
+      const pingDeVida = delEntorno( 'PING_DE_VIDA' )
+
+      if ( pingDeVida && estado === 200 ) {
+
+        try {
+          await fetch( pingDeVida )
+        }
+        catch {
+          console.error( 'repesca: no se pudo avisar que está viva' )
+        }
+      }
+
+
       return Response.json(
         {
           tomados: turnos.length,
