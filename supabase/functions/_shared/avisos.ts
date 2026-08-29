@@ -165,9 +165,20 @@ type Mensaje = {
   text: string
 }
 
-// La ficha del turno: los cuatro renglones que van igual en los dos correos del
-// paciente. Lo único que cambia es el tiempo del verbo — 'Cuándo' mientras el
-// turno va a pasar, 'Cuándo era' cuando ya no va a pasar.
+// La ficha del turno: los TRES renglones que van igual en todos los correos. Lo
+// único que cambia es el tiempo del verbo — 'Cuándo' mientras el turno va a
+// pasar, 'Cuándo era' cuando ya no va a pasar.
+//
+// 🔴 LA DURACIÓN NO ESTÁ ACÁ Y NO SE VUELVE A SUMAR. Era un cuarto renglón de
+// esta ficha, así que viajaba también al correo del paciente — y la duración es
+// dato de la agenda del consultorio, no algo que el paciente necesite para
+// venir. El correo del paciente lleva lo mínimo para presentarse; el operativo
+// se la agrega por su cuenta, que es donde sí hace falta.
+//
+// Lo levantó Juan el 28-ago-2026 leyendo un correo de prueba. Es divulgación de
+// información (information disclosure) de baja gravedad, y la regla que la
+// corrige es la misma que ordena los permisos: cada destinatario recibe lo que
+// necesita y nada más.
 function fichaDelTurno( datos: DatosDelAviso, motivo: MotivoDelAviso ): string[] {
 
   let cuando = 'Cuándo'
@@ -180,7 +191,6 @@ function fichaDelTurno( datos: DatosDelAviso, motivo: MotivoDelAviso ): string[]
     `  Tratamiento: ${ datos.tratamiento }`,
     `  Profesional: ${ datos.profesionalNombre } ${ datos.profesionalApellido }`,
     `  ${ cuando }: ${ cuandoEnPalabras( datos.inicio ) }`,
-    `  Duración: ${ datos.duracionMin } minutos`,
   ]
 }
 
@@ -215,12 +225,29 @@ function correoParaElPaciente(
     }
   }
 
+  // 🔴 «AGENDADO», NO «RESERVADO», Y EL RENGLÓN DEL REEMPLAZO NO SE BORRA.
+  //
+  // Este mismo correo sale DOS veces por el mismo turno: cuando nace y cuando
+  // le mueven la hora. Decía «quedó reservado» las dos veces, y así la paciente
+  // leía dos altas en vez de un cambio — creía tener dos turnos y se presentaba
+  // al viejo. Lo levantó Juan el 28-ago-2026 leyendo los correos en fila, que es
+  // donde se ve: en la tabla hay UNA fila y todo parece bien.
+  //
+  // El renglón del reemplazo es lo que arregla el caso, y dice la verdad en los
+  // dos: si es un turno nuevo, no había otro horario anotado y no aplica; si es
+  // una reprogramación, avisa que el anterior ya no existe.
+  //
+  // La alternativa era un texto propio para la reprogramación, y se descartó
+  // porque exige que el sistema sepa si el turno NACIÓ o SE MOVIÓ — un estado
+  // más en la base para decir algo que un renglón ya dice.
   const texto = [
     `Hola ${ datos.pacienteNombre },`,
     '',
-    'Tu turno quedó reservado.',
+    'Tu turno quedó agendado.',
     '',
     ...ficha,
+    '',
+    'Si tenías otro horario anotado para este turno, éste lo reemplaza.',
     '',
     comoSeCancela(),
     '',
@@ -230,7 +257,7 @@ function correoParaElPaciente(
   return {
     from: remitente,
     to: [ datos.pacienteCorreo ],
-    subject: 'Tu turno en CB Odontología quedó reservado',
+    subject: 'Tu turno en CB Odontología quedó agendado',
     text: texto,
   }
 }
@@ -274,6 +301,9 @@ function avisoOperativo(
     `  Paciente: ${ datos.pacienteNombre } ${ datos.pacienteApellido }`,
     `  Contacto: ${ datos.pacienteCorreo }`,
     ...fichaDelTurno( datos, motivo ),
+    // La duración va SOLO acá: es lo que el consultorio necesita para armar la
+    // agenda, y no viaja al correo del paciente.
+    `  Duración: ${ datos.duracionMin } minutos`,
     ...motivoAnotado,
     `  Turno número: ${ datos.turnoId }`,
   ]

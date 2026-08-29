@@ -426,6 +426,15 @@ verify_jwt = false
 [functions.profesionales]
 verify_jwt = false
 
+# `repescar-avisos` NO es público: lleva esta línea porque lo llama una MÁQUINA
+# —una tarea programada de GitHub Actions—, y una máquina no tiene sesión que
+# mostrar. La puerta la hace un secreto propio en un header, chequeado adentro
+# de la función. Sin `verify_jwt = false` la plataforma lo rechazaría antes de
+# llegar a ese chequeo; sin el secreto, cualquiera le dispararía correos a los
+# pacientes.
+[functions.repescar-avisos]
+verify_jwt = false
+
 [experimental.pgdelta]
 enabled = true
 # Directory under `supabase/` where declarative files are written.

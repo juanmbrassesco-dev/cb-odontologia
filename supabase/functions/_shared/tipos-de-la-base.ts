@@ -329,6 +329,24 @@ export type Database = {
         Args: { inicio: string; minutos: number }
         Returns: string
       }
+      reclamar_avisos_pendientes: {
+        Args: { tope: number }
+        Returns: {
+          motivo_nombre: string
+          paciente_apellido: string
+          paciente_email: string
+          paciente_nombre: string
+          profesional_apellido: string
+          profesional_email: string
+          profesional_nombre: string
+          tiene_observaciones: boolean
+          tratamiento_nombre: string
+          turno_activo: boolean
+          turno_duracion_min: number
+          turno_id: number
+          turno_inicio: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

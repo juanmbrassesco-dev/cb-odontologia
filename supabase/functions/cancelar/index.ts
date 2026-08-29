@@ -16,11 +16,15 @@
 //   3. lo apaga
 //   4. avisa a los tres, y el aviso no puede cambiar la respuesta
 //
-// 🔴 EL `update` DE ESTA FUNCIÓN SÓLO PUEDE ESCRIBIR `activo`. La migración 22
-// dio `grant update ( activo ) on turnos to service_role` — una columna, no la
-// tabla. Si alguien agrega acá otra columna al `update`, Postgres lo frena con
-// un `42501` ruidoso. Es a propósito: es una defensa que NO depende de que este
-// código esté bien escrito.
+// 🔴 EL `update` DE ESTA FUNCIÓN SÓLO PUEDE ESCRIBIR TRES COLUMNAS: `activo`,
+// `aviso_estado` y `aviso_at`. El grant se dio columna por columna, no sobre la
+// tabla. Si alguien agrega acá una cuarta, Postgres lo frena con un `42501`
+// ruidoso. Es a propósito: es una defensa que NO depende de que este código
+// esté bien escrito.
+//
+// La lista creció con lo que la función hace —la migración 22 daba sólo
+// `activo`, y la 27 sumó las dos de la marca—. Lo que no cambia es la forma:
+// se nombran las columnas que se escriben, nunca la tabla entera.
 
 import { withSupabase } from 'npm:@supabase/server@^1'
 
