@@ -220,34 +220,32 @@ function correoParaElPaciente(
     return {
       from: remitente,
       to: [ datos.pacienteCorreo ],
-      subject: 'Tu turno en CB Odontología quedó cancelado',
+      subject: `Tu turno en CB Odontología quedó cancelado — ${ cuandoCompacto( datos.inicio ) }`,
       text: texto,
     }
   }
 
-  // 🔴 «AGENDADO», NO «RESERVADO», Y EL RENGLÓN DEL REEMPLAZO NO SE BORRA.
+  // 🔴 «AGENDADO», NO «RESERVADO», Y LA FECHA VA EN EL ASUNTO.
   //
   // Este mismo correo sale DOS veces por el mismo turno: cuando nace y cuando
   // le mueven la hora. Decía «quedó reservado» las dos veces, y así la paciente
   // leía dos altas en vez de un cambio — creía tener dos turnos y se presentaba
-  // al viejo. Lo levantó Juan el 28-ago-2026 leyendo los correos en fila, que es
-  // donde se ve: en la tabla hay UNA fila y todo parece bien.
+  // al viejo. Lo levantó Juan el 28-ago-2026 leyendo los correos en fila: en la
+  // tabla hay UNA fila y todo parece bien.
   //
-  // El renglón del reemplazo es lo que arregla el caso, y dice la verdad en los
-  // dos: si es un turno nuevo, no había otro horario anotado y no aplica; si es
-  // una reprogramación, avisa que el anterior ya no existe.
+  // Lo que distingue un aviso del otro es la FECHA EN EL ASUNTO. Sin ella los
+  // dos correos tienen asunto idéntico, el cliente de correo los agrupa en una
+  // sola conversación y la paciente ni siquiera los ve como dos mensajes.
   //
-  // La alternativa era un texto propio para la reprogramación, y se descartó
-  // porque exige que el sistema sepa si el turno NACIÓ o SE MOVIÓ — un estado
-  // más en la base para decir algo que un renglón ya dice.
+  // Se probó también un renglón que decía «si tenías otro horario anotado, éste
+  // lo reemplaza», y se sacó: es una condición que la paciente no puede
+  // resolver —no sabe si tenía otro— y ocupa un renglón sin informar.
   const texto = [
     `Hola ${ datos.pacienteNombre },`,
     '',
     'Tu turno quedó agendado.',
     '',
     ...ficha,
-    '',
-    'Si tenías otro horario anotado para este turno, éste lo reemplaza.',
     '',
     comoSeCancela(),
     '',
@@ -257,7 +255,7 @@ function correoParaElPaciente(
   return {
     from: remitente,
     to: [ datos.pacienteCorreo ],
-    subject: 'Tu turno en CB Odontología quedó agendado',
+    subject: `Tu turno en CB Odontología quedó agendado — ${ cuandoCompacto( datos.inicio ) }`,
     text: texto,
   }
 }
