@@ -11,7 +11,7 @@
 // deja un poco más vieja, y una foto vencida es peor que no tenerla porque se
 // lee como un hecho verificado.
 //
-// GENERADA EL 28-ago-2026, contra la base real, con:
+// GENERADA EL 29-ago-2026, contra la base real, con:
 //
 //   supabase gen types typescript --linked --schema public
 //
@@ -250,6 +250,7 @@ export type Database = {
           duracion_min: number
           id: number
           inicio: string
+          inicio_avisado: string | null
           motivo_consulta_id: number | null
           nota: string | null
           observaciones_paciente: string | null
@@ -266,6 +267,7 @@ export type Database = {
           duracion_min?: number
           id?: number
           inicio: string
+          inicio_avisado?: string | null
           motivo_consulta_id?: number | null
           nota?: string | null
           observaciones_paciente?: string | null
@@ -282,6 +284,7 @@ export type Database = {
           duracion_min?: number
           id?: number
           inicio?: string
+          inicio_avisado?: string | null
           motivo_consulta_id?: number | null
           nota?: string | null
           observaciones_paciente?: string | null
@@ -342,9 +345,11 @@ export type Database = {
           tiene_observaciones: boolean
           tratamiento_nombre: string
           turno_activo: boolean
+          turno_canal: string
           turno_duracion_min: number
           turno_id: number
           turno_inicio: string
+          turno_inicio_avisado: string
         }[]
       }
     }

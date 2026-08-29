@@ -64,15 +64,22 @@ declare
   t bigint := ( select turno from ids );
 begin
 
-  -- A1 · las tres columnas del grant
+  -- A1 · las CUATRO columnas del grant. Eran tres hasta el 29-ago-2026, cuando
+  -- entró `inicio_avisado`: si esta prueba se hubiera quedado en tres, el
+  -- permiso que falta aparecería recién con un 42501 en producción.
   set local role service_role;
   begin
-    update public.turnos set aviso_estado = 'enviando', aviso_at = now(), activo = true where id = t;
+    update public.turnos
+       set aviso_estado   = 'enviando',
+           aviso_at       = now(),
+           activo         = true,
+           inicio_avisado = inicio
+     where id = t;
     r := 'pasa';
   exception when insufficient_privilege then r := 'rebota 42501';
   end;
   reset role;
-  insert into resultados values ( 1, 'A1 · el portero escribe activo + aviso_estado + aviso_at', r, 'pasa' );
+  insert into resultados values ( 1, 'A1 · el portero escribe las 4 columnas del grant', r, 'pasa' );
 
   -- A2 · una columna que NO está en el grant
   set local role service_role;
@@ -187,13 +194,45 @@ begin
   select aviso_estado into marca from public.turnos where id = t;
   insert into resultados values ( 17, 'B7 · escribir la marca NO se borra a si misma', coalesce( marca, '(vacio)' ), 'enviando' );
 
-  -- deja el turno listo para la parte C
+  -- B8 · 🔴 LA PRUEBA QUE SOSTIENE TODO `inicio_avisado`.
+  --
+  -- Mover la hora borra la marca —eso ya lo dice B1— y NO puede borrar la hora
+  -- avisada. Si el trigger la borrara, la hora vieja desaparecería en el mismo
+  -- instante en que se la necesita, y el correo de una reprogramación no
+  -- tendría con qué nombrar el turno que reemplaza.
+  update public.turnos
+     set aviso_estado   = 'reservado',
+         inicio_avisado = inicio
+   where id = t;
+
+  update public.turnos set inicio = inicio + interval '2 hours' where id = t;
+
+  select aviso_estado into marca from public.turnos where id = t;
+  insert into resultados values ( 18, 'B8a · mover la hora borra la marca', coalesce( marca, '(vacio)' ), '(vacio)' );
+
+  insert into resultados
+  select 19,
+         'B8b · mover la hora NO borra la hora avisada',
+         case
+           when inicio_avisado is null then 'la borro'
+           when inicio_avisado = inicio then 'la piso con la nueva'
+           else 'quedo la vieja'
+         end,
+         'quedo la vieja'
+    from public.turnos where id = t;
+
+  -- deja el turno listo para la parte C.
+  --
+  -- La hora avisada queda A PROPÓSITO un día antes de la real: así la parte C
+  -- puede comprobar que el reclamo la devuelve como estaba, y no pisada por el
+  -- propio reclamo.
   update public.turnos
      set profesional_id = 1,
          duracion_min   = 30,
          aviso_estado   = null,
          aviso_at       = null,
-         nota           = null
+         nota           = null,
+         inicio_avisado = inicio - interval '1 day'
    where id = t;
 
   delete from public.profesionales where id = otro;
@@ -290,6 +329,28 @@ select 42, 'C12 · el correo viene con todos los datos',
              and v.tiene_observaciones
             then 'completo' else 'FALTAN DATOS' end,
        'completo'
+  from vueltos v
+ where v.turno_id = ( select turno from ids );
+
+
+insert into resultados
+select 43,
+       'C13 · el reclamo devuelve la hora avisada SIN pisarla',
+       case
+         when v.turno_inicio_avisado is null                    then 'vino vacia'
+         when v.turno_inicio_avisado = v.turno_inicio           then 'vino la nueva'
+         when v.turno_inicio_avisado = v.turno_inicio - interval '1 day' then 'vino la vieja'
+         else 'vino otra cosa'
+       end,
+       'vino la vieja'
+  from vueltos v
+ where v.turno_id = ( select turno from ids );
+
+insert into resultados
+select 44,
+       'C14 · el reclamo devuelve el canal',
+       coalesce( v.turno_canal, '(vacio)' ),
+       'manual'
   from vueltos v
  where v.turno_id = ( select turno from ids );
 
