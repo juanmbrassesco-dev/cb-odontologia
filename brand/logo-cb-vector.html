@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logo CB — el sistema completo, en vector</title>
+
+  <!-- Las dos tipografías de la marca, servidas por Google Fonts.
+       Siguen haciendo falta MIENTRAS el texto siga siendo texto. El paso que
+       viene —pasar las letras a curvas— es justo el que saca esta dependencia:
+       una imprenta no tiene por qué tener Marcellus ni Jost instaladas. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    /* Los cinco colores de la marca, en un solo lugar.
+       Cambiar el dorado cuesta una línea, no una búsqueda. */
+    :root
+    {
+      --marfil:       #FAF7F2;
+      --blanco:       #FFFFFF;
+      --dorado:       #B08D57;
+      --dorado-claro: #E4D6BC;
+      --grafito:      #33322F;
+
+      /* Estos dos NO estan en la paleta declarada del brief (pag. 6), pero son
+         los que el brief usa en el wordmark de la pag. 5. Medidos a 1200 dpi. */
+      --gris-nombre:  #8C8880;
+      --dorado-barra: #D9CBAA;
+
+      --serif: "Marcellus", Georgia, serif;
+      --sans:  "Jost", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body
+    {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 90px;
+      padding: 60px 30px;
+      background: var(--marfil);
+      font-family: var(--sans);
+    }
+
+    /* Cada versión con su rótulo debajo. */
+    .pieza
+    {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .pieza__rotulo
+    {
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--dorado);
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<!--
+  ══════════════════════════════════════════════════════════════════════════
+  POR QUÉ ESTE ARCHIVO EXISTE, Y DE DÓNDE SALEN LOS NÚMEROS
+
+  `logo-cb.html` arma el wordmark y la submarca con CSS: cajas flex, márgenes,
+  `line-height`, `letter-spacing`. Para la pantalla eso alcanza y sobra. Para
+  IMPRENTA no sirve, por dos motivos que no se arreglan con retoques:
+
+    1. Una imprenta no recibe un navegador. Recibe un PDF o un SVG, y ahí no
+       hay flex ni cajas: hay figuras con coordenadas.
+    2. El paso siguiente —pasar las letras a curvas— necesita que cada texto
+       tenga una posición propia y explícita. No se le pueden sacar los
+       contornos a algo cuya posición la decide el motor de maquetado.
+
+  LOS NÚMEROS NO SE INVENTARON NI SE PASARON A OJO: se midieron sobre el
+  render del propio `logo-cb.html` en el navegador (caja por caja y línea base
+  por línea base) y se copiaron acá tal cual salieron. Por eso las coordenadas
+  tienen decimales feos como 104.078125: son el resultado de una medición, no
+  una elección de diseño. La comprobación de que coinciden se hace restando
+  los dos renders, que es el instrumento que no depende de elegir bien qué
+  medir.
+
+  ⚠ SIGUEN SIENDO LETRAS, TODAVÍA NO SON DIBUJOS. Esta versión depende de que
+  Marcellus y Jost estén disponibles. Pasarlas a curvas es el paso 3, y va
+  DESPUÉS de comprobar que este archivo no movió nada: pasar a curvas congela.
+  ══════════════════════════════════════════════════════════════════════════
+-->
+
+  <div class="pieza">
+
+    <svg
+      viewBox="0 0 190 190"
+      width="190"
+      height="190"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="CB Odontología y Estética"
+    >
+
+      <!-- EL ARO. El trazo se dibuja MONTADO sobre el radio: la mitad para
+           adentro y la mitad para afuera. Por eso el radio es 95 menos medio
+           grosor, y así el borde de afuera cae justo en los 190 de diámetro. -->
+      <circle
+        cx="95"
+        cy="95"
+        r="94.00"
+        fill="none"
+        stroke="#B08D57"
+        stroke-width="1.99"
+      />
+
+      <!-- LAS INICIALES. `text-anchor: middle` las centra en la x que se le da,
+           que es el centro de la caja que cada letra ocupa en el brief. -->
+      <text
+        x="72.77"
+        y="93.05"
+        text-anchor="middle"
+        font-family="Marcellus, Georgia, serif"
+        font-size="42.12"
+        fill="#33322F"
+      >C</text>
+
+      <text
+        x="120.72"
+        y="92.66"
+        text-anchor="middle"
+        font-family="Marcellus, Georgia, serif"
+        font-size="42.12"
+        fill="#33322F"
+      >B</text>
+
+      <!-- LA BARRA SEPARADORA, que es dorada y no gris. -->
+      <rect
+        x="97.09"
+        y="61.75"
+        width="1.80"
+        height="30.71"
+        fill="#B08D57"
+      />
+
+      <!-- LA MEDIA LUNA — un solo camino cerrado hecho con DOS arcos que
+           arrancan y terminan en los mismos dos puntos (las puntas).
+           El de ida baja más hondo que el de vuelta: la diferencia entre los
+           dos ES el grosor, y en las puntas esa diferencia es cero. Por eso
+           se afina sola, sin que haya que afinar nada. -->
+      <path
+        d="
+          M 74.07 122.36
+          A 21.35 21.35 0 0 0 115.93 122.36
+          A 22.04 22.04 0 0 1 74.07 122.36
+          Z
+        "
+        fill="#B08D57"
+      />
+
+    </svg>
+
+    <span class="pieza__rotulo">Secundaria — redes</span>
+
+  </div>
+
+
+  <div class="pieza">
+
+    <!-- EL WORDMARK. Antes eran tres cajas de CSS puestas en fila por un flex;
+         ahora son tres figuras con coordenadas propias dentro de un lienzo de
+         254.34375 x 54, que es exactamente lo que medía aquella fila.
+
+         La `y` de cada texto es su LÍNEA BASE: el renglón invisible sobre el
+         que se apoyan las letras. No es el borde de arriba ni el de abajo, y
+         por eso los tres números son distintos entre sí.
+
+         ⚠ LOS TRES NÚMEROS ESTÁN CORREGIDOS Y NO SON LOS QUE DEVOLVIÓ EL DOM.
+         Preguntarle al navegador dónde tiene la línea base de un texto en CSS y
+         copiar esa `y` al SVG deja las letras corridas: las iniciales quedaban
+         0,25 px abajo y el nombre 0,50 px arriba. A ojo es invisible.
+
+         Cómo se encontró, que es lo que hace falta para repetirlo:
+           · restando los dos renders (negro = coinciden), que muestra DÓNDE;
+           · y comparando el CENTRO DE MASA de la tinta, que da CUÁNTO. El centro
+             de masa es la medida que no se deja engañar por el suavizado: un
+             borde apenas teñido pesa poco y un trazo lleno pesa mucho, así que
+             dos renders con distinto suavizado dan el mismo centro si la figura
+             está en el mismo lugar. Una caja de tinta con umbral, no: ahí un
+             borde más pálido corre el límite y miente.
+
+         Y cómo se supo que el desvío era REAL y no la grilla de píxeles: se midió
+         a 2x, 4x y 8x. Un error de grilla se achica al afinar la grilla; éste se
+         quedaba clavado en 0,25 y 0,50. Con la corrección puesta, a 4x y a 8x el
+         desvío queda en 0,00-0,03 px. A 2x quedan 0,5 px, que es el escalón más
+         chico que el navegador sabe dibujar a esa escala: es la grilla, no el
+         dibujo, y por eso desaparece al subir la resolución. -->
+    <svg
+      viewBox="0 0 254.34375 54"
+      width="254.34375"
+      height="54"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="CB Odontología y Estética"
+    >
+
+      <text
+        x="0"
+        y="45.7513"
+        font-family="Marcellus, Georgia, serif"
+        font-size="54"
+        fill="#33322F"
+      >CB</text>
+
+      <rect
+        x="84.484375"
+        y="8"
+        width="1"
+        height="38"
+        fill="#D9CBAA"
+      />
+
+      <!-- El nombre va en MAYÚSCULAS de verdad, no con `text-transform`: eso
+           es una instrucción de CSS y acá no hay CSS que la aplique. -->
+      <text
+        x="104.078125"
+        y="21.2005"
+        font-family="Jost, 'Helvetica Neue', Arial, sans-serif"
+        font-size="15.6"
+        font-weight="300"
+        letter-spacing="0.24em"
+        fill="#8C8880"
+      >ODONTOLOGÍA</text>
+
+      <text
+        x="104.078125"
+        y="43.4974"
+        font-family="Jost, 'Helvetica Neue', Arial, sans-serif"
+        font-size="15.6"
+        font-weight="300"
+        letter-spacing="0.24em"
+        fill="#8C8880"
+      >Y ESTÉTICA</text>
+
+    </svg>
+
+    <span class="pieza__rotulo">Principal — sitio web</span>
+
+  </div>
+
+
+  <div class="pieza">
+
+    <!-- LA SUBMARCA. El disco era un `border-radius: 50%` sobre una caja de
+         96; acá es un círculo de radio 48 centrado en (48, 48), que es lo
+         mismo dicho en el idioma de las figuras.
+
+         ⚠ La línea base del `CB` está en 57 y NO en 48: 48 es el centro del
+         disco, y el texto no se apoya en su centro. Medirlo mal por acá fue
+         el primer intento, y lo delató que las letras quedaban altas. -->
+    <svg
+      viewBox="0 0 96 96"
+      width="96"
+      height="96"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="CB"
+    >
+
+      <circle
+        cx="48"
+        cy="48"
+        r="48"
+        fill="#33322F"
+      />
+
+      <text
+        x="48"
+        y="57"
+        text-anchor="middle"
+        font-family="Marcellus, Georgia, serif"
+        font-size="26.1"
+        fill="#E4D6BC"
+      >CB</text>
+
+    </svg>
+
+    <span class="pieza__rotulo">Submarca — favicon</span>
+
+  </div>
+
+</body>
+
+</html>

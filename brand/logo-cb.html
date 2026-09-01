@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logo CB — el sistema completo</title>
+
+  <!-- Las dos tipografías de la marca, servidas por Google Fonts. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    /* Los cinco colores de la marca, en un solo lugar.
+       Cambiar el dorado cuesta una línea, no una búsqueda. */
+    :root
+    {
+      --marfil:       #FAF7F2;
+      --blanco:       #FFFFFF;
+      --dorado:       #B08D57;
+      --dorado-claro: #E4D6BC;
+      --grafito:      #33322F;
+
+      /* Estos dos NO estan en la paleta declarada del brief (pag. 6), pero son
+         los que el brief usa en el wordmark de la pag. 5. Medidos a 1200 dpi. */
+      --gris-nombre:  #8C8880;
+      --dorado-barra: #D9CBAA;
+
+      --serif: "Marcellus", Georgia, serif;
+      --sans:  "Jost", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body
+    {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 90px;
+      padding: 60px 30px;
+      background: var(--marfil);
+      font-family: var(--sans);
+    }
+
+    /* Cada versión con su rótulo debajo. */
+    .pieza
+    {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .pieza__rotulo
+    {
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--dorado);
+    }
+
+
+    /* ═══ EL EMBLEMA — el círculo, las iniciales y la sonrisa ═══
+
+       Va en SVG y no en CSS por una razón de forma, no de gusto: el arco
+       de abajo es una MEDIA LUNA —gorda en el medio, afinándose hasta
+       desaparecer en las puntas— y un `border` de CSS tiene un grosor y
+       uno solo. La forma no se puede escribir en CSS.
+
+       Todas las medidas salen de medir el brief (pág. 5) a 1600 dpi con
+       tools/brand-audit/medir_emblema_calibrado.py, y están
+       expresadas sobre un círculo de 190, que es el sistema del viewBox. */
+
+    .emblema
+    {
+      width: 190px;
+      height: 190px;
+    }
+
+
+    /* ═══ EL WORDMARK — la versión principal, para el sitio ═══ */
+
+    .wordmark
+    {
+      display: flex;
+      align-items: center;
+    }
+
+    .wordmark__iniciales
+    {
+      font-family: var(--serif);
+      font-size: 54px;
+      line-height: 1;
+      color: var(--grafito);
+    }
+
+    .wordmark__barra
+    {
+      width: 1px;
+      height: 38px;
+      margin-left: 17.65px;
+      margin-right: 18.6px;
+      background: var(--dorado-barra);
+    }
+
+    .wordmark__nombre
+    {
+      font-family: var(--sans);
+      font-weight: 300;
+      font-size: 15.6px;
+      line-height: 1.43;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--gris-nombre);
+    }
+
+
+    /* ═══ LA SUBMARCA — el ícono para favicon y avatar ═══ */
+
+    .submarca
+    {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: var(--grafito);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-family: var(--serif);
+      font-size: 26.1px;
+      /* Las letras van en dorado claro, no en marfil: medido sobre el brief. */
+      color: var(--dorado-claro);
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="pieza">
+
+    <svg
+      class="emblema"
+      viewBox="0 0 190 190"
+      width="190"
+      height="190"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="CB Odontología y Estética"
+    >
+
+      <!-- EL ARO. El trazo se dibuja MONTADO sobre el radio: la mitad para
+           adentro y la mitad para afuera. Por eso el radio es 95 menos medio
+           grosor, y así el borde de afuera cae justo en los 190 de diámetro. -->
+      <circle
+        cx="95"
+        cy="95"
+        r="94.00"
+        fill="none"
+        stroke="#B08D57"
+        stroke-width="1.99"
+      />
+
+      <!-- LAS INICIALES. `text-anchor: middle` las centra en la x que se le da,
+           que es el centro de la caja que cada letra ocupa en el brief. -->
+      <text
+        x="72.77"
+        y="93.05"
+        text-anchor="middle"
+        font-family="Marcellus, Georgia, serif"
+        font-size="42.12"
+        fill="#33322F"
+      >C</text>
+
+      <text
+        x="120.72"
+        y="92.66"
+        text-anchor="middle"
+        font-family="Marcellus, Georgia, serif"
+        font-size="42.12"
+        fill="#33322F"
+      >B</text>
+
+      <!-- LA BARRA SEPARADORA, que es dorada y no gris. -->
+      <rect
+        x="97.09"
+        y="61.75"
+        width="1.80"
+        height="30.71"
+        fill="#B08D57"
+      />
+
+      <!-- LA MEDIA LUNA — un solo camino cerrado hecho con DOS arcos que
+           arrancan y terminan en los mismos dos puntos (las puntas).
+           El de ida baja más hondo que el de vuelta: la diferencia entre los
+           dos ES el grosor, y en las puntas esa diferencia es cero. Por eso
+           se afina sola, sin que haya que afinar nada. -->
+      <path
+        d="
+          M 74.07 122.36
+          A 21.35 21.35 0 0 0 115.93 122.36
+          A 22.04 22.04 0 0 1 74.07 122.36
+          Z
+        "
+        fill="#B08D57"
+      />
+
+    </svg>
+
+    <span class="pieza__rotulo">Secundaria — redes</span>
+
+  </div>
+
+
+  <div class="pieza">
+
+    <div class="wordmark">
+
+      <span class="wordmark__iniciales">CB</span>
+
+      <span class="wordmark__barra"></span>
+
+      <span class="wordmark__nombre">
+        Odontología<br>
+        y Estética
+      </span>
+
+    </div>
+
+    <span class="pieza__rotulo">Principal — sitio web</span>
+
+  </div>
+
+
+  <div class="pieza">
+
+    <div class="submarca">CB</div>
+
+    <span class="pieza__rotulo">Submarca — favicon</span>
+
+  </div>
+
+</body>
+
+</html>

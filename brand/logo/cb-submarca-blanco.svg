@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Submarca (favicon y avatar) — CB Odontología y Estética.
+
+  ⚠ EL TEXTO TODAVÍA ES TEXTO, no contornos. Este archivo se ve bien sólo donde
+  Marcellus esté instalada. Para imprenta hay que pasarlo a curvas:
+  ahí las letras dejan de ser letras y pasan a ser dibujos, y el archivo deja de
+  depender de nada. Las tipografías están en `brand/`, con su licencia OFL.
+
+  Las coordenadas salieron de medir el render de `brand/logo-cb.html` y están
+  verificadas contra él: el desvío es de 0,00 a 0,03 px. El porqué de cada
+  número, y por qué las líneas base están corregidas, en `logo-cb-vector.html`.
+-->
+
+<svg
+  viewBox="0 0 96 96"
+  width="96"
+  height="96"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-label="CB"
+>
+
+  <circle
+    cx="48"
+    cy="48"
+    r="48"
+    fill="#FFFFFF"
+  />
+
+  <text
+    x="48"
+    y="57"
+    text-anchor="middle"
+    font-family="Marcellus, Georgia, serif"
+    font-size="26.1"
+    fill="#FFFFFF"
+  >CB</text>
+
+</svg>

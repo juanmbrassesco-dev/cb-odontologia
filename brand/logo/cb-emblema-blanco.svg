@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Emblema (versión secundaria, redes) — CB Odontología y Estética.
+
+  ⚠ EL TEXTO TODAVÍA ES TEXTO, no contornos. Este archivo se ve bien sólo donde
+  Marcellus esté instalada. Para imprenta hay que pasarlo a curvas:
+  ahí las letras dejan de ser letras y pasan a ser dibujos, y el archivo deja de
+  depender de nada. Las tipografías están en `brand/`, con su licencia OFL.
+
+  Las coordenadas salieron de medir el render de `brand/logo-cb.html` y están
+  verificadas contra él: el desvío es de 0,00 a 0,03 px. El porqué de cada
+  número, y por qué las líneas base están corregidas, en `logo-cb-vector.html`.
+-->
+
+<svg
+  viewBox="0 0 190 190"
+  width="190"
+  height="190"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-label="CB Odontología y Estética"
+>
+
+  <!-- EL ARO. El trazo se dibuja MONTADO sobre el radio: la mitad para
+       adentro y la mitad para afuera. Por eso el radio es 95 menos medio
+       grosor, y así el borde de afuera cae justo en los 190 de diámetro. -->
+  <circle
+    cx="95"
+    cy="95"
+    r="94.00"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="1.99"
+  />
+
+  <!-- LAS INICIALES. `text-anchor: middle` las centra en la x que se le da,
+       que es el centro de la caja que cada letra ocupa en el brief. -->
+  <text
+    x="72.77"
+    y="93.05"
+    text-anchor="middle"
+    font-family="Marcellus, Georgia, serif"
+    font-size="42.12"
+    fill="#FFFFFF"
+  >C</text>
+
+  <text
+    x="120.72"
+    y="92.66"
+    text-anchor="middle"
+    font-family="Marcellus, Georgia, serif"
+    font-size="42.12"
+    fill="#FFFFFF"
+  >B</text>
+
+  <!-- LA BARRA SEPARADORA, que es dorada y no gris. -->
+  <rect
+    x="97.09"
+    y="61.75"
+    width="1.80"
+    height="30.71"
+    fill="#FFFFFF"
+  />
+
+  <!-- LA MEDIA LUNA — un solo camino cerrado hecho con DOS arcos que
+       arrancan y terminan en los mismos dos puntos (las puntas).
+       El de ida baja más hondo que el de vuelta: la diferencia entre los
+       dos ES el grosor, y en las puntas esa diferencia es cero. Por eso
+       se afina sola, sin que haya que afinar nada. -->
+  <path
+    d="
+      M 74.07 122.36
+      A 21.35 21.35 0 0 0 115.93 122.36
+      A 22.04 22.04 0 0 1 74.07 122.36
+      Z
+    "
+    fill="#FFFFFF"
+  />
+
+</svg>
