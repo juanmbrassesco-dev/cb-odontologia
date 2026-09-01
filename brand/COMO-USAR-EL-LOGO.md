@@ -72,7 +72,27 @@ leen: se ve un disco oscuro con una marca clara.** No es un defecto del archivo
 — es que la letra tiene trazos finos y a 32 píxeles ese trazo no entra.
 Comprobado: agrandar las letras dentro del disco tampoco lo arregla.
 
-*(Los mínimos impresos, en milímetros, están por revisar con el mismo método.)*
+**Impreso, el mínimo depende de la TÉCNICA**, porque cada una tiene un grosor de
+línea abajo del cual no reproduce. Es el ancho al que el trazo más fino de cada
+pieza llega a ese límite:
+
+| pieza | offset | digital | serigrafía · bordado · grabado |
+|---|---|---|---|
+| **wordmark** | 27 mm | 43 mm | **109 mm** |
+| **emblema** | 9 mm | 15 mm | **37 mm** |
+| **submarca** | 19 mm | 30 mm | **74 mm** |
+
+*(Los límites de referencia: 0,25 pt = 0,088 mm en offset · 0,4 pt = 0,141 mm en
+digital · 1 pt = 0,353 mm en serigrafía, bordado y grabado.)*
+
+🔴 **La columna de la derecha es la que sorprende, y es la que más se va a usar.**
+El bordado del ambo y la placa de bronce grabada son técnicas gruesas: **el
+emblema bordado no baja de 37 mm y el wordmark grabado no baja de 109 mm.** Por
+debajo de eso el trazo fino de la letra desaparece o se empasta.
+
+⚠️ **Antes de cualquier tirada, pedile a quien imprime su propio mínimo de línea
+y rehacé esta cuenta con ese número.** Los de arriba son los valores de
+referencia del oficio, no los de su máquina.
 
 ## 5. Qué NO hacer
 
