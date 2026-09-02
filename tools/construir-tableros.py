@@ -280,8 +280,8 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
 .boton {{
   display: inline-block;
   font-family: Jost, sans-serif;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 19px;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 13px 26px;
@@ -294,15 +294,11 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
 .boton-dorado {{
   background: var(--dorado);
   color: var(--grafito);
-  font-size: 19px;
-  font-weight: 600;
 }}
 
 .boton-dorado-blanco {{
   background: var(--dorado);
   color: var(--blanco);
-  font-size: 19px;
-  font-weight: 600;
 }}
 
 .enlace {{
@@ -367,13 +363,13 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
   <p>El dorado del brief mide {dorado_marfil} sobre marfil. El brief lo manda
   en los rótulos chicos en mayúsculas y en el botón «AGENDAR» con letra blanca
   ({blanco_dorado}). Los cuatro caminos posibles, con lo que cuesta cada uno:</p>
-  <p class="tamano" style="margin-top: 14px"><b>Escala 1:1 — todo lo de abajo
-  está en su tamaño final, nada agrandado para mirar.</b> Este tablero mide
-  1280&nbsp;px, que es <b>escritorio</b>: el mismo botón en un teléfono de
-  390&nbsp;px se ve en la pieza 3. Y ojo con una diferencia que es real y no de
-  dibujo: <b>A y B llevan la letra a 16&nbsp;px; C y D, a 19&nbsp;px</b>, porque
-  sin ese tamaño no pasarían el piso. Se ven más grandes porque <i>son</i> más
-  grandes.</p>
+  <p class="tamano" style="margin-top: 14px"><b>Escala 1:1 y los cuatro botones
+  al mismo tamaño: Jost 19&nbsp;px peso 600, alto 44&nbsp;px.</b> Se igualaron a
+  19 porque es el tamaño que <b>C y D necesitan</b> para que les aplique el piso
+  de 3,0 en vez del de 4,5 — abajo de eso se caen. A y B no lo necesitan: el
+  grafito pasa a cualquier tamaño. Igualados así, <b>lo único que cambia entre
+  los cuatro cuadros es el color</b>. · <b>Esto es escritorio, 1280&nbsp;px.</b>
+  El mismo botón en un teléfono de 390 es lo que sigue.</p>
 
   <div class="candidatos">
 
@@ -386,8 +382,9 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
            style="color: var(--grafito)">en grafito</a>, como el resto.</p>
         <span class="boton boton-grafito">Agendar</span>
       </div>
-      <p class="tamano">Botón: Jost 16&nbsp;px, peso 500 · alto 44&nbsp;px ·
-      fondo grafito. Rótulo: 13&nbsp;px.</p>
+      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
+      fondo grafito · rótulo 13&nbsp;px. <b>No depende del tamaño:</b> el grafito
+      mide 12,82 y pasa a cualquiera.</p>
       <p class="costo">Mata una decisión del brief: los rótulos chicos en
       mayúsculas iban en dorado y acá se vuelven grises.</p>
     </div>
@@ -401,8 +398,9 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
         texto</a>, que sí pasa.</p>
         <span class="boton boton-grafito">Agendar</span>
       </div>
-      <p class="tamano">Botón: Jost 16&nbsp;px, peso 500 · alto 44&nbsp;px ·
-      fondo grafito. Rótulo: 13&nbsp;px.</p>
+      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
+      fondo grafito · rótulo 13&nbsp;px. <b>No depende del tamaño:</b> el grafito
+      mide 12,82 y pasa a cualquiera.</p>
       <p class="costo">Son dos dorados. Hay que escribir cuándo va cada uno
       —<b>{tokens["dorado"]}</b> para fondos y líneas, <b>{tokens["dorado-texto"]}</b> para letra— o se
       mezclan.</p>
@@ -417,8 +415,9 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
         brief</a>: {dorado_marfil}, no pasa.</p>
         <span class="boton boton-dorado">Agendar</span>
       </div>
-      <p class="tamano">Botón: Jost <b>19&nbsp;px, peso 600</b> · alto
-      44&nbsp;px · fondo dorado. Rótulo: 13&nbsp;px.</p>
+      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
+      fondo dorado · rótulo 13&nbsp;px. <b>Depende del tamaño:</b> a 16&nbsp;px
+      deja de cumplir.</p>
       <p class="costo">Frágil: el botón mide {grafito_dorado} y sólo vale porque
       la letra es grande. Si alguien la baja a 16px deja de cumplir y nada
       avisa.</p>
@@ -433,8 +432,9 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
         brief</a>: {dorado_marfil}, no pasa.</p>
         <span class="boton boton-dorado-blanco">Agendar</span>
       </div>
-      <p class="tamano">Botón: Jost <b>19&nbsp;px, peso 600</b> · alto
-      44&nbsp;px · fondo dorado. Rótulo: 13&nbsp;px.</p>
+      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
+      fondo dorado · rótulo 13&nbsp;px. <b>Depende del tamaño:</b> a 16&nbsp;px
+      deja de cumplir.</p>
       <p class="costo">Es lo que dibuja la página 17. Mide <b>{blanco_dorado}</b>:
       como texto normal no pasa ni cerca, y como texto grande pasa el piso de 3,0
       <b>por nueve centésimas</b>. Es el mismo riesgo que C con la mitad del
