@@ -890,13 +890,15 @@ CSS_BOTON = """
 }
 
 /* Misma regla de foco que el principal —contorno sobre el filo, sombra más
-   marcada—, con el anillo en blanco. El filo se queda GRAFITO y el blanco va
-   justo adentro: un blanco al filo se confunde con la página y el botón se lee
-   achicado en vez de bordeado. Medido con medir-foco.py. */
+   marcada—, pero INVERTIDO: fondo blanco, letra grafito, filo grafito de 2 px.
+   Los anillos claros se descartaron: al filo se leen como que el botón se
+   achicó. Medido con medir-foco.py. */
 .btn-2-foco {
-  box-shadow: inset 0 0 0 2px var(--boton-2-foco-filo),
-              inset 0 0 0 6px var(--boton-2-foco-anillo),
-              var(--sombra-boton-foco);
+  background: var(--boton-2-foco-fondo);
+  color: var(--boton-2-foco-texto);
+  border: 2px solid var(--boton-2-foco-filo);
+  padding: 10px 24px;
+  box-shadow: var(--sombra-boton-foco);
 }
 
 .btn-apagado {
@@ -1020,11 +1022,10 @@ y el ancho. Todo a escala 1:1 en {ancho} px.</p>
   <div class="estado">
     <p class="dato">Con foco</p>
     <button class="btn btn-2 btn-2-foco">Cancelar turno</button>
-    <p class="dato">Anillo <b>blanco</b> de 4 px, con el filo del botón en
-    grafito por fuera. Puesto al filo, un anillo claro queda a 5 puntos del
-    color de la página y el botón <b>se lee achicado, no bordeado</b>; dejando
-    2 px de grafito por fuera, la silueta se conserva y el blanco se lee como lo
-    que es. Blanco sobre grafito: <b>12,82</b>.</p>
+    <p class="dato">El botón se <b>invierte</b>: fondo blanco, letra grafito, y
+    filo grafito de 2 px para que la silueta no se pierda contra la página.
+    Cambia el <b>80 %</b> de la superficie —contra el 24 % que lograba un
+    anillo—. Grafito sobre blanco: <b>12,82</b>.</p>
   </div>
 </section>
 

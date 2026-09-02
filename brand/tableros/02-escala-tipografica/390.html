@@ -87,16 +87,16 @@
   /* El botón secundario es el que dibuja el brief en la página 17: GRAFITO
      MACIZO CON LETRA BLANCA. 12,82, el par más alto del sistema.
 
-     Su foco lleva anillo BLANCO, pero NO en el filo: el filo se queda grafito
-     y el blanco va justo adentro. Es la única forma de que un anillo claro
-     sobre un fondo claro se lea como borde y no como que el botón se achicó
-     —el blanco al filo queda a 5 puntos del marfil de la página, o sea que el
-     ojo lee el borde del botón 4 px más adentro—. Medido con medir-foco.py,
-     que ahora chequea las dos cosas: cuánto cambia y si la silueta sobrevive. */
+     Su foco INVIERTE el botón: fondo blanco, letra grafito, y el filo de 2 px
+     en grafito para que la silueta no se pierda contra la página. Cambia el
+     80 % de la superficie —medido con medir-foco.py—, contra el 24 % que
+     lograba un anillo. Los anillos claros se descartaron los dos: puestos al
+     filo se leen como que el botón se achicó, no como un borde. */
   --boton-2-fondo: var(--grafito);
   --boton-2-texto: var(--blanco);
+  --boton-2-foco-fondo: var(--blanco);
+  --boton-2-foco-texto: var(--grafito);
   --boton-2-foco-filo: var(--grafito);
-  --boton-2-foco-anillo: var(--blanco);
 
   /* Deshabilitado. WCAG exime a los controles inactivos; igual se lo deja en
      4,08, y el botón además DICE por qué está apagado: nunca sólo el color.
@@ -202,7 +202,7 @@
    @par boton-texto sobre boton-fondo-oscuro >= 4.5 · el principal, enviando y con foco
    @par boton-2-texto sobre boton-2-fondo >= 4.5 · la letra del botón secundario
    @par boton-2-fondo sobre marfil >= 3.0 · la superficie del secundario
-   @par boton-2-foco-anillo sobre boton-2-fondo >= 3.0 · el anillo de foco contra el botón
+   @par boton-2-foco-texto sobre boton-2-foco-fondo >= 4.5 · el secundario con foco, invertido
    @par boton-2-foco-filo sobre marfil >= 3.0 · el filo que conserva la silueta
    @par boton-apagado-texto sobre boton-apagado-fondo >= 3.0 · el botón deshabilitado
    @par boton-apagado-borde sobre marfil >= 3.0 · el contorno del deshabilitado
