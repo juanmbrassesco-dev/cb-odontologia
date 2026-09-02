@@ -103,7 +103,7 @@ CANDIDATOS = [
         "letra": "A",
         "titulo": "Sólo acento",
         "subtitulo": "Nunca letra",
-        "subtitulo_color": "apagado",
+        "subtitulo_color": "texto-segundo",
         "rotulo_color": "grafito",
         "enlace_clase": "enlace",
         "enlace_estilo": "color: var(--grafito)",
@@ -361,8 +361,8 @@ th {{
   color: var(--dorado-texto);
 }}
 
-td i {{ color: var(--apagado); font-style: normal; }}
-td small {{ color: var(--apagado); }}
+td i {{ color: var(--texto-segundo); font-style: normal; }}
+td small {{ color: var(--texto-segundo); }}
 
 tr.bien td:first-child::before {{ content: "✓  "; color: var(--exito); }}
 tr.aviso td:first-child::before {{ content: "△  "; color: var(--dorado-texto); }}
@@ -400,7 +400,7 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
 .tamano {{
   font-size: 13px;
   line-height: 1.5;
-  color: var(--apagado);
+  color: var(--texto-segundo);
   letter-spacing: 0.02em;
   margin-bottom: 14px;
 }}
@@ -487,7 +487,7 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
   padding-top: 20px;
   border-top: 1px solid var(--dorado-claro);
   font-size: 14px;
-  color: var(--apagado);
+  color: var(--texto-segundo);
   max-width: 88ch;
 }}
 </style>
@@ -706,7 +706,7 @@ section {{ margin-top: 40px; }}
 .dato {{
   font-size: var(--tipo-chico);
   line-height: var(--alto-chico);
-  color: var(--apagado);
+  color: var(--texto-segundo);
 }}
 
 .espec {{
@@ -751,7 +751,7 @@ th.n {{ text-align: right; }}
   border-top: 1px solid var(--dorado-claro);
   font-size: var(--tipo-chico);
   line-height: var(--alto-chico);
-  color: var(--apagado);
+  color: var(--texto-segundo);
 }}
 """
 
@@ -829,7 +829,7 @@ Los tamaños salen de <code>css/tokens.css</code> y cambian solos con el ancho.<
     <p class="rotulo">Odontología general</p>
     <h2>Limpieza y profilaxis</h2>
     <p class="muestra-texto">{CUERPO_MUESTRA}</p>
-    <p class="chico" style="margin-top: 10px; color: var(--apagado)">{CHICO_MUESTRA}</p>
+    <p class="chico" style="margin-top: 10px; color: var(--texto-segundo)">{CHICO_MUESTRA}</p>
   </div>
 </section>
 

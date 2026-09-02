@@ -36,8 +36,16 @@
   --borde: #8A8880;
 
   /* Texto deshabilitado. WCAG exime a los controles apagados, pero se
-     lo hace pasar igual: apagado no es lo mismo que ilegible. */
+     lo hace pasar igual: apagado no es lo mismo que ilegible.
+     ⚠️ Es SÓLO para lo deshabilitado. Un texto que hay que leer no va acá:
+     4.54 pasa el piso pero cuesta, y se notó en la pieza 2. */
   --apagado: #75716A;
+
+  /* Texto secundario: ayuda de un campo, pie, aclaración. Es texto que SE
+     LEE, sólo que manda menos que el principal — así que se separa del
+     grafito por tono, no por poner el gris al borde del mínimo.
+     Es el grafito aclarado hasta 6.97, no hasta el piso. */
+  --texto-segundo: #575550;
 
   /* Estados. El brief no tiene ninguno. Se eligieron dentro de la
      familia cálida de la paleta, no del rojo y verde de sistema. */
@@ -133,6 +141,8 @@
    @par exito sobre marfil >= 4.5 · mensaje de éxito
    @par exito sobre exito-fondo >= 4.5 · éxito sobre su propio fondo
    @par apagado sobre marfil >= 4.5 · texto deshabilitado
+   @par texto-segundo sobre marfil >= 4.5 · ayuda, pie y aclaración
+   @par texto-segundo sobre blanco >= 4.5 · lo mismo, sobre tarjeta
    @par borde sobre marfil >= 3.0 · borde de campo sobre el fondo
    @par borde sobre blanco >= 3.0 · borde de campo sobre tarjeta
    @par foco sobre marfil >= 3.0 · anillo de foco
