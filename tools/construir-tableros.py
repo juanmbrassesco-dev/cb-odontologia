@@ -244,7 +244,7 @@ def tablero_color(tokens, css):
 <title>CB · 01 Color y contraste</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600&display=swap">
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
 <style>
 {css}
 
@@ -468,6 +468,13 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
 
 .pantalla p {{ font-size: 16px; margin: 10px 0 18px; }}
 
+.boton-ancho {{
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-weight: 700;
+}}
+
 .pie {{
   margin-top: 56px;
   padding-top: 20px;
@@ -542,6 +549,33 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
   que si mañana el CSS trae una regla que sólo se activa en pantallas chicas,
   acá no se activaría. Hoy no hay ninguna, así que lo que ves es lo que se ve.</p>
   <div class="telefonos">{telefonos}</div>
+
+  <h3 style="margin-top: 44px">Y D, tal como quedaría de verdad</h3>
+  <p>Los cuatro marcos de arriba llevan el botón del ancho de su texto, que es
+  como estaba dibujado en el cuadro de escritorio. <b>En un teléfono el botón
+  principal va de borde a borde</b>, y eso cambia cuánto pesa el dorado. Al lado,
+  el mismo botón en <b>peso 700</b> en vez de 600 — el porqué está abajo del
+  todo.</p>
+  <div class="telefonos" style="margin-top: 18px">
+    <div class="telefono">
+      <p class="telefono-letra">D · ancho completo, peso 600</p>
+      <div class="pantalla">
+        <p class="rotulo" style="color: var(--dorado)">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del
+        brief</a>: {dorado_marfil}, no pasa.</p>
+        <span class="boton boton-dorado-blanco" style="display: block; width: 100%; text-align: center">Agendar</span>
+      </div>
+    </div>
+    <div class="telefono">
+      <p class="telefono-letra">D · ancho completo, peso 700</p>
+      <div class="pantalla">
+        <p class="rotulo" style="color: var(--dorado)">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del
+        brief</a>: {dorado_marfil}, no pasa.</p>
+        <span class="boton boton-dorado-blanco boton-ancho">Agendar</span>
+      </div>
+    </div>
+  </div>
 </section>
 
 <p class="pie">Los cuatro cuadros usan los mismos tokens; no hay ningún hex ni
