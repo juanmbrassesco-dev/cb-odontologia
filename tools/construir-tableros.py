@@ -587,10 +587,7 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
 
 <p class="pie">Los cuatro cuadros usan los mismos tokens; no hay ningún hex ni
 ningún número escrito a mano acá: los contrastes los calcula el medidor sobre
-<code>css/tokens.css</code>. <b>⚠️ REVISADO EN LA PIEZA 3 — el botón principal pasó a DORADO CLARO con
-letra grafito (8,94).</b> Lo que sigue es lo que se decidió acá y quedó
-superado; se conserva porque explica por qué se llegó a la revisión.
-<b>DECIDIDO EL 2-SEP-2026: iba el candidato D</b> — el botón del
+<code>css/tokens.css</code>. <b>DECIDIDO EL 2-SEP-2026: va el candidato D</b> — el botón del
 brief tal cual, fondo dorado con letra blanca. Mide {blanco_dorado}, que pasa el
 piso de 3,0 del texto grande. <b>Lo decidió Juan priorizando la identidad
 original por sobre el margen de contraste</b>, y con el criterio de volver a
@@ -857,8 +854,9 @@ CSS_BOTON = """
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-align: center;
-  padding: 11px 25px;
+  padding: 12px 26px;
   min-height: 44px;
+  border: 0;
   cursor: pointer;
   width: var(--boton-ancho);
 }
@@ -866,39 +864,49 @@ CSS_BOTON = """
 .btn-1 {
   background: var(--boton-fondo);
   color: var(--boton-texto);
-  border: 1px solid var(--boton-borde);
   box-shadow: var(--sombra-boton);
 }
 
-.btn-1-encima {
-  background: var(--boton-fondo-encima);
-}
-
+/* Enviando: el mismo dorado oscurecido, con sombra, y la palabra cambiada. */
 .btn-1-enviando {
-  background: var(--boton-fondo-enviando);
+  background: var(--boton-fondo-oscuro);
+  box-shadow: var(--sombra-boton-foco);
   cursor: progress;
 }
 
-/* El foco NO agrega una línea: engrosa y oscurece la que el botón ya tiene.
-   La sombra interior de 2 px cae justo sobre el borde, así que los dos
-   contornos coinciden en el mismo píxel. Y el fondo se oscurece de paso,
-   para que el foco también se note sin distinguir colores. */
-.btn-foco {
-  background: var(--boton-fondo-foco);
-  border-color: var(--boton-foco-borde);
-  box-shadow: inset 0 0 0 1px var(--boton-foco-borde), var(--sombra-boton-foco);
+/* FOCO · opción A — se oscurece el dorado. El contorno cae justo sobre el
+   filo del botón: es sombra interior de 2 px, así que no hay una segunda
+   línea ni por fuera ni separada. */
+.btn-foco-a {
+  background: var(--boton-fondo-oscuro);
+  box-shadow: inset 0 0 0 2px var(--boton-foco-borde), var(--sombra-boton-foco);
+}
+
+/* FOCO · opción B — el dorado NO cambia; lo que marca el foco es la sombra
+   más el mismo contorno al filo. */
+.btn-foco-b {
+  box-shadow: inset 0 0 0 2px var(--boton-foco-borde), var(--sombra-boton-foco);
 }
 
 .btn-2 {
   background: transparent;
   color: var(--boton-2-texto);
   border: 1px solid var(--boton-2-borde);
+  padding: 11px 25px;
+}
+
+/* El secundario no cambia de relleno: se le oscurece y engrosa su contorno,
+   que es lo único que tiene. */
+.btn-2-foco {
+  border-color: var(--boton-foco-borde);
+  box-shadow: inset 0 0 0 1px var(--boton-foco-borde), var(--sombra-boton-foco);
 }
 
 .btn-apagado {
   background: var(--boton-apagado-fondo);
   color: var(--boton-apagado-texto);
   border: 1px solid var(--boton-apagado-borde);
+  padding: 11px 25px;
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -935,32 +943,24 @@ CSS_BOTON = """
   color: var(--dorado-texto);
   margin-right: 10px;
 }
-
-.antes .btn {
-  background: var(--dorado);
-  color: var(--blanco);
-  border: 1px solid var(--dorado);
-  box-shadow: none;
-}
 """
 
 
-# Cada estado del botón principal: clase, nombre, y qué tiene que quedar claro.
 ESTADOS = [
     ("btn-1", "Reposo", "Reservar turno",
-     "Dorado claro con letra grafito: 8,94. El contorno no es decoración — la "
-     "superficie sola mide 1,34 contra el fondo, así que sin borde no se ve "
-     "que hay un botón."),
-    ("btn-1 btn-1-encima", "Con el dedo o el puntero encima", "Reservar turno",
-     "El mismo color, un paso más oscuro. 7,66."),
+     "El dorado del brief con letra blanca, el mismo que se usa en todo el "
+     "sitio. Sombra hiper leve. Mide 3,09 y por eso la letra no baja de 19 px."),
     ("btn-1 btn-1-enviando", "Enviando", "Reservando…",
-     "Otro paso más oscuro, 6,47. Cambia la palabra además del color, y el "
-     "botón conserva su tamaño para que nada salte de lugar."),
-    ("btn-1 btn-foco", "Con foco", "Reservar turno",
-     "El contorno que el botón YA TIENE se oscurece y engrosa: los dos bordes "
-     "caen en el mismo píxel, no hay una segunda línea por fuera. El fondo se "
-     "oscurece hasta el dorado del brief, así que el foco también se nota sin "
-     "distinguir colores."),
+     "El mismo dorado oscurecido, con sombra, y la palabra cambiada. Sube a "
+     "4,85. El botón conserva su tamaño para que nada salte de lugar."),
+    ("btn-1 btn-foco-a", "Con foco · opción A — se oscurece el dorado",
+     "Reservar turno",
+     "Dorado oscurecido más el contorno. El contorno cae JUSTO sobre el filo "
+     "del botón: no hay una segunda línea ni por fuera ni separada. 4,85."),
+    ("btn-1 btn-foco-b", "Con foco · opción B — el dorado no cambia",
+     "Reservar turno",
+     "Mismo dorado que en reposo; lo que marca el foco es la sombra más el "
+     "contorno al filo. Se distingue menos, pero el botón no cambia de color."),
     ("btn-apagado", "Deshabilitado", "Elegí un horario primero",
      "El botón DICE por qué no se puede tocar; un botón gris que no explica "
      "nada deja al paciente adivinando. Y lleva borde: su relleno mide 1,11 "
@@ -1002,7 +1002,7 @@ y el ancho. Todo a escala 1:1 en {ancho} px.</p>
 
 <section>
   <p class="rotulo">El botón principal</p>
-  <h2>Cinco estados, todos a tamaño real</h2>
+  <h2>Sus estados, todos a tamaño real</h2>
   <p class="dato" style="margin-top: 8px">Acá el botón va <b>{ancho_boton}</b>,
   y el alto nunca baja de 44 px: es lo que mide la yema de un dedo.</p>
   {estados}
@@ -1022,25 +1022,25 @@ y el ancho. Todo a escala 1:1 en {ancho} px.</p>
   </div>
   <div class="estado">
     <p class="dato">Con foco</p>
-    <button class="btn btn-2 btn-foco">Cancelar turno</button>
-    <p class="dato">El mismo anillo que el principal. El foco se ve igual en
-    todos los controles o deja de ser una señal.</p>
+    <button class="btn btn-2 btn-2-foco">Cancelar turno</button>
+    <p class="dato">El relleno NO cambia: se oscurece y engrosa el contorno,
+    que es lo único que este botón tiene. El foco cae sobre el filo, igual que
+    en el principal.</p>
   </div>
 </section>
 
 <section>
-  <p class="rotulo">Contra lo anterior</p>
-  <h2>Lo que reemplaza, al mismo tamaño</h2>
-  <p>Arriba, lo que estaba aprobado: dorado del brief con letra blanca.
-  Abajo, lo nuevo. <b>Mismo tamaño, misma tipografía, mismo alto</b> — lo único
-  que cambia es el color.</p>
-  <div class="estado antes">
-    <p class="dato">Antes · dorado con letra blanca · <b>3,09</b></p>
-    <button class="btn">Reservar turno</button>
+  <p class="rotulo">Las dos opciones de foco, juntas</p>
+  <h2>A y B, una al lado de la otra</h2>
+  <p>Mismo tamaño, misma letra, mismo contorno. <b>Lo único que cambia es si
+  el dorado se oscurece o no.</b></p>
+  <div class="estado">
+    <p class="dato">A · se oscurece</p>
+    <button class="btn btn-1 btn-foco-a">Reservar turno</button>
   </div>
   <div class="estado">
-    <p class="dato">Ahora · dorado claro con letra grafito · <b>8,94</b></p>
-    <button class="btn btn-1">Reservar turno</button>
+    <p class="dato">B · no se oscurece</p>
+    <button class="btn btn-1 btn-foco-b">Reservar turno</button>
   </div>
 </section>
 
@@ -1051,7 +1051,8 @@ y el ancho. Todo a escala 1:1 en {ancho} px.</p>
     <li>Alto mínimo <b>44 px</b> en los tres anchos, siempre.</li>
     <li>En el teléfono el principal va <b>de borde a borde</b>; de tablet para
     arriba, del ancho de su texto.</li>
-    <li>El foco <b>engrosa el borde que ya está</b>, no dibuja uno nuevo.</li>
+    <li>El foco cae <b>sobre el filo del botón</b>, nunca separado de él.</li>
+    <li>La letra del principal es <b>blanca</b> en todos sus estados.</li>
     <li>El deshabilitado <b>dice por qué</b> lo está.</li>
     <li>Mientras envía, el botón <b>no cambia de tamaño</b>.</li>
     <li><b>Un solo botón dorado por pantalla.</b></li>

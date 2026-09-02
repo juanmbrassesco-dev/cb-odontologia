@@ -57,36 +57,28 @@
   --exito-fondo: #EFF4F0;
   --info-fondo: var(--dorado-claro);  /* el informativo no estrena color */
 
-  /* --- EL BOTÓN PRINCIPAL — revisado por Juan el 2-sep-2026 ---
+  /* --- EL BOTÓN PRINCIPAL ---
 
-     Pasa a DORADO CLARO con letra grafito. Reemplaza al dorado con letra
-     blanca (3,09) que se había decidido antes: mide 8,94, así que la duda
-     del piso de contraste desaparece entera.
+     Fondo DORADO DEL BRIEF con letra BLANCA. Es el candidato D y no cambia:
+     es el dorado que se usa en todo el sitio. Mide 3,09, que pasa el piso de
+     3,0 del texto grande, y por eso la letra no baja de 19 px. */
+  --boton-fondo: var(--dorado);
+  --boton-texto: var(--blanco);
 
-     🔴 Pero la superficie sola mide 1,34 contra el marfil: SIN BORDE NO SE
-     VE QUE HAY UN BOTÓN. Por eso lleva contorno, y el contorno no puede ser
-     el dorado del brief (2,89 contra el fondo, abajo del piso de 3,0). */
-  --boton-fondo: var(--dorado-claro);
-  --boton-texto: var(--grafito);
-  --boton-borde: var(--dorado-texto);
+  /* Enviando y foco oscurecen el MISMO dorado hasta el dorado de texto, que
+     ya está en el sistema. No se inventa ningún tono intermedio. */
+  --boton-fondo-oscuro: var(--dorado-texto);
 
-  /* Los tres estados oscurecen el MISMO color, cada vez un poco más: encima
-     < enviando < foco. No aparece ningún tono nuevo. */
-  --boton-fondo-encima: #D8C6A6;
-  --boton-fondo-enviando: #CDB58F;
-  --boton-fondo-foco: var(--dorado);
-
-  /* El anillo de foco COINCIDE con el borde del botón: es el mismo contorno
-     que se engrosa y se oscurece, no una segunda línea por fuera ni por
-     dentro. Se dibuja con sombra interior, que no mueve el tamaño. */
+  /* El anillo de foco COINCIDE con el borde del botón: es un contorno que
+     cae justo sobre el filo, no una segunda línea por fuera ni por dentro. */
   --boton-foco-borde: var(--grafito);
 
-  /* Sombra hiper leve: levanta el botón del fondo sin que se note el truco. */
+  /* Sombras: hiper leve en reposo, marcada al hacer foco o esperar. */
   --sombra-boton: 0 1px 2px rgba(51, 50, 47, 0.10);
-  --sombra-boton-foco: 0 2px 6px rgba(51, 50, 47, 0.18);
+  --sombra-boton-foco: 0 3px 8px rgba(51, 50, 47, 0.22);
 
-  /* El botón secundario es contorno sobre el fondo. Su borde tampoco puede
-     ser el dorado del brief, por lo mismo. */
+  /* El botón secundario: contorno sobre el fondo, letra grafito. No cambia
+     de relleno en ningún estado — sólo se le oscurece el contorno. */
   --boton-2-borde: var(--dorado-texto);
   --boton-2-texto: var(--grafito);
 
@@ -188,11 +180,8 @@
    @par borde sobre blanco >= 3.0 · borde de campo sobre tarjeta
    @par foco sobre marfil >= 3.0 · anillo de foco
    @par grafito sobre dorado >= 3.0 · sólo texto grande sobre dorado
-   @par boton-texto sobre boton-fondo >= 4.5 · el botón principal, en reposo
-   @par boton-texto sobre boton-fondo-encima >= 4.5 · el principal, con el dedo encima
-   @par boton-texto sobre boton-fondo-enviando >= 4.5 · el principal, enviando
-   @par boton-texto sobre boton-fondo-foco >= 3.0 · el principal, con foco
-   @par boton-borde sobre marfil >= 3.0 · el contorno que le da forma al botón
+   @par boton-texto sobre boton-fondo >= 3.0 · el botón principal, en reposo
+   @par boton-texto sobre boton-fondo-oscuro >= 4.5 · el principal, enviando y con foco
    @par boton-2-texto sobre marfil >= 4.5 · la letra del botón secundario
    @par boton-2-borde sobre marfil >= 3.0 · el contorno del botón secundario
    @par boton-apagado-texto sobre boton-apagado-fondo >= 3.0 · el botón deshabilitado
