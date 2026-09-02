@@ -55,10 +55,25 @@ def comparar(ruta_a, ruta_b):
     return distintos, total, salto_maximo
 
 
+def filo(ruta, pagina, holgura=14):
+    """Devuelve los primeros píxeles del control sobre su fila central.
+
+    Si el píxel del filo se parece al de la página, el control se lee como si
+    se hubiera ACHICADO en vez de haber ganado un borde. Es el error que un
+    anillo blanco o marfil comete sobre un fondo claro."""
+    ancho, alto, canales, filas = leer_png(ruta)
+    fila = filas[alto // 2]
+    borde = tuple(fila[i] for i in range(3))
+    parece_pagina = all(abs(borde[i] - pagina[i]) <= holgura for i in range(3))
+    return borde, parece_pagina
+
+
 def main():
     partes = argparse.ArgumentParser()
     partes.add_argument("reposo")
     partes.add_argument("foco")
+    partes.add_argument("--pagina", default=None,
+                        help="color de la página, RRGGBB: chequea que el filo no se le confunda")
     partes.add_argument("--piso", type=float, default=10.0,
                         help="porcentaje mínimo de superficie que tiene que cambiar")
     args = partes.parse_args()
@@ -70,6 +85,18 @@ def main():
 
     print(f"{marca}  cambia el {porcentaje:5.1f} % de la superficie"
           f"  (piso {args.piso} %)  ·  salto máximo de canal: {salto}")
+
+    if args.pagina:
+        pagina = tuple(int(args.pagina.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
+        borde, parece = filo(args.foco, pagina)
+
+        if parece:
+            print(f"✗  el filo del control quedó en {borde}, casi el color de la "
+                  f"página {pagina}: se lee como si el botón se hubiera ACHICADO, "
+                  f"no como un borde.")
+            pasa = False
+        else:
+            print(f"✓  el filo del control quedó en {borde}: la silueta se conserva.")
 
     return 0 if pasa else 1
 
