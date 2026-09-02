@@ -44,6 +44,20 @@
   --exito-fondo: #EFF4F0;
   --info-fondo: var(--dorado-claro);  /* el informativo no estrena color */
 
+  /* --- EL BOTÓN PRINCIPAL — decidido por Juan el 2-sep-2026 ---
+
+     Va el del brief tal cual: FONDO DORADO CON LETRA BLANCA (candidato D).
+     Mide 3,09, que pasa el piso de 3,0 del texto grande. Se eligió respetando
+     la identidad original por encima del margen de contraste, sabiendo que
+     3,09 no deja aire y que WCAG pide negrita para ese piso: el botón va en
+     Jost 19 px, y su peso se termina de fijar en la maqueta final (⑧), que
+     Juan aprueba antes de construir.
+
+     La contrapartida es una regla, no un valor: el fondo dorado NO APARECE
+     debajo de ningún otro texto. Sólo el botón principal. */
+  --boton-fondo: var(--dorado);
+  --boton-texto: var(--blanco);
+
   /* Anillo de foco: grafito macizo, 2px, con 2px de separación.
      Va con el grosor, no sólo con el color (pauta 7). */
   --foco: #33322F;
@@ -68,4 +82,6 @@
    @par borde sobre blanco >= 3.0 · borde de campo sobre tarjeta
    @par foco sobre marfil >= 3.0 · anillo de foco
    @par grafito sobre dorado >= 3.0 · sólo texto grande sobre dorado
+   @par boton-texto sobre boton-fondo >= 3.0 · el botón principal, decidido: D
+
 */

@@ -151,6 +151,7 @@ CANDIDATOS = [
     {
         "letra": "D",
         "titulo": "El botón del brief, tal cual",
+        "elegido": True,
         "subtitulo": "Dorado con letra blanca",
         "subtitulo_color": "dorado",
         "rotulo_color": "dorado",
@@ -197,8 +198,8 @@ def contexto(c):
 def candidato(c, numeros):
     """La tarjeta entera, para el cuadro de 1280."""
     return f'''
-    <div class="candidato">
-      <h3>{c["letra"]} · {c["titulo"]}</h3>
+    <div class="candidato{" elegido" if c.get("elegido") else ""}">
+      <h3>{c["letra"]} · {c["titulo"]}{" — ELEGIDO" if c.get("elegido") else ""}</h3>
       <p class="rotulo" style="color: var(--{c["subtitulo_color"]})">{c["subtitulo"]}</p>
       <div class="demo">{demo(c, numeros)}
       </div>
@@ -377,6 +378,11 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
   background: var(--blanco);
   border: 1px solid var(--dorado-claro);
   padding: 24px 24px 26px;
+}}
+
+.candidato.elegido {{
+  border: 2px solid var(--dorado);
+  background: var(--marfil);
 }}
 
 .candidato h3 {{ margin-bottom: 4px; }}
@@ -580,10 +586,13 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
 
 <p class="pie">Los cuatro cuadros usan los mismos tokens; no hay ningún hex ni
 ningún número escrito a mano acá: los contrastes los calcula el medidor sobre
-<code>css/tokens.css</code>. <b>El candidato B es el único que conserva la
-decisión del brief —rótulos chicos en dorado— con un valor que pasa sin
-condiciones.</b> A y B llevan el botón principal en grafito macizo; C y D lo
-llevan dorado, y los dos dependen de que la letra siga siendo grande.</p>
+<code>css/tokens.css</code>. <b>DECIDIDO EL 2-SEP-2026: va el candidato D</b> — el botón del
+brief tal cual, fondo dorado con letra blanca. Mide {blanco_dorado}, que pasa el
+piso de 3,0 del texto grande. <b>Lo decidió Juan priorizando la identidad
+original por sobre el margen de contraste</b>, y con el criterio de volver a
+mirarlo sobre la maqueta completa antes de construir. La contrapartida quedó
+escrita en <code>tokens.css</code>: <b>el fondo dorado no aparece debajo de
+ningún otro texto, sólo el botón principal.</b></p>
 """
 
 
