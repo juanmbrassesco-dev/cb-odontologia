@@ -305,6 +305,8 @@ section > p {{
 .muestra {{
   background: var(--blanco);
   border: 1px solid var(--dorado-claro);
+  border-radius: var(--radio);
+  overflow: hidden;
 }}
 
 .muestra-color {{
@@ -378,6 +380,7 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
 .candidato {{
   background: var(--blanco);
   border: 1px solid var(--dorado-claro);
+  border-radius: var(--radio);
   padding: 24px 24px 26px;
 }}
 
@@ -391,6 +394,7 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
 .demo {{
   background: var(--marfil);
   border: 1px solid var(--dorado-claro);
+  border-radius: var(--radio);
   padding: 22px;
   margin: 18px 0;
 }}
@@ -470,6 +474,7 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
   width: 390px;
   background: var(--marfil);
   border: 1px solid var(--borde);
+  border-radius: var(--radio);
   padding: 24px 20px 28px;
 }}
 
@@ -857,6 +862,7 @@ CSS_BOTON = """
   padding: 12px 26px;
   min-height: 44px;
   border: 0;
+  border-radius: var(--radio);
   cursor: pointer;
   width: var(--boton-ancho);
 }

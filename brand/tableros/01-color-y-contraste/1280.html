@@ -147,6 +147,30 @@
 
   /* En el teléfono el botón principal va de borde a borde; de tablet para
      arriba se ajusta a su texto. Es un token para que el sitio no lo repita. */
+  /* EL RADIO DE LAS ESQUINAS — decidido por Juan el 2-sep-2026.
+
+     El manual dibuja las esquinas CUADRADAS: medido sobre la página 17 a
+     200 dpi, las tres esquinas de sus botones están llenas hasta el píxel de
+     la punta. Se decidió apartarse, con motivo escrito.
+
+     A FAVOR de apartarse: Bar & Neta (Psychological Science, 2006) midieron
+     que las personas prefieren el contorno curvo y que el ángulo filoso
+     comunica amenaza —más activación de amígdala, y en frecuencias espaciales
+     bajas, o sea antes de pensarlo—. En un consultorio que promete calma, eso
+     pesa.
+
+     POR QUÉ 3 Y NO 8: el rango 8-12 lee "amable" y la § 2 pide premium en la
+     forma. 3 px suaviza sin cambiar de registro.
+
+     POR QUÉ NO 0: el argumento de que "la curva ya vive en el anillo de la
+     marca" no se sostiene, porque el anillo NO va a estar en la mayoría de
+     las pantallas —lo levantó Juan—. Donde no hay marca, no hay curva.
+
+     DÓNDE APLICA: controles y superficies —botón, campo, tarjeta, mensaje—.
+     NO aplica al logo, al patrón, ni a las fotos: la foto del hero va a
+     sangre y cuadrada, como en el manual. */
+  --radio: 3px;
+
   --boton-ancho: 100%;
 
   /* El anillo de foco va ADENTRO del control, en los tres anchos. Afuera se
@@ -265,6 +289,8 @@ section > p {
 .muestra {
   background: var(--blanco);
   border: 1px solid var(--dorado-claro);
+  border-radius: var(--radio);
+  overflow: hidden;
 }
 
 .muestra-color {
@@ -338,6 +364,7 @@ tr.mal td:first-child::before { content: "✗  "; color: var(--error); }
 .candidato {
   background: var(--blanco);
   border: 1px solid var(--dorado-claro);
+  border-radius: var(--radio);
   padding: 24px 24px 26px;
 }
 
@@ -351,6 +378,7 @@ tr.mal td:first-child::before { content: "✗  "; color: var(--error); }
 .demo {
   background: var(--marfil);
   border: 1px solid var(--dorado-claro);
+  border-radius: var(--radio);
   padding: 22px;
   margin: 18px 0;
 }
@@ -430,6 +458,7 @@ tr.mal td:first-child::before { content: "✗  "; color: var(--error); }
   width: 390px;
   background: var(--marfil);
   border: 1px solid var(--borde);
+  border-radius: var(--radio);
   padding: 24px 20px 28px;
 }
 
