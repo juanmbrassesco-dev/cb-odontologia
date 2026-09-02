@@ -874,17 +874,17 @@ CSS_BOTON = """
   cursor: progress;
 }
 
-/* FOCO · opción A — se oscurece el dorado. El contorno cae justo sobre el
-   filo del botón: es sombra interior de 2 px, así que no hay una segunda
-   línea ni por fuera ni separada. */
+/* FOCO · opción A — un filtro encima del botón ENTERO: oscurece la superficie
+   y también las letras, que es el efecto de "sombra por arriba". */
 .btn-foco-a {
-  background: var(--boton-fondo-oscuro);
+  filter: var(--boton-filtro-foco);
   box-shadow: inset 0 0 0 2px var(--boton-foco-borde), var(--sombra-boton-foco);
 }
 
-/* FOCO · opción B — el dorado NO cambia; lo que marca el foco es la sombra
-   más el mismo contorno al filo. */
+/* FOCO · opción B — se oscurece SÓLO la superficie; las letras quedan
+   blancas. Mismo salto de tono, pero la letra no pierde nitidez. */
 .btn-foco-b {
+  background: var(--boton-fondo-oscuro);
   box-shadow: inset 0 0 0 2px var(--boton-foco-borde), var(--sombra-boton-foco);
 }
 
@@ -905,8 +905,6 @@ CSS_BOTON = """
 .btn-apagado {
   background: var(--boton-apagado-fondo);
   color: var(--boton-apagado-texto);
-  border: 1px solid var(--boton-apagado-borde);
-  padding: 11px 25px;
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -953,18 +951,19 @@ ESTADOS = [
     ("btn-1 btn-1-enviando", "Enviando", "Reservando…",
      "El mismo dorado oscurecido, con sombra, y la palabra cambiada. Sube a "
      "4,85. El botón conserva su tamaño para que nada salte de lugar."),
-    ("btn-1 btn-foco-a", "Con foco · opción A — se oscurece el dorado",
+    ("btn-1 btn-foco-a", "Con foco · A — el filtro cae sobre TODO el botón",
      "Reservar turno",
-     "Dorado oscurecido más el contorno. El contorno cae JUSTO sobre el filo "
-     "del botón: no hay una segunda línea ni por fuera ni separada. 4,85."),
-    ("btn-1 btn-foco-b", "Con foco · opción B — el dorado no cambia",
+     "El efecto pedido, literal: una capa oscura encima que apaga la "
+     "superficie Y las letras. Por eso la letra baja de blanco a gris y el "
+     "contraste CAE de 3,09 a 2,84, abajo del piso de 3,0."),
+    ("btn-1 btn-foco-b", "Con foco · B — el filtro cae sólo sobre la superficie",
      "Reservar turno",
-     "Mismo dorado que en reposo; lo que marca el foco es la sombra más el "
-     "contorno al filo. Se distingue menos, pero el botón no cambia de color."),
+     "El mismo salto de tono en el dorado, pero la letra queda blanca. El "
+     "contraste SUBE a 4,85 y deja de necesitar la excepción de texto grande."),
     ("btn-apagado", "Deshabilitado", "Elegí un horario primero",
-     "El botón DICE por qué no se puede tocar; un botón gris que no explica "
-     "nada deja al paciente adivinando. Y lleva borde: su relleno mide 1,11 "
-     "contra el fondo, o sea que sin contorno no se ve que hay un botón."),
+     "El gris que ya estaba en el sistema, macizo, con letra blanca: 4,85. "
+     "Mide 4,54 contra el fondo, así que se ve sin necesidad de borde. Y el "
+     "botón DICE por qué no se puede tocar, no sólo se apaga."),
 ]
 
 
@@ -1031,17 +1030,25 @@ y el ancho. Todo a escala 1:1 en {ancho} px.</p>
 
 <section>
   <p class="rotulo">Las dos opciones de foco, juntas</p>
-  <h2>A y B, una al lado de la otra</h2>
-  <p>Mismo tamaño, misma letra, mismo contorno. <b>Lo único que cambia es si
-  el dorado se oscurece o no.</b></p>
+  <h2>A y B, una debajo de la otra</h2>
+  <p>Mismo tamaño, mismo contorno, mismo salto de tono en el dorado.
+  <b>Lo único que cambia es si la letra se apaga con el resto o no.</b></p>
   <div class="estado">
-    <p class="dato">A · se oscurece</p>
+    <p class="dato">Reposo, para comparar</p>
+    <button class="btn btn-1">Reservar turno</button>
+  </div>
+  <div class="estado">
+    <p class="dato">A · el filtro apaga también la letra — <b>2,84</b></p>
     <button class="btn btn-1 btn-foco-a">Reservar turno</button>
   </div>
   <div class="estado">
-    <p class="dato">B · no se oscurece</p>
+    <p class="dato">B · la letra queda blanca — <b>4,85</b></p>
     <button class="btn btn-1 btn-foco-b">Reservar turno</button>
   </div>
+  <p class="dato" style="margin-top: 18px">⚠️ El medidor NO puede ver la
+  opción A: un filtro se aplica al dibujar, no es un color declarado, así que
+  <code>medir-contraste.py</code> sigue diciendo 3,09 aunque en pantalla sean
+  2,84. Ese número está calculado a mano.</p>
 </section>
 
 <section>
