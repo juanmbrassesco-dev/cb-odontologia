@@ -272,6 +272,32 @@ tr.mal td:first-child::before { content: "✗  "; color: var(--error); }
   text-underline-offset: 3px;
 }
 
+.telefonos {
+  display: grid;
+  grid-template-columns: repeat(2, 390px);
+  gap: 26px 40px;
+  margin-top: 26px;
+}
+
+.telefono-letra {
+  font-family: Jost, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+  margin-bottom: 8px;
+}
+
+.pantalla {
+  width: 390px;
+  background: var(--marfil);
+  border: 1px solid var(--borde);
+  padding: 24px 20px 28px;
+}
+
+.pantalla p { font-size: 16px; margin: 10px 0 18px; }
+
 .pie {
   margin-top: 56px;
   padding-top: 20px;
@@ -411,77 +437,97 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
   El mismo botón en un teléfono de 390 es lo que sigue.</p>
 
   <div class="candidatos">
-
     <div class="candidato">
       <h3>A · Sólo acento</h3>
       <p class="rotulo" style="color: var(--apagado)">Nunca letra</p>
       <div class="demo">
         <p class="rotulo" style="color: var(--grafito)">Nuestros tratamientos</p>
-        <p>Un enlace queda <a class="enlace" href="#"
-           style="color: var(--grafito)">en grafito</a>, como el resto.</p>
+        <p>Un enlace queda <a class="enlace" href="#" style="color: var(--grafito)">en grafito</a>, como el resto.</p>
         <span class="boton boton-grafito">Agendar</span>
       </div>
-      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
-      fondo grafito · rótulo 13&nbsp;px. <b>No depende del tamaño:</b> el grafito
-      mide 12,82 y pasa a cualquiera.</p>
-      <p class="costo">Mata una decisión del brief: los rótulos chicos en
-      mayúsculas iban en dorado y acá se vuelven grises.</p>
+      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px · fondo grafito · rótulo 13&nbsp;px. <b>No depende del tamaño:</b> el grafito mide 12,82 y pasa a cualquiera.</p>
+      <p class="costo">Mata una decisión del brief: los rótulos chicos en mayúsculas iban en dorado y acá se vuelven grises.</p>
     </div>
-
     <div class="candidato">
       <h3>B · Dos dorados</h3>
-      <p class="rotulo">Fondo y letra, separados</p>
+      <p class="rotulo" style="color: var(--dorado-texto)">Fondo y letra, separados</p>
       <div class="demo">
-        <p class="rotulo">Nuestros tratamientos</p>
-        <p>Un enlace queda <a class="enlace" href="#">en dorado de
-        texto</a>, que sí pasa.</p>
+        <p class="rotulo" style="color: var(--dorado-texto)">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="enlace" href="#">en dorado de texto</a>, que sí pasa.</p>
         <span class="boton boton-grafito">Agendar</span>
       </div>
-      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
-      fondo grafito · rótulo 13&nbsp;px. <b>No depende del tamaño:</b> el grafito
-      mide 12,82 y pasa a cualquiera.</p>
-      <p class="costo">Son dos dorados. Hay que escribir cuándo va cada uno
-      —<b>#B08D57</b> para fondos y líneas, <b>#896D41</b> para letra— o se
-      mezclan.</p>
+      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px · fondo grafito · rótulo 13&nbsp;px. <b>No depende del tamaño:</b> el grafito mide 12,82 y pasa a cualquiera.</p>
+      <p class="costo">Son dos dorados. Hay que escribir cuándo va cada uno —<b>#B08D57</b> para fondos y líneas, <b>#896D41</b> para letra— o se mezclan.</p>
     </div>
-
     <div class="candidato">
       <h3>C · Botón dorado</h3>
-      <p class="rotulo" style="color: var(--dorado)">Letra grafito, 19px semibold</p>
+      <p class="rotulo" style="color: var(--dorado-texto)">Letra grafito</p>
       <div class="demo">
         <p class="rotulo" style="color: var(--dorado)">Nuestros tratamientos</p>
-        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del
-        brief</a>: 2,89, no pasa.</p>
+        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del brief</a>: 2,89, no pasa.</p>
         <span class="boton boton-dorado">Agendar</span>
       </div>
-      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
-      fondo dorado · rótulo 13&nbsp;px. <b>Depende del tamaño:</b> a 16&nbsp;px
-      deja de cumplir.</p>
-      <p class="costo">Frágil: el botón mide 4,15 y sólo vale porque
-      la letra es grande. Si alguien la baja a 16px deja de cumplir y nada
-      avisa.</p>
+      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px · fondo dorado · rótulo 13&nbsp;px. <b>Depende del tamaño:</b> a 16&nbsp;px deja de cumplir.</p>
+      <p class="costo">Frágil: el botón mide <b>4,15</b> y sólo vale porque la letra es grande. Si alguien la baja a 16&nbsp;px deja de cumplir y nada avisa.</p>
     </div>
-
     <div class="candidato">
       <h3>D · El botón del brief, tal cual</h3>
       <p class="rotulo" style="color: var(--dorado)">Dorado con letra blanca</p>
       <div class="demo">
         <p class="rotulo" style="color: var(--dorado)">Nuestros tratamientos</p>
-        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del
-        brief</a>: 2,89, no pasa.</p>
+        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del brief</a>: 2,89, no pasa.</p>
         <span class="boton boton-dorado-blanco">Agendar</span>
       </div>
-      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
-      fondo dorado · rótulo 13&nbsp;px. <b>Depende del tamaño:</b> a 16&nbsp;px
-      deja de cumplir.</p>
-      <p class="costo">Es lo que dibuja la página 17. Mide <b>3,09</b>:
-      como texto normal no pasa ni cerca, y como texto grande pasa el piso de 3,0
-      <b>por nueve centésimas</b>. Es el mismo riesgo que C con la mitad del
-      margen — y acá el que lo rompe no es sólo bajar la letra a 16px, también
-      lo rompe cualquier tono de dorado un punto más claro.</p>
+      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px · fondo dorado · rótulo 13&nbsp;px. <b>Depende del tamaño:</b> a 16&nbsp;px deja de cumplir.</p>
+      <p class="costo">Es lo que dibuja la página 17. Mide <b>3,09</b>: como texto normal no pasa ni cerca, y como texto grande pasa el piso de 3,0 <b>por nueve centésimas</b>. Es el mismo riesgo que C con la mitad del margen — y acá el que lo rompe no es sólo bajar la letra a 16&nbsp;px, también lo rompe cualquier dorado un punto más claro.</p>
     </div>
-
   </div>
+</section>
+
+<section>
+  <p class="rotulo">Los mismos cuatro, en el teléfono</p>
+  <h2>390&nbsp;px, que es donde esto vive de verdad</h2>
+  <p>El sitio es mobile-first: el ancho real de la decisión es éste, no el de
+  arriba. <b>Cada marco mide 390&nbsp;px exactos y está a escala 1:1</b> — es el
+  mismo contenido de arriba, sin ningún cambio, metido en el ancho de un
+  teléfono.</p>
+  <p class="tamano" style="margin-top: 12px"><b>Lo único que este tablero no
+  reproduce:</b> el navegador que lo dibuja tiene 1280&nbsp;px de ventana, así
+  que si mañana el CSS trae una regla que sólo se activa en pantallas chicas,
+  acá no se activaría. Hoy no hay ninguna, así que lo que ves es lo que se ve.</p>
+  <div class="telefonos">
+    <div class="telefono">
+      <p class="telefono-letra">A · Sólo acento</p>
+      <div class="pantalla">
+        <p class="rotulo" style="color: var(--grafito)">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="enlace" href="#" style="color: var(--grafito)">en grafito</a>, como el resto.</p>
+        <span class="boton boton-grafito">Agendar</span>
+      </div>
+    </div>
+    <div class="telefono">
+      <p class="telefono-letra">B · Dos dorados</p>
+      <div class="pantalla">
+        <p class="rotulo" style="color: var(--dorado-texto)">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="enlace" href="#">en dorado de texto</a>, que sí pasa.</p>
+        <span class="boton boton-grafito">Agendar</span>
+      </div>
+    </div>
+    <div class="telefono">
+      <p class="telefono-letra">C · Botón dorado</p>
+      <div class="pantalla">
+        <p class="rotulo" style="color: var(--dorado)">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del brief</a>: 2,89, no pasa.</p>
+        <span class="boton boton-dorado">Agendar</span>
+      </div>
+    </div>
+    <div class="telefono">
+      <p class="telefono-letra">D · El botón del brief, tal cual</p>
+      <div class="pantalla">
+        <p class="rotulo" style="color: var(--dorado)">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del brief</a>: 2,89, no pasa.</p>
+        <span class="boton boton-dorado-blanco">Agendar</span>
+      </div>
+    </div></div>
 </section>
 
 <p class="pie">Los cuatro cuadros usan los mismos tokens; no hay ningún hex ni

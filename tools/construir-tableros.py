@@ -95,6 +95,127 @@ def fila_medida(fila):
     )
 
 
+# Los cuatro candidatos del dorado. El HTML se arma una sola vez desde acá,
+# así el cuadro de 1280 y el de 390 no pueden decir cosas distintas.
+CANDIDATOS = [
+    {
+        "letra": "A",
+        "titulo": "Sólo acento",
+        "subtitulo": "Nunca letra",
+        "subtitulo_color": "apagado",
+        "rotulo_color": "grafito",
+        "enlace_clase": "enlace",
+        "enlace_estilo": "color: var(--grafito)",
+        "enlace_texto": "en grafito",
+        "enlace_cola": ", como el resto.",
+        "boton_clase": "boton-grafito",
+        "depende": False,
+        "fondo_boton": "grafito",
+        "costo": "Mata una decisión del brief: los rótulos chicos en mayúsculas "
+                 "iban en dorado y acá se vuelven grises.",
+    },
+    {
+        "letra": "B",
+        "titulo": "Dos dorados",
+        "subtitulo": "Fondo y letra, separados",
+        "subtitulo_color": "dorado-texto",
+        "rotulo_color": "dorado-texto",
+        "enlace_clase": "enlace",
+        "enlace_estilo": "",
+        "enlace_texto": "en dorado de texto",
+        "enlace_cola": ", que sí pasa.",
+        "boton_clase": "boton-grafito",
+        "depende": False,
+        "fondo_boton": "grafito",
+        "costo": "Son dos dorados. Hay que escribir cuándo va cada uno "
+                 "—<b>{dorado}</b> para fondos y líneas, <b>{dorado_texto}</b> "
+                 "para letra— o se mezclan.",
+    },
+    {
+        "letra": "C",
+        "titulo": "Botón dorado",
+        "subtitulo": "Letra grafito",
+        "subtitulo_color": "dorado-texto",
+        "rotulo_color": "dorado",
+        "enlace_clase": "enlace-flojo",
+        "enlace_estilo": "",
+        "enlace_texto": "en dorado del brief",
+        "enlace_cola": ": {dorado_marfil}, no pasa.",
+        "boton_clase": "boton-dorado",
+        "depende": True,
+        "fondo_boton": "dorado",
+        "costo": "Frágil: el botón mide <b>{grafito_dorado}</b> y sólo vale porque "
+                 "la letra es grande. Si alguien la baja a 16&nbsp;px deja de "
+                 "cumplir y nada avisa.",
+    },
+    {
+        "letra": "D",
+        "titulo": "El botón del brief, tal cual",
+        "subtitulo": "Dorado con letra blanca",
+        "subtitulo_color": "dorado",
+        "rotulo_color": "dorado",
+        "enlace_clase": "enlace-flojo",
+        "enlace_estilo": "",
+        "enlace_texto": "en dorado del brief",
+        "enlace_cola": ": {dorado_marfil}, no pasa.",
+        "boton_clase": "boton-dorado-blanco",
+        "depende": True,
+        "fondo_boton": "dorado",
+        "costo": "Es lo que dibuja la página 17. Mide <b>{blanco_dorado}</b>: como "
+                 "texto normal no pasa ni cerca, y como texto grande pasa el piso "
+                 "de 3,0 <b>por nueve centésimas</b>. Es el mismo riesgo que C con "
+                 "la mitad del margen — y acá el que lo rompe no es sólo bajar la "
+                 "letra a 16&nbsp;px, también lo rompe cualquier dorado un punto "
+                 "más claro.",
+    },
+]
+
+
+def demo(c, numeros):
+    """El interior de un candidato: rótulo, texto con enlace y botón.
+    Es lo mismo a 1280 y a 390 — cambia el ancho del marco, no el contenido."""
+    estilo = f' style="{c["enlace_estilo"]}"' if c["enlace_estilo"] else ""
+    cola = c["enlace_cola"].format(**numeros)
+    return f'''
+        <p class="rotulo" style="color: var(--{c["rotulo_color"]})">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="{c["enlace_clase"]}" href="#"{estilo}>{c["enlace_texto"]}</a>{cola}</p>
+        <span class="boton {c["boton_clase"]}">Agendar</span>'''
+
+
+def contexto(c):
+    """El renglón que dice de qué tamaño es cada cosa y qué depende de eso."""
+    if c["depende"]:
+        nota = "<b>Depende del tamaño:</b> a 16&nbsp;px deja de cumplir."
+    else:
+        nota = "<b>No depende del tamaño:</b> el grafito mide 12,82 y pasa a cualquiera."
+    return (
+        f'<p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px · '
+        f'fondo {c["fondo_boton"]} · rótulo 13&nbsp;px. {nota}</p>'
+    )
+
+
+def candidato(c, numeros):
+    """La tarjeta entera, para el cuadro de 1280."""
+    return f'''
+    <div class="candidato">
+      <h3>{c["letra"]} · {c["titulo"]}</h3>
+      <p class="rotulo" style="color: var(--{c["subtitulo_color"]})">{c["subtitulo"]}</p>
+      <div class="demo">{demo(c, numeros)}
+      </div>
+      {contexto(c)}
+      <p class="costo">{c["costo"].format(**numeros)}</p>
+    </div>'''
+
+
+def telefono(c, numeros):
+    """El mismo candidato dentro de un marco de 390 px, a escala real."""
+    return f'''
+    <div class="telefono">
+      <p class="telefono-letra">{c["letra"]} · {c["titulo"]}</p>
+      <div class="pantalla">{demo(c, numeros)}
+      </div>
+    </div>'''
+
 def medida(tokens, nombre_a, nombre_b):
     """El contraste de un par, listo para meter en la prosa, con coma."""
     valor = MEDIDOR.razon(tokens[nombre_a], tokens[nombre_b])
@@ -103,9 +224,17 @@ def medida(tokens, nombre_a, nombre_b):
 
 def tablero_color(tokens, css):
     filas = MEDIDOR.medir()
-    dorado_marfil = medida(tokens, "dorado", "marfil")
-    blanco_dorado = medida(tokens, "blanco", "dorado")
-    grafito_dorado = medida(tokens, "grafito", "dorado")
+    numeros = {
+        "dorado_marfil": medida(tokens, "dorado", "marfil"),
+        "blanco_dorado": medida(tokens, "blanco", "dorado"),
+        "grafito_dorado": medida(tokens, "grafito", "dorado"),
+        "dorado": tokens["dorado"],
+        "dorado_texto": tokens["dorado-texto"],
+    }
+    dorado_marfil = numeros["dorado_marfil"]
+    blanco_dorado = numeros["blanco_dorado"]
+    cuadros = "".join(candidato(c, numeros) for c in CANDIDATOS)
+    telefonos = "".join(telefono(c, numeros) for c in CANDIDATOS)
     muestras_brief = "".join(muestra(n, t, m, tokens) for n, t, m in PALETA_BRIEF)
     muestras_derivadas = "".join(muestra(n, t, m, tokens) for n, t, m in DERIVADOS)
     tabla = "".join(fila_medida(f) for f in filas)
@@ -313,6 +442,32 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
   text-underline-offset: 3px;
 }}
 
+.telefonos {{
+  display: grid;
+  grid-template-columns: repeat(2, 390px);
+  gap: 26px 40px;
+  margin-top: 26px;
+}}
+
+.telefono-letra {{
+  font-family: Jost, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+  margin-bottom: 8px;
+}}
+
+.pantalla {{
+  width: 390px;
+  background: var(--marfil);
+  border: 1px solid var(--borde);
+  padding: 24px 20px 28px;
+}}
+
+.pantalla p {{ font-size: 16px; margin: 10px 0 18px; }}
+
 .pie {{
   margin-top: 56px;
   padding-top: 20px;
@@ -371,78 +526,22 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
   los cuatro cuadros es el color</b>. · <b>Esto es escritorio, 1280&nbsp;px.</b>
   El mismo botón en un teléfono de 390 es lo que sigue.</p>
 
-  <div class="candidatos">
-
-    <div class="candidato">
-      <h3>A · Sólo acento</h3>
-      <p class="rotulo" style="color: var(--apagado)">Nunca letra</p>
-      <div class="demo">
-        <p class="rotulo" style="color: var(--grafito)">Nuestros tratamientos</p>
-        <p>Un enlace queda <a class="enlace" href="#"
-           style="color: var(--grafito)">en grafito</a>, como el resto.</p>
-        <span class="boton boton-grafito">Agendar</span>
-      </div>
-      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
-      fondo grafito · rótulo 13&nbsp;px. <b>No depende del tamaño:</b> el grafito
-      mide 12,82 y pasa a cualquiera.</p>
-      <p class="costo">Mata una decisión del brief: los rótulos chicos en
-      mayúsculas iban en dorado y acá se vuelven grises.</p>
-    </div>
-
-    <div class="candidato">
-      <h3>B · Dos dorados</h3>
-      <p class="rotulo">Fondo y letra, separados</p>
-      <div class="demo">
-        <p class="rotulo">Nuestros tratamientos</p>
-        <p>Un enlace queda <a class="enlace" href="#">en dorado de
-        texto</a>, que sí pasa.</p>
-        <span class="boton boton-grafito">Agendar</span>
-      </div>
-      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
-      fondo grafito · rótulo 13&nbsp;px. <b>No depende del tamaño:</b> el grafito
-      mide 12,82 y pasa a cualquiera.</p>
-      <p class="costo">Son dos dorados. Hay que escribir cuándo va cada uno
-      —<b>{tokens["dorado"]}</b> para fondos y líneas, <b>{tokens["dorado-texto"]}</b> para letra— o se
-      mezclan.</p>
-    </div>
-
-    <div class="candidato">
-      <h3>C · Botón dorado</h3>
-      <p class="rotulo" style="color: var(--dorado)">Letra grafito, 19px semibold</p>
-      <div class="demo">
-        <p class="rotulo" style="color: var(--dorado)">Nuestros tratamientos</p>
-        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del
-        brief</a>: {dorado_marfil}, no pasa.</p>
-        <span class="boton boton-dorado">Agendar</span>
-      </div>
-      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
-      fondo dorado · rótulo 13&nbsp;px. <b>Depende del tamaño:</b> a 16&nbsp;px
-      deja de cumplir.</p>
-      <p class="costo">Frágil: el botón mide {grafito_dorado} y sólo vale porque
-      la letra es grande. Si alguien la baja a 16px deja de cumplir y nada
-      avisa.</p>
-    </div>
-
-    <div class="candidato">
-      <h3>D · El botón del brief, tal cual</h3>
-      <p class="rotulo" style="color: var(--dorado)">Dorado con letra blanca</p>
-      <div class="demo">
-        <p class="rotulo" style="color: var(--dorado)">Nuestros tratamientos</p>
-        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del
-        brief</a>: {dorado_marfil}, no pasa.</p>
-        <span class="boton boton-dorado-blanco">Agendar</span>
-      </div>
-      <p class="tamano">Botón: Jost 19&nbsp;px, peso 600 · alto 44&nbsp;px ·
-      fondo dorado · rótulo 13&nbsp;px. <b>Depende del tamaño:</b> a 16&nbsp;px
-      deja de cumplir.</p>
-      <p class="costo">Es lo que dibuja la página 17. Mide <b>{blanco_dorado}</b>:
-      como texto normal no pasa ni cerca, y como texto grande pasa el piso de 3,0
-      <b>por nueve centésimas</b>. Es el mismo riesgo que C con la mitad del
-      margen — y acá el que lo rompe no es sólo bajar la letra a 16px, también
-      lo rompe cualquier tono de dorado un punto más claro.</p>
-    </div>
-
+  <div class="candidatos">{cuadros}
   </div>
+</section>
+
+<section>
+  <p class="rotulo">Los mismos cuatro, en el teléfono</p>
+  <h2>390&nbsp;px, que es donde esto vive de verdad</h2>
+  <p>El sitio es mobile-first: el ancho real de la decisión es éste, no el de
+  arriba. <b>Cada marco mide 390&nbsp;px exactos y está a escala 1:1</b> — es el
+  mismo contenido de arriba, sin ningún cambio, metido en el ancho de un
+  teléfono.</p>
+  <p class="tamano" style="margin-top: 12px"><b>Lo único que este tablero no
+  reproduce:</b> el navegador que lo dibuja tiene 1280&nbsp;px de ventana, así
+  que si mañana el CSS trae una regla que sólo se activa en pantallas chicas,
+  acá no se activaría. Hoy no hay ninguna, así que lo que ves es lo que se ve.</p>
+  <div class="telefonos">{telefonos}</div>
 </section>
 
 <p class="pie">Los cuatro cuadros usan los mismos tokens; no hay ningún hex ni
