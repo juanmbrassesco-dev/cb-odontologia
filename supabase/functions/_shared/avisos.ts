@@ -40,7 +40,7 @@ const RESEND_LOTE = 'https://api.resend.com/emails/batch'
 // Mientras el dominio no esté verificado, el proveedor sólo deja mandar DESDE
 // esta dirección suya. El nombre de adelante sí es libre, y es lo único que ve
 // el que recibe.
-const REMITENTE_DE_PRUEBA = 'CB Odontología <onboarding@resend.dev>'
+const REMITENTE_DE_PRUEBA = 'CB Odontología y Estética <onboarding@resend.dev>'
 
 const FIRMA = 'CB Odontología y Estética — Santa Fe'
 
@@ -376,7 +376,7 @@ function correoParaElPaciente(
     return {
       from: remitente,
       to: [ datos.pacienteCorreo ],
-      subject: 'Tu turno en CB Odontología quedó cancelado',
+      subject: 'Tu turno quedó cancelado — CB Odontología y Estética',
       text: texto,
     }
   }
@@ -412,8 +412,20 @@ function correoParaElPaciente(
   // éste lo reemplaza», y se sacó por CONDICIONAL: le pedía a la paciente
   // resolver un «si» que ella no podía chequear. Lo de acá abajo no pregunta,
   // afirma — la base sabe cuál era la hora anterior.
+  // 🔴 EL NOMBRE VA COMPLETO Y VA AL FINAL, y las dos mitades tienen motivo.
+  //
+  // COMPLETO porque «CB Odontología» a secas es el nombre de OTRO consultorio
+  // —el de la Dra. Constanza Brión, en Buenos Aires, funcionando desde 2024—
+  // y el sufijo «y Estética» es lo único que nos distingue de él. Hasta el
+  // 1-sep-2026 los cuatro asuntos y el remitente lo decían cortado.
+  //
+  // AL FINAL porque en el teléfono el asunto se corta cerca de los 35
+  // caracteres, y lo primero que tiene que leerse es QUÉ PASÓ. Con el nombre
+  // adelante, «Tu turno en CB Odontología y Esté…» pierde justo la palabra que
+  // distingue un aviso de otro, que es lo que el bloque de arriba explica que
+  // no se puede perder. Quién manda el correo ya lo dice el remitente.
   let titular = 'Tu turno quedó agendado.'
-  let asunto = 'Tu turno en CB Odontología quedó agendado'
+  let asunto = 'Tu turno quedó agendado — CB Odontología y Estética'
 
   // Renglones que se agregan debajo de la ficha, o ninguno. Empieza vacío
   // porque el correo de un turno nuevo no aclara nada: no hay nada anterior.
@@ -422,7 +434,7 @@ function correoParaElPaciente(
   if ( queEsEsteAviso( datos ) === 'hora-nueva' ) {
 
     titular = 'El horario de tu turno cambió.'
-    asunto = 'Cambió el horario de tu turno en CB Odontología'
+    asunto = 'Cambió el horario de tu turno — CB Odontología y Estética'
 
     aclaracion.push(
       '',
@@ -444,7 +456,7 @@ function correoParaElPaciente(
   if ( queEsEsteAviso( datos ) === 'datos-nuevos' ) {
 
     titular = 'Hubo un cambio en tu turno. Estos son los datos nuevos:'
-    asunto = 'Cambió tu turno en CB Odontología'
+    asunto = 'Cambió tu turno — CB Odontología y Estética'
   }
 
   const texto = [
