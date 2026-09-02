@@ -874,37 +874,33 @@ CSS_BOTON = """
   cursor: progress;
 }
 
-/* FOCO · opción A — un filtro encima del botón ENTERO: oscurece la superficie
-   y también las letras, que es el efecto de "sombra por arriba". */
-.btn-foco-a {
-  filter: var(--boton-filtro-foco);
-  box-shadow: inset 0 0 0 2px var(--boton-foco-borde), var(--sombra-boton-foco);
-}
-
-/* FOCO · opción B — se oscurece SÓLO la superficie; las letras quedan
-   blancas. Mismo salto de tono, pero la letra no pierde nitidez. */
-.btn-foco-b {
+/* FOCO del principal: se oscurece la superficie y el contorno cae JUSTO sobre
+   el filo del botón. Las letras quedan blancas — el filtro que también las
+   apagaba se descartó: dejaba el foco en 2,84, abajo del piso. */
+.btn-foco {
   background: var(--boton-fondo-oscuro);
   box-shadow: inset 0 0 0 2px var(--boton-foco-borde), var(--sombra-boton-foco);
 }
 
+/* El secundario del brief, página 17: grafito macizo con letra blanca. */
 .btn-2 {
-  background: transparent;
+  background: var(--boton-2-fondo);
   color: var(--boton-2-texto);
-  border: 1px solid var(--boton-2-borde);
-  padding: 11px 25px;
+  box-shadow: var(--sombra-boton);
 }
 
-/* El secundario no cambia de relleno: se le oscurece y engrosa su contorno,
-   que es lo único que tiene. */
+/* Misma regla de foco que el principal —contorno sobre el filo, sombra más
+   marcada—, con el contraste dado vuelta: sobre grafito un contorno grafito
+   no se vería, así que va en marfil. */
 .btn-2-foco {
-  border-color: var(--boton-foco-borde);
-  box-shadow: inset 0 0 0 1px var(--boton-foco-borde), var(--sombra-boton-foco);
+  box-shadow: inset 0 0 0 2px var(--boton-2-foco-borde), var(--sombra-boton-foco);
 }
 
 .btn-apagado {
   background: var(--boton-apagado-fondo);
   color: var(--boton-apagado-texto);
+  border: 1px solid var(--boton-apagado-borde);
+  padding: 11px 25px;
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -951,19 +947,14 @@ ESTADOS = [
     ("btn-1 btn-1-enviando", "Enviando", "Reservando…",
      "El mismo dorado oscurecido, con sombra, y la palabra cambiada. Sube a "
      "4,85. El botón conserva su tamaño para que nada salte de lugar."),
-    ("btn-1 btn-foco-a", "Con foco · A — el filtro cae sobre TODO el botón",
-     "Reservar turno",
-     "El efecto pedido, literal: una capa oscura encima que apaga la "
-     "superficie Y las letras. Por eso la letra baja de blanco a gris y el "
-     "contraste CAE de 3,09 a 2,84, abajo del piso de 3,0."),
-    ("btn-1 btn-foco-b", "Con foco · B — el filtro cae sólo sobre la superficie",
-     "Reservar turno",
-     "El mismo salto de tono en el dorado, pero la letra queda blanca. El "
-     "contraste SUBE a 4,85 y deja de necesitar la excepción de texto grande."),
+    ("btn-1 btn-foco", "Con foco", "Reservar turno",
+     "Se oscurece la superficie y el contorno cae JUSTO sobre el filo del "
+     "botón. Las letras quedan blancas: 4,85. Se descartó el filtro que las "
+     "apagaba también, porque dejaba el foco en 2,84, abajo del piso."),
     ("btn-apagado", "Deshabilitado", "Elegí un horario primero",
-     "El gris que ya estaba en el sistema, macizo, con letra blanca: 4,85. "
-     "Mide 4,54 contra el fondo, así que se ve sin necesidad de borde. Y el "
-     "botón DICE por qué no se puede tocar, no sólo se apaga."),
+     "El botón DICE por qué no se puede tocar; un botón gris que no explica "
+     "nada deja al paciente adivinando. Y lleva borde: su relleno mide 1,11 "
+     "contra el fondo, o sea que sin contorno no se ve que hay un botón."),
 ]
 
 
@@ -1009,46 +1000,42 @@ y el ancho. Todo a escala 1:1 en {ancho} px.</p>
 
 <section>
   <p class="rotulo">El botón secundario</p>
-  <h2>Contorno, para lo que no es la acción principal</h2>
+  <h2>El grafito del brief, para lo que no es la acción principal</h2>
   <p>Cancelar, volver, ver otro día. <b>Nunca dos botones dorados en la misma
   pantalla:</b> si todo pesa igual, nada guía.</p>
+  <p class="dato" style="margin-top: 10px"><b>Atención, y es una decisión que
+  queda abierta:</b> el grafito mide 12,82 y el dorado del principal 3,09, así
+  que <b>el secundario pesa más a la vista que el principal</b>. En el brief
+  ese grafito era el botón PRINCIPAL. Se ve recién en la pieza 8, cuando los
+  dos estén en la misma pantalla.</p>
   <div class="estado">
     <p class="dato">Reposo</p>
     <button class="btn btn-2">Cancelar turno</button>
-    <p class="dato">Su contorno NO puede ser el dorado del brief: un borde se
-    mide contra el fondo y ese dorado da <b>2,89</b>, abajo del piso de 3,0 de
-    los controles. Va el dorado de texto, que da 4,54.</p>
+    <p class="dato">Grafito macizo con letra blanca, tal como está dibujado en
+    la página 17 del brief. <b>12,82</b>, el par más alto del sistema.</p>
   </div>
   <div class="estado">
     <p class="dato">Con foco</p>
     <button class="btn btn-2 btn-2-foco">Cancelar turno</button>
-    <p class="dato">El relleno NO cambia: se oscurece y engrosa el contorno,
-    que es lo único que este botón tiene. El foco cae sobre el filo, igual que
-    en el principal.</p>
+    <p class="dato">Misma regla que el principal —contorno sobre el filo, sombra
+    más marcada— con el contraste dado vuelta: sobre grafito un contorno grafito
+    no se vería, así que va en marfil. <b>12,0</b> contra la superficie.</p>
   </div>
 </section>
 
 <section>
-  <p class="rotulo">Las dos opciones de foco, juntas</p>
-  <h2>A y B, una debajo de la otra</h2>
-  <p>Mismo tamaño, mismo contorno, mismo salto de tono en el dorado.
-  <b>Lo único que cambia es si la letra se apaga con el resto o no.</b></p>
+  <p class="rotulo">Los dos botones juntos</p>
+  <h2>Principal y secundario, uno debajo del otro</h2>
+  <p>Mismo tamaño, mismo alto, misma letra. Es la única forma de ver cuál pesa
+  más.</p>
   <div class="estado">
-    <p class="dato">Reposo, para comparar</p>
+    <p class="dato">Principal · dorado · <b>3,09</b></p>
     <button class="btn btn-1">Reservar turno</button>
   </div>
   <div class="estado">
-    <p class="dato">A · el filtro apaga también la letra — <b>2,84</b></p>
-    <button class="btn btn-1 btn-foco-a">Reservar turno</button>
+    <p class="dato">Secundario · grafito · <b>12,82</b></p>
+    <button class="btn btn-2">Cancelar turno</button>
   </div>
-  <div class="estado">
-    <p class="dato">B · la letra queda blanca — <b>4,85</b></p>
-    <button class="btn btn-1 btn-foco-b">Reservar turno</button>
-  </div>
-  <p class="dato" style="margin-top: 18px">⚠️ El medidor NO puede ver la
-  opción A: un filtro se aplica al dibujar, no es un color declarado, así que
-  <code>medir-contraste.py</code> sigue diciendo 3,09 aunque en pantalla sean
-  2,84. Ese número está calculado a mano.</p>
 </section>
 
 <section>

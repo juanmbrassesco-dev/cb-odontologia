@@ -77,22 +77,27 @@
   --sombra-boton: 0 1px 2px rgba(51, 50, 47, 0.10);
   --sombra-boton-foco: 0 3px 8px rgba(51, 50, 47, 0.22);
 
-  /* El botón secundario: contorno sobre el fondo, letra grafito. No cambia
-     de relleno en ningún estado — sólo se le oscurece el contorno. */
-  --boton-2-borde: var(--dorado-texto);
-  --boton-2-texto: var(--grafito);
+  /* El botón secundario es el que dibuja el brief en la página 17: GRAFITO
+     MACIZO CON LETRA BLANCA. 12,82, el par más alto del sistema.
 
-  /* Deshabilitado: el gris que YA ESTABA en el sistema, macizo, con letra
-     blanca. Resuelve de paso el problema del relleno invisible: este gris
-     mide 4,54 contra el marfil, así que el botón se ve sin necesidad de
-     borde. Y el botón además DICE por qué está apagado: nunca sólo el color. */
-  --boton-apagado-fondo: var(--apagado);
-  --boton-apagado-texto: var(--blanco);
+     Su foco no puede usar el contorno grafito del principal —sería invisible
+     sobre grafito—. Usa el marfil del fondo, que da 12,0 contra la superficie:
+     la REGLA es la misma (el contorno cae sobre el filo y contrasta con lo que
+     tiene debajo), lo que cambia es de qué lado está el contraste. */
+  --boton-2-fondo: var(--grafito);
+  --boton-2-texto: var(--blanco);
+  --boton-2-foco-borde: var(--marfil);
 
-  /* El filtro del foco, opción A: oscurece el botón ENTERO —superficie y
-     letras—, que es el efecto de sombra encima. 0.78 deja la superficie en
-     el mismo lugar que el dorado oscuro. */
-  --boton-filtro-foco: brightness(0.78);
+  /* Deshabilitado. WCAG exime a los controles inactivos; igual se lo deja en
+     4,08, y el botón además DICE por qué está apagado: nunca sólo el color.
+     🔴 Su relleno mide 1,11 contra el marfil: NO SE VE. Ningún gris claro
+     llega al piso de 3,0 sin dejar de parecer apagado, así que la forma del
+     botón la marca un BORDE, no el relleno. */
+  --boton-apagado-fondo: #EFEBE4;
+  --boton-apagado-texto: var(--apagado);
+  --boton-apagado-borde: var(--borde);
+
+
 
   /* Anillo de foco: grafito macizo, 2px, con 2px de separación.
      Va con el grosor, no sólo con el color (pauta 7). */
@@ -185,9 +190,10 @@
    @par grafito sobre dorado >= 3.0 · sólo texto grande sobre dorado
    @par boton-texto sobre boton-fondo >= 3.0 · el botón principal, en reposo
    @par boton-texto sobre boton-fondo-oscuro >= 4.5 · el principal, enviando y con foco
-   @par boton-2-texto sobre marfil >= 4.5 · la letra del botón secundario
-   @par boton-2-borde sobre marfil >= 3.0 · el contorno del botón secundario
-   @par boton-apagado-texto sobre boton-apagado-fondo >= 4.5 · el botón deshabilitado
-   @par boton-apagado-fondo sobre marfil >= 3.0 · la superficie del deshabilitado
+   @par boton-2-texto sobre boton-2-fondo >= 4.5 · la letra del botón secundario
+   @par boton-2-fondo sobre marfil >= 3.0 · la superficie del secundario
+   @par boton-2-foco-borde sobre boton-2-fondo >= 3.0 · el contorno de foco del secundario
+   @par boton-apagado-texto sobre boton-apagado-fondo >= 3.0 · el botón deshabilitado
+   @par boton-apagado-borde sobre marfil >= 3.0 · el contorno del deshabilitado
 
 */
