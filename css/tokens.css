@@ -25,7 +25,10 @@
      luminosidad al que ya existe, dejando el tono y la saturación. */
 
   /* El dorado del brief mide 2.89 sobre marfil: no sirve de texto.
-     Mismo tono (H 36.4°), misma saturación, 12 puntos menos de luz. */
+     Mismo tono (H 36.4°), misma saturación, 12 puntos menos de luz.
+     DECIDIDO por Juan el 2-sep-2026: los rótulos chicos en mayúsculas y los
+     enlaces van en éste. Son dos dorados y a simple vista no se distinguen;
+     el del brief queda sólo para fondos, líneas e íconos. */
   --dorado-texto: #896D41;
 
   /* El grafito aclarado hasta el piso de 3.0 de los bordes de control.
