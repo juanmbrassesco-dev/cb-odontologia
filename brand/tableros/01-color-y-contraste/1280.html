@@ -1,0 +1,443 @@
+<!-- @dsCard group="Color" -->
+<meta charset="utf-8">
+<title>CB · 01 Color y contraste</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600&display=swap">
+<style>
+/* ============================================================
+   CB Odontología y Estética — FUENTE DE VERDAD DEL COLOR
+   Fase ⑦, pieza 1. Ningún hex se escribe fuera de este archivo.
+
+   Cómo se declara un par medido (lo lee tools/medir-contraste.py):
+       @par <texto> sobre <fondo> >= <piso> · <para qué>
+   El piso es 4.5 para texto normal, 3.0 para texto grande
+   (≥24px, o ≥19px semibold) y para bordes y controles.
+   ============================================================ */
+
+:root {
+
+  /* --- LA PALETA DEL BRIEF — cinco colores, no se tocan --- */
+
+  --marfil: #FAF7F2;        /* fondo base */
+  --blanco: #FFFFFF;        /* superficies, tarjetas */
+  --dorado: #B08D57;        /* acento: línea, borde, ícono, fondo */
+  --dorado-claro: #E4D6BC;  /* fondos suaves */
+  --grafito: #33322F;       /* texto de lectura */
+
+  /* --- LOS DERIVADOS — cada uno con el porqué escrito ---
+
+     Un derivado entra sólo si un color del brief NO llega al piso
+     en ese uso. No se inventa ningún tono nuevo: se le baja la
+     luminosidad al que ya existe, dejando el tono y la saturación. */
+
+  /* El dorado del brief mide 2.89 sobre marfil: no sirve de texto.
+     Mismo tono (H 36.4°), misma saturación, 12 puntos menos de luz. */
+  --dorado-texto: #896D41;
+
+  /* El grafito aclarado hasta el piso de 3.0 de los bordes de control.
+     Un borde más claro que esto no se ve y el campo deja de leerse. */
+  --borde: #8A8880;
+
+  /* Texto deshabilitado. WCAG exime a los controles apagados, pero se
+     lo hace pasar igual: apagado no es lo mismo que ilegible. */
+  --apagado: #75716A;
+
+  /* Estados. El brief no tiene ninguno. Se eligieron dentro de la
+     familia cálida de la paleta, no del rojo y verde de sistema. */
+  --error: #9F4E40;
+  --error-fondo: #F6E8E4;
+  --exito: #517255;
+  --exito-fondo: #EFF4F0;
+  --info-fondo: var(--dorado-claro);  /* el informativo no estrena color */
+
+  /* Anillo de foco: grafito macizo, 2px, con 2px de separación.
+     Va con el grosor, no sólo con el color (pauta 7). */
+  --foco: #33322F;
+
+}
+
+/* --- LOS PARES MEDIDOS — los recorre el medidor, no la confianza ---
+
+   @par grafito sobre marfil >= 4.5 · texto de lectura
+   @par grafito sobre blanco >= 4.5 · texto sobre tarjeta
+   @par grafito sobre dorado-claro >= 4.5 · texto sobre fondo suave
+   @par blanco sobre grafito >= 4.5 · botón principal
+   @par dorado-texto sobre marfil >= 4.5 · rótulos chicos y enlaces
+   @par dorado-texto sobre blanco >= 4.5 · rótulos sobre tarjeta
+   @par error sobre marfil >= 4.5 · mensaje de error
+   @par error sobre error-fondo >= 4.5 · error sobre su propio fondo
+   @par blanco sobre error >= 4.5 · botón destructivo
+   @par exito sobre marfil >= 4.5 · mensaje de éxito
+   @par exito sobre exito-fondo >= 4.5 · éxito sobre su propio fondo
+   @par apagado sobre marfil >= 4.5 · texto deshabilitado
+   @par borde sobre marfil >= 3.0 · borde de campo sobre el fondo
+   @par borde sobre blanco >= 3.0 · borde de campo sobre tarjeta
+   @par foco sobre marfil >= 3.0 · anillo de foco
+   @par grafito sobre dorado >= 3.0 · sólo texto grande sobre dorado
+*/
+
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 1280px;
+  background: var(--marfil);
+  color: var(--grafito);
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
+  padding: 56px 64px 72px;
+}
+
+h1, h2, h3 {
+  font-family: Marcellus, Georgia, serif;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+h1 { font-size: 44px; }
+h2 { font-size: 28px; }
+h3 { font-size: 20px; }
+
+.rotulo {
+  font-family: Jost, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+}
+
+.regla {
+  height: 1px;
+  background: var(--dorado);
+  margin: 14px 0 32px;
+}
+
+section { margin-top: 56px; }
+
+section > p {
+  max-width: 74ch;
+  margin-top: 10px;
+}
+
+.muestras {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  margin-top: 26px;
+}
+
+.muestra {
+  background: var(--blanco);
+  border: 1px solid var(--dorado-claro);
+}
+
+.muestra-color {
+  height: 96px;
+  border-bottom: 1px solid var(--dorado-claro);
+}
+
+.muestra figcaption {
+  display: block;
+  padding: 14px 16px 18px;
+}
+
+.muestra b {
+  display: block;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.muestra code {
+  display: block;
+  font-family: Jost, monospace;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--dorado-texto);
+  margin: 2px 0 8px;
+}
+
+.muestra span {
+  display: block;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--grafito);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 26px;
+  background: var(--blanco);
+}
+
+th, td {
+  text-align: left;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--dorado-claro);
+  font-size: 15px;
+}
+
+th {
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+}
+
+td i { color: var(--apagado); font-style: normal; }
+td small { color: var(--apagado); }
+
+tr.bien td:first-child::before { content: "✓  "; color: var(--exito); }
+tr.aviso td:first-child::before { content: "△  "; color: var(--dorado-texto); }
+tr.mal td:first-child::before { content: "✗  "; color: var(--error); }
+
+.candidatos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-top: 26px;
+}
+
+.candidato {
+  background: var(--blanco);
+  border: 1px solid var(--dorado-claro);
+  padding: 24px 24px 26px;
+}
+
+.candidato h3 { margin-bottom: 4px; }
+
+.demo {
+  background: var(--marfil);
+  border: 1px solid var(--dorado-claro);
+  padding: 22px;
+  margin: 18px 0;
+}
+
+.demo p { font-size: 15px; margin: 10px 0 16px; }
+
+.costo {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--grafito);
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 12px;
+}
+
+.boton {
+  display: inline-block;
+  font-family: Jost, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 13px 26px;
+  border: 0;
+  min-height: 44px;
+}
+
+.boton-grafito { background: var(--grafito); color: var(--blanco); }
+
+.boton-dorado {
+  background: var(--dorado);
+  color: var(--grafito);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.enlace {
+  color: var(--dorado-texto);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.enlace-flojo {
+  color: var(--dorado);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pie {
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--dorado-claro);
+  font-size: 14px;
+  color: var(--apagado);
+  max-width: 88ch;
+}
+</style>
+
+<p class="rotulo">Fase ⑦ · Pieza 1 de 8 · 1280 px</p>
+<h1>Color y contraste</h1>
+<div class="regla"></div>
+<p>Los cinco colores del brief, los que hubo que derivar porque el brief no
+llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
+<code>css/tokens.css</code>: no hay ni un color escrito a mano acá.</p>
+
+<section>
+  <p class="rotulo">La paleta del brief</p>
+  <h2>Cinco colores, sin tocar</h2>
+  <div class="muestras">
+      <figure class="muestra">
+        <div class="muestra-color" style="background: var(--marfil)"></div>
+        <figcaption>
+          <b>Marfil</b>
+          <code>#FAF7F2</code>
+          <span>fondo base de todo el sitio</span>
+        </figcaption>
+      </figure>
+      <figure class="muestra">
+        <div class="muestra-color" style="background: var(--blanco)"></div>
+        <figcaption>
+          <b>Blanco</b>
+          <code>#FFFFFF</code>
+          <span>superficies y tarjetas</span>
+        </figcaption>
+      </figure>
+      <figure class="muestra">
+        <div class="muestra-color" style="background: var(--dorado)"></div>
+        <figcaption>
+          <b>Dorado</b>
+          <code>#B08D57</code>
+          <span>acento: línea, borde, ícono, fondo</span>
+        </figcaption>
+      </figure>
+      <figure class="muestra">
+        <div class="muestra-color" style="background: var(--dorado-claro)"></div>
+        <figcaption>
+          <b>Dorado claro</b>
+          <code>#E4D6BC</code>
+          <span>fondos suaves</span>
+        </figcaption>
+      </figure>
+      <figure class="muestra">
+        <div class="muestra-color" style="background: var(--grafito)"></div>
+        <figcaption>
+          <b>Gris grafito</b>
+          <code>#33322F</code>
+          <span>texto de lectura</span>
+        </figcaption>
+      </figure></div>
+</section>
+
+<section>
+  <p class="rotulo">Los derivados</p>
+  <h2>Cinco más, cada uno porque algo no llegaba</h2>
+  <p>Ninguno estrena tono: a un color del brief se le baja la luz hasta que
+  pasa el piso. El informativo directamente no estrena color — usa el dorado
+  claro que ya existe.</p>
+  <div class="muestras">
+      <figure class="muestra">
+        <div class="muestra-color" style="background: var(--dorado-texto)"></div>
+        <figcaption>
+          <b>Dorado de texto</b>
+          <code>#896D41</code>
+          <span>El dorado del brief mide 2,89 sobre marfil y no puede ser letra. Mismo tono y misma saturación, doce puntos menos de luz.</span>
+        </figcaption>
+      </figure>
+      <figure class="muestra">
+        <div class="muestra-color" style="background: var(--borde)"></div>
+        <figcaption>
+          <b>Borde de control</b>
+          <code>#8A8880</code>
+          <span>El grafito aclarado hasta el piso de 3,0 de los bordes. Más claro que esto y el campo deja de verse como campo.</span>
+        </figcaption>
+      </figure>
+      <figure class="muestra">
+        <div class="muestra-color" style="background: var(--apagado)"></div>
+        <figcaption>
+          <b>Texto apagado</b>
+          <code>#75716A</code>
+          <span>Para lo deshabilitado. WCAG exime a los controles apagados; acá pasa igual, porque apagado no es lo mismo que ilegible.</span>
+        </figcaption>
+      </figure>
+      <figure class="muestra">
+        <div class="muestra-color" style="background: var(--error)"></div>
+        <figcaption>
+          <b>Error</b>
+          <code>#9F4E40</code>
+          <span>El brief no tiene estados. Se eligió dentro de la familia cálida de la paleta, no el rojo de sistema.</span>
+        </figcaption>
+      </figure>
+      <figure class="muestra">
+        <div class="muestra-color" style="background: var(--exito)"></div>
+        <figcaption>
+          <b>Éxito</b>
+          <code>#517255</code>
+          <span>Mismo criterio: un verde apagado que convive con el marfil, no el verde de un cartel de tránsito.</span>
+        </figcaption>
+      </figure></div>
+</section>
+
+<section>
+  <p class="rotulo">La medición</p>
+  <h2>Cada par, contra su piso</h2>
+  <p>El piso es 4,5 para texto normal y 3,0 para texto grande (≥24px, o ≥19px
+  semibold) y para bordes y controles. Esta tabla no se escribe: la calcula
+  <code>tools/medir-contraste.py</code> leyendo los mismos tokens.</p>
+  <table>
+    <tr><th>par</th><th>contraste</th><th>para qué</th></tr>
+    <tr class="bien"><td>grafito <i>sobre</i> marfil</td><td><b>12.00</b> <small>piso 4.5</small></td><td>texto de lectura</td></tr><tr class="bien"><td>grafito <i>sobre</i> blanco</td><td><b>12.82</b> <small>piso 4.5</small></td><td>texto sobre tarjeta</td></tr><tr class="bien"><td>grafito <i>sobre</i> dorado-claro</td><td><b>8.94</b> <small>piso 4.5</small></td><td>texto sobre fondo suave</td></tr><tr class="bien"><td>blanco <i>sobre</i> grafito</td><td><b>12.82</b> <small>piso 4.5</small></td><td>botón principal</td></tr><tr class="bien"><td>dorado-texto <i>sobre</i> marfil</td><td><b>4.54</b> <small>piso 4.5</small></td><td>rótulos chicos y enlaces</td></tr><tr class="bien"><td>dorado-texto <i>sobre</i> blanco</td><td><b>4.85</b> <small>piso 4.5</small></td><td>rótulos sobre tarjeta</td></tr><tr class="bien"><td>error <i>sobre</i> marfil</td><td><b>5.40</b> <small>piso 4.5</small></td><td>mensaje de error</td></tr><tr class="bien"><td>error <i>sobre</i> error-fondo</td><td><b>4.83</b> <small>piso 4.5</small></td><td>error sobre su propio fondo</td></tr><tr class="bien"><td>blanco <i>sobre</i> error</td><td><b>5.77</b> <small>piso 4.5</small></td><td>botón destructivo</td></tr><tr class="bien"><td>exito <i>sobre</i> marfil</td><td><b>5.05</b> <small>piso 4.5</small></td><td>mensaje de éxito</td></tr><tr class="bien"><td>exito <i>sobre</i> exito-fondo</td><td><b>4.85</b> <small>piso 4.5</small></td><td>éxito sobre su propio fondo</td></tr><tr class="bien"><td>apagado <i>sobre</i> marfil</td><td><b>4.54</b> <small>piso 4.5</small></td><td>texto deshabilitado</td></tr><tr class="aviso"><td>borde <i>sobre</i> marfil</td><td><b>3.32</b> <small>piso 3.0</small></td><td>borde de campo sobre el fondo</td></tr><tr class="aviso"><td>borde <i>sobre</i> blanco</td><td><b>3.55</b> <small>piso 3.0</small></td><td>borde de campo sobre tarjeta</td></tr><tr class="bien"><td>foco <i>sobre</i> marfil</td><td><b>12.00</b> <small>piso 3.0</small></td><td>anillo de foco</td></tr><tr class="aviso"><td>grafito <i>sobre</i> dorado</td><td><b>4.15</b> <small>piso 3.0</small></td><td>sólo texto grande sobre dorado</td></tr>
+  </table>
+</section>
+
+<section>
+  <p class="rotulo">La decisión</p>
+  <h2>Qué se hace con el dorado</h2>
+  <p>El dorado del brief mide 2,89 sobre marfil. El brief lo manda en los
+  rótulos chicos en mayúsculas y en el botón «AGENDAR» con letra blanca (3,09).
+  Los tres caminos posibles, con lo que cuesta cada uno:</p>
+
+  <div class="candidatos">
+
+    <div class="candidato">
+      <h3>A · Sólo acento</h3>
+      <p class="rotulo" style="color: var(--apagado)">Nunca letra</p>
+      <div class="demo">
+        <p class="rotulo" style="color: var(--grafito)">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="enlace" href="#"
+           style="color: var(--grafito)">en grafito</a>, como el resto.</p>
+        <span class="boton boton-grafito">Agendar</span>
+      </div>
+      <p class="costo">Mata una decisión del brief: los rótulos chicos en
+      mayúsculas iban en dorado y acá se vuelven grises.</p>
+    </div>
+
+    <div class="candidato">
+      <h3>B · Dos dorados</h3>
+      <p class="rotulo">Fondo y letra, separados</p>
+      <div class="demo">
+        <p class="rotulo">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="enlace" href="#">en dorado de
+        texto</a>, que sí pasa.</p>
+        <span class="boton boton-grafito">Agendar</span>
+      </div>
+      <p class="costo">Son dos dorados. Hay que escribir cuándo va cada uno
+      —<b>#B08D57</b> para fondos y líneas, <b>#896D41</b> para letra— o se
+      mezclan.</p>
+    </div>
+
+    <div class="candidato">
+      <h3>C · Botón dorado</h3>
+      <p class="rotulo" style="color: var(--dorado)">Letra grafito, 19px semibold</p>
+      <div class="demo">
+        <p class="rotulo" style="color: var(--dorado)">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del
+        brief</a>: 2,89, no pasa.</p>
+        <span class="boton boton-dorado">Agendar</span>
+      </div>
+      <p class="costo">Frágil: el botón mide 4,15 y sólo vale porque la letra
+      es grande. Si alguien la baja a 16px deja de cumplir y nada avisa.</p>
+    </div>
+
+  </div>
+</section>
+
+<p class="pie">Las tres columnas usan los mismos tokens; no hay ningún hex
+suelto. El candidato B es el único que conserva la decisión del brief —rótulos
+chicos en dorado— con un valor que pasa la medición. En los tres, el botón
+principal es grafito macizo, como está dibujado en la página 17 del brief.</p>
