@@ -43,7 +43,7 @@ PALETA_BRIEF = [
 
 DERIVADOS = [
     ("dorado-texto", "Dorado de texto",
-     "El dorado del brief mide 2,89 sobre marfil y no puede ser letra. "
+     "El dorado del brief no llega al piso sobre marfil y no puede ser letra. "
      "Mismo tono y misma saturación, doce puntos menos de luz."),
     ("borde", "Borde de control",
      "El grafito aclarado hasta el piso de 3,0 de los bordes. "
@@ -95,8 +95,17 @@ def fila_medida(fila):
     )
 
 
+def medida(tokens, nombre_a, nombre_b):
+    """El contraste de un par, listo para meter en la prosa, con coma."""
+    valor = MEDIDOR.razon(tokens[nombre_a], tokens[nombre_b])
+    return f"{valor:.2f}".replace(".", ",")
+
+
 def tablero_color(tokens, css):
     filas = MEDIDOR.medir()
+    dorado_marfil = medida(tokens, "dorado", "marfil")
+    blanco_dorado = medida(tokens, "blanco", "dorado")
+    grafito_dorado = medida(tokens, "grafito", "dorado")
     muestras_brief = "".join(muestra(n, t, m, tokens) for n, t, m in PALETA_BRIEF)
     muestras_derivadas = "".join(muestra(n, t, m, tokens) for n, t, m in DERIVADOS)
     tabla = "".join(fila_medida(f) for f in filas)
@@ -230,7 +239,7 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
 
 .candidatos {{
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 22px;
   margin-top: 26px;
 }}
@@ -277,6 +286,13 @@ tr.mal td:first-child::before {{ content: "✗  "; color: var(--error); }}
 .boton-dorado {{
   background: var(--dorado);
   color: var(--grafito);
+  font-size: 19px;
+  font-weight: 600;
+}}
+
+.boton-dorado-blanco {{
+  background: var(--dorado);
+  color: var(--blanco);
   font-size: 19px;
   font-weight: 600;
 }}
@@ -340,9 +356,9 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
 <section>
   <p class="rotulo">La decisión</p>
   <h2>Qué se hace con el dorado</h2>
-  <p>El dorado del brief mide 2,89 sobre marfil. El brief lo manda en los
-  rótulos chicos en mayúsculas y en el botón «AGENDAR» con letra blanca (3,09).
-  Los tres caminos posibles, con lo que cuesta cada uno:</p>
+  <p>El dorado del brief mide {dorado_marfil} sobre marfil. El brief lo manda
+  en los rótulos chicos en mayúsculas y en el botón «AGENDAR» con letra blanca
+  ({blanco_dorado}). Los cuatro caminos posibles, con lo que cuesta cada uno:</p>
 
   <div class="candidatos">
 
@@ -379,20 +395,39 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
       <div class="demo">
         <p class="rotulo" style="color: var(--dorado)">Nuestros tratamientos</p>
         <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del
-        brief</a>: 2,89, no pasa.</p>
+        brief</a>: {dorado_marfil}, no pasa.</p>
         <span class="boton boton-dorado">Agendar</span>
       </div>
-      <p class="costo">Frágil: el botón mide 4,15 y sólo vale porque la letra
-      es grande. Si alguien la baja a 16px deja de cumplir y nada avisa.</p>
+      <p class="costo">Frágil: el botón mide {grafito_dorado} y sólo vale porque
+      la letra es grande. Si alguien la baja a 16px deja de cumplir y nada
+      avisa.</p>
+    </div>
+
+    <div class="candidato">
+      <h3>D · El botón del brief, tal cual</h3>
+      <p class="rotulo" style="color: var(--dorado)">Dorado con letra blanca</p>
+      <div class="demo">
+        <p class="rotulo" style="color: var(--dorado)">Nuestros tratamientos</p>
+        <p>Un enlace queda <a class="enlace-flojo" href="#">en dorado del
+        brief</a>: {dorado_marfil}, no pasa.</p>
+        <span class="boton boton-dorado-blanco">Agendar</span>
+      </div>
+      <p class="costo">Es lo que dibuja la página 17. Mide <b>{blanco_dorado}</b>:
+      como texto normal no pasa ni cerca, y como texto grande pasa el piso de 3,0
+      <b>por nueve centésimas</b>. Es el mismo riesgo que C con la mitad del
+      margen — y acá el que lo rompe no es sólo bajar la letra a 16px, también
+      lo rompe cualquier tono de dorado un punto más claro.</p>
     </div>
 
   </div>
 </section>
 
-<p class="pie">Las tres columnas usan los mismos tokens; no hay ningún hex
-suelto. El candidato B es el único que conserva la decisión del brief —rótulos
-chicos en dorado— con un valor que pasa la medición. En los tres, el botón
-principal es grafito macizo, como está dibujado en la página 17 del brief.</p>
+<p class="pie">Los cuatro cuadros usan los mismos tokens; no hay ningún hex ni
+ningún número escrito a mano acá: los contrastes los calcula el medidor sobre
+<code>css/tokens.css</code>. <b>El candidato B es el único que conserva la
+decisión del brief —rótulos chicos en dorado— con un valor que pasa sin
+condiciones.</b> A y B llevan el botón principal en grafito macizo; C y D lo
+llevan dorado, y los dos dependen de que la letra siga siendo grande.</p>
 """
 
 
