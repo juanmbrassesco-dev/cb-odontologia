@@ -12,6 +12,7 @@ Escribe brand/tableros/<pieza>/<ancho>.html y no toca nada más.
 
 import importlib.util
 import pathlib
+import re
 import sys
 
 
@@ -596,6 +597,249 @@ ningún otro texto, sólo el botón principal.</b></p>
 """
 
 
+# ============================================================
+# PIEZA 2 — LA ESCALA TIPOGRÁFICA
+# ============================================================
+
+# Cada nivel: token, nombre, tipografía, para qué sirve, y el texto de muestra.
+NIVELES = [
+    ("h1", "Título de página", "Marcellus",
+     "uno solo por pantalla", "Reservá tu turno"),
+    ("h2", "Título de sección", "Marcellus",
+     "abre cada bloque", "Nuestros tratamientos"),
+    ("h3", "Título de tarjeta", "Marcellus",
+     "dentro de una tarjeta o un turno", "Limpieza y profilaxis"),
+    ("cuerpo", "Texto de leer", "Jost",
+     "párrafos, respuestas, descripciones", None),
+    ("chico", "Texto chico", "Jost",
+     "ayuda de un campo, pie, aclaración", None),
+    ("rotulo", "Rótulo", "Jost",
+     "mayúsculas espaciadas, encima de un título", "Odontología general"),
+]
+
+CUERPO_MUESTRA = (
+    "La consulta dura treinta minutos e incluye el diagnóstico y el plan de "
+    "tratamiento. Si necesitás cambiar el horario, se puede hasta el día anterior."
+)
+
+CHICO_MUESTRA = (
+    "Te va a llegar un correo de confirmación con la dirección del consultorio."
+)
+
+ANCHOS = [390, 768, 1280]
+
+MARGENES = {390: 20, 768: 40, 1280: 64}
+
+
+def leer_escala(css):
+    """Los tamaños de cada ancho: el :root es móvil, los @media lo pisan."""
+    import re
+
+    partes = re.split(r"@media\s*\(min-width:\s*(\d+)px\)", css)
+    base = dict(re.findall(r"--tipo-([a-z0-9]+)\s*:\s*(\d+)px", partes[0]))
+    escala = {390: dict(base)}
+    acumulado = dict(base)
+
+    for i in range(1, len(partes), 2):
+        corte = int(partes[i])
+        acumulado = dict(acumulado)
+        acumulado.update(re.findall(r"--tipo-([a-z0-9]+)\s*:\s*(\d+)px", partes[i + 1]))
+        escala[corte] = acumulado
+
+    return escala
+
+
+def base_css(ancho):
+    """El armazón del tablero. Los tamaños salen de tokens.css, no de acá."""
+    margen = MARGENES[ancho]
+    return f"""
+* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+
+body {{
+  width: {ancho}px;
+  background: var(--marfil);
+  color: var(--grafito);
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  padding: {margen}px {margen}px {margen * 2}px;
+}}
+
+h1, h2, h3 {{
+  font-family: Marcellus, Georgia, serif;
+  font-weight: 400;
+  max-width: var(--columna);
+}}
+
+h1 {{ font-size: var(--tipo-h1); line-height: var(--alto-h1); }}
+h2 {{ font-size: var(--tipo-h2); line-height: var(--alto-h2); }}
+h3 {{ font-size: var(--tipo-h3); line-height: var(--alto-h3); }}
+
+p {{ max-width: var(--columna); }}
+
+code {{
+  font-family: Jost, sans-serif;
+  letter-spacing: 0.02em;
+  color: var(--dorado-texto);
+}}
+
+.rotulo {{
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  font-weight: 500;
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+}}
+
+.regla {{
+  height: 1px;
+  background: var(--dorado);
+  margin: 12px 0 24px;
+  max-width: var(--columna);
+}}
+
+section {{ margin-top: 40px; }}
+
+.chico {{ font-size: var(--tipo-chico); line-height: var(--alto-chico); }}
+
+.dato {{
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--apagado);
+}}
+
+.espec {{
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  margin-top: 20px;
+  max-width: var(--columna);
+}}
+
+.espec .muestra-texto {{ margin-top: 6px; }}
+
+table {{
+  width: 100%;
+  max-width: var(--columna);
+  border-collapse: collapse;
+  margin-top: 18px;
+}}
+
+th, td {{
+  text-align: left;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}}
+
+th {{
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: var(--tipo-rotulo);
+  color: var(--dorado-texto);
+}}
+
+td.n {{ text-align: right; font-variant-numeric: tabular-nums; }}
+th.n {{ text-align: right; }}
+
+.pie {{
+  max-width: var(--columna);
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--apagado);
+}}
+"""
+
+
+def espec(token, nombre, tipo, uso, muestra, escala, ancho):
+    """Un nivel de la escala: qué es, cuánto mide acá, y cómo se ve."""
+    px = escala[ancho][token]
+    if token == "cuerpo":
+        cuerpo = f'<p class="muestra-texto">{CUERPO_MUESTRA}</p>'
+    elif token == "chico":
+        cuerpo = f'<p class="muestra-texto chico">{CHICO_MUESTRA}</p>'
+    elif token == "rotulo":
+        cuerpo = f'<p class="muestra-texto rotulo">{muestra}</p>'
+    else:
+        cuerpo = f'<{token} class="muestra-texto">{muestra}</{token}>'
+
+    return f'''
+  <div class="espec">
+    <p class="dato">{nombre} · {tipo} · <b>{px} px</b> · {uso}</p>
+    {cuerpo}
+  </div>'''
+
+
+def tabla_anchos(escala):
+    filas = ""
+    for token, nombre, tipo, _, _ in [(n[0], n[1], n[2], n[3], n[4]) for n in NIVELES]:
+        celdas = "".join(f'<td class="n">{escala[a][token]}</td>' for a in ANCHOS)
+        filas += f"<tr><td>{nombre}</td><td>{tipo}</td>{celdas}</tr>"
+    encabezados = "".join(f'<th class="n">{a}</th>' for a in ANCHOS)
+    return f"<tr><th>nivel</th><th>tipografía</th>{encabezados}</tr>{filas}"
+
+
+def tablero_tipografia(tokens, css, ancho):
+    escala = leer_escala(css)
+    especs = "".join(espec(*n, escala, ancho) for n in NIVELES)
+
+    return f"""<!-- @dsCard group="Type" -->
+<meta charset="utf-8">
+<title>CB · 02 Escala tipográfica · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+</style>
+
+<p class="rotulo">Fase ⑦ · Pieza 2 de 8 · {ancho} px</p>
+<h1>Escala tipográfica</h1>
+<div class="regla"></div>
+<p>Marcellus tiene un solo peso: no hay negrita ni liviana. <b>La jerarquía
+entre títulos es por tamaño, nunca por peso.</b> Jost lleva todo lo demás.
+Los tamaños salen de <code>css/tokens.css</code> y cambian solos con el ancho.</p>
+
+<section>
+  <p class="rotulo">La escala</p>
+  <h2>Seis niveles, a tamaño real</h2>
+  <p class="dato" style="margin-top: 8px">Todo lo de abajo está a escala 1:1 en
+  {ancho} px. El número de cada renglón es el tamaño que tiene en ESTE ancho.</p>
+  {especs}
+</section>
+
+<section>
+  <p class="rotulo">Los tres anchos</p>
+  <h2>Qué mide cada nivel en cada pantalla</h2>
+  <p class="dato" style="margin-top: 8px">El móvil es el default; los otros dos
+  son excepciones declaradas. En píxeles.</p>
+  <table>{tabla_anchos(escala)}</table>
+</section>
+
+<section>
+  <p class="rotulo">En uso</p>
+  <h2>La jerarquía, funcionando</h2>
+  <div class="espec" style="border-top: 0; padding-top: 0">
+    <p class="rotulo">Odontología general</p>
+    <h2>Limpieza y profilaxis</h2>
+    <p class="muestra-texto">{CUERPO_MUESTRA}</p>
+    <p class="chico" style="margin-top: 10px; color: var(--apagado)">{CHICO_MUESTRA}</p>
+  </div>
+</section>
+
+<p class="pie">Ni un tamaño escrito a mano en este tablero: todos salen de las
+variables de <code>tokens.css</code>, las mismas que va a usar el sitio. La
+línea de lectura está limitada a {{medida}} en escritorio para que el ojo no pierda el renglón
+al volver.</p>
+"""
+
+
 def main():
     css = TOKENS.read_text(encoding="utf-8")
     tokens = MEDIDOR.leer_tokens(css)
@@ -613,6 +857,17 @@ def main():
     destino.parent.mkdir(parents=True, exist_ok=True)
     destino.write_text(tablero_color(tokens, css), encoding="utf-8")
     print(f"✓ {destino.relative_to(RAIZ)}")
+
+    # el último valor declarado es el de escritorio, que es el que se cuenta
+    medida = re.findall(r"--columna:\s*([^;]+);", css)[-1].strip()
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "02-escala-tipografica" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        pagina = tablero_tipografia(tokens, css, ancho).replace("{medida}", medida)
+        destino.write_text(pagina, encoding="utf-8")
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
     return 0
 
 

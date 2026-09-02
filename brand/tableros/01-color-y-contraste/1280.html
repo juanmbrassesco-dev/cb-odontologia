@@ -32,7 +32,10 @@
      luminosidad al que ya existe, dejando el tono y la saturación. */
 
   /* El dorado del brief mide 2.89 sobre marfil: no sirve de texto.
-     Mismo tono (H 36.4°), misma saturación, 12 puntos menos de luz. */
+     Mismo tono (H 36.4°), misma saturación, 12 puntos menos de luz.
+     DECIDIDO por Juan el 2-sep-2026: los rótulos chicos en mayúsculas y los
+     enlaces van en éste. Son dos dorados y a simple vista no se distinguen;
+     el del brief queda sólo para fondos, líneas e íconos. */
   --dorado-texto: #896D41;
 
   /* El grafito aclarado hasta el piso de 3.0 de los bordes de control.
@@ -69,6 +72,58 @@
      Va con el grosor, no sólo con el color (pauta 7). */
   --foco: #33322F;
 
+}
+
+
+/* ============================================================
+   ESCALA TIPOGRÁFICA — fase ⑦, pieza 2.
+
+   Marcellus tiene UN SOLO PESO: no hay negrita ni liviana. La jerarquía
+   entre títulos es por TAMAÑO, nunca por peso. Jost lleva todo lo demás.
+
+   Los valores de :root son los de MÓVIL — el sitio es mobile-first, así
+   que lo chico es el default y lo grande es la excepción declarada.
+   ============================================================ */
+
+:root {
+  --tipo-h1: 32px;      --alto-h1: 1.15;
+  --tipo-h2: 26px;      --alto-h2: 1.2;
+  --tipo-h3: 20px;      --alto-h3: 1.3;
+  --tipo-cuerpo: 16px;  --alto-cuerpo: 1.6;
+  --tipo-chico: 14px;   --alto-chico: 1.5;
+  --tipo-rotulo: 13px;  --alto-rotulo: 1.4;
+
+  /* El rótulo en mayúsculas necesita aire entre letras o no se lee. */
+  --letra-rotulo: 0.18em;
+
+  /* LA COLUMNA. Todo lo que se dibuja —títulos, párrafos, líneas, tablas—
+     termina acá. Es un valor en píxeles a propósito: `ch` crece con el
+     tamaño de la letra, así que un título de 52 px con la misma medida en
+     `ch` se iría al doble de largo y las líneas dejarían de coincidir.
+     En móvil y tablet ocupa todo; en escritorio son 640 px, que es lo que
+     mide una línea de 66 caracteres en Jost de 17 px. */
+  --columna: 100%;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --tipo-h1: 42px;
+    --tipo-h2: 32px;
+    --tipo-h3: 22px;
+    --tipo-cuerpo: 17px;
+    --tipo-chico: 14px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --tipo-h1: 52px;
+    --tipo-h2: 36px;
+    --tipo-h3: 24px;
+    --tipo-cuerpo: 17px;
+    --tipo-chico: 15px;
+    --columna: 640px;
+  }
 }
 
 /* --- LOS PARES MEDIDOS — los recorre el medidor, no la confianza ---

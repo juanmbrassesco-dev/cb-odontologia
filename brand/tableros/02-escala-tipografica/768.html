@@ -1,0 +1,316 @@
+<!-- @dsCard group="Type" -->
+<meta charset="utf-8">
+<title>CB · 02 Escala tipográfica · 768</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+/* ============================================================
+   CB Odontología y Estética — FUENTE DE VERDAD DEL COLOR
+   Fase ⑦, pieza 1. Ningún hex se escribe fuera de este archivo.
+
+   Cómo se declara un par medido (lo lee tools/medir-contraste.py):
+       @par <texto> sobre <fondo> >= <piso> · <para qué>
+   El piso es 4.5 para texto normal, 3.0 para texto grande
+   (≥24px, o ≥19px semibold) y para bordes y controles.
+   ============================================================ */
+
+:root {
+
+  /* --- LA PALETA DEL BRIEF — cinco colores, no se tocan --- */
+
+  --marfil: #FAF7F2;        /* fondo base */
+  --blanco: #FFFFFF;        /* superficies, tarjetas */
+  --dorado: #B08D57;        /* acento: línea, borde, ícono, fondo */
+  --dorado-claro: #E4D6BC;  /* fondos suaves */
+  --grafito: #33322F;       /* texto de lectura */
+
+  /* --- LOS DERIVADOS — cada uno con el porqué escrito ---
+
+     Un derivado entra sólo si un color del brief NO llega al piso
+     en ese uso. No se inventa ningún tono nuevo: se le baja la
+     luminosidad al que ya existe, dejando el tono y la saturación. */
+
+  /* El dorado del brief mide 2.89 sobre marfil: no sirve de texto.
+     Mismo tono (H 36.4°), misma saturación, 12 puntos menos de luz.
+     DECIDIDO por Juan el 2-sep-2026: los rótulos chicos en mayúsculas y los
+     enlaces van en éste. Son dos dorados y a simple vista no se distinguen;
+     el del brief queda sólo para fondos, líneas e íconos. */
+  --dorado-texto: #896D41;
+
+  /* El grafito aclarado hasta el piso de 3.0 de los bordes de control.
+     Un borde más claro que esto no se ve y el campo deja de leerse. */
+  --borde: #8A8880;
+
+  /* Texto deshabilitado. WCAG exime a los controles apagados, pero se
+     lo hace pasar igual: apagado no es lo mismo que ilegible. */
+  --apagado: #75716A;
+
+  /* Estados. El brief no tiene ninguno. Se eligieron dentro de la
+     familia cálida de la paleta, no del rojo y verde de sistema. */
+  --error: #9F4E40;
+  --error-fondo: #F6E8E4;
+  --exito: #517255;
+  --exito-fondo: #EFF4F0;
+  --info-fondo: var(--dorado-claro);  /* el informativo no estrena color */
+
+  /* --- EL BOTÓN PRINCIPAL — decidido por Juan el 2-sep-2026 ---
+
+     Va el del brief tal cual: FONDO DORADO CON LETRA BLANCA (candidato D).
+     Mide 3,09, que pasa el piso de 3,0 del texto grande. Se eligió respetando
+     la identidad original por encima del margen de contraste, sabiendo que
+     3,09 no deja aire y que WCAG pide negrita para ese piso: el botón va en
+     Jost 19 px, y su peso se termina de fijar en la maqueta final (⑧), que
+     Juan aprueba antes de construir.
+
+     La contrapartida es una regla, no un valor: el fondo dorado NO APARECE
+     debajo de ningún otro texto. Sólo el botón principal. */
+  --boton-fondo: var(--dorado);
+  --boton-texto: var(--blanco);
+
+  /* Anillo de foco: grafito macizo, 2px, con 2px de separación.
+     Va con el grosor, no sólo con el color (pauta 7). */
+  --foco: #33322F;
+
+}
+
+
+/* ============================================================
+   ESCALA TIPOGRÁFICA — fase ⑦, pieza 2.
+
+   Marcellus tiene UN SOLO PESO: no hay negrita ni liviana. La jerarquía
+   entre títulos es por TAMAÑO, nunca por peso. Jost lleva todo lo demás.
+
+   Los valores de :root son los de MÓVIL — el sitio es mobile-first, así
+   que lo chico es el default y lo grande es la excepción declarada.
+   ============================================================ */
+
+:root {
+  --tipo-h1: 32px;      --alto-h1: 1.15;
+  --tipo-h2: 26px;      --alto-h2: 1.2;
+  --tipo-h3: 20px;      --alto-h3: 1.3;
+  --tipo-cuerpo: 16px;  --alto-cuerpo: 1.6;
+  --tipo-chico: 14px;   --alto-chico: 1.5;
+  --tipo-rotulo: 13px;  --alto-rotulo: 1.4;
+
+  /* El rótulo en mayúsculas necesita aire entre letras o no se lee. */
+  --letra-rotulo: 0.18em;
+
+  /* LA COLUMNA. Todo lo que se dibuja —títulos, párrafos, líneas, tablas—
+     termina acá. Es un valor en píxeles a propósito: `ch` crece con el
+     tamaño de la letra, así que un título de 52 px con la misma medida en
+     `ch` se iría al doble de largo y las líneas dejarían de coincidir.
+     En móvil y tablet ocupa todo; en escritorio son 640 px, que es lo que
+     mide una línea de 66 caracteres en Jost de 17 px. */
+  --columna: 100%;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --tipo-h1: 42px;
+    --tipo-h2: 32px;
+    --tipo-h3: 22px;
+    --tipo-cuerpo: 17px;
+    --tipo-chico: 14px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --tipo-h1: 52px;
+    --tipo-h2: 36px;
+    --tipo-h3: 24px;
+    --tipo-cuerpo: 17px;
+    --tipo-chico: 15px;
+    --columna: 640px;
+  }
+}
+
+/* --- LOS PARES MEDIDOS — los recorre el medidor, no la confianza ---
+
+   @par grafito sobre marfil >= 4.5 · texto de lectura
+   @par grafito sobre blanco >= 4.5 · texto sobre tarjeta
+   @par grafito sobre dorado-claro >= 4.5 · texto sobre fondo suave
+   @par blanco sobre grafito >= 4.5 · botón principal
+   @par dorado-texto sobre marfil >= 4.5 · rótulos chicos y enlaces
+   @par dorado-texto sobre blanco >= 4.5 · rótulos sobre tarjeta
+   @par error sobre marfil >= 4.5 · mensaje de error
+   @par error sobre error-fondo >= 4.5 · error sobre su propio fondo
+   @par blanco sobre error >= 4.5 · botón destructivo
+   @par exito sobre marfil >= 4.5 · mensaje de éxito
+   @par exito sobre exito-fondo >= 4.5 · éxito sobre su propio fondo
+   @par apagado sobre marfil >= 4.5 · texto deshabilitado
+   @par borde sobre marfil >= 3.0 · borde de campo sobre el fondo
+   @par borde sobre blanco >= 3.0 · borde de campo sobre tarjeta
+   @par foco sobre marfil >= 3.0 · anillo de foco
+   @par grafito sobre dorado >= 3.0 · sólo texto grande sobre dorado
+   @par boton-texto sobre boton-fondo >= 3.0 · el botón principal, decidido: D
+
+*/
+
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 768px;
+  background: var(--marfil);
+  color: var(--grafito);
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  padding: 40px 40px 80px;
+}
+
+h1, h2, h3 {
+  font-family: Marcellus, Georgia, serif;
+  font-weight: 400;
+  max-width: var(--columna);
+}
+
+h1 { font-size: var(--tipo-h1); line-height: var(--alto-h1); }
+h2 { font-size: var(--tipo-h2); line-height: var(--alto-h2); }
+h3 { font-size: var(--tipo-h3); line-height: var(--alto-h3); }
+
+p { max-width: var(--columna); }
+
+code {
+  font-family: Jost, sans-serif;
+  letter-spacing: 0.02em;
+  color: var(--dorado-texto);
+}
+
+.rotulo {
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  font-weight: 500;
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+}
+
+.regla {
+  height: 1px;
+  background: var(--dorado);
+  margin: 12px 0 24px;
+  max-width: var(--columna);
+}
+
+section { margin-top: 40px; }
+
+.chico { font-size: var(--tipo-chico); line-height: var(--alto-chico); }
+
+.dato {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--apagado);
+}
+
+.espec {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  margin-top: 20px;
+  max-width: var(--columna);
+}
+
+.espec .muestra-texto { margin-top: 6px; }
+
+table {
+  width: 100%;
+  max-width: var(--columna);
+  border-collapse: collapse;
+  margin-top: 18px;
+}
+
+th, td {
+  text-align: left;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+th {
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: var(--tipo-rotulo);
+  color: var(--dorado-texto);
+}
+
+td.n { text-align: right; font-variant-numeric: tabular-nums; }
+th.n { text-align: right; }
+
+.pie {
+  max-width: var(--columna);
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--apagado);
+}
+
+</style>
+
+<p class="rotulo">Fase ⑦ · Pieza 2 de 8 · 768 px</p>
+<h1>Escala tipográfica</h1>
+<div class="regla"></div>
+<p>Marcellus tiene un solo peso: no hay negrita ni liviana. <b>La jerarquía
+entre títulos es por tamaño, nunca por peso.</b> Jost lleva todo lo demás.
+Los tamaños salen de <code>css/tokens.css</code> y cambian solos con el ancho.</p>
+
+<section>
+  <p class="rotulo">La escala</p>
+  <h2>Seis niveles, a tamaño real</h2>
+  <p class="dato" style="margin-top: 8px">Todo lo de abajo está a escala 1:1 en
+  768 px. El número de cada renglón es el tamaño que tiene en ESTE ancho.</p>
+  
+  <div class="espec">
+    <p class="dato">Título de página · Marcellus · <b>42 px</b> · uno solo por pantalla</p>
+    <h1 class="muestra-texto">Reservá tu turno</h1>
+  </div>
+  <div class="espec">
+    <p class="dato">Título de sección · Marcellus · <b>32 px</b> · abre cada bloque</p>
+    <h2 class="muestra-texto">Nuestros tratamientos</h2>
+  </div>
+  <div class="espec">
+    <p class="dato">Título de tarjeta · Marcellus · <b>22 px</b> · dentro de una tarjeta o un turno</p>
+    <h3 class="muestra-texto">Limpieza y profilaxis</h3>
+  </div>
+  <div class="espec">
+    <p class="dato">Texto de leer · Jost · <b>17 px</b> · párrafos, respuestas, descripciones</p>
+    <p class="muestra-texto">La consulta dura treinta minutos e incluye el diagnóstico y el plan de tratamiento. Si necesitás cambiar el horario, se puede hasta el día anterior.</p>
+  </div>
+  <div class="espec">
+    <p class="dato">Texto chico · Jost · <b>14 px</b> · ayuda de un campo, pie, aclaración</p>
+    <p class="muestra-texto chico">Te va a llegar un correo de confirmación con la dirección del consultorio.</p>
+  </div>
+  <div class="espec">
+    <p class="dato">Rótulo · Jost · <b>13 px</b> · mayúsculas espaciadas, encima de un título</p>
+    <p class="muestra-texto rotulo">Odontología general</p>
+  </div>
+</section>
+
+<section>
+  <p class="rotulo">Los tres anchos</p>
+  <h2>Qué mide cada nivel en cada pantalla</h2>
+  <p class="dato" style="margin-top: 8px">El móvil es el default; los otros dos
+  son excepciones declaradas. En píxeles.</p>
+  <table><tr><th>nivel</th><th>tipografía</th><th class="n">390</th><th class="n">768</th><th class="n">1280</th></tr><tr><td>Título de página</td><td>Marcellus</td><td class="n">32</td><td class="n">42</td><td class="n">52</td></tr><tr><td>Título de sección</td><td>Marcellus</td><td class="n">26</td><td class="n">32</td><td class="n">36</td></tr><tr><td>Título de tarjeta</td><td>Marcellus</td><td class="n">20</td><td class="n">22</td><td class="n">24</td></tr><tr><td>Texto de leer</td><td>Jost</td><td class="n">16</td><td class="n">17</td><td class="n">17</td></tr><tr><td>Texto chico</td><td>Jost</td><td class="n">14</td><td class="n">14</td><td class="n">15</td></tr><tr><td>Rótulo</td><td>Jost</td><td class="n">13</td><td class="n">13</td><td class="n">13</td></tr></table>
+</section>
+
+<section>
+  <p class="rotulo">En uso</p>
+  <h2>La jerarquía, funcionando</h2>
+  <div class="espec" style="border-top: 0; padding-top: 0">
+    <p class="rotulo">Odontología general</p>
+    <h2>Limpieza y profilaxis</h2>
+    <p class="muestra-texto">La consulta dura treinta minutos e incluye el diagnóstico y el plan de tratamiento. Si necesitás cambiar el horario, se puede hasta el día anterior.</p>
+    <p class="chico" style="margin-top: 10px; color: var(--apagado)">Te va a llegar un correo de confirmación con la dirección del consultorio.</p>
+  </div>
+</section>
+
+<p class="pie">Ni un tamaño escrito a mano en este tablero: todos salen de las
+variables de <code>tokens.css</code>, las mismas que va a usar el sitio. La
+línea de lectura está limitada a 640px en escritorio para que el ojo no pierda el renglón
+al volver.</p>
