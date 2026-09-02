@@ -1,9 +1,9 @@
 <!-- @dsCard group="Components" -->
 <meta charset="utf-8">
-<title>CB · 03 Botón · 1280</title>
+<title>CB · 04 Campo · 768</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&family=Roboto:wght@500&display=swap">
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
 <style>
 /* ============================================================
    CB Odontología y Estética — FUENTE DE VERDAD DEL COLOR
@@ -338,13 +338,13 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  width: 1280px;
+  width: 768px;
   background: var(--marfil);
   color: var(--grafito);
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
   font-size: var(--tipo-cuerpo);
   line-height: var(--alto-cuerpo);
-  padding: 64px 64px 128px;
+  padding: 40px 40px 80px;
 }
 
 h1, h2, h3 {
@@ -437,81 +437,127 @@ th.n { text-align: right; }
 }
 
 
-.btn {
-  display: inline-block;
-  font-family: Jost, sans-serif;
-  font-size: 19px;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-align: center;
-  padding: 12px 26px;
-  min-height: 44px;
-  border: 0;
+.campo {
+  max-width: var(--columna);
+  margin-top: 18px;
+}
+
+/* La etiqueta es un bloque propio arriba del campo: nunca vive adentro. */
+.etiqueta {
+  display: block;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  font-weight: 500;
+  color: var(--campo-etiqueta);
+  margin-bottom: 6px;
+}
+
+.etiqueta .opcional {
+  font-weight: 400;
+  color: var(--campo-ayuda);
+}
+
+.caja {
+  display: block;
+  width: 100%;
+  min-height: var(--campo-alto);
+  padding: 12px 14px;
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  color: var(--campo-texto);
+  background: var(--campo-fondo);
+  border: 1px solid var(--campo-borde);
   border-radius: var(--radio);
-  cursor: pointer;
-  width: var(--boton-ancho);
 }
 
-.btn-1 {
-  background: var(--boton-fondo);
-  color: var(--boton-texto);
-  box-shadow: var(--sombra-boton);
+/* FOCO: el filo pasa de 1 px de borde a 2 px de grafito y se marca la sombra.
+   El relleno se compensa para que el campo no cambie de tamaño ni empuje a los
+   de abajo — un campo que salta al tocarlo se siente roto. */
+.caja-foco {
+  border: 2px solid var(--campo-foco-filo);
+  padding: 11px 13px;
+  box-shadow: var(--campo-sombra-foco);
 }
 
-/* El ancho NO puede cambiar al enviar, y "Reservando…" es más corto que
-   "Reservar turno": de tablet para arriba, donde el botón se ajusta a su texto,
-   se achicaba 30 px. El botón lleva las dos palabras apiladas y la que no se ve
-   sostiene el ancho. Sin números mágicos: lo mide el texto más largo. */
-.pila { display: inline-grid; }
-
-.pila > span { grid-area: 1 / 1; }
-
-.pila .fantasma { visibility: hidden; }
-
-/* Enviando: el mismo dorado oscurecido, con sombra, y la palabra cambiada. */
-.btn-1-enviando {
-  background: var(--boton-fondo-oscuro);
-  box-shadow: var(--sombra-boton-foco);
-  cursor: progress;
+.caja-error {
+  border: 2px solid var(--campo-error-filo);
+  padding: 11px 13px;
 }
 
-/* FOCO del principal: se oscurece la superficie y el contorno cae JUSTO sobre
-   el filo del botón. Las letras quedan blancas — el filtro que también las
-   apagaba se descartó: dejaba el foco en 2,84, abajo del piso. */
-.btn-foco {
-  background: var(--boton-fondo-oscuro);
-  box-shadow: inset 0 0 0 2px var(--boton-foco-borde), var(--sombra-boton-foco);
-}
-
-/* El secundario del brief, página 17: grafito macizo con letra blanca. */
-.btn-2 {
-  background: var(--boton-2-fondo);
-  color: var(--boton-2-texto);
-  box-shadow: var(--sombra-boton);
-}
-
-/* Misma regla de foco que el principal —contorno sobre el filo, sombra más
-   marcada—, pero INVERTIDO: fondo blanco, letra grafito, filo grafito de 2 px.
-   Los anillos claros se descartaron: al filo se leen como que el botón se
-   achicó. Medido con medir-foco.py. */
-.btn-2-foco {
-  background: var(--boton-2-foco-fondo);
-  color: var(--boton-2-foco-texto);
-  border: 2px solid var(--boton-2-foco-filo);
-  padding: 10px 24px;
-  box-shadow: var(--sombra-boton-foco);
-}
-
-.btn-apagado {
-  background: var(--boton-apagado-fondo);
-  color: var(--boton-apagado-texto);
-  border: 1px solid var(--boton-apagado-borde);
-  padding: 11px 25px;
-  box-shadow: none;
+.caja-apagada {
+  background: var(--campo-apagado-fondo);
+  border-color: var(--campo-apagado-borde);
+  color: var(--campo-apagado-texto);
   cursor: not-allowed;
 }
+
+.ayuda {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--campo-ayuda);
+  margin-top: 6px;
+}
+
+/* El mensaje de error arranca con la palabra: el color es el refuerzo, no
+   el mensaje. Quien no distingue el rojo lee exactamente lo mismo. */
+.error-texto {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--campo-error-texto);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* El desplegable es el mismo campo con una punta de flecha dibujada al filo
+   derecho. No entra ningún ícono nuevo: son dos bordes girados 45°. */
+.desplegable { position: relative; }
+
+.desplegable::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -7px;
+  border-right: 2px solid var(--grafito);
+  border-bottom: 2px solid var(--grafito);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+select.caja {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 44px;
+}
+
+textarea.caja {
+  min-height: 104px;
+  resize: vertical;
+}
+
+/* Sin borde de acento a la izquierda: lo prohíbe la pauta 10 y el brief no
+   tiene nada así. El bloque se separa con la misma raya superior que ya usan
+   las especificaciones de la pieza 2. */
+.anatomia {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  max-width: var(--columna);
+}
+
+.anatomia .pieza-nombre {
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+  margin-top: 14px;
+}
+
+/* El reset deja el párrafo pegado al título que lo abre. */
+section > h2 + p { margin-top: 8px; }
 
 .estado {
   border-top: 1px solid var(--dorado-claro);
@@ -520,13 +566,6 @@ th.n { text-align: right; }
   max-width: var(--columna);
 }
 
-.estado .btn {
-  margin-top: 8px;
-  margin-bottom: 2px;
-}
-
-/* La lista arranca en el margen como todo lo demás: la sangría de una lista
-   normal la corría 22 px y rompía la columna. La raya se dibuja a mano. */
 .reglas {
   max-width: var(--columna);
   margin-top: 16px;
@@ -546,173 +585,144 @@ th.n { text-align: right; }
   margin-right: 10px;
 }
 
-
-.btn-google {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--boton-ancho);
-  min-height: 48px;
-  padding: 12px;
-  background: var(--google-fondo);
-  border: 1px solid var(--google-filo);
-  border-radius: var(--radio);
-  color: var(--google-texto);
-  font-family: Roboto, Jost, "Helvetica Neue", Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  letter-spacing: 0;
-  text-transform: none;
-  cursor: pointer;
-}
-
-/* Los 10 px que Google pide después del logo. No es un espaciado nuestro. */
-.btn-google img {
-  display: block;
-  width: 18px;
-  height: 18px;
-  margin-right: 10px;
-}
-
 </style>
 
-<p class="rotulo">Fase ⑦ · Pieza 3 de 8 · 1280 px</p>
-<h1>Botón</h1>
+<p class="rotulo">Fase ⑦ · Pieza 4 de 8 · 768 px</p>
+<h1>Campo</h1>
 <div class="regla"></div>
-<p>El botón principal ya tiene color decidido. Lo que se fija acá son sus
-<b>estados</b> —encima, con foco, enviando, deshabilitado—, el botón secundario,
-y el ancho. Todo a escala 1:1 en 1280 px.</p>
+<p>Es por donde el paciente escribe su nombre, su correo y su teléfono, así que
+un campo confuso no se ve feo: <b>pierde el turno</b>. Acá se fijan sus tres
+partes y sus cinco estados. Todo a escala 1:1 en 768 px.</p>
 
 <section>
-  <p class="rotulo">El botón principal</p>
-  <h2>Sus estados, todos a tamaño real</h2>
-  <p class="dato" style="margin-top: 8px">Acá el botón va <b>del ancho de su texto</b>,
-  y el alto nunca baja de 44 px: es lo que mide la yema de un dedo.</p>
+  <p class="rotulo">La anatomía</p>
+  <h2>Tres partes, y ninguna es opcional</h2>
+  <div class="anatomia">
+    <p class="pieza-nombre">1 · La etiqueta</p>
+    <p class="dato">Qué se pide. Va <b>arriba y siempre visible</b>.</p>
+    <p class="pieza-nombre">2 · La caja</p>
+    <p class="dato">Blanca, con borde. <b>El relleno blanco mide 1,03 contra el
+    marfil de la página: la forma del campo la marca el borde, no el fondo.</b>
+    El día que alguien saque el borde, el campo desaparece.</p>
+    <p class="pieza-nombre">3 · La ayuda</p>
+    <p class="dato">Qué formato se espera. Va debajo y <b>no se borra nunca</b>.</p>
+    <div class="campo" style="margin-top: 18px">
+      <label class="etiqueta">Teléfono</label>
+      <input class="caja" value="342 155 0000">
+      <p class="ayuda">Con característica, por si hay que avisarte un cambio.</p>
+    </div>
+  </div>
+  <p class="dato" style="margin-top: 18px"><b>La etiqueta no se reemplaza por un
+  texto adentro del campo.</b> Ese texto se borra en cuanto se empieza a
+  escribir: quien se distrae pierde el nombre de lo que estaba llenando y no
+  tiene cómo recuperarlo sin borrar todo.</p>
+</section>
+
+<section>
+  <p class="rotulo">Los estados</p>
+  <h2>Los cinco, a tamaño real</h2>
+  <p class="dato" style="margin-top: 8px">La caja nunca baja de 48 px de alto ni
+  de 16 px de letra. Los 16 no son estética: <b>por debajo de eso el teléfono
+  hace zoom solo al tocar el campo</b> y deja la pantalla corrida.</p>
   
   <div class="estado">
-    <p class="dato">Reposo</p>
-    <button class="btn btn-1">Reservar turno</button>
-    <p class="dato">El dorado del brief con letra blanca, el mismo que se usa en todo el sitio. Sombra hiper leve. Mide 3,09 y por eso la letra no baja de 19 px.</p>
+    <p class="dato">Vacío</p>
+    <div class="campo">
+      <label class="etiqueta">Nombre</label>
+      <input class="caja " value="">
+      <p class="ayuda">Como figura en tu documento.</p>
+    </div>
+    <p class="dato" style="margin-top: 12px">Adentro no hay ningún texto de muestra. Lo que se espera se dice en la ayuda, que no se borra al escribir.</p>
   </div>
   <div class="estado">
-    <p class="dato">Enviando</p>
-    <button class="btn btn-1 btn-1-enviando"><span class="pila"><span class="fantasma">Reservar turno</span><span>Reservando…</span></span></button>
-    <p class="dato">El mismo dorado oscurecido, con sombra, y la palabra cambiada. Sube a 4,85. <b>Conserva el ancho del reposo</b>: la palabra que no se ve queda adentro sosteniéndolo, porque «Reservando…» es más corto y en escritorio el botón se achicaba 30 px.</p>
+    <p class="dato">Con lo escrito</p>
+    <div class="campo">
+      <label class="etiqueta">Nombre</label>
+      <input class="caja " value="María Fernanda">
+      <p class="ayuda">Como figura en tu documento.</p>
+    </div>
+    <p class="dato" style="margin-top: 12px">Lo que el paciente escribió va en grafito: 12,82, el par más alto del sistema. Se tiene que poder releer de un vistazo antes de confirmar.</p>
   </div>
   <div class="estado">
     <p class="dato">Con foco</p>
-    <button class="btn btn-1 btn-foco">Reservar turno</button>
-    <p class="dato">Se oscurece la superficie y el contorno cae JUSTO sobre el filo del botón. Las letras quedan blancas: 4,85. Se descartó el filtro que las apagaba también, porque dejaba el foco en 2,84, abajo del piso.</p>
+    <div class="campo">
+      <label class="etiqueta">Nombre</label>
+      <input class="caja caja-foco" value="María Fernanda">
+      <p class="ayuda">Como figura en tu documento.</p>
+    </div>
+    <p class="dato" style="margin-top: 12px">El filo pasa de 1 px a 2 px de grafito y se marca la sombra: cambian el grosor Y el color, nunca sólo el color. El campo no cambia de tamaño.</p>
+  </div>
+  <div class="estado">
+    <p class="dato">Con error</p>
+    <div class="campo">
+      <label class="etiqueta">Apellido</label>
+      <input class="caja caja-error" value="">
+      <p class="error-texto">Error — Falta el apellido. Va como figura en tu documento.</p>
+    </div>
+    <p class="dato" style="margin-top: 12px">Es el error que el sistema realmente devuelve: el paciente nuevo se guarda con nombre Y apellido. El filo se pinta, pero lo que comunica el error es el TEXTO. Aparece al salir del campo, no mientras se escribe.</p>
   </div>
   <div class="estado">
     <p class="dato">Deshabilitado</p>
-    <button class="btn btn-apagado">Elegí un horario</button>
-    <p class="dato">El botón DICE por qué no se puede tocar; un botón gris que no explica nada deja al paciente adivinando. Y lleva borde: su relleno mide 1,11 contra el fondo, o sea que sin contorno no se ve que hay un botón.</p>
+    <div class="campo">
+      <label class="etiqueta">Profesional</label>
+      <input class="caja caja-apagada" value="" disabled>
+      <p class="ayuda">Se habilita cuando elijas a qué venís.</p>
+    </div>
+    <p class="dato" style="margin-top: 12px">Va VACÍO: el motivo por el que no se puede tocar se dice en la ayuda, no adentro de la caja. Un texto adentro se borraría al escribir, y es justo lo que esta pieza prohíbe dos secciones más arriba.</p>
   </div>
 </section>
 
 <section>
-  <p class="rotulo">El botón secundario</p>
-  <h2>El grafito del brief, para lo que no es la acción principal</h2>
-  <p>Cancelar, volver, ver otro día. <b>Nunca dos botones dorados en la misma
-  pantalla:</b> si todo pesa igual, nada guía.</p>
-  <p class="dato" style="margin-top: 10px"><b>Atención, y es una decisión que
-  queda abierta:</b> el grafito mide 12,82 y el dorado del principal 3,09, así
-  que <b>el secundario pesa más a la vista que el principal</b>. En el brief
-  ese grafito era el botón PRINCIPAL. Se ve recién en la pieza 8, cuando los
-  dos estén en la misma pantalla.</p>
-  <div class="estado">
-    <p class="dato">Reposo</p>
-    <button class="btn btn-2">Cancelar turno</button>
-    <p class="dato">Grafito macizo con letra blanca, tal como está dibujado en
-    la página 17 del brief. <b>12,82</b>, el par más alto del sistema.</p>
+  <p class="rotulo">Las tres formas</p>
+  <h2>El mismo campo, escribiendo · eligiendo · contando</h2>
+  <p>Cambia lo que hay adentro, no el borde, ni el alto, ni la etiqueta.</p>
+  <div class="campo">
+    <label class="etiqueta">Apellido</label>
+    <input class="caja" value="Gómez">
+    <p class="ayuda">Como figura en tu documento.</p>
   </div>
-  <div class="estado">
-    <p class="dato">Con foco</p>
-    <button class="btn btn-2 btn-2-foco">Cancelar turno</button>
-    <p class="dato">El botón se <b>invierte</b>: fondo blanco, letra grafito, y
-    filo grafito de 2 px para que la silueta no se pierda contra la página.
-    Cambia el <b>80 %</b> de la superficie —contra el 24 % que lograba un
-    anillo—. Grafito sobre blanco: <b>12,82</b>.</p>
+  <div class="campo">
+    <label class="etiqueta">¿Para quién es el turno?</label>
+    <div class="desplegable">
+      <select class="caja"><option>María Fernanda Gómez</option></select>
+    </div>
+    <p class="ayuda">Un mismo correo puede tener varias personas: una madre
+    anota a sus hijos con su casilla.</p>
   </div>
+  <div class="campo">
+    <label class="etiqueta">Algo que quieras contarnos
+      <span class="opcional">· opcional</span></label>
+    <textarea class="caja">Tengo el diente 24 sensible al frío desde hace dos semanas.</textarea>
+    <p class="ayuda">Con una línea alcanza. Lo demás se habla en el consultorio.</p>
+  </div>
+  <p class="dato" style="margin-top: 18px"><b>Se marca lo OPCIONAL, no lo
+  obligatorio.</b> En la reserva casi todo es obligatorio: un asterisco en cada
+  campo es ruido en cinco campos y señal en ninguno.</p>
 </section>
-
-<section>
-  <p class="rotulo">Los dos botones juntos</p>
-  <h2>Principal y secundario, uno debajo del otro</h2>
-  <p>Mismo tamaño, mismo alto, misma letra. Es la única forma de ver cuál pesa
-  más.</p>
-  <div class="estado">
-    <p class="dato">Principal · dorado · <b>3,09</b></p>
-    <button class="btn btn-1">Reservar turno</button>
-  </div>
-  <div class="estado">
-    <p class="dato">Secundario · grafito · <b>12,82</b></p>
-    <button class="btn btn-2">Cancelar turno</button>
-  </div>
-</section>
-
-
-<section>
-  <p class="rotulo">La variante ajena</p>
-  <h2>Continuar con Google — el único botón que no diseñamos</h2>
-  <p>Es la puerta de entrada: sin sesión no se reserva ni se cancela. <b>Su
-  forma, su color, su letra y su logo los fija Google</b>, así que acá no hay
-  decisión de diseño que tomar — hay una regla ajena que se cumple.</p>
-  <div class="estado">
-    <p class="dato">Tema claro, que es el que va sobre marfil</p>
-    
-  <button class="btn-google">
-    <img src="data:image/png;base64,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" alt="">Continuar con Google
-  </button>
-    <p class="dato">Relleno blanco, filo <b>4,24</b> contra la página, letra
-    <b>16,48</b>. Los tres colores viven en <code>tokens.css</code> bajo
-    «colores ajenos»: están ahí para que el medidor los mire, no porque sean
-    nuestros.</p>
-  </div>
-  <ul class="reglas">
-    <li>El logo se usa <b>tal cual</b>: no se recolorea, no se pasa a una
-    tinta, no se redibuja. El archivo es el oficial de Google.</li>
-    <li><b>Nunca la G sola.</b> Sin borde de botón y sin texto de acción, está
-    prohibido.</li>
-    <li>El texto tiene que decir que se entra <b>con una cuenta de Google</b>,
-    no que se crea una. Por eso «Continuar con Google» y no «Registrate».</li>
-    <li>Va en <b>Roboto</b> y en minúsculas: rompe nuestras dos reglas de
-    botón —Jost y mayúsculas— <b>a propósito</b>. Google pide Google Sans, que
-    no es pública; Roboto es su reemplazo legítimo.</li>
-    <li>De lo nuestro conserva dos cosas y sólo dos: el <b>radio de 3 px</b>
-    —Google acepta rectangular— y el <b>alto de 48 px</b>, que es nuestro piso
-    táctil.</li>
-    <li><b>Nunca al lado del botón dorado.</b> Entrar y reservar son dos
-    momentos distintos; si comparten pantalla, compiten.</li>
-    <li><b>Va el tema CLARO de los tres que Google ofrece</b>, decidido viendo
-    los cuatro a tamaño real. El neutro desaparece contra el marfil (1,05); el
-    oscuro se viste igual que nuestro botón secundario, que es el que NO manda.
-    Y el grafito nuestro nunca fue una opción: Google no admite otro relleno.</li>
-  </ul>
-  <p class="dato" style="margin-top: 18px"><b>Y hay un aviso que no es de
-  diseño:</b> mientras la app no esté verificada por Google, su pantalla le
-  muestra al paciente el dominio técnico de Supabase, no «CB Odontología y
-  Estética». Eso se avisa <b>antes</b> del botón, en la pantalla de entrada.</p>
-</section>
-
 
 <section>
   <p class="rotulo">Las reglas</p>
   <h2>Lo que no se negocia</h2>
   <ul class="reglas">
-    <li>Alto mínimo <b>44 px</b> en los tres anchos, siempre.</li>
-    <li>En el teléfono el principal va <b>de borde a borde</b>; de tablet para
-    arriba, del ancho de su texto.</li>
-    <li>El foco cae <b>sobre el filo del botón</b>, nunca separado de él.</li>
-    <li>La letra del principal es <b>blanca</b> en todos sus estados.</li>
-    <li>El deshabilitado <b>dice por qué</b> lo está.</li>
-    <li>Mientras envía, el botón <b>no cambia de tamaño</b>.</li>
-    <li><b>Un solo botón dorado por pantalla.</b></li>
+    <li>La etiqueta va <b>arriba y visible</b>. Nunca adentro del campo.</li>
+    <li><b>El correo no se pide nunca en un campo</b>: lo trae la sesión de
+    Google. Si viniera del formulario, cualquiera reservaría a nombre de otro.</li>
+    <li>Alto mínimo <b>48 px</b> y letra de <b>16 px</b> en los tres anchos.</li>
+    <li>El foco <b>tiñe la superficie y engrosa el filo</b>, igual que en el
+    botón. Un filo de 2 px solo mueve el 5,3 % de lo que se ve: <b>está
+    dibujado y no se nota</b>.</li>
+    <li>El campo <b>no cambia de tamaño</b> al recibir foco ni al fallar.</li>
+    <li>El error lleva <b>texto</b> y dice qué hacer. El color es el refuerzo,
+    no el mensaje.</li>
+    <li>El error aparece <b>al salir del campo</b>, no mientras se escribe: un
+    teléfono a medio escribir siempre está mal.</li>
+    <li>Un campo deshabilitado <b>dice por qué</b> lo está.</li>
+    <li>Se marca lo <b>opcional</b>, no lo obligatorio.</li>
+    <li>El campo de lo que el paciente quiera contar <b>puede recibir datos de
+    salud</b>: su ayuda pide una línea, no una historia clínica.</li>
   </ul>
 </section>
 
-<p class="pie">Ni un color ni un tamaño escrito a mano: los estados salen de
-<code>tokens.css</code> y los cinco pares del botón los mide
+<p class="pie">Ni un color ni un tamaño escrito a mano: los cinco estados salen
+de <code>tokens.css</code> y los nueve pares del campo los mide
 <code>medir-contraste.py</code> antes de cada publicación.</p>

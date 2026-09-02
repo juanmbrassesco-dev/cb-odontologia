@@ -3,7 +3,7 @@
 <title>CB · 03 Botón · 768</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&family=Roboto:wght@500&display=swap">
 <style>
 /* ============================================================
    CB Odontología y Estética — FUENTE DE VERDAD DEL COLOR
@@ -108,6 +108,93 @@
   --boton-apagado-borde: var(--borde);
 
 
+  /* --- EL CAMPO — pieza 4 ---
+
+     El campo es blanco sobre marfil, y ese par mide 1,03: NO SE VE. Igual que
+     el botón deshabilitado, la forma la marca el BORDE y nunca el relleno. El
+     día que alguien saque el borde "para que quede más limpio", el campo
+     desaparece de la página. */
+  --campo-fondo: var(--blanco);
+  --campo-texto: var(--grafito);
+  --campo-borde: var(--borde);
+
+  /* La etiqueta se lee SIEMPRE y va arriba del campo. Nunca se reemplaza por
+     un texto adentro (placeholder): ese texto se borra al escribir, y quien se
+     distrae pierde el nombre de lo que estaba llenando y no lo puede releer.
+     El formato que se espera va en la AYUDA, que no se borra nunca. */
+  --campo-etiqueta: var(--grafito);
+  --campo-ayuda: var(--texto-segundo);
+
+  /* FOCO. Misma regla que el botón: cae sobre el filo del propio control, no
+     un anillo separado. Pasa de 1 px de borde a 2 px de grafito, así que
+     cambian el color Y el grosor — el foco no puede depender sólo del color. */
+  --campo-foco-filo: var(--grafito);
+  --campo-sombra-foco: var(--sombra-boton-foco);
+
+  /* EL CAMPO NO TIÑE SU SUPERFICIE AL RECIBIR FOCO, y queda escrito porque se
+     probó al revés. Medido con medir-foco.py, el filo de 2 px mueve el 5,3 %
+     de la superficie —el de 3 px, el 7,9 %— contra un piso de casa del 10 %,
+     y con eso se tiñó el fondo, que llegaba al 97,6 %. Se volvió atrás:
+
+     1. Ese piso se calibró sobre el BOTÓN, que no tiene borde en reposo y sólo
+        puede avisar el foco cambiando su superficie. El campo ya tiene filo.
+     2. El filo de 2 px cumple Focus Visible (AA de WCAG 2.0) y llega también a
+        la vara de Focus Appearance (AAA de WCAG 2.2): 2 px con 3:1 contra lo
+        que lo rodea. El grafito mide 12,00 contra el marfil. No había nada
+        que arreglar.
+     3. La regla del sistema no es "el foco tiñe": es que el foco se marca en el
+        FILO del propio control. El botón tiñe porque no tiene filo donde
+        marcarlo. Lo cortó Juan. */
+
+  /* ERROR. Se pinta el filo, pero el error NUNCA se comunica sólo con color:
+     debajo va un mensaje escrito que dice qué hacer, no "campo inválido". */
+  --campo-error-filo: var(--error);
+  --campo-error-texto: var(--error);
+
+  /* Deshabilitado: el mismo relleno y el mismo gris del botón apagado, para
+     que un control inactivo se vea igual en todo el sitio. */
+  --campo-apagado-fondo: var(--boton-apagado-fondo);
+  --campo-apagado-texto: var(--apagado);
+  --campo-apagado-borde: var(--borde);
+
+  /* Alto mínimo. 44 px es el piso táctil del sistema; el campo va a 48 porque
+     además hay que poder apoyar el dedo sin taparse lo que se escribió. */
+  --campo-alto: 48px;
+
+
+  /* --- COLORES AJENOS — NO SON NUESTROS Y NO SE TOCAN ---
+
+     Única excepción a la regla de que ningún color entra al sistema sin
+     porqué: éstos NO los elegimos. Son los de la marca Google para el botón
+     "Continuar con Google", y están acá y no sueltos en un tablero para que
+     igual los mida medir-contraste.py. Fuente: la página de marca de Google
+     Identity, verificada el 2-sep-2026. Si Google los cambia, se cambian acá
+     y en ningún otro lado.
+
+     🏁 TEMA CLARO, decidido por Juan el 2-sep-2026 viendo los cuatro a tamaño
+     real. Google ofrece tres —claro #FFFFFF, oscuro #131314, neutro #F2F2F2—
+     y prohíbe cualquier otro relleno, así que nuestro grafito nunca estuvo
+     disponible. De los tres permitidos:
+
+     · NEUTRO, descartado por el número: mide 1,05 contra el marfil, o sea que
+       sobre nuestro fondo desaparece.
+     · OSCURO, descartado por DOS motivos de Juan. Uno, en nuestro sistema el
+       grafito macizo es el botón SECUNDARIO: vestir de secundario la única
+       acción de la pantalla de entrada la degrada. Dos, "yo sí noto la
+       diferencia con el grafito".
+     · CLARO, el elegido: se ve por su filo (4,24 contra la página) y no le
+       roba el peso a ningún botón nuestro.
+
+     ⚠️ Y queda escrito el error de instrumento, porque es reutilizable: Claude
+     argumentó que el negro de Google y nuestro grafito "al ojo son casi el
+     mismo botón" apoyándose en que su contraste da 1,45. ESE NÚMERO NO MIDE
+     ESO. El contraste WCAG compara luminancia para decidir si un texto se lee;
+     dos colores de luminancia parecida pueden tener tonos bien distintos, y es
+     el caso: el nuestro es cálido y el de Google es neutro. Lo cazó Juan
+     mirando la pantalla. */
+  --google-fondo: #FFFFFF;
+  --google-filo: #747775;
+  --google-texto: #1F1F1F;
 
   /* Anillo de foco: grafito macizo, 2px, con 2px de separación.
      Va con el grosor, no sólo con el color (pauta 7). */
@@ -230,6 +317,20 @@
    @par boton-2-foco-filo sobre marfil >= 3.0 · el filo que conserva la silueta
    @par boton-apagado-texto sobre boton-apagado-fondo >= 3.0 · el botón deshabilitado
    @par boton-apagado-borde sobre marfil >= 3.0 · el contorno del deshabilitado
+
+   @par campo-texto sobre campo-fondo >= 4.5 · lo que el paciente escribe
+   @par campo-etiqueta sobre marfil >= 4.5 · la etiqueta, arriba del campo
+   @par campo-ayuda sobre marfil >= 4.5 · la ayuda, debajo del campo
+   @par campo-borde sobre marfil >= 3.0 · el filo del campo en reposo
+   @par campo-foco-filo sobre marfil >= 3.0 · el filo del campo con foco
+   @par campo-error-filo sobre marfil >= 3.0 · el filo del campo con error
+   @par campo-error-texto sobre marfil >= 4.5 · el mensaje de error, escrito
+   @par campo-apagado-texto sobre campo-apagado-fondo >= 3.0 · el campo deshabilitado
+   @par campo-apagado-borde sobre marfil >= 3.0 · el contorno del deshabilitado
+
+   @par google-texto sobre google-fondo >= 4.5 · la letra del botón de Google
+   @par google-filo sobre marfil >= 3.0 · el filo del botón de Google, contra la página
+   @par google-filo sobre google-fondo >= 3.0 · el filo contra su propio relleno
 
 */
 
@@ -359,6 +460,16 @@ th.n { text-align: right; }
   box-shadow: var(--sombra-boton);
 }
 
+/* El ancho NO puede cambiar al enviar, y "Reservando…" es más corto que
+   "Reservar turno": de tablet para arriba, donde el botón se ajusta a su texto,
+   se achicaba 30 px. El botón lleva las dos palabras apiladas y la que no se ve
+   sostiene el ancho. Sin números mágicos: lo mide el texto más largo. */
+.pila { display: inline-grid; }
+
+.pila > span { grid-area: 1 / 1; }
+
+.pila .fantasma { visibility: hidden; }
+
 /* Enviando: el mismo dorado oscurecido, con sombra, y la palabra cambiada. */
 .btn-1-enviando {
   background: var(--boton-fondo-oscuro);
@@ -435,6 +546,35 @@ th.n { text-align: right; }
   margin-right: 10px;
 }
 
+
+.btn-google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--boton-ancho);
+  min-height: 48px;
+  padding: 12px;
+  background: var(--google-fondo);
+  border: 1px solid var(--google-filo);
+  border-radius: var(--radio);
+  color: var(--google-texto);
+  font-family: Roboto, Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+}
+
+/* Los 10 px que Google pide después del logo. No es un espaciado nuestro. */
+.btn-google img {
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
 </style>
 
 <p class="rotulo">Fase ⑦ · Pieza 3 de 8 · 768 px</p>
@@ -457,8 +597,8 @@ y el ancho. Todo a escala 1:1 en 768 px.</p>
   </div>
   <div class="estado">
     <p class="dato">Enviando</p>
-    <button class="btn btn-1 btn-1-enviando">Reservando…</button>
-    <p class="dato">El mismo dorado oscurecido, con sombra, y la palabra cambiada. Sube a 4,85. El botón conserva su tamaño para que nada salte de lugar.</p>
+    <button class="btn btn-1 btn-1-enviando"><span class="pila"><span class="fantasma">Reservar turno</span><span>Reservando…</span></span></button>
+    <p class="dato">El mismo dorado oscurecido, con sombra, y la palabra cambiada. Sube a 4,85. <b>Conserva el ancho del reposo</b>: la palabra que no se ve queda adentro sosteniéndolo, porque «Reservando…» es más corto y en escritorio el botón se achicaba 30 px.</p>
   </div>
   <div class="estado">
     <p class="dato">Con foco</p>
@@ -512,6 +652,51 @@ y el ancho. Todo a escala 1:1 en 768 px.</p>
     <button class="btn btn-2">Cancelar turno</button>
   </div>
 </section>
+
+
+<section>
+  <p class="rotulo">La variante ajena</p>
+  <h2>Continuar con Google — el único botón que no diseñamos</h2>
+  <p>Es la puerta de entrada: sin sesión no se reserva ni se cancela. <b>Su
+  forma, su color, su letra y su logo los fija Google</b>, así que acá no hay
+  decisión de diseño que tomar — hay una regla ajena que se cumple.</p>
+  <div class="estado">
+    <p class="dato">Tema claro, que es el que va sobre marfil</p>
+    
+  <button class="btn-google">
+    <img src="data:image/png;base64,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" alt="">Continuar con Google
+  </button>
+    <p class="dato">Relleno blanco, filo <b>4,24</b> contra la página, letra
+    <b>16,48</b>. Los tres colores viven en <code>tokens.css</code> bajo
+    «colores ajenos»: están ahí para que el medidor los mire, no porque sean
+    nuestros.</p>
+  </div>
+  <ul class="reglas">
+    <li>El logo se usa <b>tal cual</b>: no se recolorea, no se pasa a una
+    tinta, no se redibuja. El archivo es el oficial de Google.</li>
+    <li><b>Nunca la G sola.</b> Sin borde de botón y sin texto de acción, está
+    prohibido.</li>
+    <li>El texto tiene que decir que se entra <b>con una cuenta de Google</b>,
+    no que se crea una. Por eso «Continuar con Google» y no «Registrate».</li>
+    <li>Va en <b>Roboto</b> y en minúsculas: rompe nuestras dos reglas de
+    botón —Jost y mayúsculas— <b>a propósito</b>. Google pide Google Sans, que
+    no es pública; Roboto es su reemplazo legítimo.</li>
+    <li>De lo nuestro conserva dos cosas y sólo dos: el <b>radio de 3 px</b>
+    —Google acepta rectangular— y el <b>alto de 48 px</b>, que es nuestro piso
+    táctil.</li>
+    <li><b>Nunca al lado del botón dorado.</b> Entrar y reservar son dos
+    momentos distintos; si comparten pantalla, compiten.</li>
+    <li><b>Va el tema CLARO de los tres que Google ofrece</b>, decidido viendo
+    los cuatro a tamaño real. El neutro desaparece contra el marfil (1,05); el
+    oscuro se viste igual que nuestro botón secundario, que es el que NO manda.
+    Y el grafito nuestro nunca fue una opción: Google no admite otro relleno.</li>
+  </ul>
+  <p class="dato" style="margin-top: 18px"><b>Y hay un aviso que no es de
+  diseño:</b> mientras la app no esté verificada por Google, su pantalla le
+  muestra al paciente el dominio técnico de Supabase, no «CB Odontología y
+  Estética». Eso se avisa <b>antes</b> del botón, en la pantalla de entrada.</p>
+</section>
+
 
 <section>
   <p class="rotulo">Las reglas</p>

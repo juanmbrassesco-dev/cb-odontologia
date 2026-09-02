@@ -873,6 +873,16 @@ CSS_BOTON = """
   box-shadow: var(--sombra-boton);
 }
 
+/* El ancho NO puede cambiar al enviar, y "Reservando…" es más corto que
+   "Reservar turno": de tablet para arriba, donde el botón se ajusta a su texto,
+   se achicaba 30 px. El botón lleva las dos palabras apiladas y la que no se ve
+   sostiene el ancho. Sin números mágicos: lo mide el texto más largo. */
+.pila { display: inline-grid; }
+
+.pila > span { grid-area: 1 / 1; }
+
+.pila .fantasma { visibility: hidden; }
+
 /* Enviando: el mismo dorado oscurecido, con sombra, y la palabra cambiada. */
 .btn-1-enviando {
   background: var(--boton-fondo-oscuro);
@@ -955,9 +965,13 @@ ESTADOS = [
     ("btn-1", "Reposo", "Reservar turno",
      "El dorado del brief con letra blanca, el mismo que se usa en todo el "
      "sitio. Sombra hiper leve. Mide 3,09 y por eso la letra no baja de 19 px."),
-    ("btn-1 btn-1-enviando", "Enviando", "Reservando…",
+    ("btn-1 btn-1-enviando", "Enviando",
+     '<span class="pila"><span class="fantasma">Reservar turno</span>'
+     '<span>Reservando…</span></span>',
      "El mismo dorado oscurecido, con sombra, y la palabra cambiada. Sube a "
-     "4,85. El botón conserva su tamaño para que nada salte de lugar."),
+     "4,85. <b>Conserva el ancho del reposo</b>: la palabra que no se ve queda "
+     "adentro sosteniéndolo, porque «Reservando…» es más corto y en escritorio "
+     "el botón se achicaba 30 px."),
     ("btn-1 btn-foco", "Con foco", "Reservar turno",
      "Se oscurece la superficie y el contorno cae JUSTO sobre el filo del "
      "botón. Las letras quedan blancas: 4,85. Se descartó el filtro que las "
@@ -978,8 +992,17 @@ def bloque_estado(clase, nombre, texto, porque):
   </div>'''
 
 
+def leer_logo_google():
+    """El archivo oficial de Google, embebido para que el tablero se abra solo."""
+    import base64
+
+    ruta = RAIZ / "brand" / "ajenos" / "googleg_standard_color_128dp.png"
+    return base64.b64encode(ruta.read_bytes()).decode("ascii")
+
+
 def tablero_boton(tokens, css, ancho):
     estados = "".join(bloque_estado(*e) for e in ESTADOS)
+    google = seccion_google(leer_logo_google())
     ancho_boton = "de borde a borde" if ancho < 768 else "del ancho de su texto"
 
     return f"""<!-- @dsCard group="Components" -->
@@ -987,11 +1010,12 @@ def tablero_boton(tokens, css, ancho):
 <title>CB · 03 Botón · {ancho}</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&family=Roboto:wght@500&display=swap">
 <style>
 {css}
 {base_css(ancho)}
 {CSS_BOTON}
+{CSS_GOOGLE}
 </style>
 
 <p class="rotulo">Fase ⑦ · Pieza 3 de 8 · {ancho} px</p>
@@ -1050,6 +1074,8 @@ y el ancho. Todo a escala 1:1 en {ancho} px.</p>
   </div>
 </section>
 
+{google}
+
 <section>
   <p class="rotulo">Las reglas</p>
   <h2>Lo que no se negocia</h2>
@@ -1067,6 +1093,413 @@ y el ancho. Todo a escala 1:1 en {ancho} px.</p>
 
 <p class="pie">Ni un color ni un tamaño escrito a mano: los estados salen de
 <code>tokens.css</code> y los cinco pares del botón los mide
+<code>medir-contraste.py</code> antes de cada publicación.</p>
+"""
+
+
+
+# ------------------------------------------------------------
+# LA VARIANTE AJENA — el botón "Continuar con Google"
+#
+# Es el único control del sistema que NO diseñamos nosotros: la forma, el
+# color, la letra y el logo los fija Google en su página de marca (verificada
+# el 2-sep-2026). Se documenta acá para que nadie lo "arregle" para que combine.
+# ------------------------------------------------------------
+
+CSS_GOOGLE = """
+.btn-google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--boton-ancho);
+  min-height: 48px;
+  padding: 12px;
+  background: var(--google-fondo);
+  border: 1px solid var(--google-filo);
+  border-radius: var(--radio);
+  color: var(--google-texto);
+  font-family: Roboto, Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+}
+
+/* Los 10 px que Google pide después del logo. No es un espaciado nuestro. */
+.btn-google img {
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+"""
+
+
+def boton_google(logo):
+    return f'''
+  <button class="btn-google">
+    <img src="data:image/png;base64,{logo}" alt="">Continuar con Google
+  </button>'''
+
+
+def seccion_google(logo):
+    return f"""
+<section>
+  <p class="rotulo">La variante ajena</p>
+  <h2>Continuar con Google — el único botón que no diseñamos</h2>
+  <p>Es la puerta de entrada: sin sesión no se reserva ni se cancela. <b>Su
+  forma, su color, su letra y su logo los fija Google</b>, así que acá no hay
+  decisión de diseño que tomar — hay una regla ajena que se cumple.</p>
+  <div class="estado">
+    <p class="dato">Tema claro, que es el que va sobre marfil</p>
+    {boton_google(logo)}
+    <p class="dato">Relleno blanco, filo <b>4,24</b> contra la página, letra
+    <b>16,48</b>. Los tres colores viven en <code>tokens.css</code> bajo
+    «colores ajenos»: están ahí para que el medidor los mire, no porque sean
+    nuestros.</p>
+  </div>
+  <ul class="reglas">
+    <li>El logo se usa <b>tal cual</b>: no se recolorea, no se pasa a una
+    tinta, no se redibuja. El archivo es el oficial de Google.</li>
+    <li><b>Nunca la G sola.</b> Sin borde de botón y sin texto de acción, está
+    prohibido.</li>
+    <li>El texto tiene que decir que se entra <b>con una cuenta de Google</b>,
+    no que se crea una. Por eso «Continuar con Google» y no «Registrate».</li>
+    <li>Va en <b>Roboto</b> y en minúsculas: rompe nuestras dos reglas de
+    botón —Jost y mayúsculas— <b>a propósito</b>. Google pide Google Sans, que
+    no es pública; Roboto es su reemplazo legítimo.</li>
+    <li>De lo nuestro conserva dos cosas y sólo dos: el <b>radio de 3 px</b>
+    —Google acepta rectangular— y el <b>alto de 48 px</b>, que es nuestro piso
+    táctil.</li>
+    <li><b>Nunca al lado del botón dorado.</b> Entrar y reservar son dos
+    momentos distintos; si comparten pantalla, compiten.</li>
+    <li><b>Va el tema CLARO de los tres que Google ofrece</b>, decidido viendo
+    los cuatro a tamaño real. El neutro desaparece contra el marfil (1,05); el
+    oscuro se viste igual que nuestro botón secundario, que es el que NO manda.
+    Y el grafito nuestro nunca fue una opción: Google no admite otro relleno.</li>
+  </ul>
+  <p class="dato" style="margin-top: 18px"><b>Y hay un aviso que no es de
+  diseño:</b> mientras la app no esté verificada por Google, su pantalla le
+  muestra al paciente el dominio técnico de Supabase, no «CB Odontología y
+  Estética». Eso se avisa <b>antes</b> del botón, en la pantalla de entrada.</p>
+</section>
+"""
+
+# ============================================================
+# PIEZA 4 — EL CAMPO
+# ============================================================
+
+CSS_CAMPO = """
+.campo {
+  max-width: var(--columna);
+  margin-top: 18px;
+}
+
+/* La etiqueta es un bloque propio arriba del campo: nunca vive adentro. */
+.etiqueta {
+  display: block;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  font-weight: 500;
+  color: var(--campo-etiqueta);
+  margin-bottom: 6px;
+}
+
+.etiqueta .opcional {
+  font-weight: 400;
+  color: var(--campo-ayuda);
+}
+
+.caja {
+  display: block;
+  width: 100%;
+  min-height: var(--campo-alto);
+  padding: 12px 14px;
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  color: var(--campo-texto);
+  background: var(--campo-fondo);
+  border: 1px solid var(--campo-borde);
+  border-radius: var(--radio);
+}
+
+/* FOCO: el filo pasa de 1 px de borde a 2 px de grafito y se marca la sombra.
+   El relleno se compensa para que el campo no cambie de tamaño ni empuje a los
+   de abajo — un campo que salta al tocarlo se siente roto. */
+.caja-foco {
+  border: 2px solid var(--campo-foco-filo);
+  padding: 11px 13px;
+  box-shadow: var(--campo-sombra-foco);
+}
+
+.caja-error {
+  border: 2px solid var(--campo-error-filo);
+  padding: 11px 13px;
+}
+
+.caja-apagada {
+  background: var(--campo-apagado-fondo);
+  border-color: var(--campo-apagado-borde);
+  color: var(--campo-apagado-texto);
+  cursor: not-allowed;
+}
+
+.ayuda {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--campo-ayuda);
+  margin-top: 6px;
+}
+
+/* El mensaje de error arranca con la palabra: el color es el refuerzo, no
+   el mensaje. Quien no distingue el rojo lee exactamente lo mismo. */
+.error-texto {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--campo-error-texto);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* El desplegable es el mismo campo con una punta de flecha dibujada al filo
+   derecho. No entra ningún ícono nuevo: son dos bordes girados 45°. */
+.desplegable { position: relative; }
+
+.desplegable::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -7px;
+  border-right: 2px solid var(--grafito);
+  border-bottom: 2px solid var(--grafito);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+select.caja {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 44px;
+}
+
+textarea.caja {
+  min-height: 104px;
+  resize: vertical;
+}
+
+/* Sin borde de acento a la izquierda: lo prohíbe la pauta 10 y el brief no
+   tiene nada así. El bloque se separa con la misma raya superior que ya usan
+   las especificaciones de la pieza 2. */
+.anatomia {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  max-width: var(--columna);
+}
+
+.anatomia .pieza-nombre {
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+  margin-top: 14px;
+}
+
+/* El reset deja el párrafo pegado al título que lo abre. */
+section > h2 + p { margin-top: 8px; }
+
+.estado {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  margin-top: 22px;
+  max-width: var(--columna);
+}
+
+.reglas {
+  max-width: var(--columna);
+  margin-top: 16px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.reglas li {
+  margin-top: 8px;
+  padding-left: 22px;
+  text-indent: -22px;
+}
+
+.reglas li::before {
+  content: "—";
+  color: var(--dorado-texto);
+  margin-right: 10px;
+}
+"""
+
+
+# clase · estado · etiqueta · lo escrito · pie · porqué
+ESTADOS_CAMPO = [
+    ("", "Vacío", "Nombre", "",
+     ("ayuda", "Como figura en tu documento."),
+     "Adentro no hay ningún texto de muestra. Lo que se espera se dice en la "
+     "ayuda, que no se borra al escribir."),
+    ("", "Con lo escrito", "Nombre", "María Fernanda",
+     ("ayuda", "Como figura en tu documento."),
+     "Lo que el paciente escribió va en grafito: 12,82, el par más alto del "
+     "sistema. Se tiene que poder releer de un vistazo antes de confirmar."),
+    ("caja-foco", "Con foco", "Nombre", "María Fernanda",
+     ("ayuda", "Como figura en tu documento."),
+     "El filo pasa de 1 px a 2 px de grafito y se marca la sombra: cambian el "
+     "grosor Y el color, nunca sólo el color. El campo no cambia de tamaño."),
+    ("caja-error", "Con error", "Apellido", "",
+     ("error", "Falta el apellido. Va como figura en tu documento."),
+     "Es el error que el sistema realmente devuelve: el paciente nuevo se "
+     "guarda con nombre Y apellido. El filo se pinta, pero lo que comunica el "
+     "error es el TEXTO. Aparece al salir del campo, no mientras se escribe."),
+    ("caja-apagada", "Deshabilitado", "Profesional", "",
+     ("ayuda", "Se habilita cuando elijas a qué venís."),
+     "Va VACÍO: el motivo por el que no se puede tocar se dice en la ayuda, no "
+     "adentro de la caja. Un texto adentro se borraría al escribir, y es justo "
+     "lo que esta pieza prohíbe dos secciones más arriba."),
+]
+
+
+
+def bloque_campo(clase, nombre, etiqueta, valor, pie, porque):
+    tipo_pie, texto_pie = pie
+    clase_pie = "ayuda" if tipo_pie == "ayuda" else "error-texto"
+
+    if tipo_pie != "ayuda":
+        texto_pie = "Error — " + texto_pie
+
+    apagada = " disabled" if clase == "caja-apagada" else ""
+
+    return (
+        '\n  <div class="estado">'
+        f'\n    <p class="dato">{nombre}</p>'
+        '\n    <div class="campo">'
+        f'\n      <label class="etiqueta">{etiqueta}</label>'
+        f'\n      <input class="caja {clase}" value="{valor}"{apagada}>'
+        f'\n      <p class="{clase_pie}">{texto_pie}</p>'
+        '\n    </div>'
+        f'\n    <p class="dato" style="margin-top: 12px">{porque}</p>'
+        '\n  </div>'
+    )
+
+
+def tablero_campo(tokens, css, ancho):
+    estados = "".join(bloque_campo(*e) for e in ESTADOS_CAMPO)
+
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 04 Campo · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_CAMPO}
+</style>
+
+<p class="rotulo">Fase ⑦ · Pieza 4 de 8 · {ancho} px</p>
+<h1>Campo</h1>
+<div class="regla"></div>
+<p>Es por donde el paciente escribe su nombre, su correo y su teléfono, así que
+un campo confuso no se ve feo: <b>pierde el turno</b>. Acá se fijan sus tres
+partes y sus cinco estados. Todo a escala 1:1 en {ancho} px.</p>
+
+<section>
+  <p class="rotulo">La anatomía</p>
+  <h2>Tres partes, y ninguna es opcional</h2>
+  <div class="anatomia">
+    <p class="pieza-nombre">1 · La etiqueta</p>
+    <p class="dato">Qué se pide. Va <b>arriba y siempre visible</b>.</p>
+    <p class="pieza-nombre">2 · La caja</p>
+    <p class="dato">Blanca, con borde. <b>El relleno blanco mide 1,03 contra el
+    marfil de la página: la forma del campo la marca el borde, no el fondo.</b>
+    El día que alguien saque el borde, el campo desaparece.</p>
+    <p class="pieza-nombre">3 · La ayuda</p>
+    <p class="dato">Qué formato se espera. Va debajo y <b>no se borra nunca</b>.</p>
+    <div class="campo" style="margin-top: 18px">
+      <label class="etiqueta">Teléfono</label>
+      <input class="caja" value="342 155 0000">
+      <p class="ayuda">Con característica, por si hay que avisarte un cambio.</p>
+    </div>
+  </div>
+  <p class="dato" style="margin-top: 18px"><b>La etiqueta no se reemplaza por un
+  texto adentro del campo.</b> Ese texto se borra en cuanto se empieza a
+  escribir: quien se distrae pierde el nombre de lo que estaba llenando y no
+  tiene cómo recuperarlo sin borrar todo.</p>
+</section>
+
+<section>
+  <p class="rotulo">Los estados</p>
+  <h2>Los cinco, a tamaño real</h2>
+  <p class="dato" style="margin-top: 8px">La caja nunca baja de 48 px de alto ni
+  de 16 px de letra. Los 16 no son estética: <b>por debajo de eso el teléfono
+  hace zoom solo al tocar el campo</b> y deja la pantalla corrida.</p>
+  {estados}
+</section>
+
+<section>
+  <p class="rotulo">Las tres formas</p>
+  <h2>El mismo campo, escribiendo · eligiendo · contando</h2>
+  <p>Cambia lo que hay adentro, no el borde, ni el alto, ni la etiqueta.</p>
+  <div class="campo">
+    <label class="etiqueta">Apellido</label>
+    <input class="caja" value="Gómez">
+    <p class="ayuda">Como figura en tu documento.</p>
+  </div>
+  <div class="campo">
+    <label class="etiqueta">¿Para quién es el turno?</label>
+    <div class="desplegable">
+      <select class="caja"><option>María Fernanda Gómez</option></select>
+    </div>
+    <p class="ayuda">Un mismo correo puede tener varias personas: una madre
+    anota a sus hijos con su casilla.</p>
+  </div>
+  <div class="campo">
+    <label class="etiqueta">Algo que quieras contarnos
+      <span class="opcional">· opcional</span></label>
+    <textarea class="caja">Tengo el diente 24 sensible al frío desde hace dos semanas.</textarea>
+    <p class="ayuda">Con una línea alcanza. Lo demás se habla en el consultorio.</p>
+  </div>
+  <p class="dato" style="margin-top: 18px"><b>Se marca lo OPCIONAL, no lo
+  obligatorio.</b> En la reserva casi todo es obligatorio: un asterisco en cada
+  campo es ruido en cinco campos y señal en ninguno.</p>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li>La etiqueta va <b>arriba y visible</b>. Nunca adentro del campo.</li>
+    <li><b>El correo no se pide nunca en un campo</b>: lo trae la sesión de
+    Google. Si viniera del formulario, cualquiera reservaría a nombre de otro.</li>
+    <li>Alto mínimo <b>48 px</b> y letra de <b>16 px</b> en los tres anchos.</li>
+    <li>El foco <b>tiñe la superficie y engrosa el filo</b>, igual que en el
+    botón. Un filo de 2 px solo mueve el 5,3 % de lo que se ve: <b>está
+    dibujado y no se nota</b>.</li>
+    <li>El campo <b>no cambia de tamaño</b> al recibir foco ni al fallar.</li>
+    <li>El error lleva <b>texto</b> y dice qué hacer. El color es el refuerzo,
+    no el mensaje.</li>
+    <li>El error aparece <b>al salir del campo</b>, no mientras se escribe: un
+    teléfono a medio escribir siempre está mal.</li>
+    <li>Un campo deshabilitado <b>dice por qué</b> lo está.</li>
+    <li>Se marca lo <b>opcional</b>, no lo obligatorio.</li>
+    <li>El campo de lo que el paciente quiera contar <b>puede recibir datos de
+    salud</b>: su ayuda pide una línea, no una historia clínica.</li>
+  </ul>
+</section>
+
+<p class="pie">Ni un color ni un tamaño escrito a mano: los cinco estados salen
+de <code>tokens.css</code> y los nueve pares del campo los mide
 <code>medir-contraste.py</code> antes de cada publicación.</p>
 """
 
@@ -1103,6 +1536,12 @@ def main():
         destino = SALIDA / "03-boton" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(tablero_boton(tokens, css, ancho), encoding="utf-8")
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "04-campo" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(tablero_campo(tokens, css, ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     return 0
