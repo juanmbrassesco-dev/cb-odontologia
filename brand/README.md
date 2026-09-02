@@ -11,8 +11,40 @@ The logo of CB Odontología y Estética, as code.
 | `logo/png/*.png` | Screen raster, named by pixel width. For where a vector will not go — a favicon, an avatar, an email signature. Not the print file. |
 | `logo/*.svg` | The **editable source**, with live text. Not a second version of the logo and not for distribution: edit here, then regenerate. |
 | `logo-cb-vector.html` | The three of them on one page, with the reasoning behind every coordinate. Start here. |
-| `logo-cb.html` | The earlier CSS build. Kept as the reference the vector version is measured against — deleting it would mean losing the judge. |
+| `logo-cb.html` | The earlier CSS build. Kept as the reference the vector version was measured against — deleting it would mean losing that judge. |
+
+⚠️ **Both HTML files are the 31 August state and no longer match what ships.**
+They still carry the light name weight and the pale rule, because they are the
+record of the reconstruction, not an input to it. **The judge has changed:** the
+files in `logo/` are now measured against the brand manual's own PDF, which is
+the document the client approved. Read them as history; do not copy values out
+of them.
 | `fonts/` | Marcellus and Jost, vendored with their licenses. |
+
+## Four pieces, not three
+
+The wordmark is long and low, so it needs width. Where the width is not there —
+a phone header, an email signature, a card — the same content goes **stacked**:
+the name below the initials rather than beside them. That is not a new logo. It
+is the arrangement the brand manual already used on its signage page, and it
+matters for a measurable reason: laid out horizontally the initials, the rule
+and the two gaps eat 41% of the width before the name starts, so the name is
+forced small and its strokes thin. Stacked, the name gets the full width, its
+cap height nearly doubles, and it stays legible at sizes where the horizontal
+one has already gone grey.
+
+## Rebuilding the pack
+
+One command writes every file in `logo/`:
+
+```sh
+/opt/homebrew/opt/fonttools/libexec/bin/python3 tools/construir-pack.py
+```
+
+It asks `tools/letras-cb` for the four pieces, trims each canvas to its ink,
+derives the white variants, and writes the PDFs, EPSs and PNGs. It deletes and
+rewrites `logo/` wholesale — everything there is in git, so a bad run is undone
+with `git checkout brand/logo`.
 
 Every piece exists in two variants: full colour, and **all white** (`-blanco`),
 for dark backgrounds and photos. The white one is not optional — the gold
@@ -22,8 +54,18 @@ painted white, or the piece would be a blank circle.
 
 ## Status
 
-The three versions are measured against the brand manual and closed. The
-vector build reproduces the CSS one to within 0.03 px.
+The four versions are measured against the brand manual and closed. The vector
+build reproduces the CSS one to within 0.03 px.
+
+**One thing was measured wrong for a day and is worth keeping written down.**
+The name was set in Jost Light 300, and the manual is in Jost 400 — measured off
+its PDF at 1200 dpi, where the ratio of stem to cap height reads 0.122 against
+Light's 0.077. Every other proportion already matched: initials, rule, both
+gaps, name-to-initials ratio. So the drawing was faithful and the *font file*
+was not, which is the kind of error that survives review because nothing about
+it looks broken — the logo simply renders a little fainter than the document it
+came from. It now matches within 2.8% on all six measured proportions, which is
+the error of measuring a 74-pixel cap height.
 
 **One logo file, outlined — the standard, and it is the right call.** A logo
 that asks the viewer for a typeface can show up in Georgia the day a font CDN
@@ -46,7 +88,8 @@ with the supplier, with a printed proof in hand — not here.
 | piece | page = artwork |
 |---|---|
 | emblem | 50.271 × 50.271 mm |
-| wordmark | 65.694 × 10.629 mm |
+| wordmark | 65.377 × 10.596 mm |
+| stacked | 65.367 × 34.469 mm |
 | submark | 25.400 × 25.400 mm |
 
 The page is the artwork, with nothing around it. That matters more than it
@@ -67,7 +110,8 @@ exact.
 | `cb-submarca-180` | apple-touch icon |
 | `cb-submarca-640-avatar`, `-1000-avatar` | WhatsApp and Instagram. On ivory, because those apps flatten transparency against a background you do not choose |
 | `cb-wordmark-600` | email signature, documents |
-| `cb-wordmark-1200`, `-2400` | site header at 2x and 4x |
+| `cb-wordmark-1200`, `-2400` | site header, wide screens |
+| `cb-apilado-600`, `-1200` | header on a phone, and anywhere the width runs out |
 | `cb-emblema-512`, `-1024` | social posts |
 
 ## How it was verified

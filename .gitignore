@@ -7,3 +7,6 @@ supabase/functions/.env
 
 # Python
 __pycache__/
+
+# Salida intermedia del generador del logo: los entregables van en brand/logo/
+tools/letras-cb/salida/

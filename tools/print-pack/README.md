@@ -24,6 +24,27 @@ Run it with the fonttools interpreter, not the bare `python3` — Homebrew keeps
 shapes are final; to change anything, edit the source SVG and convert again.
 Never hand-edit the output.
 
+## `recortar_lienzo.py`
+
+Sets an SVG's canvas to the exact bounds of its drawing, by measuring them.
+
+```sh
+python3 recortar_lienzo.py in.svg out.svg
+```
+
+`svg_a_curvas.py` also crops, but only for files whose text it converted itself
+— it knows where each letter lands because it drew it, and it **refuses** to
+crop a file that already contains hand-written `<path>`, which is the right call:
+working out where an arc ends by hand and getting it wrong clips the artwork.
+
+The pieces from `tools/letras-cb` come out of the generator already as paths.
+They were never `<text>`, so that route does not apply to them. This script takes
+the other way out: instead of computing the arcs, it **measures** them. It
+rasterises at 8000 px wide, finds the first and last pixel carrying ink on each
+axis, and turns those four coordinates into the `viewBox`. One pixel of error
+there is 0.0125% of the drawing — 0.008 mm on the wordmark, against the 0.05 mm
+`svg_a_pdf.py` accepts.
+
 ## `svg_a_pdf.py`
 
 Prints an outlined SVG to a vector PDF whose page is the artwork, nothing more.

@@ -2,13 +2,13 @@
   Emblema (versión secundaria) — CB Odontología y Estética.
 
   Las letras ya están en CONTORNOS: este archivo no depende de ninguna
-  tipografía instalada. La barra dorada cae exactamente sobre el eje del aro.
+  tipografía instalada.
 
   ⚠ NO SE EDITA A MANO. La fuente son los dos archivos de `tools/letras-cb/`
-  más el guión que compone las piezas; para cambiar algo se toca eso y se
-  vuelve a generar.
+  más los guiones que componen las piezas; para cambiar algo se toca eso y
+  se vuelve a correr `tools/construir-pack.py`.
 -->
-<svg viewBox="0 0 190 190" xmlns="http://www.w3.org/2000/svg"><circle
+<svg viewBox="0.0000 0.0000 190.0000 190.0000" xmlns="http://www.w3.org/2000/svg"><circle
     cx="95"
     cy="95"
     r="94.00"
