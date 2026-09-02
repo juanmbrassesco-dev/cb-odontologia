@@ -78,6 +78,26 @@
   --boton-fondo: var(--dorado);
   --boton-texto: var(--blanco);
 
+  /* Con el dedo o el puntero encima: el mismo dorado, 7 puntos más oscuro.
+     De paso el contraste SUBE de 3,09 a 3,98, así que el estado activo se
+     lee mejor que el de reposo, no peor. */
+  --boton-fondo-encima: #9B7A49;
+
+  /* El botón secundario es contorno sobre el fondo. 🔴 Su borde NO PUEDE ser
+     el dorado del brief: un borde mide contra el fondo y el dorado da 2,89,
+     abajo del piso de 3,0 de los controles. Va el dorado de texto. */
+  --boton-2-borde: var(--dorado-texto);
+  --boton-2-texto: var(--grafito);
+
+  /* Deshabilitado. WCAG exime a los controles inactivos; igual se lo deja en
+     4,08, y el botón además DICE por qué está apagado: nunca sólo el color. */
+  --boton-apagado-fondo: #EFEBE4;
+  --boton-apagado-texto: var(--apagado);
+  /* 🔴 El relleno del apagado mide 1,11 contra el marfil: NO SE VE. Ningún
+     gris claro llega al piso de 3,0 sin dejar de parecer apagado, así que la
+     forma del botón la marca un BORDE, no el relleno. */
+  --boton-apagado-borde: var(--borde);
+
   /* Anillo de foco: grafito macizo, 2px, con 2px de separación.
      Va con el grosor, no sólo con el color (pauta 7). */
   --foco: #33322F;
@@ -113,6 +133,16 @@
      En móvil y tablet ocupa todo; en escritorio son 640 px, que es lo que
      mide una línea de 66 caracteres en Jost de 17 px. */
   --columna: 100%;
+
+  /* En el teléfono el botón principal va de borde a borde; de tablet para
+     arriba se ajusta a su texto. Es un token para que el sitio no lo repita. */
+  --boton-ancho: 100%;
+
+  /* El anillo de foco va ADENTRO del control, en los tres anchos. Afuera se
+     salía 4 px del margen y rompía la columna —medido—, y encima el foco
+     habría cambiado de forma según la pantalla. Es una sola señal o no es
+     una señal. */
+  --foco-separacion: -4px;
 }
 
 @media (min-width: 768px) {
@@ -122,6 +152,7 @@
     --tipo-h3: 22px;
     --tipo-cuerpo: 17px;
     --tipo-chico: 14px;
+    --boton-ancho: auto;
   }
 }
 
@@ -157,6 +188,11 @@
    @par foco sobre marfil >= 3.0 · anillo de foco
    @par grafito sobre dorado >= 3.0 · sólo texto grande sobre dorado
    @par boton-texto sobre boton-fondo >= 3.0 · el botón principal, decidido: D
+   @par boton-texto sobre boton-fondo-encima >= 3.0 · el principal, con el dedo encima
+   @par boton-2-texto sobre marfil >= 4.5 · la letra del botón secundario
+   @par boton-2-borde sobre marfil >= 3.0 · el contorno del botón secundario
+   @par boton-apagado-texto sobre boton-apagado-fondo >= 3.0 · el botón deshabilitado
+   @par boton-apagado-borde sobre marfil >= 3.0 · el contorno del deshabilitado
 
 */
 

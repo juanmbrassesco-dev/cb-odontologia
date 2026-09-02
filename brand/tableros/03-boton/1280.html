@@ -1,3 +1,10 @@
+<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 03 Botón · 1280</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
 /* ============================================================
    CB Odontología y Estética — FUENTE DE VERDAD DEL COLOR
    Fase ⑦, pieza 1. Ningún hex se escribe fuera de este archivo.
@@ -188,3 +195,270 @@
    @par boton-apagado-borde sobre marfil >= 3.0 · el contorno del deshabilitado
 
 */
+
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 1280px;
+  background: var(--marfil);
+  color: var(--grafito);
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  padding: 64px 64px 128px;
+}
+
+h1, h2, h3 {
+  font-family: Marcellus, Georgia, serif;
+  font-weight: 400;
+  max-width: var(--columna);
+}
+
+h1 { font-size: var(--tipo-h1); line-height: var(--alto-h1); }
+h2 { font-size: var(--tipo-h2); line-height: var(--alto-h2); }
+h3 { font-size: var(--tipo-h3); line-height: var(--alto-h3); }
+
+p { max-width: var(--columna); }
+
+code {
+  font-family: Jost, sans-serif;
+  letter-spacing: 0.02em;
+  color: var(--dorado-texto);
+}
+
+.rotulo {
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  font-weight: 500;
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+}
+
+.regla {
+  height: 1px;
+  background: var(--dorado);
+  margin: 12px 0 24px;
+  max-width: var(--columna);
+}
+
+section { margin-top: 40px; }
+
+.chico { font-size: var(--tipo-chico); line-height: var(--alto-chico); }
+
+.dato {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.espec {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  margin-top: 20px;
+  max-width: var(--columna);
+}
+
+.espec .muestra-texto { margin-top: 6px; }
+
+table {
+  width: 100%;
+  max-width: var(--columna);
+  border-collapse: collapse;
+  margin-top: 18px;
+}
+
+th, td {
+  text-align: left;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+th {
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: var(--tipo-rotulo);
+  color: var(--dorado-texto);
+}
+
+td.n { text-align: right; font-variant-numeric: tabular-nums; }
+th.n { text-align: right; }
+
+.pie {
+  max-width: var(--columna);
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+
+.btn {
+  display: inline-block;
+  font-family: Jost, sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 12px 26px;
+  min-height: 44px;
+  border: 0;
+  cursor: pointer;
+  width: var(--boton-ancho);
+}
+
+.btn-1 {
+  background: var(--boton-fondo);
+  color: var(--boton-texto);
+}
+
+.btn-1-encima { background: var(--boton-fondo-encima); }
+
+.btn-2 {
+  background: transparent;
+  color: var(--boton-2-texto);
+  border: 1px solid var(--boton-2-borde);
+  padding: 11px 25px;
+}
+
+.btn-apagado {
+  background: var(--boton-apagado-fondo);
+  color: var(--boton-apagado-texto);
+  border: 1px solid var(--boton-apagado-borde);
+  padding: 11px 25px;
+  cursor: not-allowed;
+}
+
+/* El foco no se comunica sólo con color: son 2 px de anillo, separados 2 px
+   del botón, así que se ve también con la pantalla en blanco y negro. */
+.btn-foco {
+  outline: 2px solid var(--foco);
+  outline-offset: var(--foco-separacion);
+}
+
+.btn-cargando {
+  background: var(--boton-fondo-encima);
+  color: var(--boton-texto);
+  cursor: progress;
+}
+
+.estado {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  margin-top: 22px;
+  max-width: var(--columna);
+}
+
+.estado .btn {
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
+/* La lista arranca en el margen como todo lo demás: la sangría de una lista
+   normal la corría 18 px y rompía la columna. La raya se dibuja a mano. */
+.reglas {
+  max-width: var(--columna);
+  margin-top: 16px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.reglas li {
+  margin-top: 8px;
+  padding-left: 22px;
+  text-indent: -22px;
+}
+
+.reglas li::before {
+  content: "—";
+  color: var(--dorado-texto);
+  margin-right: 10px;
+}
+
+</style>
+
+<p class="rotulo">Fase ⑦ · Pieza 3 de 8 · 1280 px</p>
+<h1>Botón</h1>
+<div class="regla"></div>
+<p>El botón principal ya tiene color decidido. Lo que se fija acá son sus
+<b>estados</b> —encima, con foco, enviando, deshabilitado—, el botón secundario,
+y el ancho. Todo a escala 1:1 en 1280 px.</p>
+
+<section>
+  <p class="rotulo">El botón principal</p>
+  <h2>Cinco estados, todos a tamaño real</h2>
+  <p class="dato" style="margin-top: 8px">Acá el botón va <b>del ancho de su texto</b>,
+  y el alto nunca baja de 44 px: es lo que mide la yema de un dedo.</p>
+  
+  <div class="estado">
+    <p class="dato">Reposo</p>
+    <button class="btn btn-1">Reservar turno</button>
+    <p class="dato">Fondo dorado con letra blanca: la decisión de la pieza 1. Mide 3,09 y vale porque la letra es de 19 px.</p>
+  </div>
+  <div class="estado">
+    <p class="dato">Con el dedo o el puntero encima</p>
+    <button class="btn btn-1 btn-1-encima">Reservar turno</button>
+    <p class="dato">El mismo dorado, siete puntos más oscuro. El contraste SUBE a 3,98: el botón activo se lee mejor que el de reposo, no peor.</p>
+  </div>
+  <div class="estado">
+    <p class="dato">Con foco</p>
+    <button class="btn btn-1 btn-foco">Reservar turno</button>
+    <p class="dato">Para quien navega con el teclado. Anillo de 2 px dibujado POR DENTRO del botón: afuera se salía 4 px del margen —medido— y rompía la columna. Se ve también sin distinguir colores.</p>
+  </div>
+  <div class="estado">
+    <p class="dato">Enviando</p>
+    <button class="btn btn-1 btn-cargando">Reservando…</button>
+    <p class="dato">Cambia la palabra, no sólo el color, y el botón conserva su tamaño para que nada salte de lugar mientras espera.</p>
+  </div>
+  <div class="estado">
+    <p class="dato">Deshabilitado</p>
+    <button class="btn btn-apagado">Elegí un horario primero</button>
+    <p class="dato">El botón DICE por qué no se puede tocar; un botón gris que no explica nada deja al paciente adivinando. Y lleva BORDE: su relleno mide 1,11 contra el fondo, o sea que sin contorno no se ve que hay un botón.</p>
+  </div>
+</section>
+
+<section>
+  <p class="rotulo">El botón secundario</p>
+  <h2>Contorno, para lo que no es la acción principal</h2>
+  <p>Cancelar, volver, ver otro día. <b>Nunca dos botones dorados en la misma
+  pantalla:</b> si todo pesa igual, nada guía.</p>
+  <div class="estado">
+    <p class="dato">Reposo</p>
+    <button class="btn btn-2">Cancelar turno</button>
+    <p class="dato">Su contorno NO puede ser el dorado del brief: un borde se
+    mide contra el fondo y ese dorado da <b>2,89</b>, abajo del piso de 3,0 de
+    los controles. Va el dorado de texto, que da 4,54.</p>
+  </div>
+  <div class="estado">
+    <p class="dato">Con foco</p>
+    <button class="btn btn-2 btn-foco">Cancelar turno</button>
+    <p class="dato">El mismo anillo que el principal. El foco se ve igual en
+    todos los controles o deja de ser una señal.</p>
+  </div>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li>Alto mínimo <b>44 px</b> en los tres anchos, siempre.</li>
+    <li>En el teléfono el principal va <b>de borde a borde</b>; de tablet para
+    arriba, del ancho de su texto.</li>
+    <li>El foco lleva <b>anillo</b>, no sólo color.</li>
+    <li>El deshabilitado <b>dice por qué</b> lo está.</li>
+    <li>Mientras envía, el botón <b>no cambia de tamaño</b>.</li>
+    <li><b>Un solo botón dorado por pantalla.</b></li>
+  </ul>
+</section>
+
+<p class="pie">Ni un color ni un tamaño escrito a mano: los estados salen de
+<code>tokens.css</code> y los cinco pares del botón los mide
+<code>medir-contraste.py</code> antes de cada publicación.</p>

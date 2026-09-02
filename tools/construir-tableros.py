@@ -840,6 +840,198 @@ al volver.</p>
 """
 
 
+# ============================================================
+# PIEZA 3 — EL BOTÓN
+# ============================================================
+
+CSS_BOTON = """
+.btn {
+  display: inline-block;
+  font-family: Jost, sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 12px 26px;
+  min-height: 44px;
+  border: 0;
+  cursor: pointer;
+  width: var(--boton-ancho);
+}
+
+.btn-1 {
+  background: var(--boton-fondo);
+  color: var(--boton-texto);
+}
+
+.btn-1-encima { background: var(--boton-fondo-encima); }
+
+.btn-2 {
+  background: transparent;
+  color: var(--boton-2-texto);
+  border: 1px solid var(--boton-2-borde);
+  padding: 11px 25px;
+}
+
+.btn-apagado {
+  background: var(--boton-apagado-fondo);
+  color: var(--boton-apagado-texto);
+  border: 1px solid var(--boton-apagado-borde);
+  padding: 11px 25px;
+  cursor: not-allowed;
+}
+
+/* El foco no se comunica sólo con color: son 2 px de anillo, separados 2 px
+   del botón, así que se ve también con la pantalla en blanco y negro. */
+.btn-foco {
+  outline: 2px solid var(--foco);
+  outline-offset: var(--foco-separacion);
+}
+
+.btn-cargando {
+  background: var(--boton-fondo-encima);
+  color: var(--boton-texto);
+  cursor: progress;
+}
+
+.estado {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  margin-top: 22px;
+  max-width: var(--columna);
+}
+
+.estado .btn {
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
+/* La lista arranca en el margen como todo lo demás: la sangría de una lista
+   normal la corría 18 px y rompía la columna. La raya se dibuja a mano. */
+.reglas {
+  max-width: var(--columna);
+  margin-top: 16px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.reglas li {
+  margin-top: 8px;
+  padding-left: 22px;
+  text-indent: -22px;
+}
+
+.reglas li::before {
+  content: "—";
+  color: var(--dorado-texto);
+  margin-right: 10px;
+}
+"""
+
+# Cada estado del botón principal: clase, nombre, y qué tiene que quedar claro.
+ESTADOS = [
+    ("btn-1", "Reposo", "Reservar turno",
+     "Fondo dorado con letra blanca: la decisión de la pieza 1. Mide 3,09 y "
+     "vale porque la letra es de 19 px."),
+    ("btn-1 btn-1-encima", "Con el dedo o el puntero encima", "Reservar turno",
+     "El mismo dorado, siete puntos más oscuro. El contraste SUBE a 3,98: el "
+     "botón activo se lee mejor que el de reposo, no peor."),
+    ("btn-1 btn-foco", "Con foco", "Reservar turno",
+     "Para quien navega con el teclado. Anillo de 2 px dibujado POR DENTRO "
+     "del botón: afuera se salía 4 px del margen —medido— y rompía la "
+     "columna. Se ve también sin distinguir colores."),
+    ("btn-1 btn-cargando", "Enviando", "Reservando…",
+     "Cambia la palabra, no sólo el color, y el botón conserva su tamaño para "
+     "que nada salte de lugar mientras espera."),
+    ("btn-apagado", "Deshabilitado", "Elegí un horario primero",
+     "El botón DICE por qué no se puede tocar; un botón gris que no explica "
+     "nada deja al paciente adivinando. Y lleva BORDE: su relleno mide 1,11 "
+     "contra el fondo, o sea que sin contorno no se ve que hay un botón."),
+]
+
+
+def bloque_estado(clase, nombre, texto, porque):
+    return f'''
+  <div class="estado">
+    <p class="dato">{nombre}</p>
+    <button class="btn {clase}">{texto}</button>
+    <p class="dato">{porque}</p>
+  </div>'''
+
+
+def tablero_boton(tokens, css, ancho):
+    estados = "".join(bloque_estado(*e) for e in ESTADOS)
+    ancho_boton = "de borde a borde" if ancho < 768 else "del ancho de su texto"
+
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 03 Botón · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+</style>
+
+<p class="rotulo">Fase ⑦ · Pieza 3 de 8 · {ancho} px</p>
+<h1>Botón</h1>
+<div class="regla"></div>
+<p>El botón principal ya tiene color decidido. Lo que se fija acá son sus
+<b>estados</b> —encima, con foco, enviando, deshabilitado—, el botón secundario,
+y el ancho. Todo a escala 1:1 en {ancho} px.</p>
+
+<section>
+  <p class="rotulo">El botón principal</p>
+  <h2>Cinco estados, todos a tamaño real</h2>
+  <p class="dato" style="margin-top: 8px">Acá el botón va <b>{ancho_boton}</b>,
+  y el alto nunca baja de 44 px: es lo que mide la yema de un dedo.</p>
+  {estados}
+</section>
+
+<section>
+  <p class="rotulo">El botón secundario</p>
+  <h2>Contorno, para lo que no es la acción principal</h2>
+  <p>Cancelar, volver, ver otro día. <b>Nunca dos botones dorados en la misma
+  pantalla:</b> si todo pesa igual, nada guía.</p>
+  <div class="estado">
+    <p class="dato">Reposo</p>
+    <button class="btn btn-2">Cancelar turno</button>
+    <p class="dato">Su contorno NO puede ser el dorado del brief: un borde se
+    mide contra el fondo y ese dorado da <b>2,89</b>, abajo del piso de 3,0 de
+    los controles. Va el dorado de texto, que da 4,54.</p>
+  </div>
+  <div class="estado">
+    <p class="dato">Con foco</p>
+    <button class="btn btn-2 btn-foco">Cancelar turno</button>
+    <p class="dato">El mismo anillo que el principal. El foco se ve igual en
+    todos los controles o deja de ser una señal.</p>
+  </div>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li>Alto mínimo <b>44 px</b> en los tres anchos, siempre.</li>
+    <li>En el teléfono el principal va <b>de borde a borde</b>; de tablet para
+    arriba, del ancho de su texto.</li>
+    <li>El foco lleva <b>anillo</b>, no sólo color.</li>
+    <li>El deshabilitado <b>dice por qué</b> lo está.</li>
+    <li>Mientras envía, el botón <b>no cambia de tamaño</b>.</li>
+    <li><b>Un solo botón dorado por pantalla.</b></li>
+  </ul>
+</section>
+
+<p class="pie">Ni un color ni un tamaño escrito a mano: los estados salen de
+<code>tokens.css</code> y los cinco pares del botón los mide
+<code>medir-contraste.py</code> antes de cada publicación.</p>
+"""
+
+
 def main():
     css = TOKENS.read_text(encoding="utf-8")
     tokens = MEDIDOR.leer_tokens(css)
@@ -866,6 +1058,12 @@ def main():
         destino.parent.mkdir(parents=True, exist_ok=True)
         pagina = tablero_tipografia(tokens, css, ancho).replace("{medida}", medida)
         destino.write_text(pagina, encoding="utf-8")
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "03-boton" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(tablero_boton(tokens, css, ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     return 0
