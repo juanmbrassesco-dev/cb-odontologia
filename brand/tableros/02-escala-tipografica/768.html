@@ -87,13 +87,15 @@
   /* El botón secundario es el que dibuja el brief en la página 17: GRAFITO
      MACIZO CON LETRA BLANCA. 12,82, el par más alto del sistema.
 
-     Su foco no puede usar el contorno grafito del principal —sería invisible
-     sobre grafito—. Usa el marfil del fondo, que da 12,0 contra la superficie:
-     la REGLA es la misma (el contorno cae sobre el filo y contrasta con lo que
-     tiene debajo), lo que cambia es de qué lado está el contraste. */
+     Su foco lleva anillo DORADO de 4 px sobre el filo. El anillo tiene que
+     contrastar contra DOS cosas, y ahí estuvo el error anterior: el marfil
+     daba 12,0 contra la superficie pero 1,0 contra la página, así que se leía
+     como un hueco y no como un anillo —medido con medir-foco.py: el cambio no
+     alcanzaba—. El dorado da 4,15 contra la superficie y 2,89 contra la
+     página: se distingue de las dos. */
   --boton-2-fondo: var(--grafito);
   --boton-2-texto: var(--blanco);
-  --boton-2-foco-borde: var(--marfil);
+  --boton-2-foco-borde: var(--dorado);
 
   /* Deshabilitado. WCAG exime a los controles inactivos; igual se lo deja en
      4,08, y el botón además DICE por qué está apagado: nunca sólo el color.
@@ -199,7 +201,8 @@
    @par boton-texto sobre boton-fondo-oscuro >= 4.5 · el principal, enviando y con foco
    @par boton-2-texto sobre boton-2-fondo >= 4.5 · la letra del botón secundario
    @par boton-2-fondo sobre marfil >= 3.0 · la superficie del secundario
-   @par boton-2-foco-borde sobre boton-2-fondo >= 3.0 · el contorno de foco del secundario
+   @par boton-2-foco-borde sobre boton-2-fondo >= 3.0 · el anillo de foco contra el botón
+   @par boton-2-foco-borde sobre marfil >= 2.5 · el anillo de foco contra la página
    @par boton-apagado-texto sobre boton-apagado-fondo >= 3.0 · el botón deshabilitado
    @par boton-apagado-borde sobre marfil >= 3.0 · el contorno del deshabilitado
 

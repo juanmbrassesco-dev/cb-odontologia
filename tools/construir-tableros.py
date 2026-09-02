@@ -890,10 +890,11 @@ CSS_BOTON = """
 }
 
 /* Misma regla de foco que el principal —contorno sobre el filo, sombra más
-   marcada—, con el contraste dado vuelta: sobre grafito un contorno grafito
-   no se vería, así que va en marfil. */
+   marcada—, en dorado y de 4 px. El anillo tiene que contrastar contra la
+   superficie Y contra la página: en marfil daba 12,0 y 1,0, o sea que se leía
+   como un hueco. Medido con medir-foco.py. */
 .btn-2-foco {
-  box-shadow: inset 0 0 0 2px var(--boton-2-foco-borde), var(--sombra-boton-foco);
+  box-shadow: inset 0 0 0 4px var(--boton-2-foco-borde), var(--sombra-boton-foco);
 }
 
 .btn-apagado {
@@ -951,7 +952,7 @@ ESTADOS = [
      "Se oscurece la superficie y el contorno cae JUSTO sobre el filo del "
      "botón. Las letras quedan blancas: 4,85. Se descartó el filtro que las "
      "apagaba también, porque dejaba el foco en 2,84, abajo del piso."),
-    ("btn-apagado", "Deshabilitado", "Elegí un horario primero",
+    ("btn-apagado", "Deshabilitado", "Elegí un horario",
      "El botón DICE por qué no se puede tocar; un botón gris que no explica "
      "nada deja al paciente adivinando. Y lleva borde: su relleno mide 1,11 "
      "contra el fondo, o sea que sin contorno no se ve que hay un botón."),
@@ -1017,9 +1018,10 @@ y el ancho. Todo a escala 1:1 en {ancho} px.</p>
   <div class="estado">
     <p class="dato">Con foco</p>
     <button class="btn btn-2 btn-2-foco">Cancelar turno</button>
-    <p class="dato">Misma regla que el principal —contorno sobre el filo, sombra
-    más marcada— con el contraste dado vuelta: sobre grafito un contorno grafito
-    no se vería, así que va en marfil. <b>12,0</b> contra la superficie.</p>
+    <p class="dato">Anillo dorado de 4 px sobre el filo, más sombra. El anillo
+    tiene que contrastar contra <b>dos</b> cosas: la superficie (4,15) y la
+    página (2,89). El marfil daba 12,0 y <b>1,0</b> — se leía como un hueco, no
+    como un anillo.</p>
   </div>
 </section>
 
