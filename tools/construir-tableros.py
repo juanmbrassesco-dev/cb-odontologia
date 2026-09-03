@@ -2274,6 +2274,257 @@ el dorado del botón, el gris del apagado y el filo del campo ya existían.</p>
 """
 
 
+# ------------------------------------------------------------
+# PIEZA 8 — LA TIRA DE CONTEXTO
+#
+# NO es una pantalla del sitio y no reemplaza a la maqueta (fase ⑧). Existe
+# para una sola cosa: poner las siete piezas cerradas en una misma página, a
+# tamaño real, y poder juzgar el PESO de cada una contra las otras. Un botón
+# solo, en una lista de estados, no dice si manda o no manda: eso se ve al
+# lado del resto.
+#
+# Se arma en BANDAS. Cada banda es UNA pantalla del flujo real, porque la
+# regla del sistema es "un solo botón dorado por pantalla" y una tira corrida
+# sin cortes la rompería sola. El rótulo de cada banda es andamiaje del
+# tablero, no del sitio.
+#
+# 🔴 EL DESPLEGABLE DE TRATAMIENTO NO MUESTRA LA DURACIÓN. La regla está
+# decidida desde la pieza 6 —"el tratamiento se elige en un desplegable y nada
+# más: sin descripción, sin duración, sin tarjeta"— y el porqué es más viejo
+# todavía: el paciente NO elige duración, la elige el tratamiento, y el dato
+# vive en la base (`tratamientos.duracion_web_min`), no en el navegador.
+# Mostrarlo invita a razonar sobre un número que no se puede tocar.
+# ------------------------------------------------------------
+
+def leer_wordmark():
+    """El logo del encabezado, embebido para que el tablero se abra solo."""
+    import base64
+
+    ruta = RAIZ / "brand" / "logo" / "png" / "cb-wordmark-600.png"
+    return base64.b64encode(ruta.read_bytes()).decode("ascii")
+
+
+# El ancho del wordmark en el encabezado, por ancho de pantalla. El mínimo
+# medido en brand/COMO-USAR-EL-LOGO.md es 100 px en un celular moderno y
+# 300 px en un monitor común: acá van los tres bien por encima de su mínimo.
+LOGO_ANCHO = {390: 200, 768: 260, 1280: 320}
+
+
+def css_tira(ancho):
+    margen = MARGENES[ancho]
+    return f"""
+/* La tira no tiene margen propio: lo lleva cada banda, porque el encabezado
+   necesita una línea que cruce la pantalla de lado a lado. */
+body {{ padding: 0; }}
+
+.banda {{
+  padding: 28px {margen}px 40px;
+  border-top: 1px solid var(--dorado-claro);
+}}
+
+/* El rótulo que dice qué pantalla es cada banda. ES ANDAMIAJE DEL TABLERO:
+   no existe en el sitio. Por eso va chico, en el gris secundario, y arriba
+   del borde de la banda. */
+.marca-banda {{
+  padding: 10px {margen}px 0;
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+  color: var(--texto-segundo);
+}}
+
+/* EL ENCABEZADO. Sólo el logo: no se inventa acá ninguna navegación, que no
+   es una pieza cerrada. La raya dorada es la misma que separa los bloques en
+   todos los tableros. */
+.encabezado {{
+  padding: 20px {margen}px 18px;
+  border-bottom: 1px solid var(--dorado);
+}}
+
+.encabezado img {{
+  display: block;
+  width: {LOGO_ANCHO[ancho]}px;
+  height: auto;
+}}
+
+.hero {{ padding: 32px {margen}px 40px; }}
+
+.hero h1 {{ margin-top: 10px; }}
+
+.hero p {{ margin-top: 16px; }}
+
+/* Los dos botones juntos. En el teléfono van apilados y de borde a borde
+   —lo pide el dedo—; de tablet para arriba, uno al lado del otro. */
+.acciones {{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 28px;
+  max-width: var(--columna);
+}}
+
+@media (min-width: 768px) {{
+  .acciones {{
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }}
+}}
+
+.banda h2 {{ margin-bottom: 4px; }}
+
+.banda .paso {{ margin-top: 30px; }}
+
+.banda .paso:first-of-type {{ margin-top: 18px; }}
+
+/* La pantalla de mensaje SIN su marco de demostración: en la pieza 5 ese
+   borde era el recorte que explicaba que ocupa todo, y acá la banda ya lo
+   dice. El componente es el mismo. */
+.pantalla-real {{
+  border: 0;
+  padding: 0;
+  margin-top: 0;
+  background: transparent;
+}}
+"""
+
+
+def campo_tira(etiqueta, valor, clase, ayuda, opcional):
+    """Un campo de la pieza 4, sin la anatomía ni el porqué al lado."""
+    rotulo = (
+        f'{etiqueta} <span class="opcional">(opcional)</span>'
+        if opcional
+        else etiqueta
+    )
+    pie = f'\n      <p class="ayuda">{ayuda}</p>' if ayuda else ""
+
+    if clase == "desplegable":
+        caja = (
+            '\n      <div class="desplegable">'
+            f'\n        <select class="caja"><option>{valor}</option></select>'
+            '\n      </div>'
+        )
+    elif clase == "textarea":
+        caja = f'\n      <textarea class="caja">{valor}</textarea>'
+    else:
+        caja = f'\n      <input class="caja" value="{valor}">'
+
+    return (
+        '\n    <div class="campo">'
+        f'\n      <label class="etiqueta">{rotulo}</label>'
+        f'{caja}{pie}'
+        '\n    </div>'
+    )
+
+
+def tablero_contexto(tokens, css, ancho):
+    juntas = ancho >= 1280
+    apertura = '\n    <div class="juntas">' if juntas else '\n    <div>'
+    lado = '\n      <div class="lado">' if juntas else '\n      <div>'
+    tarjetas = "".join(tarjeta_turno(*t) for t in TURNOS)
+
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 08 Tira de contexto · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&family=Roboto:wght@500&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_GOOGLE}
+{CSS_CAMPO}
+{CSS_MENSAJE}
+{CSS_TARJETA}
+{CSS_GRILLA}
+{css_tira(ancho)}
+</style>
+
+<header class="encabezado">
+  <img src="data:image/png;base64,{leer_wordmark()}"
+       alt="CB Odontología y Estética">
+</header>
+
+<div class="hero">
+  <p class="rotulo">Turnos online</p>
+  <h1>Reservá tu turno cuando te quede cómodo</h1>
+  <p>Elegís el tratamiento, el día y la hora. La confirmación te llega por
+  correo, y desde ahí lo podés cancelar si te cambian los planes.</p>
+  <div class="acciones">
+    <button class="btn btn-1">Reservar turno</button>
+    <button class="btn btn-2">Ver mis turnos</button>
+  </div>
+</div>
+
+<p class="marca-banda">Pantalla 2 · elegir el turno</p>
+<div class="banda">
+  <div class="paso">
+    <h2>¿Qué te vas a hacer?</h2>
+    {campo_tira("Tratamiento", "Consulta general", "desplegable",
+                "Si no sabés cuál elegir, pedí una consulta.", False)}
+  </div>
+  <div class="paso">
+    <h2>Elegí el día y la hora</h2>{apertura}{almanaque()}{lado}
+      <p class="dato" style="margin-bottom: 10px">Jueves 11 de septiembre</p>
+      {grilla(BLOQUES)}
+      </div>
+    </div>
+    <div class="acciones">
+      <button class="btn btn-1">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<p class="marca-banda">Pantalla 3 · confirmar</p>
+<div class="banda">
+  <h2>Tus datos</h2>
+  {campo_tira("Nombre y apellido", "María Fernanda Gómez", "", "", False)}
+  {campo_tira("Teléfono", "", "", "Por si necesitamos avisarte algo del turno.",
+              True)}
+  {campo_tira("Algo que quieras contarnos", "", "textarea", "", True)}
+  <div class="acciones">
+    <button class="btn btn-1">Confirmar turno</button>
+    <button class="btn btn-2">Volver</button>
+  </div>
+</div>
+
+<p class="marca-banda">Pantalla 4 · mis turnos</p>
+<div class="banda">
+  <h2>Tus turnos</h2>
+  <div class="lista">{tarjetas}
+  </div>
+</div>
+
+<p class="marca-banda">Pantalla 5 · el turno quedó reservado</p>
+<div class="banda">
+  <div class="pantalla pantalla-real">
+    <h2>Tu turno quedó reservado</h2>
+    <p>Te mandamos un correo con los datos. <b>Si no te llega, podés verlo y
+    cancelarlo desde tus turnos</b>, entrando con la misma cuenta.</p>
+    <button class="btn btn-1">Volver al inicio</button>
+  </div>
+</div>
+
+<p class="marca-banda">Lo que esta tira sirve para mirar</p>
+<div class="banda">
+  <ul class="reglas">
+    <li>El <b>peso</b> del botón principal contra el del secundario, con las
+    dos piezas en la misma pantalla y no en una lista de estados.</li>
+    <li>El <b>tamaño de la letra del botón</b> —19 px, mayúsculas— al lado del
+    cuerpo de texto y de los títulos.</li>
+    <li>Si el <b>blanco de las tarjetas y los campos</b> se separa del marfil
+    de la página cuando hay muchos juntos.</li>
+    <li>Si los <b>seis niveles de la escala</b> alcanzan, o si falta uno entre
+    el título y el cuerpo.</li>
+    <li>Cuánto <b>aire</b> pide cada bloque cuando dejan de estar solos.</li>
+  </ul>
+  <p class="pie">Los rótulos de banda son andamiaje de este tablero: marcan
+  dónde el sitio real corta de pantalla. No existen en el sitio.</p>
+</div>
+"""
+
 def main():
     css = TOKENS.read_text(encoding="utf-8")
     tokens = MEDIDOR.leer_tokens(css)
@@ -2330,6 +2581,12 @@ def main():
         destino = SALIDA / "07-grilla-de-horarios" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(tablero_grilla(tokens, css, ancho), encoding="utf-8")
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "08-tira-de-contexto" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(tablero_contexto(tokens, css, ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     return 0
