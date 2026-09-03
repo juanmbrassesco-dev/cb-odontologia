@@ -634,14 +634,24 @@ section > h2 + p { margin-top: 8px; }
   margin-right: auto;
 }
 
-/* DOS O MÁS BOTONES JUNTOS: la grilla mide lo que el MÁS LARGO de la pareja y
-   los hijos se estiran a esa medida. El número no se escribe: lo fija el texto
-   más largo, así que cambiar un rótulo no deja la pareja despareja. */
+/* DOS O MÁS BOTONES JUNTOS: la columna de la grilla mide lo que el MÁS LARGO
+   de la pareja y los hijos se estiran a esa medida. El número no se escribe: lo
+   fija el texto más largo, así que cambiar un rótulo no deja la pareja
+   despareja.
+
+   🔴 Y SE CENTRA ADENTRO DE `--columna`, NO DE LA PÁGINA. La primera versión
+   usaba `width: max-content` con márgenes automáticos, y eso centra contra el
+   padre: en escritorio el padre es la banda entera, así que los botones se iban
+   al medio de 1280 mientras su texto vivía en los primeros 640. Lo encontró
+   medir-alineacion.py el mismo día en que aprendió a medir el centrado — un
+   bloque centrado en la página no está centrado en su columna. */
 .acciones {
   display: grid;
+  grid-template-columns: max-content;
+  justify-content: center;
   gap: 12px;
-  width: max-content;
-  margin: 24px auto 0;
+  max-width: var(--columna);
+  margin-top: 24px;
 }
 
 .acciones .btn,
