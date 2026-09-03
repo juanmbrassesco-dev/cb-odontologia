@@ -1500,6 +1500,203 @@ de <code>tokens.css</code> y los nueve pares del campo los mide
 """
 
 
+
+# ============================================================
+# PIEZA 5 — EL MENSAJE
+#
+# Decidido por Juan el 2-sep-2026: el mensaje NO es un bloque adentro del
+# formulario. Cada operación termina en una PANTALLA propia, y cada pantalla
+# devuelve al paciente al lugar donde puede seguir.
+# ============================================================
+
+CSS_MENSAJE = """
+/* El marco no es parte del diseño: es el recorte de la pantalla, para que se
+   entienda que esto ocupa todo y no es una tarjeta dentro de otra cosa. */
+.pantalla {
+  max-width: var(--columna);
+  margin-top: 14px;
+  padding: 32px 20px 28px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--marfil);
+}
+
+/* LOS TÍTULOS VAN EN GRAFITO, no en rojo ni en verde — lo cortó Juan el
+   2-sep-2026. Lo que dice de qué tipo es la pantalla es EL TEXTO, y una frase
+   se entiende sin distinguir colores. El rojo y el verde quedan para donde
+   acompañan a un texto corto que no puede explicarse solo: el error de un
+   campo. Una pantalla entera tiene lugar para decirlo con palabras. */
+.pantalla h2 {
+  font-size: var(--tipo-h2);
+  line-height: var(--alto-h2);
+  color: var(--grafito);
+}
+
+.pantalla p {
+  margin-top: 14px;
+  color: var(--grafito);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+}
+
+.pantalla .btn,
+.pantalla .btn-google {
+  margin-top: 26px;
+}
+"""
+
+
+# clase · título · cuerpo · botón · de dónde sale · porqué
+PANTALLAS = [
+    ("", "Perdón, no pudimos reservar tu turno",
+     "Algo no salió como esperábamos. Intentalo de nuevo.",
+     "boton", "Volver a la agenda",
+     "Alguien tomó esa hora primero · se cumplieron las 12 horas de "
+     "anticipación mientras elegías · Cecilia tapó ese día · se dio de baja el "
+     "profesional o le sacaron ese tratamiento.",
+     "<b>Cuatro causas distintas, un solo texto.</b> Ninguna la puede arreglar "
+     "el paciente sabiendo cuál fue, y todas se resuelven igual: volver a la "
+     "agenda, que ya viene actualizada. <b>No decimos que alguien la tomó "
+     "primero</b> — decisión de Juan: no hace falta revelarlo y encima "
+     "irrita, y un paciente irritado abandona."),
+    ("", "Ya tenés un turno con este profesional",
+     "Para sacar otro, cancelá el que tenés y volvé a intentar.",
+     "boton-2", "Ver mis turnos",
+     "El tope de turnos abiertos con un mismo profesional.",
+     "<b>Es el único error que NO vuelve a la agenda</b>, y por eso tiene "
+     "pantalla propia: mandarlo a elegir otro horario es mandarlo a fallar de "
+     "nuevo. El texto <b>no dice cuántos turnos</b>, así que sigue siendo "
+     "válido cuando el portero pase de dos a uno."),
+    ("", "Se cerró tu sesión",
+     "Entrá otra vez y terminá de reservar tu turno.",
+     "google", "",
+     "La sesión se venció mientras completaba el formulario.",
+     "Tampoco vuelve a la agenda: sin sesión no se reserva. <b>La acción de "
+     "esta pantalla es el botón de Google</b>, el mismo de la pieza 3 — no se "
+     "dibuja uno nuevo."),
+    ("pantalla-exito", "Tu turno quedó reservado",
+     "Te mandamos un correo con los datos. <b>Si no te llega, podés verlo y "
+     "cancelarlo desde tus turnos</b>, entrando con la misma cuenta.",
+     "boton", "Volver al inicio",
+     "El 201: el turno quedó guardado.",
+     "<b>Ese texto es verdadero salga o no salga el correo</b>, así que no "
+     "hace falta un mensaje aparte para «se guardó pero el aviso falló». El "
+     "sistema no tiene que detectar nada. Y dice <b>«entrando»</b> porque el "
+     "link del correo no cancela: lleva a tus turnos y del otro lado hay que "
+     "iniciar sesión."),
+    ("pantalla-exito", "Tu turno quedó cancelado",
+     "Te mandamos un correo con el detalle. Podés reservar otro cuando quieras.",
+     "boton", "Volver al inicio",
+     "La cancelación, que ya está construida y probada.",
+     "Misma pantalla, otro texto. Cierra sin pedir explicaciones y deja "
+     "abierta la puerta de volver, que es lo que el consultorio quiere."),
+]
+
+
+def accion(tipo, texto, logo):
+    if tipo == "google":
+        return (f'\n    <button class="btn-google">'
+                f'<img src="data:image/png;base64,{logo}" alt="">'
+                f'Continuar con Google</button>')
+
+    clase = "btn-1" if tipo == "boton" else "btn-2"
+    return f'\n    <button class="btn {clase}">{texto}</button>'
+
+
+def bloque_pantalla(clase, titulo, cuerpo, tipo, texto_boton, origen, porque, logo):
+    return (
+        '\n  <div class="estado">'
+        f'\n    <p class="dato">{origen}</p>'
+        f'\n    <div class="pantalla {clase}">'
+        f'\n      <h2>{titulo}</h2>'
+        f'\n      <p>{cuerpo}</p>'
+        f'{accion(tipo, texto_boton, logo)}'
+        '\n    </div>'
+        f'\n    <p class="dato" style="margin-top: 14px">{porque}</p>'
+        '\n  </div>'
+    )
+
+
+def tablero_mensaje(tokens, css, ancho):
+    logo = leer_logo_google()
+    pantallas = "".join(bloque_pantalla(*p, logo) for p in PANTALLAS)
+
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 05 Mensaje · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&family=Roboto:wght@500&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_CAMPO}
+{CSS_BOTON}
+{CSS_GOOGLE}
+{CSS_MENSAJE}
+</style>
+
+<p class="rotulo">Fase ⑦ · Pieza 5 de 8 · {ancho} px</p>
+<h1>Mensaje</h1>
+<div class="regla"></div>
+<p><b>El mensaje no es un bloque adentro del formulario: es una pantalla.</b>
+Cada operación termina en una, y cada una devuelve al paciente <b>al único
+lugar donde puede seguir</b>. Todo a escala 1:1 en {ancho} px.</p>
+
+<section>
+  <p class="rotulo">La distinción que ordena todo</p>
+  <h2>Qué se queda en el formulario y qué se va a una pantalla</h2>
+  <p>La regla para saber cuál va: <b>¿lo puede arreglar cambiando lo que
+  escribió?</b> Si sí, se queda en el campo. Si no, es una pantalla.</p>
+  <div class="estado">
+    <p class="dato">Se queda: corrige UN DATO, y vive pegado a su campo.</p>
+    <div class="campo">
+      <label class="etiqueta">Apellido</label>
+      <input class="caja caja-error" value="">
+      <p class="error-texto">Error — Falta el apellido. Va como figura en tu documento.</p>
+    </div>
+  </div>
+  <p class="dato" style="margin-top: 18px">Se va a una pantalla: <b>la operación
+  entera falló o terminó</b>. El formulario ya no sirve para nada, así que no se
+  queda ahí abajo tentando a apretar otra vez.</p>
+</section>
+
+<section>
+  <p class="rotulo">Las cinco pantallas</p>
+  <h2>Tres finales que fallan y dos que salen bien</h2>
+  <p class="dato" style="margin-top: 8px">El marco gris es el recorte de la
+  pantalla: lo de adentro ocupa todo, no es una tarjeta. Ninguno de estos casos
+  es inventado — cada uno sale de una respuesta que el portero devuelve.</p>
+  {pantallas}
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li><b>Toda pantalla tiene UNA salida, y es un botón.</b> Un final sin
+    botón deja al paciente apretando «atrás».</li>
+    <li><b>El destino cambia con la causa:</b> a la agenda, a mis turnos, o a
+    volver a entrar. Mandar a todos al mismo lado hace fallar de nuevo a dos
+    de los tres.</li>
+    <li>El error <b>se disculpa, dice que algo falló y pide reintentar</b>.
+    No enumera causas ni nombra lo que se rompió.</li>
+    <li><b>El tipo de pantalla lo dice el TEXTO, no un color.</b> Nada de
+    títulos rojos ni verdes: un final se tiene que entender leyéndolo. El rojo
+    queda para el error de un campo, donde el texto es corto y no puede
+    explicarse solo.</li>
+    <li><b>Sin íconos.</b> No tenemos un juego de íconos vectorizado, y meter
+    uno prestado abre una familia nueva por la ventana.</li>
+    <li>El éxito <b>no promete lo que el sitio no controla</b>. Que el correo
+    salga no depende de nosotros; que la pantalla de turnos esté, sí.</li>
+  </ul>
+</section>
+
+<p class="pie">Ni un color escrito a mano: los pares del mensaje los mide
+<code>medir-contraste.py</code> antes de cada publicación.</p>
+"""
+
+
 def main():
     css = TOKENS.read_text(encoding="utf-8")
     tokens = MEDIDOR.leer_tokens(css)
@@ -1538,6 +1735,12 @@ def main():
         destino = SALIDA / "04-campo" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(tablero_campo(tokens, css, ancho), encoding="utf-8")
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "05-mensaje" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(tablero_mensaje(tokens, css, ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     return 0

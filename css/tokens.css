@@ -292,9 +292,11 @@
    @par dorado-texto sobre blanco >= 4.5 · rótulos sobre tarjeta
    @par error sobre marfil >= 4.5 · mensaje de error
    @par error sobre error-fondo >= 4.5 · error sobre su propio fondo
+   @par grafito sobre error-fondo >= 4.5 · el cuerpo del mensaje de error
    @par blanco sobre error >= 4.5 · botón destructivo
    @par exito sobre marfil >= 4.5 · mensaje de éxito
    @par exito sobre exito-fondo >= 4.5 · éxito sobre su propio fondo
+   @par grafito sobre exito-fondo >= 4.5 · el cuerpo del mensaje de éxito
    @par apagado sobre marfil >= 4.5 · texto deshabilitado
    @par texto-segundo sobre marfil >= 4.5 · ayuda, pie y aclaración
    @par texto-segundo sobre blanco >= 4.5 · lo mismo, sobre tarjeta
