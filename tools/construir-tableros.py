@@ -613,7 +613,7 @@ NIVELES = [
     ("h2", "Título de sección", "Marcellus",
      "abre cada bloque", "Nuestros tratamientos"),
     ("h3", "Título de tarjeta", "Marcellus",
-     "dentro de una tarjeta o un turno", "Limpieza y profilaxis"),
+     "dentro de una tarjeta o un turno", "Limpieza"),
     ("cuerpo", "Texto de leer", "Jost",
      "párrafos, respuestas, descripciones", None),
     ("chico", "Texto chico", "Jost",
@@ -832,7 +832,7 @@ Los tamaños salen de <code>css/tokens.css</code> y cambian solos con el ancho.<
   <h2>La jerarquía, funcionando</h2>
   <div class="espec" style="border-top: 0; padding-top: 0">
     <p class="rotulo">Odontología general</p>
-    <h2>Limpieza y profilaxis</h2>
+    <h2>Limpieza</h2>
     <p class="muestra-texto">{CUERPO_MUESTRA}</p>
     <p class="chico" style="margin-top: 10px; color: var(--texto-segundo)">{CHICO_MUESTRA}</p>
   </div>
@@ -1697,6 +1697,197 @@ lugar donde puede seguir</b>. Todo a escala 1:1 en {ancho} px.</p>
 """
 
 
+
+# ============================================================
+# PIEZA 6 — LA TARJETA
+#
+# Decidido por Juan el 2-sep-2026, y recorta el alcance que traía el plan:
+# el TRATAMIENTO no tiene tarjeta —es un desplegable y nada más—, así que la
+# pieza es una sola tarjeta, la del turno. Y no se acomodan en columnas: van
+# en FILAS, una debajo de la otra, en los tres anchos.
+# ============================================================
+
+CSS_TARJETA = """
+.turno {
+  max-width: var(--columna-lista);
+  margin-top: 14px;
+  padding: 18px 18px 20px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+/* El día y la hora son el título de la tarjeta: es lo que el paciente vino a
+   buscar, y lo único que necesita para reconocer su turno de un vistazo. */
+.turno h3 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+  color: var(--grafito);
+}
+
+.turno .que {
+  margin-top: 10px;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+}
+
+.turno .quien {
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.turno .btn {
+  margin-top: 18px;
+}
+
+.lista { margin-top: 4px; }
+
+/* De tablet para arriba la tarjeta se lee como una FILA: los datos a la
+   izquierda y la acción a la derecha. En el teléfono no: ahí el botón va de
+   borde a borde, que es lo que pide un dedo. */
+@media (min-width: 768px) {
+
+  .turno {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+  }
+
+  .turno .btn {
+    margin-top: 0;
+    flex: none;
+  }
+}
+"""
+
+
+# día y hora · tratamiento · profesional · para quién
+TURNOS = [
+    ("Jueves 11 de septiembre, 15:30", "Consulta", "con Cecilia Duarte",
+     "Paciente: María Fernanda Gómez"),
+    ("Martes 30 de septiembre, 09:00", "Limpieza", "con Cecilia Duarte",
+     "Paciente: Joaquín Gómez"),
+]
+
+
+def tarjeta_turno(cuando, tratamiento, profesional, quien):
+    return (
+        '\n    <div class="turno">'
+        '\n      <div class="datos">'
+        f'\n        <h3>{cuando}</h3>'
+        f'\n        <p class="que">{tratamiento} {profesional}</p>'
+        f'\n        <p class="quien">{quien}</p>'
+        '\n      </div>'
+        '\n      <button class="btn btn-2">Cancelar turno</button>'
+        '\n    </div>'
+    )
+
+
+def tablero_tarjeta(tokens, css, ancho):
+    lista = "".join(tarjeta_turno(*t) for t in TURNOS)
+    acomodo = (
+        "una debajo de la otra, con el botón de borde a borde"
+        if ancho < 768
+        else "una debajo de la otra, y cada tarjeta es una fila: los datos a la "
+             "izquierda y la acción a la derecha"
+    )
+
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 06 Tarjeta · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_TARJETA}
+</style>
+
+<p class="rotulo">Fase ⑦ · Pieza 6 de 8 · {ancho} px</p>
+<h1>Tarjeta</h1>
+<div class="regla"></div>
+<p>Es la tarjeta de <b>un turno reservado</b>, en la pantalla «mis turnos» —
+adonde llegan tres de las cinco pantallas de la pieza 5. Todo a escala 1:1 en
+{ancho} px.</p>
+
+<section>
+  <p class="rotulo">Una sola tarjeta</p>
+  <h2>El tratamiento no tiene tarjeta</h2>
+  <p>El plan traía dos, la del tratamiento y la del turno. <b>El tratamiento se
+  elige en un desplegable y nada más</b>: sin descripción, sin duración, sin
+  tarjeta. Una tarjeta con información que nadie va a leer sólo alarga el
+  camino hasta el turno.</p>
+</section>
+
+<section>
+  <p class="rotulo">La tarjeta</p>
+  <h2>Cuatro renglones y una acción</h2>
+  <p class="dato" style="margin-top: 8px">Todos los datos salen de lo que
+  <code>GET /mis-turnos</code> ya devuelve. Nada que haya que agregar al portero.</p>
+  <div class="lista">{lista}</div>
+</section>
+
+<section>
+  <p class="rotulo">Lo que NO lleva</p>
+  <h2>Dos datos que el portero devuelve y la tarjeta no muestra</h2>
+  <ul class="reglas">
+    <li><b>La duración.</b> No cambia nada de lo que el paciente puede hacer, y
+    el largo real se lo dice Cecilia en el consultorio.</li>
+    <li><b>El motivo de consulta.</b> Ese dato existe para que Cecilia sepa a
+    qué vino la persona, y <b>ya viaja en el correo operativo</b>, que es donde
+    le sirve. En la pantalla del paciente sería repetirle lo que él mismo
+    eligió.</li>
+  </ul>
+  <p class="dato" style="margin-top: 18px"><b>El renglón «Para…» sí se queda</b>,
+  y no es un adorno: un mismo correo puede tener varias personas — una madre
+  anota a sus hijos con su casilla—, y sin ese renglón dos turnos del mismo día
+  serían indistinguibles.</p>
+</section>
+
+<section>
+  <p class="rotulo">Cómo se acomodan</p>
+  <h2>En filas, siempre</h2>
+  <p>Nada de dos o tres columnas: <b>{acomodo}</b>. Una lista de turnos se lee
+  de arriba hacia abajo y en orden de fecha, que es como el paciente la busca.</p>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li><b>El día y la hora son el título.</b> Es lo que el paciente vino a
+    buscar.</li>
+    <li>La tarjeta se ve por su <b>filo</b>: el relleno blanco mide 1,07 contra
+    el marfil. Es lo mismo que ya pasó con el campo y con el mensaje.</li>
+    <li><b>Una sola acción por tarjeta</b>, y es cancelar. Va en el botón
+    secundario: cancelar nunca es la acción que el sitio empuja.</li>
+    <li>El profesional va con <b>nombre y apellido</b>, siempre. Hoy hay una
+    sola y alcanzaría el nombre; el día que entren dos que se llamen igual, una
+    pantalla que dice sólo el nombre <b>no se puede arreglar sin rehacerla</b>.
+    <i>El apellido de la muestra es de relleno: en el sitio sale de la ficha del
+    profesional.</i></li>
+    <li><b>En filas, nunca en columnas.</b> Y de tablet para arriba la fila
+    se abre: los datos a la izquierda, la acción a la derecha.</li>
+    <li>La lista usa <b>su propia medida, más ancha que la del texto</b>
+    (860 px en escritorio, contra 640 de un párrafo). Una tarjeta con su acción
+    al costado no es una línea de lectura, y con la medida del párrafo el día y
+    la hora se parten en dos renglones.</li>
+    <li>La tarjeta <b>no muestra un dato porque exista</b>. Cada renglón está
+    porque el paciente hace algo con él.</li>
+  </ul>
+</section>
+
+<p class="pie">Ni un color ni un tamaño escrito a mano: la tarjeta sale de
+<code>tokens.css</code>, igual que el resto del sistema.</p>
+"""
+
+
 def main():
     css = TOKENS.read_text(encoding="utf-8")
     tokens = MEDIDOR.leer_tokens(css)
@@ -1741,6 +1932,12 @@ def main():
         destino = SALIDA / "05-mensaje" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(tablero_mensaje(tokens, css, ancho), encoding="utf-8")
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "06-tarjeta" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(tablero_tarjeta(tokens, css, ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     return 0

@@ -1,3 +1,10 @@
+<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 06 Tarjeta · 768</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
 /* ============================================================
    CB Odontología y Estética — FUENTE DE VERDAD DEL COLOR
    Fase ⑦, pieza 1. Ningún hex se escribe fuera de este archivo.
@@ -337,3 +344,366 @@
    @par google-filo sobre google-fondo >= 3.0 · el filo contra su propio relleno
 
 */
+
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 768px;
+  background: var(--marfil);
+  color: var(--grafito);
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  padding: 40px 40px 80px;
+}
+
+h1, h2, h3 {
+  font-family: Marcellus, Georgia, serif;
+  font-weight: 400;
+  max-width: var(--columna);
+}
+
+h1 { font-size: var(--tipo-h1); line-height: var(--alto-h1); }
+h2 { font-size: var(--tipo-h2); line-height: var(--alto-h2); }
+h3 { font-size: var(--tipo-h3); line-height: var(--alto-h3); }
+
+p { max-width: var(--columna); }
+
+code {
+  font-family: Jost, sans-serif;
+  letter-spacing: 0.02em;
+  color: var(--dorado-texto);
+}
+
+.rotulo {
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  font-weight: 500;
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+}
+
+.regla {
+  height: 1px;
+  background: var(--dorado);
+  margin: 12px 0 24px;
+  max-width: var(--columna);
+}
+
+section { margin-top: 40px; }
+
+.chico { font-size: var(--tipo-chico); line-height: var(--alto-chico); }
+
+.dato {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.espec {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  margin-top: 20px;
+  max-width: var(--columna);
+}
+
+.espec .muestra-texto { margin-top: 6px; }
+
+table {
+  width: 100%;
+  max-width: var(--columna);
+  border-collapse: collapse;
+  margin-top: 18px;
+}
+
+th, td {
+  text-align: left;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+th {
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: var(--tipo-rotulo);
+  color: var(--dorado-texto);
+}
+
+td.n { text-align: right; font-variant-numeric: tabular-nums; }
+th.n { text-align: right; }
+
+.pie {
+  max-width: var(--columna);
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+
+.btn {
+  display: inline-block;
+  font-family: Jost, sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 12px 26px;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--radio);
+  cursor: pointer;
+  width: var(--boton-ancho);
+}
+
+.btn-1 {
+  background: var(--boton-fondo);
+  color: var(--boton-texto);
+  box-shadow: var(--sombra-boton);
+}
+
+/* El ancho NO puede cambiar al enviar, y "Reservando…" es más corto que
+   "Reservar turno": de tablet para arriba, donde el botón se ajusta a su texto,
+   se achicaba 30 px. El botón lleva las dos palabras apiladas y la que no se ve
+   sostiene el ancho. Sin números mágicos: lo mide el texto más largo. */
+.pila { display: inline-grid; }
+
+.pila > span { grid-area: 1 / 1; }
+
+.pila .fantasma { visibility: hidden; }
+
+/* Enviando: el mismo dorado oscurecido, con sombra, y la palabra cambiada. */
+.btn-1-enviando {
+  background: var(--boton-fondo-oscuro);
+  box-shadow: var(--sombra-boton-foco);
+  cursor: progress;
+}
+
+/* FOCO del principal: se oscurece la superficie y el contorno cae JUSTO sobre
+   el filo del botón. Las letras quedan blancas — el filtro que también las
+   apagaba se descartó: dejaba el foco en 2,84, abajo del piso. */
+.btn-foco {
+  background: var(--boton-fondo-oscuro);
+  box-shadow: inset 0 0 0 2px var(--boton-foco-borde), var(--sombra-boton-foco);
+}
+
+/* El secundario del brief, página 17: grafito macizo con letra blanca. */
+.btn-2 {
+  background: var(--boton-2-fondo);
+  color: var(--boton-2-texto);
+  box-shadow: var(--sombra-boton);
+}
+
+/* Misma regla de foco que el principal —contorno sobre el filo, sombra más
+   marcada—, pero INVERTIDO: fondo blanco, letra grafito, filo grafito de 2 px.
+   Los anillos claros se descartaron: al filo se leen como que el botón se
+   achicó. Medido con medir-foco.py. */
+.btn-2-foco {
+  background: var(--boton-2-foco-fondo);
+  color: var(--boton-2-foco-texto);
+  border: 2px solid var(--boton-2-foco-filo);
+  padding: 10px 24px;
+  box-shadow: var(--sombra-boton-foco);
+}
+
+.btn-apagado {
+  background: var(--boton-apagado-fondo);
+  color: var(--boton-apagado-texto);
+  border: 1px solid var(--boton-apagado-borde);
+  padding: 11px 25px;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.estado {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  margin-top: 22px;
+  max-width: var(--columna);
+}
+
+.estado .btn {
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
+/* La lista arranca en el margen como todo lo demás: la sangría de una lista
+   normal la corría 22 px y rompía la columna. La raya se dibuja a mano. */
+.reglas {
+  max-width: var(--columna);
+  margin-top: 16px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.reglas li {
+  margin-top: 8px;
+  padding-left: 22px;
+  text-indent: -22px;
+}
+
+.reglas li::before {
+  content: "—";
+  color: var(--dorado-texto);
+  margin-right: 10px;
+}
+
+
+.turno {
+  max-width: var(--columna-lista);
+  margin-top: 14px;
+  padding: 18px 18px 20px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+/* El día y la hora son el título de la tarjeta: es lo que el paciente vino a
+   buscar, y lo único que necesita para reconocer su turno de un vistazo. */
+.turno h3 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+  color: var(--grafito);
+}
+
+.turno .que {
+  margin-top: 10px;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+}
+
+.turno .quien {
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.turno .btn {
+  margin-top: 18px;
+}
+
+.lista { margin-top: 4px; }
+
+/* De tablet para arriba la tarjeta se lee como una FILA: los datos a la
+   izquierda y la acción a la derecha. En el teléfono no: ahí el botón va de
+   borde a borde, que es lo que pide un dedo. */
+@media (min-width: 768px) {
+
+  .turno {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+  }
+
+  .turno .btn {
+    margin-top: 0;
+    flex: none;
+  }
+}
+
+</style>
+
+<p class="rotulo">Fase ⑦ · Pieza 6 de 8 · 768 px</p>
+<h1>Tarjeta</h1>
+<div class="regla"></div>
+<p>Es la tarjeta de <b>un turno reservado</b>, en la pantalla «mis turnos» —
+adonde llegan tres de las cinco pantallas de la pieza 5. Todo a escala 1:1 en
+768 px.</p>
+
+<section>
+  <p class="rotulo">Una sola tarjeta</p>
+  <h2>El tratamiento no tiene tarjeta</h2>
+  <p>El plan traía dos, la del tratamiento y la del turno. <b>El tratamiento se
+  elige en un desplegable y nada más</b>: sin descripción, sin duración, sin
+  tarjeta. Una tarjeta con información que nadie va a leer sólo alarga el
+  camino hasta el turno.</p>
+</section>
+
+<section>
+  <p class="rotulo">La tarjeta</p>
+  <h2>Cuatro renglones y una acción</h2>
+  <p class="dato" style="margin-top: 8px">Todos los datos salen de lo que
+  <code>GET /mis-turnos</code> ya devuelve. Nada que haya que agregar al portero.</p>
+  <div class="lista">
+    <div class="turno">
+      <div class="datos">
+        <h3>Jueves 11 de septiembre, 15:30</h3>
+        <p class="que">Consulta con Cecilia Duarte</p>
+        <p class="quien">Paciente: María Fernanda Gómez</p>
+      </div>
+      <button class="btn btn-2">Cancelar turno</button>
+    </div>
+    <div class="turno">
+      <div class="datos">
+        <h3>Martes 30 de septiembre, 09:00</h3>
+        <p class="que">Limpieza con Cecilia Duarte</p>
+        <p class="quien">Paciente: Joaquín Gómez</p>
+      </div>
+      <button class="btn btn-2">Cancelar turno</button>
+    </div></div>
+</section>
+
+<section>
+  <p class="rotulo">Lo que NO lleva</p>
+  <h2>Dos datos que el portero devuelve y la tarjeta no muestra</h2>
+  <ul class="reglas">
+    <li><b>La duración.</b> No cambia nada de lo que el paciente puede hacer, y
+    el largo real se lo dice Cecilia en el consultorio.</li>
+    <li><b>El motivo de consulta.</b> Ese dato existe para que Cecilia sepa a
+    qué vino la persona, y <b>ya viaja en el correo operativo</b>, que es donde
+    le sirve. En la pantalla del paciente sería repetirle lo que él mismo
+    eligió.</li>
+  </ul>
+  <p class="dato" style="margin-top: 18px"><b>El renglón «Para…» sí se queda</b>,
+  y no es un adorno: un mismo correo puede tener varias personas — una madre
+  anota a sus hijos con su casilla—, y sin ese renglón dos turnos del mismo día
+  serían indistinguibles.</p>
+</section>
+
+<section>
+  <p class="rotulo">Cómo se acomodan</p>
+  <h2>En filas, siempre</h2>
+  <p>Nada de dos o tres columnas: <b>una debajo de la otra, y cada tarjeta es una fila: los datos a la izquierda y la acción a la derecha</b>. Una lista de turnos se lee
+  de arriba hacia abajo y en orden de fecha, que es como el paciente la busca.</p>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li><b>El día y la hora son el título.</b> Es lo que el paciente vino a
+    buscar.</li>
+    <li>La tarjeta se ve por su <b>filo</b>: el relleno blanco mide 1,07 contra
+    el marfil. Es lo mismo que ya pasó con el campo y con el mensaje.</li>
+    <li><b>Una sola acción por tarjeta</b>, y es cancelar. Va en el botón
+    secundario: cancelar nunca es la acción que el sitio empuja.</li>
+    <li>El profesional va con <b>nombre y apellido</b>, siempre. Hoy hay una
+    sola y alcanzaría el nombre; el día que entren dos que se llamen igual, una
+    pantalla que dice sólo el nombre <b>no se puede arreglar sin rehacerla</b>.
+    <i>El apellido de la muestra es de relleno: en el sitio sale de la ficha del
+    profesional.</i></li>
+    <li><b>En filas, nunca en columnas.</b> Y de tablet para arriba la fila
+    se abre: los datos a la izquierda, la acción a la derecha.</li>
+    <li>La lista usa <b>su propia medida, más ancha que la del texto</b>
+    (860 px en escritorio, contra 640 de un párrafo). Una tarjeta con su acción
+    al costado no es una línea de lectura, y con la medida del párrafo el día y
+    la hora se parten en dos renglones.</li>
+    <li>La tarjeta <b>no muestra un dato porque exista</b>. Cada renglón está
+    porque el paciente hace algo con él.</li>
+  </ul>
+</section>
+
+<p class="pie">Ni un color ni un tamaño escrito a mano: la tarjeta sale de
+<code>tokens.css</code>, igual que el resto del sistema.</p>

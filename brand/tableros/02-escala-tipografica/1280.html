@@ -232,6 +232,14 @@
      mide una línea de 66 caracteres en Jost de 17 px. */
   --columna: 100%;
 
+  /* LA OTRA MEDIDA: la de las LISTAS, que no son prosa. `--columna` existe
+     para que una línea de texto no se pase de 66 caracteres; una tarjeta con
+     su acción a la derecha no es una línea de texto, y con 640 px el día y la
+     hora se parten en dos renglones —medido en el tablero de la pieza 6, a
+     1280—. En móvil y tablet las dos medidas coinciden; en escritorio la lista
+     respira más que el párrafo. */
+  --columna-lista: 100%;
+
   /* En el teléfono el botón principal va de borde a borde; de tablet para
      arriba se ajusta a su texto. Es un token para que el sitio no lo repita. */
   /* EL RADIO DE LAS ESQUINAS — decidido por Juan el 2-sep-2026.
@@ -286,6 +294,7 @@
     --tipo-cuerpo: 17px;
     --tipo-chico: 15px;
     --columna: 640px;
+    --columna-lista: 860px;
   }
 }
 
@@ -463,7 +472,7 @@ Los tamaños salen de <code>css/tokens.css</code> y cambian solos con el ancho.<
   </div>
   <div class="espec">
     <p class="dato">Título de tarjeta · Marcellus · <b>24 px</b> · dentro de una tarjeta o un turno</p>
-    <h3 class="muestra-texto">Limpieza y profilaxis</h3>
+    <h3 class="muestra-texto">Limpieza</h3>
   </div>
   <div class="espec">
     <p class="dato">Texto de leer · Jost · <b>17 px</b> · párrafos, respuestas, descripciones</p>
@@ -492,7 +501,7 @@ Los tamaños salen de <code>css/tokens.css</code> y cambian solos con el ancho.<
   <h2>La jerarquía, funcionando</h2>
   <div class="espec" style="border-top: 0; padding-top: 0">
     <p class="rotulo">Odontología general</p>
-    <h2>Limpieza y profilaxis</h2>
+    <h2>Limpieza</h2>
     <p class="muestra-texto">La consulta dura treinta minutos e incluye el diagnóstico y el plan de tratamiento. Si necesitás cambiar el horario, se puede hasta el día anterior.</p>
     <p class="chico" style="margin-top: 10px; color: var(--texto-segundo)">Te va a llegar un correo de confirmación con la dirección del consultorio.</p>
   </div>

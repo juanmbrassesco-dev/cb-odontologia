@@ -232,6 +232,14 @@
      mide una línea de 66 caracteres en Jost de 17 px. */
   --columna: 100%;
 
+  /* LA OTRA MEDIDA: la de las LISTAS, que no son prosa. `--columna` existe
+     para que una línea de texto no se pase de 66 caracteres; una tarjeta con
+     su acción a la derecha no es una línea de texto, y con 640 px el día y la
+     hora se parten en dos renglones —medido en el tablero de la pieza 6, a
+     1280—. En móvil y tablet las dos medidas coinciden; en escritorio la lista
+     respira más que el párrafo. */
+  --columna-lista: 100%;
+
   /* En el teléfono el botón principal va de borde a borde; de tablet para
      arriba se ajusta a su texto. Es un token para que el sitio no lo repita. */
   /* EL RADIO DE LAS ESQUINAS — decidido por Juan el 2-sep-2026.
@@ -286,6 +294,7 @@
     --tipo-cuerpo: 17px;
     --tipo-chico: 15px;
     --columna: 640px;
+    --columna-lista: 860px;
   }
 }
 
