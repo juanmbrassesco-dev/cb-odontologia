@@ -1715,6 +1715,20 @@ lugar donde puede seguir</b>. Todo a escala 1:1 en {ancho} px.</p>
 # ============================================================
 
 CSS_TARJETA = """
+/* TODO CENTRADO ADENTRO DE LA CAJA — decidido por Juan el 3-sep-2026, viendo
+   las tres alineaciones a 390 y a tamaño real. Es la variante C: se centra el
+   texto Y el botón deja de ocupar el ancho de la tarjeta.
+
+   Se aparta de la alineación del resto del sistema, que arranca todo en el
+   margen izquierdo, y por eso vale escribir qué NO rompe:
+
+   · La regla del teléfono de la pieza 3 dice "EL PRINCIPAL va de borde a
+     borde". Éste es el secundario, así que esa regla queda intacta.
+   · El piso táctil de 44 px se cumple igual: el botón conserva su min-height,
+     y del ancho le sobra.
+
+   Lo que sí cuesta: `medir-alineacion.py` mide contra el margen izquierdo y la
+   tarjeta ya no arranca ahí. Se le enseñó el caso; no se le bajó el piso. */
 .turno {
   max-width: var(--columna-lista);
   margin-top: 14px;
@@ -1722,6 +1736,7 @@ CSS_TARJETA = """
   background: var(--blanco);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
+  text-align: center;
 }
 
 /* El día y la hora son el título de la tarjeta: es lo que el paciente vino a
@@ -1746,8 +1761,11 @@ CSS_TARJETA = """
   color: var(--texto-segundo);
 }
 
+/* El botón se ajusta a su texto en los tres anchos: centrado y del ancho de
+   la tarjeta a la vez no es centrado, es lo mismo de antes. */
 .turno .btn {
   margin-top: 18px;
+  width: auto;
 }
 
 .lista { margin-top: 4px; }
@@ -1784,10 +1802,8 @@ def tarjeta_turno(cuando, tratamiento, profesional, quien):
 def tablero_tarjeta(tokens, css, ancho):
     lista = "".join(tarjeta_turno(*t) for t in TURNOS)
     acomodo = (
-        "una debajo de la otra, y adentro de cada una la acción va debajo de "
-        "los datos"
-        + (", con el botón de borde a borde" if ancho < 768
-           else ", con el botón del ancho de su texto")
+        "una debajo de la otra, y adentro de cada una todo va centrado: los "
+        "datos, y debajo el botón, del ancho de su texto"
     )
 
     return f"""<!-- @dsCard group="Components" -->
@@ -1866,10 +1882,14 @@ adonde llegan tres de las cinco pantallas de la pieza 5. Todo a escala 1:1 en
     pantalla que dice sólo el nombre <b>no se puede arreglar sin rehacerla</b>.
     <i>El apellido de la muestra es de relleno: en el sitio sale de la ficha del
     profesional.</i></li>
-    <li><b>En filas, nunca en columnas</b>, y <b>la acción siempre debajo de
-    los datos, adentro del cuadro</b>, en los tres anchos. Al costado, el
-    grafito macizo de «Cancelar turno» se lee como el botón que manda en la
-    pantalla — y cancelar no manda nunca.</li>
+    <li><b>En filas, nunca en columnas</b>, y adentro de la caja <b>todo
+    centrado</b>: los datos, y debajo el botón, del ancho de su texto. Al
+    costado, el grafito macizo de «Cancelar turno» se leía como el botón que
+    manda en la pantalla — y cancelar no manda nunca.</li>
+    <li><b>La tarjeta es el único bloque centrado del sistema.</b> Todo lo
+    demás arranca en el margen izquierdo. Es una caja cerrada con cuatro
+    renglones, no una columna de lectura: no hay una línea larga que seguir con
+    el ojo, que es lo que el margen izquierdo protege.</li>
     <li>La lista usa <b>su propia medida, más ancha que la del texto</b>
     (860 px en escritorio, contra 640 de un párrafo). El motivo ya no es la
     acción al costado —se sacó—: es que <b>el título es una fecha</b>, y con la

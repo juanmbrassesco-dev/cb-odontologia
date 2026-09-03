@@ -771,6 +771,20 @@ section > h2 + p { margin-top: 8px; }
 }
 
 
+/* TODO CENTRADO ADENTRO DE LA CAJA — decidido por Juan el 3-sep-2026, viendo
+   las tres alineaciones a 390 y a tamaño real. Es la variante C: se centra el
+   texto Y el botón deja de ocupar el ancho de la tarjeta.
+
+   Se aparta de la alineación del resto del sistema, que arranca todo en el
+   margen izquierdo, y por eso vale escribir qué NO rompe:
+
+   · La regla del teléfono de la pieza 3 dice "EL PRINCIPAL va de borde a
+     borde". Éste es el secundario, así que esa regla queda intacta.
+   · El piso táctil de 44 px se cumple igual: el botón conserva su min-height,
+     y del ancho le sobra.
+
+   Lo que sí cuesta: `medir-alineacion.py` mide contra el margen izquierdo y la
+   tarjeta ya no arranca ahí. Se le enseñó el caso; no se le bajó el piso. */
 .turno {
   max-width: var(--columna-lista);
   margin-top: 14px;
@@ -778,6 +792,7 @@ section > h2 + p { margin-top: 8px; }
   background: var(--blanco);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
+  text-align: center;
 }
 
 /* El día y la hora son el título de la tarjeta: es lo que el paciente vino a
@@ -802,8 +817,11 @@ section > h2 + p { margin-top: 8px; }
   color: var(--texto-segundo);
 }
 
+/* El botón se ajusta a su texto en los tres anchos: centrado y del ancho de
+   la tarjeta a la vez no es centrado, es lo mismo de antes. */
 .turno .btn {
   margin-top: 18px;
+  width: auto;
 }
 
 .lista { margin-top: 4px; }
