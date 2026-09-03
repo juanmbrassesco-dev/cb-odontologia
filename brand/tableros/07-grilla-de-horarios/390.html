@@ -1,0 +1,922 @@
+<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 07 Almanaque y horarios · 390</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+/* ============================================================
+   CB Odontología y Estética — FUENTE DE VERDAD DEL COLOR
+   Fase ⑦, pieza 1. Ningún hex se escribe fuera de este archivo.
+
+   Cómo se declara un par medido (lo lee tools/medir-contraste.py):
+       @par <texto> sobre <fondo> >= <piso> · <para qué>
+   El piso es 4.5 para texto normal, 3.0 para texto grande
+   (≥24px, o ≥19px semibold) y para bordes y controles.
+   ============================================================ */
+
+:root {
+
+  /* --- LA PALETA DEL BRIEF — cinco colores, no se tocan --- */
+
+  --marfil: #FAF7F2;        /* fondo base */
+  --blanco: #FFFFFF;        /* superficies, tarjetas */
+  --dorado: #B08D57;        /* acento: línea, borde, ícono, fondo */
+  --dorado-claro: #E4D6BC;  /* fondos suaves */
+  --grafito: #33322F;       /* texto de lectura */
+
+  /* --- LOS DERIVADOS — cada uno con el porqué escrito ---
+
+     Un derivado entra sólo si un color del brief NO llega al piso
+     en ese uso. No se inventa ningún tono nuevo: se le baja la
+     luminosidad al que ya existe, dejando el tono y la saturación. */
+
+  /* El dorado del brief mide 2.89 sobre marfil: no sirve de texto.
+     Mismo tono (H 36.4°), misma saturación, 12 puntos menos de luz.
+     DECIDIDO por Juan el 2-sep-2026: los rótulos chicos en mayúsculas y los
+     enlaces van en éste. Son dos dorados y a simple vista no se distinguen;
+     el del brief queda sólo para fondos, líneas e íconos. */
+  --dorado-texto: #896D41;
+
+  /* El grafito aclarado hasta el piso de 3.0 de los bordes de control.
+     Un borde más claro que esto no se ve y el campo deja de leerse. */
+  --borde: #8A8880;
+
+  /* Texto deshabilitado. WCAG exime a los controles apagados, pero se
+     lo hace pasar igual: apagado no es lo mismo que ilegible.
+     ⚠️ Es SÓLO para lo deshabilitado. Un texto que hay que leer no va acá:
+     4.54 pasa el piso pero cuesta, y se notó en la pieza 2. */
+  --apagado: #75716A;
+
+  /* Texto secundario: ayuda de un campo, pie, aclaración. Es texto que SE
+     LEE, sólo que manda menos que el principal — así que se separa del
+     grafito por tono, no por poner el gris al borde del mínimo.
+     Es el grafito aclarado hasta 8.97, no hasta el piso: se subió una vez
+     más porque a 6.97 todavía costaba, y quien lo leyó fue una persona,
+     no el medidor. */
+  --texto-segundo: #464541;
+
+  /* Estados. El brief no tiene ninguno. Se eligieron dentro de la
+     familia cálida de la paleta, no del rojo y verde de sistema. */
+  --error: #9F4E40;
+  --error-fondo: #F6E8E4;
+  --exito: #517255;
+  --exito-fondo: #EFF4F0;
+  --info-fondo: var(--dorado-claro);  /* el informativo no estrena color */
+
+  /* --- EL BOTÓN PRINCIPAL ---
+
+     Fondo DORADO DEL BRIEF con letra BLANCA. Es el candidato D y no cambia:
+     es el dorado que se usa en todo el sitio. Mide 3,09, que pasa el piso de
+     3,0 del texto grande, y por eso la letra no baja de 19 px. */
+  --boton-fondo: var(--dorado);
+  --boton-texto: var(--blanco);
+
+  /* Enviando y foco oscurecen el MISMO dorado hasta el dorado de texto, que
+     ya está en el sistema. No se inventa ningún tono intermedio. */
+  --boton-fondo-oscuro: var(--dorado-texto);
+
+  /* El anillo de foco COINCIDE con el borde del botón: es un contorno que
+     cae justo sobre el filo, no una segunda línea por fuera ni por dentro. */
+  --boton-foco-borde: var(--grafito);
+
+  /* Sombras: hiper leve en reposo, marcada al hacer foco o esperar. */
+  --sombra-boton: 0 1px 2px rgba(51, 50, 47, 0.10);
+  --sombra-boton-foco: 0 3px 8px rgba(51, 50, 47, 0.22);
+
+  /* El botón secundario es el que dibuja el brief en la página 17: GRAFITO
+     MACIZO CON LETRA BLANCA. 12,82, el par más alto del sistema.
+
+     Su foco INVIERTE el botón: fondo blanco, letra grafito, y el filo de 2 px
+     en grafito para que la silueta no se pierda contra la página. Cambia el
+     80 % de la superficie —medido con medir-foco.py—, contra el 24 % que
+     lograba un anillo. Los anillos claros se descartaron los dos: puestos al
+     filo se leen como que el botón se achicó, no como un borde. */
+  --boton-2-fondo: var(--grafito);
+  --boton-2-texto: var(--blanco);
+  --boton-2-foco-fondo: var(--blanco);
+  --boton-2-foco-texto: var(--grafito);
+  --boton-2-foco-filo: var(--grafito);
+
+  /* Deshabilitado. WCAG exime a los controles inactivos; igual se lo deja en
+     4,08, y el botón además DICE por qué está apagado: nunca sólo el color.
+     🔴 Su relleno mide 1,11 contra el marfil: NO SE VE. Ningún gris claro
+     llega al piso de 3,0 sin dejar de parecer apagado, así que la forma del
+     botón la marca un BORDE, no el relleno. */
+  --boton-apagado-fondo: #EFEBE4;
+  --boton-apagado-texto: var(--apagado);
+  --boton-apagado-borde: var(--borde);
+
+
+  /* --- EL CAMPO — pieza 4 ---
+
+     El campo es blanco sobre marfil, y ese par mide 1,03: NO SE VE. Igual que
+     el botón deshabilitado, la forma la marca el BORDE y nunca el relleno. El
+     día que alguien saque el borde "para que quede más limpio", el campo
+     desaparece de la página. */
+  --campo-fondo: var(--blanco);
+  --campo-texto: var(--grafito);
+  --campo-borde: var(--borde);
+
+  /* La etiqueta se lee SIEMPRE y va arriba del campo. Nunca se reemplaza por
+     un texto adentro (placeholder): ese texto se borra al escribir, y quien se
+     distrae pierde el nombre de lo que estaba llenando y no lo puede releer.
+     El formato que se espera va en la AYUDA, que no se borra nunca. */
+  --campo-etiqueta: var(--grafito);
+  --campo-ayuda: var(--texto-segundo);
+
+  /* FOCO. Misma regla que el botón: cae sobre el filo del propio control, no
+     un anillo separado. Pasa de 1 px de borde a 2 px de grafito, así que
+     cambian el color Y el grosor — el foco no puede depender sólo del color. */
+  --campo-foco-filo: var(--grafito);
+  --campo-sombra-foco: var(--sombra-boton-foco);
+
+  /* EL CAMPO NO TIÑE SU SUPERFICIE AL RECIBIR FOCO, y queda escrito porque se
+     probó al revés. Medido con medir-foco.py, el filo de 2 px mueve el 5,3 %
+     de la superficie —el de 3 px, el 7,9 %— contra un piso de casa del 10 %,
+     y con eso se tiñó el fondo, que llegaba al 97,6 %. Se volvió atrás:
+
+     1. Ese piso se calibró sobre el BOTÓN, que no tiene borde en reposo y sólo
+        puede avisar el foco cambiando su superficie. El campo ya tiene filo.
+     2. El filo de 2 px cumple Focus Visible (AA de WCAG 2.0) y llega también a
+        la vara de Focus Appearance (AAA de WCAG 2.2): 2 px con 3:1 contra lo
+        que lo rodea. El grafito mide 12,00 contra el marfil. No había nada
+        que arreglar.
+     3. La regla del sistema no es "el foco tiñe": es que el foco se marca en el
+        FILO del propio control. El botón tiñe porque no tiene filo donde
+        marcarlo. Lo cortó Juan. */
+
+  /* ERROR. Se pinta el filo, pero el error NUNCA se comunica sólo con color:
+     debajo va un mensaje escrito que dice qué hacer, no "campo inválido". */
+  --campo-error-filo: var(--error);
+  --campo-error-texto: var(--error);
+
+  /* Deshabilitado: el mismo relleno y el mismo gris del botón apagado, para
+     que un control inactivo se vea igual en todo el sitio. */
+  --campo-apagado-fondo: var(--boton-apagado-fondo);
+  --campo-apagado-texto: var(--apagado);
+  --campo-apagado-borde: var(--borde);
+
+  /* Alto mínimo. 44 px es el piso táctil del sistema; el campo va a 48 porque
+     además hay que poder apoyar el dedo sin taparse lo que se escribió. */
+  --campo-alto: 48px;
+
+
+  /* --- COLORES AJENOS — NO SON NUESTROS Y NO SE TOCAN ---
+
+     Única excepción a la regla de que ningún color entra al sistema sin
+     porqué: éstos NO los elegimos. Son los de la marca Google para el botón
+     "Continuar con Google", y están acá y no sueltos en un tablero para que
+     igual los mida medir-contraste.py. Fuente: la página de marca de Google
+     Identity, verificada el 2-sep-2026. Si Google los cambia, se cambian acá
+     y en ningún otro lado.
+
+     🏁 TEMA CLARO, decidido por Juan el 2-sep-2026 viendo los cuatro a tamaño
+     real. Google ofrece tres —claro #FFFFFF, oscuro #131314, neutro #F2F2F2—
+     y prohíbe cualquier otro relleno, así que nuestro grafito nunca estuvo
+     disponible. De los tres permitidos:
+
+     · NEUTRO, descartado por el número: mide 1,05 contra el marfil, o sea que
+       sobre nuestro fondo desaparece.
+     · OSCURO, descartado por DOS motivos de Juan. Uno, en nuestro sistema el
+       grafito macizo es el botón SECUNDARIO: vestir de secundario la única
+       acción de la pantalla de entrada la degrada. Dos, "yo sí noto la
+       diferencia con el grafito".
+     · CLARO, el elegido: se ve por su filo (4,24 contra la página) y no le
+       roba el peso a ningún botón nuestro.
+
+     ⚠️ Y queda escrito el error de instrumento, porque es reutilizable: Claude
+     argumentó que el negro de Google y nuestro grafito "al ojo son casi el
+     mismo botón" apoyándose en que su contraste da 1,45. ESE NÚMERO NO MIDE
+     ESO. El contraste WCAG compara luminancia para decidir si un texto se lee;
+     dos colores de luminancia parecida pueden tener tonos bien distintos, y es
+     el caso: el nuestro es cálido y el de Google es neutro. Lo cazó Juan
+     mirando la pantalla. */
+  --google-fondo: #FFFFFF;
+  --google-filo: #747775;
+  --google-texto: #1F1F1F;
+
+  /* Anillo de foco: grafito macizo, 2px, con 2px de separación.
+     Va con el grosor, no sólo con el color (pauta 7). */
+  --foco: #33322F;
+
+}
+
+
+/* ============================================================
+   ESCALA TIPOGRÁFICA — fase ⑦, pieza 2.
+
+   Marcellus tiene UN SOLO PESO: no hay negrita ni liviana. La jerarquía
+   entre títulos es por TAMAÑO, nunca por peso. Jost lleva todo lo demás.
+
+   Los valores de :root son los de MÓVIL — el sitio es mobile-first, así
+   que lo chico es el default y lo grande es la excepción declarada.
+   ============================================================ */
+
+:root {
+  --tipo-h1: 32px;      --alto-h1: 1.15;
+  --tipo-h2: 26px;      --alto-h2: 1.2;
+  --tipo-h3: 20px;      --alto-h3: 1.3;
+  --tipo-cuerpo: 16px;  --alto-cuerpo: 1.6;
+  --tipo-chico: 14px;   --alto-chico: 1.5;
+  --tipo-rotulo: 13px;  --alto-rotulo: 1.4;
+
+  /* El rótulo en mayúsculas necesita aire entre letras o no se lee. */
+  --letra-rotulo: 0.18em;
+
+  /* LA COLUMNA. Todo lo que se dibuja —títulos, párrafos, líneas, tablas—
+     termina acá. Es un valor en píxeles a propósito: `ch` crece con el
+     tamaño de la letra, así que un título de 52 px con la misma medida en
+     `ch` se iría al doble de largo y las líneas dejarían de coincidir.
+     En móvil y tablet ocupa todo; en escritorio son 640 px, que es lo que
+     mide una línea de 66 caracteres en Jost de 17 px. */
+  --columna: 100%;
+
+  /* LA OTRA MEDIDA: la de las LISTAS, que no son prosa. `--columna` existe
+     para que una línea de texto no se pase de 66 caracteres; una tarjeta con
+     su acción a la derecha no es una línea de texto, y con 640 px el día y la
+     hora se parten en dos renglones —medido en el tablero de la pieza 6, a
+     1280—. En móvil y tablet las dos medidas coinciden; en escritorio la lista
+     respira más que el párrafo. */
+  --columna-lista: 100%;
+
+  /* En el teléfono el botón principal va de borde a borde; de tablet para
+     arriba se ajusta a su texto. Es un token para que el sitio no lo repita. */
+  /* EL RADIO DE LAS ESQUINAS — decidido por Juan el 2-sep-2026.
+
+     El manual dibuja las esquinas CUADRADAS: medido sobre la página 17 a
+     200 dpi, las tres esquinas de sus botones están llenas hasta el píxel de
+     la punta. Se decidió apartarse, con motivo escrito.
+
+     A FAVOR de apartarse: Bar & Neta (Psychological Science, 2006) midieron
+     que las personas prefieren el contorno curvo y que el ángulo filoso
+     comunica amenaza —más activación de amígdala, y en frecuencias espaciales
+     bajas, o sea antes de pensarlo—. En un consultorio que promete calma, eso
+     pesa.
+
+     POR QUÉ 3 Y NO 8: el rango 8-12 lee "amable" y la § 2 pide premium en la
+     forma. 3 px suaviza sin cambiar de registro.
+
+     POR QUÉ NO 0: el argumento de que "la curva ya vive en el anillo de la
+     marca" no se sostiene, porque el anillo NO va a estar en la mayoría de
+     las pantallas —lo levantó Juan—. Donde no hay marca, no hay curva.
+
+     DÓNDE APLICA: controles y superficies —botón, campo, tarjeta, mensaje—.
+     NO aplica al logo, al patrón, ni a las fotos: la foto del hero va a
+     sangre y cuadrada, como en el manual. */
+  --radio: 3px;
+
+  --boton-ancho: 100%;
+
+  /* El anillo de foco va ADENTRO del control, en los tres anchos. Afuera se
+     salía 4 px del margen y rompía la columna —medido—, y encima el foco
+     habría cambiado de forma según la pantalla. Es una sola señal o no es
+     una señal. */
+  --foco-separacion: -4px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --tipo-h1: 42px;
+    --tipo-h2: 32px;
+    --tipo-h3: 22px;
+    --tipo-cuerpo: 17px;
+    --tipo-chico: 14px;
+    --boton-ancho: auto;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --tipo-h1: 52px;
+    --tipo-h2: 36px;
+    --tipo-h3: 24px;
+    --tipo-cuerpo: 17px;
+    --tipo-chico: 15px;
+    --columna: 640px;
+    --columna-lista: 860px;
+  }
+}
+
+/* --- LOS PARES MEDIDOS — los recorre el medidor, no la confianza ---
+
+   @par grafito sobre marfil >= 4.5 · texto de lectura
+   @par grafito sobre blanco >= 4.5 · texto sobre tarjeta
+   @par grafito sobre dorado-claro >= 4.5 · texto sobre fondo suave
+   @par blanco sobre grafito >= 4.5 · botón principal
+   @par dorado-texto sobre marfil >= 4.5 · rótulos chicos y enlaces
+   @par dorado-texto sobre blanco >= 4.5 · rótulos sobre tarjeta
+   @par error sobre marfil >= 4.5 · mensaje de error
+   @par error sobre error-fondo >= 4.5 · error sobre su propio fondo
+   @par grafito sobre error-fondo >= 4.5 · el cuerpo del mensaje de error
+   @par blanco sobre error >= 4.5 · botón destructivo
+   @par exito sobre marfil >= 4.5 · mensaje de éxito
+   @par exito sobre exito-fondo >= 4.5 · éxito sobre su propio fondo
+   @par grafito sobre exito-fondo >= 4.5 · el cuerpo del mensaje de éxito
+   @par apagado sobre marfil >= 4.5 · texto deshabilitado
+   @par texto-segundo sobre marfil >= 4.5 · ayuda, pie y aclaración
+   @par texto-segundo sobre blanco >= 4.5 · lo mismo, sobre tarjeta
+   @par borde sobre marfil >= 3.0 · borde de campo sobre el fondo
+   @par borde sobre blanco >= 3.0 · borde de campo sobre tarjeta
+   @par foco sobre marfil >= 3.0 · anillo de foco
+   @par grafito sobre dorado >= 3.0 · sólo texto grande sobre dorado
+   @par boton-texto sobre boton-fondo >= 3.0 · el botón principal, en reposo
+   @par boton-texto sobre boton-fondo-oscuro >= 4.5 · el principal, enviando y con foco
+   @par boton-2-texto sobre boton-2-fondo >= 4.5 · la letra del botón secundario
+   @par boton-2-fondo sobre marfil >= 3.0 · la superficie del secundario
+   @par boton-2-foco-texto sobre boton-2-foco-fondo >= 4.5 · el secundario con foco, invertido
+   @par boton-2-foco-filo sobre marfil >= 3.0 · el filo que conserva la silueta
+   @par boton-apagado-texto sobre boton-apagado-fondo >= 3.0 · el botón deshabilitado
+   @par boton-apagado-borde sobre marfil >= 3.0 · el contorno del deshabilitado
+
+   @par campo-texto sobre campo-fondo >= 4.5 · lo que el paciente escribe
+   @par campo-etiqueta sobre marfil >= 4.5 · la etiqueta, arriba del campo
+   @par campo-ayuda sobre marfil >= 4.5 · la ayuda, debajo del campo
+   @par campo-borde sobre marfil >= 3.0 · el filo del campo en reposo
+   @par campo-foco-filo sobre marfil >= 3.0 · el filo del campo con foco
+   @par campo-error-filo sobre marfil >= 3.0 · el filo del campo con error
+   @par campo-error-texto sobre marfil >= 4.5 · el mensaje de error, escrito
+   @par campo-apagado-texto sobre campo-apagado-fondo >= 3.0 · el campo deshabilitado
+   @par campo-apagado-borde sobre marfil >= 3.0 · el contorno del deshabilitado
+
+   @par google-texto sobre google-fondo >= 4.5 · la letra del botón de Google
+   @par google-filo sobre marfil >= 3.0 · el filo del botón de Google, contra la página
+   @par google-filo sobre google-fondo >= 3.0 · el filo contra su propio relleno
+
+*/
+
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 390px;
+  background: var(--marfil);
+  color: var(--grafito);
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  padding: 20px 20px 40px;
+}
+
+h1, h2, h3 {
+  font-family: Marcellus, Georgia, serif;
+  font-weight: 400;
+  max-width: var(--columna);
+}
+
+h1 { font-size: var(--tipo-h1); line-height: var(--alto-h1); }
+h2 { font-size: var(--tipo-h2); line-height: var(--alto-h2); }
+h3 { font-size: var(--tipo-h3); line-height: var(--alto-h3); }
+
+p { max-width: var(--columna); }
+
+code {
+  font-family: Jost, sans-serif;
+  letter-spacing: 0.02em;
+  color: var(--dorado-texto);
+}
+
+.rotulo {
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  font-weight: 500;
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+}
+
+.regla {
+  height: 1px;
+  background: var(--dorado);
+  margin: 12px 0 24px;
+  max-width: var(--columna);
+}
+
+section { margin-top: 40px; }
+
+.chico { font-size: var(--tipo-chico); line-height: var(--alto-chico); }
+
+.dato {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.espec {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  margin-top: 20px;
+  max-width: var(--columna);
+}
+
+.espec .muestra-texto { margin-top: 6px; }
+
+table {
+  width: 100%;
+  max-width: var(--columna);
+  border-collapse: collapse;
+  margin-top: 18px;
+}
+
+th, td {
+  text-align: left;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+th {
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: var(--tipo-rotulo);
+  color: var(--dorado-texto);
+}
+
+td.n { text-align: right; font-variant-numeric: tabular-nums; }
+th.n { text-align: right; }
+
+.pie {
+  max-width: var(--columna);
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+
+.btn {
+  display: inline-block;
+  font-family: Jost, sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 12px 26px;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--radio);
+  cursor: pointer;
+  width: var(--boton-ancho);
+}
+
+.btn-1 {
+  background: var(--boton-fondo);
+  color: var(--boton-texto);
+  box-shadow: var(--sombra-boton);
+}
+
+/* El ancho NO puede cambiar al enviar, y "Reservando…" es más corto que
+   "Reservar turno": de tablet para arriba, donde el botón se ajusta a su texto,
+   se achicaba 30 px. El botón lleva las dos palabras apiladas y la que no se ve
+   sostiene el ancho. Sin números mágicos: lo mide el texto más largo. */
+.pila { display: inline-grid; }
+
+.pila > span { grid-area: 1 / 1; }
+
+.pila .fantasma { visibility: hidden; }
+
+/* Enviando: el mismo dorado oscurecido, con sombra, y la palabra cambiada. */
+.btn-1-enviando {
+  background: var(--boton-fondo-oscuro);
+  box-shadow: var(--sombra-boton-foco);
+  cursor: progress;
+}
+
+/* FOCO del principal: se oscurece la superficie y el contorno cae JUSTO sobre
+   el filo del botón. Las letras quedan blancas — el filtro que también las
+   apagaba se descartó: dejaba el foco en 2,84, abajo del piso. */
+.btn-foco {
+  background: var(--boton-fondo-oscuro);
+  box-shadow: inset 0 0 0 2px var(--boton-foco-borde), var(--sombra-boton-foco);
+}
+
+/* El secundario del brief, página 17: grafito macizo con letra blanca. */
+.btn-2 {
+  background: var(--boton-2-fondo);
+  color: var(--boton-2-texto);
+  box-shadow: var(--sombra-boton);
+}
+
+/* Misma regla de foco que el principal —contorno sobre el filo, sombra más
+   marcada—, pero INVERTIDO: fondo blanco, letra grafito, filo grafito de 2 px.
+   Los anillos claros se descartaron: al filo se leen como que el botón se
+   achicó. Medido con medir-foco.py. */
+.btn-2-foco {
+  background: var(--boton-2-foco-fondo);
+  color: var(--boton-2-foco-texto);
+  border: 2px solid var(--boton-2-foco-filo);
+  padding: 10px 24px;
+  box-shadow: var(--sombra-boton-foco);
+}
+
+.btn-apagado {
+  background: var(--boton-apagado-fondo);
+  color: var(--boton-apagado-texto);
+  border: 1px solid var(--boton-apagado-borde);
+  padding: 11px 25px;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.estado {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  margin-top: 22px;
+  max-width: var(--columna);
+}
+
+.estado .btn {
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
+/* La lista arranca en el margen como todo lo demás: la sangría de una lista
+   normal la corría 22 px y rompía la columna. La raya se dibuja a mano. */
+.reglas {
+  max-width: var(--columna);
+  margin-top: 16px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.reglas li {
+  margin-top: 8px;
+  padding-left: 22px;
+  text-indent: -22px;
+}
+
+.reglas li::before {
+  content: "—";
+  color: var(--dorado-texto);
+  margin-right: 10px;
+}
+
+
+.almanaque {
+  max-width: 420px;
+  margin-top: 14px;
+}
+
+.mes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.mes h3 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+}
+
+.mes .pasar {
+  display: flex;
+  gap: 8px;
+}
+
+.mes button {
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  line-height: 1;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  color: var(--grafito);
+  cursor: pointer;
+}
+
+.semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.semana .letra {
+  text-align: center;
+  padding-bottom: 6px;
+  font-size: var(--tipo-rotulo);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-segundo);
+}
+
+/* El día es un control táctil: no baja de 44 px de lado. Con siete columnas,
+   eso es lo que fija el ancho mínimo del almanaque entero. */
+.dia {
+  min-height: 48px;
+  padding: 6px 2px 8px;
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.1;
+  text-align: center;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  color: var(--grafito);
+  cursor: pointer;
+}
+
+/* La marca de que ese día tiene lugar. Va ADEMÁS del relleno: los días sin
+   lugar son grises, así que la diferencia no depende del punto. */
+.dia .marca {
+  display: block;
+  width: 5px;
+  height: 5px;
+  margin: 4px auto 0;
+  border-radius: 50%;
+  background: var(--dorado);
+}
+
+.dia-elegido {
+  background: var(--boton-fondo);
+  border-color: var(--boton-fondo);
+  color: var(--boton-texto);
+}
+
+.dia-elegido .marca { background: var(--blanco); }
+
+.dia-apagado {
+  background: var(--boton-apagado-fondo);
+  border-color: var(--boton-apagado-borde);
+  color: var(--boton-apagado-texto);
+  cursor: not-allowed;
+}
+
+.grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+  max-width: var(--columna-lista);
+  margin-top: 14px;
+}
+
+/* Todos los bloques miden lo mismo y llevan la misma letra, elegido o no: si
+   el elegido cambiara de tamaño, la grilla entera se reacomodaría al tocarlo. */
+.hora {
+  min-height: 52px;
+  padding: 12px 8px;
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  border-radius: var(--radio);
+  cursor: pointer;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  color: var(--grafito);
+}
+
+/* ELEGIDO: el dorado del botón principal con letra blanca. No estrena color, y
+   la letra no baja de 19 px, que es lo que ese par exige. */
+.hora-elegida {
+  background: var(--boton-fondo);
+  border-color: var(--boton-fondo);
+  color: var(--boton-texto);
+}
+
+/* FOCO: el contorno sobre el filo, la misma regla del botón y del campo. */
+.hora-foco {
+  box-shadow: inset 0 0 0 2px var(--foco);
+}
+
+.hora-apagada {
+  background: var(--boton-apagado-fondo);
+  border-color: var(--boton-apagado-borde);
+  color: var(--boton-apagado-texto);
+  cursor: not-allowed;
+}
+
+/* En escritorio las dos partes se ven juntas: el mes a la izquierda y los
+   horarios del día elegido a la derecha. Debajo de eso van una arriba de la
+   otra, y elegir un día baja a los horarios. */
+@media (min-width: 1280px) {
+
+  .juntas {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+  }
+
+  .juntas .almanaque { flex: none; }
+
+  .juntas .lado {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .juntas .grilla {
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    margin-top: 0;
+  }
+}
+
+</style>
+
+<p class="rotulo">Fase ⑦ · Pieza 7 de 8 · 390 px</p>
+<h1>Almanaque y horarios</h1>
+<div class="regla"></div>
+<p><b>De esta pieza depende que el turno exista.</b> Son dos partes de lo mismo:
+<b>el almanaque elige el día y la grilla elige la hora</b>. Todo a escala 1:1 en
+390 px.</p>
+
+<section>
+  <p class="rotulo">Las dos partes</p>
+  <h2>El mes, y el día que se toca</h2>
+  <p class="dato" style="margin-top: 8px">Una sola llamada al portero alimenta
+  las dos: <code>GET /horarios-disponibles</code> recibe <code>desde</code> y
+  <code>hasta</code>, así que <b>el mes entero viene junto</b>.</p>
+  
+  <div>
+    <div class="almanaque">
+      <div class="mes">
+        <h3>Septiembre 2026</h3>
+        <div class="pasar">
+          <button>&lsaquo;</button>
+          <button>&rsaquo;</button>
+        </div>
+      </div>
+      <div class="semana">
+        <span class="letra">L</span>
+        <span class="letra">M</span>
+        <span class="letra">M</span>
+        <span class="letra">J</span>
+        <span class="letra">V</span>
+        <span class="letra">S</span>
+        <span class="letra">D</span>
+        <span></span>
+        <button class="dia dia-apagado" disabled>1</button>
+        <button class="dia ">2<span class="marca"></span></button>
+        <button class="dia ">3<span class="marca"></span></button>
+        <button class="dia ">4<span class="marca"></span></button>
+        <button class="dia dia-apagado" disabled>5</button>
+        <button class="dia dia-apagado" disabled>6</button>
+        <button class="dia dia-apagado" disabled>7</button>
+        <button class="dia ">8<span class="marca"></span></button>
+        <button class="dia ">9<span class="marca"></span></button>
+        <button class="dia dia-apagado" disabled>10</button>
+        <button class="dia dia-elegido">11<span class="marca"></span></button>
+        <button class="dia ">12<span class="marca"></span></button>
+        <button class="dia dia-apagado" disabled>13</button>
+        <button class="dia dia-apagado" disabled>14</button>
+        <button class="dia ">15<span class="marca"></span></button>
+        <button class="dia ">16<span class="marca"></span></button>
+        <button class="dia ">17<span class="marca"></span></button>
+        <button class="dia ">18<span class="marca"></span></button>
+        <button class="dia ">19<span class="marca"></span></button>
+        <button class="dia dia-apagado" disabled>20</button>
+        <button class="dia dia-apagado" disabled>21</button>
+        <button class="dia ">22<span class="marca"></span></button>
+        <button class="dia ">23<span class="marca"></span></button>
+        <button class="dia ">24<span class="marca"></span></button>
+        <button class="dia ">25<span class="marca"></span></button>
+        <button class="dia ">26<span class="marca"></span></button>
+        <button class="dia dia-apagado" disabled>27</button>
+        <button class="dia dia-apagado" disabled>28</button>
+        <button class="dia ">29<span class="marca"></span></button>
+        <button class="dia ">30<span class="marca"></span></button>
+      </div>
+    </div>
+    <div>
+      <p class="dato" style="margin-top: 18px">Jueves 11 de septiembre ·
+      <b>Consulta, 30 minutos</b> · los horarios en gris no están disponibles.</p>
+      
+      <div class="grilla">
+        <button class="hora hora-apagada" disabled>09:00</button>
+        <button class="hora hora-apagada" disabled>09:30</button>
+        <button class="hora ">10:00</button>
+        <button class="hora ">10:30</button>
+        <button class="hora hora-apagada" disabled>11:00</button>
+        <button class="hora ">11:30</button>
+        <button class="hora ">12:00</button>
+        <button class="hora hora-apagada" disabled>12:30</button>
+        <button class="hora ">15:00</button>
+        <button class="hora hora-elegida">15:30</button>
+        <button class="hora ">16:00</button>
+        <button class="hora hora-apagada" disabled>16:30</button>
+        <button class="hora ">17:00</button>
+        <button class="hora ">17:30</button>
+        <button class="hora ">18:00</button>
+        <button class="hora ">18:30</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="rotulo">Por qué el mes no muestra las horas</p>
+  <h2>El número que lo decide</h2>
+  <p>Un mes son <b>siete columnas</b>, y un día de agenda tiene <b>hasta
+  dieciséis horarios</b>. Meter las horas adentro de cada casilla son
+  <b>más de cien bloques en una pantalla</b>, y en el teléfono cada columna
+  mediría <b>46 px</b>: no entra «09:00» ni con la letra más chica que el
+  sistema permite.</p>
+  <p style="margin-top: 12px">Por eso <b>el almanaque dice si el día tiene
+  lugar, y la hora se elige abajo</b>. En escritorio las dos cosas se ven al
+  mismo tiempo, que es lo más cerca del almanaque completo que se puede llegar
+  sin romper el teléfono.</p>
+</section>
+
+<section>
+  <p class="rotulo">Los estados</p>
+  <h2>Y ninguno estrena color</h2>
+  <ul class="reglas">
+    <li><b>Día con lugar:</b> blanco con filo y un punto dorado.</li>
+    <li><b>Día sin lugar o cerrado:</b> el gris del botón apagado. <b>El punto
+    no es la única señal</b> — el relleno también cambia—, así que la
+    diferencia sobrevive a quien no distingue colores.</li>
+    <li><b>Día elegido:</b> el dorado del botón principal.</li>
+    <li><b>Horario libre:</b> blanco con filo, como el campo. <b>Elegido:</b>
+    dorado con letra blanca, que por eso no baja de 19 px. <b>No disponible:</b>
+    el gris del apagado.</li>
+    <li>Los cuatro estados que devuelve el portero se pintan con <b>tres
+    colores</b>: ocupado, fuera de plazo y «no entra» son, para el paciente, lo
+    mismo.</li>
+  </ul>
+</section>
+
+<section>
+  <p class="rotulo">Los turnos de una hora</p>
+  <h2>El mismo día, con un tratamiento del doble</h2>
+  <p>Arriba se ve el jueves 11 con una <b>consulta de 30 minutos</b>. Éste es el
+  mismo día, con lo mismo ocupado, pero el paciente eligió un tratamiento de
+  <b>60</b>. <b>Se apagan cuatro horarios más</b>, y ninguno porque esté
+  reservado.</p>
+  <p class="dato" style="margin-top: 8px">Jueves 11 de septiembre ·
+  <b>Blanqueamiento, 60 minutos</b></p>
+  
+      <div class="grilla">
+        <button class="hora hora-apagada" disabled>09:00</button>
+        <button class="hora hora-apagada" disabled>09:30</button>
+        <button class="hora ">10:00</button>
+        <button class="hora hora-apagada" disabled>10:30</button>
+        <button class="hora hora-apagada" disabled>11:00</button>
+        <button class="hora ">11:30</button>
+        <button class="hora hora-apagada" disabled>12:00</button>
+        <button class="hora hora-apagada" disabled>12:30</button>
+        <button class="hora ">15:00</button>
+        <button class="hora hora-elegida">15:30</button>
+        <button class="hora hora-apagada" disabled>16:00</button>
+        <button class="hora hora-apagada" disabled>16:30</button>
+        <button class="hora ">17:00</button>
+        <button class="hora ">17:30</button>
+        <button class="hora ">18:00</button>
+        <button class="hora hora-apagada" disabled>18:30</button>
+      </div>
+  <p class="dato" style="margin-top: 16px"><b>Las 10:30 se apagaron aunque estén
+  libres</b>: de 10:30 a 11:30 pisaría el turno de las 11:00. Lo mismo las 12:00
+  —chocan con las 12:30—, las 16:00 —con las 16:30— y las 18:30, que terminaría
+  después del cierre. <i>El portero compara el RANGO ENTERO del turno, no bloque
+  por bloque.</i></p>
+  <p class="dato" style="margin-top: 12px">Lo levantó Juan mirando la primera
+  versión de este tablero, que mostraba las 10:30 libres con las 11:00 tomadas.
+  <b>El sistema estaba bien; la muestra mentía.</b></p>
+</section>
+
+<section>
+  <p class="rotulo">Por qué no hay nada que encajar</p>
+  <h2>La duración se elige antes que el día</h2>
+  <p><b>El tratamiento se elige antes que el día</b>, así que cuando se dibuja
+  esta pantalla la duración ya está decidida y es la misma para todos los
+  bloques. Una limpieza de 60 minutos no ocupa dos casillas: <b>ocupa una, y el
+  portero ya marcó como no disponibles los arranques donde no entra</b> —los que
+  chocan con otro turno y los que terminarían después del cierre.</p>
+  <p class="dato" style="margin-top: 12px">Por eso los bloques siguen apareciendo
+  cada media hora aunque el tratamiento dure una: <b>una limpieza puede empezar
+  a las 15:30</b> si de 15:30 a 16:30 está libre.</p>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li><b>El día no baja de 44 px de lado</b>, y con siete columnas eso fija
+    el ancho mínimo del almanaque.</li>
+    <li><b>Todos los bloques de hora miden lo mismo</b>, elegido o no.</li>
+    <li>Alto mínimo <b>52 px</b> y letra de <b>19 px</b> en los horarios: acá
+    se toca apurado y en la calle.</li>
+    <li><b>Un día y un horario elegidos por vez.</b></li>
+    <li><b>Los grises se muestran, no se esconden.</b> Un día con huecos dice
+    cuánta agenda hay; cuatro horarios sueltos parecen un consultorio vacío.</li>
+    <li>La pantalla <b>no explica por qué</b> un horario no está: son tres
+    motivos que el paciente no puede cambiar.</li>
+    <li><b>El día cerrado no se puede tocar, y por eso no existe ningún cartel
+    de «ese día no hay horarios».</b> El almanaque ya lo dice: está gris. Un
+    mensaje que contesta una pregunta que nadie puede hacer es ruido.</li>
+    <li><b>Al abrir, viene elegido el primer día con lugar</b>, así que la lista
+    de horarios nunca aparece vacía. Sin eso, la pantalla arrancaría con la
+    mitad de abajo en blanco y sin explicación.</li>
+  </ul>
+</section>
+
+<p class="pie">Ni un color escrito a mano. Esta pieza <b>no estrenó ninguno</b>:
+el dorado del botón, el gris del apagado y el filo del campo ya existían.</p>

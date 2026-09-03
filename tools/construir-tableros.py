@@ -1888,6 +1888,392 @@ adonde llegan tres de las cinco pantallas de la pieza 5. Todo a escala 1:1 en
 """
 
 
+
+# ============================================================
+# PIEZA 7 — EL ALMANAQUE Y LOS HORARIOS DEL DÍA
+#
+# Pedido por Juan el 3-sep-2026: el mes entero, no un día suelto. Son dos
+# partes de la misma pieza — el almanaque elige el día, la grilla elige la
+# hora— y el portero ya las alimenta a las dos: `GET /horarios-disponibles`
+# recibe `desde` y `hasta`, así que devuelve el mes completo en una llamada.
+# ============================================================
+
+CSS_GRILLA = """
+.almanaque {
+  max-width: 420px;
+  margin-top: 14px;
+}
+
+.mes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.mes h3 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+}
+
+.mes .pasar {
+  display: flex;
+  gap: 8px;
+}
+
+.mes button {
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  line-height: 1;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  color: var(--grafito);
+  cursor: pointer;
+}
+
+.semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.semana .letra {
+  text-align: center;
+  padding-bottom: 6px;
+  font-size: var(--tipo-rotulo);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-segundo);
+}
+
+/* El día es un control táctil: no baja de 44 px de lado. Con siete columnas,
+   eso es lo que fija el ancho mínimo del almanaque entero. */
+.dia {
+  min-height: 48px;
+  padding: 6px 2px 8px;
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.1;
+  text-align: center;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  color: var(--grafito);
+  cursor: pointer;
+}
+
+/* La marca de que ese día tiene lugar. Va ADEMÁS del relleno: los días sin
+   lugar son grises, así que la diferencia no depende del punto. */
+.dia .marca {
+  display: block;
+  width: 5px;
+  height: 5px;
+  margin: 4px auto 0;
+  border-radius: 50%;
+  background: var(--dorado);
+}
+
+.dia-elegido {
+  background: var(--boton-fondo);
+  border-color: var(--boton-fondo);
+  color: var(--boton-texto);
+}
+
+.dia-elegido .marca { background: var(--blanco); }
+
+.dia-apagado {
+  background: var(--boton-apagado-fondo);
+  border-color: var(--boton-apagado-borde);
+  color: var(--boton-apagado-texto);
+  cursor: not-allowed;
+}
+
+.grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+  max-width: var(--columna-lista);
+  margin-top: 14px;
+}
+
+/* Todos los bloques miden lo mismo y llevan la misma letra, elegido o no: si
+   el elegido cambiara de tamaño, la grilla entera se reacomodaría al tocarlo. */
+.hora {
+  min-height: 52px;
+  padding: 12px 8px;
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  border-radius: var(--radio);
+  cursor: pointer;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  color: var(--grafito);
+}
+
+/* ELEGIDO: el dorado del botón principal con letra blanca. No estrena color, y
+   la letra no baja de 19 px, que es lo que ese par exige. */
+.hora-elegida {
+  background: var(--boton-fondo);
+  border-color: var(--boton-fondo);
+  color: var(--boton-texto);
+}
+
+/* FOCO: el contorno sobre el filo, la misma regla del botón y del campo. */
+.hora-foco {
+  box-shadow: inset 0 0 0 2px var(--foco);
+}
+
+.hora-apagada {
+  background: var(--boton-apagado-fondo);
+  border-color: var(--boton-apagado-borde);
+  color: var(--boton-apagado-texto);
+  cursor: not-allowed;
+}
+
+/* En escritorio las dos partes se ven juntas: el mes a la izquierda y los
+   horarios del día elegido a la derecha. Debajo de eso van una arriba de la
+   otra, y elegir un día baja a los horarios. */
+@media (min-width: 1280px) {
+
+  .juntas {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+  }
+
+  .juntas .almanaque { flex: none; }
+
+  .juntas .lado {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .juntas .grilla {
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    margin-top: 0;
+  }
+}
+"""
+
+
+# número del día · clase · si tiene lugar
+DIAS = [
+    ("", "vacío", False), ("1", "dia-apagado", False), ("2", "", True),
+    ("3", "", True), ("4", "", True), ("5", "dia-apagado", False),
+    ("6", "dia-apagado", False),
+    ("7", "dia-apagado", False), ("8", "", True), ("9", "", True),
+    ("10", "dia-apagado", False), ("11", "dia-elegido", True), ("12", "", True),
+    ("13", "dia-apagado", False),
+    ("14", "dia-apagado", False), ("15", "", True), ("16", "", True),
+    ("17", "", True), ("18", "", True), ("19", "", True),
+    ("20", "dia-apagado", False),
+    ("21", "dia-apagado", False), ("22", "", True), ("23", "", True),
+    ("24", "", True), ("25", "", True), ("26", "", True),
+    ("27", "dia-apagado", False),
+    ("28", "dia-apagado", False), ("29", "", True), ("30", "", True),
+]
+
+# EL MISMO DÍA, DOS VECES. Lo ocupado es idéntico —09:00, 09:30, 11:00, 12:30 y
+# 16:30—; lo que cambia es cuánto dura el tratamiento que el paciente ya eligió.
+# Lo levantó Juan el 3-sep-2026 mirando una muestra que mentía: con las 11:00
+# tomadas, un tratamiento de 60 minutos NO puede arrancar 10:30.
+BLOQUES = [
+    ("09:00", "hora-apagada"), ("09:30", "hora-apagada"), ("10:00", ""),
+    ("10:30", ""), ("11:00", "hora-apagada"), ("11:30", ""),
+    ("12:00", ""), ("12:30", "hora-apagada"), ("15:00", ""),
+    ("15:30", "hora-elegida"), ("16:00", ""), ("16:30", "hora-apagada"),
+    ("17:00", ""), ("17:30", ""), ("18:00", ""), ("18:30", ""),
+]
+
+BLOQUES_60 = [
+    ("09:00", "hora-apagada"), ("09:30", "hora-apagada"), ("10:00", ""),
+    ("10:30", "hora-apagada"), ("11:00", "hora-apagada"), ("11:30", ""),
+    ("12:00", "hora-apagada"), ("12:30", "hora-apagada"), ("15:00", ""),
+    ("15:30", "hora-elegida"), ("16:00", "hora-apagada"), ("16:30", "hora-apagada"),
+    ("17:00", ""), ("17:30", ""), ("18:00", ""), ("18:30", "hora-apagada"),
+]
+
+
+def celda_dia(numero, clase, con_lugar):
+    if clase == "vacío":
+        return '\n        <span></span>'
+
+    marca = '<span class="marca"></span>' if con_lugar else ''
+    apagado = " disabled" if clase == "dia-apagado" else ""
+    return f'\n        <button class="dia {clase}"{apagado}>{numero}{marca}</button>'
+
+
+def almanaque():
+    letras = "".join(
+        f'\n        <span class="letra">{l}</span>'
+        for l in ("L", "M", "M", "J", "V", "S", "D")
+    )
+    celdas = "".join(celda_dia(*d) for d in DIAS)
+
+    return f"""
+    <div class="almanaque">
+      <div class="mes">
+        <h3>Septiembre 2026</h3>
+        <div class="pasar">
+          <button>&lsaquo;</button>
+          <button>&rsaquo;</button>
+        </div>
+      </div>
+      <div class="semana">{letras}{celdas}
+      </div>
+    </div>"""
+
+
+def bloque_hora(hora, clase):
+    apagada = " disabled" if clase == "hora-apagada" else ""
+    return f'\n        <button class="hora {clase}"{apagada}>{hora}</button>'
+
+
+def grilla(bloques):
+    return '\n      <div class="grilla">' + "".join(
+        bloque_hora(*b) for b in bloques
+    ) + '\n      </div>'
+
+
+def tablero_grilla(tokens, css, ancho):
+    juntas = ancho >= 1280
+    apertura = '\n  <div class="juntas">' if juntas else '\n  <div>'
+    lado = '\n    <div class="lado">' if juntas else '\n    <div>'
+
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 07 Almanaque y horarios · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_GRILLA}
+</style>
+
+<p class="rotulo">Fase ⑦ · Pieza 7 de 8 · {ancho} px</p>
+<h1>Almanaque y horarios</h1>
+<div class="regla"></div>
+<p><b>De esta pieza depende que el turno exista.</b> Son dos partes de lo mismo:
+<b>el almanaque elige el día y la grilla elige la hora</b>. Todo a escala 1:1 en
+{ancho} px.</p>
+
+<section>
+  <p class="rotulo">Las dos partes</p>
+  <h2>El mes, y el día que se toca</h2>
+  <p class="dato" style="margin-top: 8px">Una sola llamada al portero alimenta
+  las dos: <code>GET /horarios-disponibles</code> recibe <code>desde</code> y
+  <code>hasta</code>, así que <b>el mes entero viene junto</b>.</p>
+  {apertura}{almanaque()}{lado}
+      <p class="dato" style="margin-top: 18px">Jueves 11 de septiembre ·
+      <b>Consulta, 30 minutos</b> · los horarios en gris no están disponibles.</p>
+      {grilla(BLOQUES)}
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="rotulo">Por qué el mes no muestra las horas</p>
+  <h2>El número que lo decide</h2>
+  <p>Un mes son <b>siete columnas</b>, y un día de agenda tiene <b>hasta
+  dieciséis horarios</b>. Meter las horas adentro de cada casilla son
+  <b>más de cien bloques en una pantalla</b>, y en el teléfono cada columna
+  mediría <b>46 px</b>: no entra «09:00» ni con la letra más chica que el
+  sistema permite.</p>
+  <p style="margin-top: 12px">Por eso <b>el almanaque dice si el día tiene
+  lugar, y la hora se elige abajo</b>. En escritorio las dos cosas se ven al
+  mismo tiempo, que es lo más cerca del almanaque completo que se puede llegar
+  sin romper el teléfono.</p>
+</section>
+
+<section>
+  <p class="rotulo">Los estados</p>
+  <h2>Y ninguno estrena color</h2>
+  <ul class="reglas">
+    <li><b>Día con lugar:</b> blanco con filo y un punto dorado.</li>
+    <li><b>Día sin lugar o cerrado:</b> el gris del botón apagado. <b>El punto
+    no es la única señal</b> — el relleno también cambia—, así que la
+    diferencia sobrevive a quien no distingue colores.</li>
+    <li><b>Día elegido:</b> el dorado del botón principal.</li>
+    <li><b>Horario libre:</b> blanco con filo, como el campo. <b>Elegido:</b>
+    dorado con letra blanca, que por eso no baja de 19 px. <b>No disponible:</b>
+    el gris del apagado.</li>
+    <li>Los cuatro estados que devuelve el portero se pintan con <b>tres
+    colores</b>: ocupado, fuera de plazo y «no entra» son, para el paciente, lo
+    mismo.</li>
+  </ul>
+</section>
+
+<section>
+  <p class="rotulo">Los turnos de una hora</p>
+  <h2>El mismo día, con un tratamiento del doble</h2>
+  <p>Arriba se ve el jueves 11 con una <b>consulta de 30 minutos</b>. Éste es el
+  mismo día, con lo mismo ocupado, pero el paciente eligió un tratamiento de
+  <b>60</b>. <b>Se apagan cuatro horarios más</b>, y ninguno porque esté
+  reservado.</p>
+  <p class="dato" style="margin-top: 8px">Jueves 11 de septiembre ·
+  <b>Blanqueamiento, 60 minutos</b></p>
+  {grilla(BLOQUES_60)}
+  <p class="dato" style="margin-top: 16px"><b>Las 10:30 se apagaron aunque estén
+  libres</b>: de 10:30 a 11:30 pisaría el turno de las 11:00. Lo mismo las 12:00
+  —chocan con las 12:30—, las 16:00 —con las 16:30— y las 18:30, que terminaría
+  después del cierre. <i>El portero compara el RANGO ENTERO del turno, no bloque
+  por bloque.</i></p>
+  <p class="dato" style="margin-top: 12px">Lo levantó Juan mirando la primera
+  versión de este tablero, que mostraba las 10:30 libres con las 11:00 tomadas.
+  <b>El sistema estaba bien; la muestra mentía.</b></p>
+</section>
+
+<section>
+  <p class="rotulo">Por qué no hay nada que encajar</p>
+  <h2>La duración se elige antes que el día</h2>
+  <p><b>El tratamiento se elige antes que el día</b>, así que cuando se dibuja
+  esta pantalla la duración ya está decidida y es la misma para todos los
+  bloques. Una limpieza de 60 minutos no ocupa dos casillas: <b>ocupa una, y el
+  portero ya marcó como no disponibles los arranques donde no entra</b> —los que
+  chocan con otro turno y los que terminarían después del cierre.</p>
+  <p class="dato" style="margin-top: 12px">Por eso los bloques siguen apareciendo
+  cada media hora aunque el tratamiento dure una: <b>una limpieza puede empezar
+  a las 15:30</b> si de 15:30 a 16:30 está libre.</p>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li><b>El día no baja de 44 px de lado</b>, y con siete columnas eso fija
+    el ancho mínimo del almanaque.</li>
+    <li><b>Todos los bloques de hora miden lo mismo</b>, elegido o no.</li>
+    <li>Alto mínimo <b>52 px</b> y letra de <b>19 px</b> en los horarios: acá
+    se toca apurado y en la calle.</li>
+    <li><b>Un día y un horario elegidos por vez.</b></li>
+    <li><b>Los grises se muestran, no se esconden.</b> Un día con huecos dice
+    cuánta agenda hay; cuatro horarios sueltos parecen un consultorio vacío.</li>
+    <li>La pantalla <b>no explica por qué</b> un horario no está: son tres
+    motivos que el paciente no puede cambiar.</li>
+    <li><b>El día cerrado no se puede tocar, y por eso no existe ningún cartel
+    de «ese día no hay horarios».</b> El almanaque ya lo dice: está gris. Un
+    mensaje que contesta una pregunta que nadie puede hacer es ruido.</li>
+    <li><b>Al abrir, viene elegido el primer día con lugar</b>, así que la lista
+    de horarios nunca aparece vacía. Sin eso, la pantalla arrancaría con la
+    mitad de abajo en blanco y sin explicación.</li>
+  </ul>
+</section>
+
+<p class="pie">Ni un color escrito a mano. Esta pieza <b>no estrenó ninguno</b>:
+el dorado del botón, el gris del apagado y el filo del campo ya existían.</p>
+"""
+
+
 def main():
     css = TOKENS.read_text(encoding="utf-8")
     tokens = MEDIDOR.leer_tokens(css)
@@ -1938,6 +2324,12 @@ def main():
         destino = SALIDA / "06-tarjeta" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(tablero_tarjeta(tokens, css, ancho), encoding="utf-8")
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "07-grilla-de-horarios" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(tablero_grilla(tokens, css, ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     return 0
