@@ -564,10 +564,10 @@ llegaba, y la medición de cada par que el sitio va a usar. Todo sale de
 
   <h3 style="margin-top: 44px">Y D, tal como quedaría de verdad</h3>
   <p>Los cuatro marcos de arriba llevan el botón del ancho de su texto, que es
-  como estaba dibujado en el cuadro de escritorio. <b>En un teléfono el botón
-  principal va de borde a borde</b>, y eso cambia cuánto pesa el dorado. Al lado,
-  el mismo botón en <b>peso 700</b> en vez de 600 — el porqué está abajo del
-  todo.</p>
+  como quedó en el sistema: <b>ningún botón va de borde a borde, en ningún
+  ancho</b> —decidido el 3-sep-2026, está escrito en <code>tokens.css</code>—.
+  Al lado, el mismo botón en <b>peso 700</b> en vez de 600 — el porqué está
+  abajo del todo.</p>
   <div class="telefonos" style="margin-top: 18px">
     <div class="telefono">
       <p class="telefono-letra">D · ancho completo, peso 600</p>
@@ -864,7 +864,30 @@ CSS_BOTON = """
   border: 0;
   border-radius: var(--radio);
   cursor: pointer;
+
+  /* EL FORMATO ÚNICO — el porqué está en tokens.css, al lado del token.
+     Bloque para poder centrarlo, del ancho de su texto, centrado en su caja.
+     Nunca de borde a borde, en ningún ancho. */
+  display: block;
   width: var(--boton-ancho);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* DOS O MÁS BOTONES JUNTOS: la grilla mide lo que el MÁS LARGO de la pareja y
+   los hijos se estiran a esa medida. El número no se escribe: lo fija el texto
+   más largo, así que cambiar un rótulo no deja la pareja despareja. */
+.acciones {
+  display: grid;
+  gap: 12px;
+  width: max-content;
+  margin: 24px auto 0;
+}
+
+.acciones .btn,
+.acciones .btn-google {
+  width: auto;
+  margin: 0;
 }
 
 .btn-1 {
@@ -874,10 +897,10 @@ CSS_BOTON = """
 }
 
 /* El ancho NO puede cambiar al enviar, y "Reservando…" es más corto que
-   "Reservar turno": de tablet para arriba, donde el botón se ajusta a su texto,
-   se achicaba 30 px. El botón lleva las dos palabras apiladas y la que no se ve
-   sostiene el ancho. Sin números mágicos: lo mide el texto más largo. */
-.pila { display: inline-grid; }
+   "Reservar turno": como el botón se ajusta a su texto, se achicaba 30 px. El
+   botón lleva las dos palabras apiladas y la que no se ve sostiene el ancho.
+   Sin números mágicos: lo mide el texto más largo. */
+.pila { display: grid; }
 
 .pila > span { grid-area: 1 / 1; }
 
@@ -970,8 +993,8 @@ ESTADOS = [
      '<span>Reservando…</span></span>',
      "El mismo dorado oscurecido, con sombra, y la palabra cambiada. Sube a "
      "4,85. <b>Conserva el ancho del reposo</b>: la palabra que no se ve queda "
-     "adentro sosteniéndolo, porque «Reservando…» es más corto y en escritorio "
-     "el botón se achicaba 30 px."),
+     "adentro sosteniéndolo, porque «Reservando…» es más corto y sin eso el "
+     "botón se achicaba 30 px al apretarlo."),
     ("btn-1 btn-foco", "Con foco", "Reservar turno",
      "Se oscurece la superficie y el contorno cae JUSTO sobre el filo del "
      "botón. Las letras quedan blancas: 4,85. Se descartó el filtro que las "
@@ -1003,7 +1026,7 @@ def leer_logo_google():
 def tablero_boton(tokens, css, ancho):
     estados = "".join(bloque_estado(*e) for e in ESTADOS)
     google = seccion_google(leer_logo_google())
-    ancho_boton = "de borde a borde" if ancho < 768 else "del ancho de su texto"
+    ancho_boton = "del ancho de su texto y centrado"
 
     return f"""<!-- @dsCard group="Components" -->
 <meta charset="utf-8">
@@ -1081,8 +1104,10 @@ y el ancho. Todo a escala 1:1 en {ancho} px.</p>
   <h2>Lo que no se negocia</h2>
   <ul class="reglas">
     <li>Alto mínimo <b>44 px</b> en los tres anchos, siempre.</li>
-    <li>En el teléfono el principal va <b>de borde a borde</b>; de tablet para
-    arriba, del ancho de su texto.</li>
+    <li><b>Un solo formato para todos los botones, en los tres anchos:</b> del
+    ancho de su texto y centrado en su caja. <b>Ninguno va de borde a borde.</b>
+    Y <b>dos botones juntos miden lo mismo</b> —se igualan al más largo—, porque
+    la jerarquía entre ellos la da la <b>paleta</b> y nunca el tamaño.</li>
     <li>El foco cae <b>sobre el filo del botón</b>, nunca separado de él.</li>
     <li>La letra del principal es <b>blanca</b> en todos sus estados.</li>
     <li>El deshabilitado <b>dice por qué</b> lo está.</li>
@@ -1108,10 +1133,12 @@ y el ancho. Todo a escala 1:1 en {ancho} px.</p>
 
 CSS_GOOGLE = """
 .btn-google {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   width: var(--boton-ancho);
+  margin-left: auto;
+  margin-right: auto;
   min-height: 48px;
   padding: 12px;
   background: var(--google-fondo);
@@ -1761,11 +1788,8 @@ CSS_TARJETA = """
   color: var(--texto-segundo);
 }
 
-/* El botón se ajusta a su texto en los tres anchos: centrado y del ancho de
-   la tarjeta a la vez no es centrado, es lo mismo de antes. */
 .turno .btn {
   margin-top: 18px;
-  width: auto;
 }
 
 .lista { margin-top: 4px; }
@@ -2369,24 +2393,6 @@ body {{ padding: 0; }}
 .hero h1 {{ margin-top: 10px; }}
 
 .hero p {{ margin-top: 16px; }}
-
-/* Los dos botones juntos. En el teléfono van apilados y de borde a borde
-   —lo pide el dedo—; de tablet para arriba, uno al lado del otro. */
-.acciones {{
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 28px;
-  max-width: var(--columna);
-}}
-
-@media (min-width: 768px) {{
-  .acciones {{
-    flex-direction: row;
-    align-items: center;
-    gap: 16px;
-  }}
-}}
 
 .banda h2 {{ margin-bottom: 4px; }}
 

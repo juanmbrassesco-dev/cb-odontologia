@@ -266,16 +266,21 @@
      sangre y cuadrada, como en el manual. */
   --radio: 3px;
 
-  /* 🔴 DOS BOTONES JUNTOS MIDEN LO MISMO. Lo dictó Juan el 3-sep-2026:
-     «la jerarquía respecto de esos dos botones la da la PALETA, no el tamaño».
-     En el teléfono sale solo, porque los dos van de borde a borde. De tablet
-     para arriba, `auto` los deja del ancho de su texto y «Confirmar turno»
-     queda al lado de «Volver» con dos tamaños distintos: ahí el tamaño empieza
-     a decir algo que ya dice el color, y lo dice peor.
-     ⬜ PENDIENTE, y es del frente de PANTALLA GRANDE, no de éste: hoy sólo se
-     trabaja móvil. El día que se abra, dos botones de la misma fila igualan su
-     ancho al más largo — no se elige un número. */
-  --boton-ancho: 100%;
+  /* 🔴 TODOS LOS BOTONES DEL SISTEMA TIENEN EL MISMO FORMATO. Lo dictó Juan
+     el 3-sep-2026, mirando las tres variantes a 390 y a tamaño real:
+
+     1. Cada botón mide LO QUE MIDE SU TEXTO. Ninguno va de borde a borde, en
+        ningún ancho. El primero que salió así fue el «Cancelar turno» de la
+        tarjeta, y el resto se alineó a ése.
+     2. DOS BOTONES JUNTOS MIDEN LO MISMO — se igualan al más largo de la
+        pareja, y el número no se elige: lo fija el texto. «La jerarquía la da
+        la PALETA, no el tamaño», y un tamaño distinto dice peor lo que el
+        color ya dice bien.
+     3. Van CENTRADOS en su caja, como quedaron adentro de la tarjeta.
+
+     Deja de haber una regla de teléfono y otra de escritorio: es una sola, en
+     los tres anchos. */
+  --boton-ancho: max-content;
 
   /* El anillo de foco va ADENTRO del control, en los tres anchos. Afuera se
      salía 4 px del margen y rompía la columna —medido—, y encima el foco
@@ -291,7 +296,6 @@
     --tipo-h3: 22px;
     --tipo-cuerpo: 17px;
     --tipo-chico: 14px;
-    --boton-ancho: auto;
   }
 
 
@@ -471,7 +475,30 @@ th.n { text-align: right; }
   border: 0;
   border-radius: var(--radio);
   cursor: pointer;
+
+  /* EL FORMATO ÚNICO — el porqué está en tokens.css, al lado del token.
+     Bloque para poder centrarlo, del ancho de su texto, centrado en su caja.
+     Nunca de borde a borde, en ningún ancho. */
+  display: block;
   width: var(--boton-ancho);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* DOS O MÁS BOTONES JUNTOS: la grilla mide lo que el MÁS LARGO de la pareja y
+   los hijos se estiran a esa medida. El número no se escribe: lo fija el texto
+   más largo, así que cambiar un rótulo no deja la pareja despareja. */
+.acciones {
+  display: grid;
+  gap: 12px;
+  width: max-content;
+  margin: 24px auto 0;
+}
+
+.acciones .btn,
+.acciones .btn-google {
+  width: auto;
+  margin: 0;
 }
 
 .btn-1 {
@@ -481,10 +508,10 @@ th.n { text-align: right; }
 }
 
 /* El ancho NO puede cambiar al enviar, y "Reservando…" es más corto que
-   "Reservar turno": de tablet para arriba, donde el botón se ajusta a su texto,
-   se achicaba 30 px. El botón lleva las dos palabras apiladas y la que no se ve
-   sostiene el ancho. Sin números mágicos: lo mide el texto más largo. */
-.pila { display: inline-grid; }
+   "Reservar turno": como el botón se ajusta a su texto, se achicaba 30 px. El
+   botón lleva las dos palabras apiladas y la que no se ve sostiene el ancho.
+   Sin números mágicos: lo mide el texto más largo. */
+.pila { display: grid; }
 
 .pila > span { grid-area: 1 / 1; }
 
@@ -613,11 +640,8 @@ th.n { text-align: right; }
   color: var(--texto-segundo);
 }
 
-/* El botón se ajusta a su texto en los tres anchos: centrado y del ancho de
-   la tarjeta a la vez no es centrado, es lo mismo de antes. */
 .turno .btn {
   margin-top: 18px;
-  width: auto;
 }
 
 .lista { margin-top: 4px; }
