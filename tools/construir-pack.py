@@ -65,6 +65,19 @@ PNGS_BLANCOS = [
     ( "emblema",   1024 ),
 ]
 
+# 🔴 LAS FOTOS DE PERFIL SE MUESTRAN RECORTADAS EN CÍRCULO, no en cuadrado. Por
+# eso estas piezas NO salen del dibujo pelado como el resto de los PNG: pasan
+# antes por `lienzo_cuadrado.py`, que las centra en un cuadrado con el aire que
+# manda el manual medido contra la circunferencia. El porqué está allá.
+#
+# La submarca no está acá y no es un olvido: ya es un disco de 1 a 1, llena el
+# círculo sola y no hay nada que acomodar. Las que necesitan lienzo son las
+# piezas ANCHAS, que metidas en un círculo pierden las puntas.
+PNGS_AVATAR = [
+    # pieza      aire   anchos
+    ( "apilado", 0.215, [ 640, 1000 ] ),   # perfil de WhatsApp · de Instagram
+]
+
 PIEZAS = [ "wordmark", "apilado", "emblema", "submarca" ]
 
 
@@ -202,6 +215,27 @@ def main():
             "--ancho", ancho,
         )
         print( f"  {salida.name}" )
+
+    for pieza, aire, anchos in PNGS_AVATAR:
+        # el lienzo cuadrado se arma UNA vez y de ahí salen todos sus tamaños
+        cuadrado = SALIDA / f"cb-{pieza}-cuadrado.svg"
+        correr(
+            "lienzo_cuadrado.py",
+            curvas / f"cb-{pieza}-curvas.svg",
+            cuadrado,
+            "--aire", aire,
+        )
+
+        for ancho in anchos:
+            salida = pngs / f"cb-{pieza}-{ancho}-avatar.png"
+            correr(
+                "svg_a_png.py",
+                cuadrado,
+                salida,
+                "--ancho", ancho,
+                "--fondo",
+            )
+            print( f"  {salida.name}" )
 
     cuenta = sum( 1 for _ in DESTINO.rglob( "*" ) if _.is_file() )
     print( f"\n✅ pack completo: {cuenta} archivos en brand/logo/" )

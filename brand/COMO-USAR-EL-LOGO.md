@@ -12,7 +12,7 @@ regla general está en la última sección.
 | **Wordmark** — `CB \| Odontología y Estética` | **La principal.** Sitio web, papelería, firma de correo, cartelería. Es la única que dice el nombre completo, así que es la que va donde alguien tiene que *enterarse* de quiénes somos. Es larga y baja: entra donde sobra ancho. |
 | **Apilada** — el mismo contenido, en vertical | **La misma información, para cuando el ancho aprieta**: encabezado del sitio en el celular, firma de correo, tarjeta. Al ir el nombre debajo y no al lado, la palabra se queda con todo el ancho de la pieza y **se lee a tamaños donde el wordmark ya no**. No es una versión nueva: es la disposición que el manual de marca ya usaba en la señalética. |
 | **Emblema** — el círculo con las iniciales y la sonrisa | **Secundaria.** Redes sociales, sellos, detalles. Va donde el nombre ya se sabe o está escrito al lado. |
-| **Submarca** — el disco con `CB` | **El ícono.** Favicon del navegador, foto de perfil de WhatsApp e Instagram. Va donde el espacio es cuadrado y chico. |
+| **Submarca** — el disco con `CB` | **El ícono.** Favicon del navegador, y foto de perfil **donde el nombre ya está escrito al lado** (Instagram, por ejemplo). Va donde el espacio es cuadrado y chico. |
 
 📌 **Las iniciales no son la tipografía tal cual.** Están dibujadas a partir de
 ella: la `C` va más angosta y la `B` más ancha, en la misma medida, para que las
@@ -46,7 +46,8 @@ impresión. Sobre oscuro va la versión blanca, siempre.
 |---|---|
 | `cb-submarca-32` | favicon (el iconito de la pestaña del navegador) |
 | `cb-submarca-180` | ícono al guardar el sitio en un iPhone |
-| `cb-submarca-640-avatar` · `-1000-avatar` | foto de perfil de WhatsApp e Instagram |
+| `cb-submarca-640-avatar` · `-1000-avatar` | foto de perfil donde el nombre va escrito al lado |
+| `cb-apilado-640-avatar` · `-1000-avatar` | foto de perfil **que tiene que decir el nombre completo** |
 | `cb-wordmark-600` | firma de correo |
 | `cb-wordmark-1200` · `-2400` | encabezado del sitio, en pantalla ancha |
 | `cb-apilado-600` · `-1200` | encabezado en el celular, y donde el ancho no alcance |
@@ -55,6 +56,27 @@ impresión. Sobre oscuro va la versión blanca, siempre.
 📌 **Las fotos de perfil van sobre marfil y no transparentes a propósito:**
 WhatsApp e Instagram rellenan la transparencia con un fondo que elige la app, y
 puede tocarte negro.
+
+🔴 **Y NO SE MUESTRAN CUADRADAS: LAS RECORTAN EN CÍRCULO.** El archivo que se
+sube es cuadrado, pero lo que queda fuera del círculo no lo ve nadie. Por eso
+los `-avatar` del apilado no son el logo estirado hasta el borde: llevan
+adentro el aire que manda el espacio de reserva, medido contra la
+circunferencia. **Se fabrican solos** — el lienzo lo arma
+`tools/print-pack/lienzo_cuadrado.py` dentro de `construir-pack.py`.
+
+**Cuál de los dos, y no es empate.** El apilado dice el nombre completo, pero
+en la lista de chats WhatsApp muestra la foto a unos **48 px** y ahí el nombre
+no se lee — el mínimo medido del apilado es 240 px (ver «Tamaño mínimo»). Se
+lee cuando alguien **abre** el perfil, que es a los 200 px.
+
+| | sirve para |
+|---|---|
+| **apilado** | **marca todavía desconocida**: lo que importa es que quien entra al perfil se entere del nombre |
+| **submarca** | **marca ya conocida**, o red donde el nombre va escrito al lado: se reconoce de un vistazo, incluso a 48 px |
+
+📌 **Decisión del 3-sep-2026: WhatsApp arranca con el APILADO**, a pedido de
+Cecilia, mientras la marca se da a conocer. Cuando ya se la reconozca, el
+cambio a la submarca es reemplazar el archivo.
 
 ## 4. Dos reglas que no se negocian
 
