@@ -623,8 +623,8 @@ NIVELES = [
 ]
 
 CUERPO_MUESTRA = (
-    "La consulta dura treinta minutos e incluye el diagnóstico y el plan de "
-    "tratamiento. Si necesitás cambiar el horario, se puede hasta el día anterior."
+    "La primera consulta incluye el diagnóstico y el plan de tratamiento. Si "
+    "necesitás cambiar el horario, se puede hasta el día anterior."
 )
 
 CHICO_MUESTRA = (
@@ -1705,6 +1705,13 @@ lugar donde puede seguir</b>. Todo a escala 1:1 en {ancho} px.</p>
 # el TRATAMIENTO no tiene tarjeta —es un desplegable y nada más—, así que la
 # pieza es una sola tarjeta, la del turno. Y no se acomodan en columnas: van
 # en FILAS, una debajo de la otra, en los tres anchos.
+#
+# 🔴 CORREGIDO el 3-sep-2026, viéndolo en la tira: la acción va ABAJO y ADENTRO
+# del cuadro en LOS TRES ANCHOS. Antes, de tablet para arriba, la tarjeta se
+# abría en fila y el botón se iba al filo derecho: ahí "CANCELAR TURNO" —que es
+# grafito macizo— quedaba flotando contra el borde y era lo más pesado de la
+# pantalla, siendo la acción destructiva. Una decisión que se veía bien en su
+# propio tablero y mal con el resto de la página al lado. Lo cortó Juan.
 # ============================================================
 
 CSS_TARJETA = """
@@ -1745,23 +1752,10 @@ CSS_TARJETA = """
 
 .lista { margin-top: 4px; }
 
-/* De tablet para arriba la tarjeta se lee como una FILA: los datos a la
-   izquierda y la acción a la derecha. En el teléfono no: ahí el botón va de
-   borde a borde, que es lo que pide un dedo. */
-@media (min-width: 768px) {
-
-  .turno {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-  }
-
-  .turno .btn {
-    margin-top: 0;
-    flex: none;
-  }
-}
+/* La acción va SIEMPRE debajo de los datos y adentro del cuadro. En el
+   teléfono el botón ocupa el ancho de la tarjeta —lo pide el dedo—; de tablet
+   para arriba se ajusta a su texto, porque un "Cancelar turno" de 800 px de
+   ancho pesa como si fuera la acción que el sitio empuja, y no lo es. */
 """
 
 
@@ -1790,10 +1784,10 @@ def tarjeta_turno(cuando, tratamiento, profesional, quien):
 def tablero_tarjeta(tokens, css, ancho):
     lista = "".join(tarjeta_turno(*t) for t in TURNOS)
     acomodo = (
-        "una debajo de la otra, con el botón de borde a borde"
-        if ancho < 768
-        else "una debajo de la otra, y cada tarjeta es una fila: los datos a la "
-             "izquierda y la acción a la derecha"
+        "una debajo de la otra, y adentro de cada una la acción va debajo de "
+        "los datos"
+        + (", con el botón de borde a borde" if ancho < 768
+           else ", con el botón del ancho de su texto")
     )
 
     return f"""<!-- @dsCard group="Components" -->
@@ -1872,12 +1866,14 @@ adonde llegan tres de las cinco pantallas de la pieza 5. Todo a escala 1:1 en
     pantalla que dice sólo el nombre <b>no se puede arreglar sin rehacerla</b>.
     <i>El apellido de la muestra es de relleno: en el sitio sale de la ficha del
     profesional.</i></li>
-    <li><b>En filas, nunca en columnas.</b> Y de tablet para arriba la fila
-    se abre: los datos a la izquierda, la acción a la derecha.</li>
+    <li><b>En filas, nunca en columnas</b>, y <b>la acción siempre debajo de
+    los datos, adentro del cuadro</b>, en los tres anchos. Al costado, el
+    grafito macizo de «Cancelar turno» se lee como el botón que manda en la
+    pantalla — y cancelar no manda nunca.</li>
     <li>La lista usa <b>su propia medida, más ancha que la del texto</b>
-    (860 px en escritorio, contra 640 de un párrafo). Una tarjeta con su acción
-    al costado no es una línea de lectura, y con la medida del párrafo el día y
-    la hora se parten en dos renglones.</li>
+    (860 px en escritorio, contra 640 de un párrafo). El motivo ya no es la
+    acción al costado —se sacó—: es que <b>el título es una fecha</b>, y con la
+    medida del párrafo el día y la hora se parten en dos renglones.</li>
     <li>La tarjeta <b>no muestra un dato porque exista</b>. Cada renglón está
     porque el paciente hace algo con él.</li>
   </ul>
@@ -2525,6 +2521,54 @@ def tablero_contexto(tokens, css, ancho):
 </div>
 """
 
+# ------------------------------------------------------------
+# EL CHEQUEO QUE FALTABA — la duración no se muestra en pantalla
+#
+# La regla está decidida desde la pieza 6 y el porqué es más viejo: el paciente
+# NO elige duración, la elige el tratamiento, y el dato vive en la base
+# (`tratamientos.duracion_web_min`). Se coló igual en el desplegable de la
+# pieza 8 y en el texto de muestra de la 2, y lo cazó Juan, no el generador.
+#
+# EL LÍMITE NO ES QUÉ CLASE TIENE EL PÁRRAFO, ES SI ESO ES PANTALLA. Un tablero
+# explica el mecanismo en prosa —y ahí la duración tiene que poder nombrarse,
+# porque es de lo que habla la pieza 7—; lo que no puede es aparecer adentro de
+# un control o de una tarjeta, que es lo que el paciente ve. Así que se mira
+# SÓLO lo que simula la pantalla, no el texto que la rodea.
+# ------------------------------------------------------------
+
+DURACION = re.compile(
+    r"\d+\s*min\b|\d+\s*minutos?\b|(?:treinta|sesenta|noventa)\s+minutos?",
+    re.IGNORECASE,
+)
+
+# Lo que ES pantalla: los controles, la tarjeta del turno, el hero, la pantalla
+# de mensaje, y la muestra de cuerpo de texto de la escala —que es prosa del
+# sitio, no del tablero—.
+PANTALLA = [
+    re.compile(r"<option\b.*?</option>", re.DOTALL),
+    re.compile(r"<button\b.*?</button>", re.DOTALL),
+    re.compile(r'<(?:input|textarea)\b[^>]*value="([^"]*)"'),
+    re.compile(r'<div class="turno">.*?</div>\s*</div>', re.DOTALL),
+    re.compile(r'<label class="etiqueta">.*?</label>', re.DOTALL),
+    re.compile(r'<p class="(?:ayuda|muestra-texto)">.*?</p>', re.DOTALL),
+]
+
+
+def revisar_duracion(pagina, donde):
+    """Avisos de duración que quedaron adentro de algo que simula la pantalla."""
+    avisos = []
+
+    for patron in PANTALLA:
+        for trozo in patron.finditer(pagina):
+            for hallazgo in DURACION.finditer(trozo.group(0)):
+                avisos.append(
+                    f"✗ {donde}: «{hallazgo.group(0)}» adentro de "
+                    f"«{trozo.group(0)[:60].strip()}…»"
+                )
+
+    return avisos
+
+
 def main():
     css = TOKENS.read_text(encoding="utf-8")
     tokens = MEDIDOR.leer_tokens(css)
@@ -2589,6 +2633,21 @@ def main():
         destino.write_text(tablero_contexto(tokens, css, ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
+    avisos = []
+
+    for pagina in sorted(SALIDA.rglob("*.html")):
+        avisos += revisar_duracion(
+            pagina.read_text(encoding="utf-8"),
+            str(pagina.relative_to(RAIZ)),
+        )
+
+    if avisos:
+        print()
+        for aviso in avisos:
+            print(aviso)
+        return 1
+
+    print("\n✓ ningún tablero muestra la duración del turno.")
     return 0
 
 

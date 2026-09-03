@@ -808,23 +808,10 @@ section > h2 + p { margin-top: 8px; }
 
 .lista { margin-top: 4px; }
 
-/* De tablet para arriba la tarjeta se lee como una FILA: los datos a la
-   izquierda y la acción a la derecha. En el teléfono no: ahí el botón va de
-   borde a borde, que es lo que pide un dedo. */
-@media (min-width: 768px) {
-
-  .turno {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-  }
-
-  .turno .btn {
-    margin-top: 0;
-    flex: none;
-  }
-}
+/* La acción va SIEMPRE debajo de los datos y adentro del cuadro. En el
+   teléfono el botón ocupa el ancho de la tarjeta —lo pide el dedo—; de tablet
+   para arriba se ajusta a su texto, porque un "Cancelar turno" de 800 px de
+   ancho pesa como si fuera la acción que el sitio empuja, y no lo es. */
 
 
 .almanaque {

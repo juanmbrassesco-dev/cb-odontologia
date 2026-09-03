@@ -595,23 +595,10 @@ th.n { text-align: right; }
 
 .lista { margin-top: 4px; }
 
-/* De tablet para arriba la tarjeta se lee como una FILA: los datos a la
-   izquierda y la acción a la derecha. En el teléfono no: ahí el botón va de
-   borde a borde, que es lo que pide un dedo. */
-@media (min-width: 768px) {
-
-  .turno {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-  }
-
-  .turno .btn {
-    margin-top: 0;
-    flex: none;
-  }
-}
+/* La acción va SIEMPRE debajo de los datos y adentro del cuadro. En el
+   teléfono el botón ocupa el ancho de la tarjeta —lo pide el dedo—; de tablet
+   para arriba se ajusta a su texto, porque un "Cancelar turno" de 800 px de
+   ancho pesa como si fuera la acción que el sitio empuja, y no lo es. */
 
 </style>
 
@@ -675,7 +662,7 @@ adonde llegan tres de las cinco pantallas de la pieza 5. Todo a escala 1:1 en
 <section>
   <p class="rotulo">Cómo se acomodan</p>
   <h2>En filas, siempre</h2>
-  <p>Nada de dos o tres columnas: <b>una debajo de la otra, con el botón de borde a borde</b>. Una lista de turnos se lee
+  <p>Nada de dos o tres columnas: <b>una debajo de la otra, y adentro de cada una la acción va debajo de los datos, con el botón de borde a borde</b>. Una lista de turnos se lee
   de arriba hacia abajo y en orden de fecha, que es como el paciente la busca.</p>
 </section>
 
@@ -694,12 +681,14 @@ adonde llegan tres de las cinco pantallas de la pieza 5. Todo a escala 1:1 en
     pantalla que dice sólo el nombre <b>no se puede arreglar sin rehacerla</b>.
     <i>El apellido de la muestra es de relleno: en el sitio sale de la ficha del
     profesional.</i></li>
-    <li><b>En filas, nunca en columnas.</b> Y de tablet para arriba la fila
-    se abre: los datos a la izquierda, la acción a la derecha.</li>
+    <li><b>En filas, nunca en columnas</b>, y <b>la acción siempre debajo de
+    los datos, adentro del cuadro</b>, en los tres anchos. Al costado, el
+    grafito macizo de «Cancelar turno» se lee como el botón que manda en la
+    pantalla — y cancelar no manda nunca.</li>
     <li>La lista usa <b>su propia medida, más ancha que la del texto</b>
-    (860 px en escritorio, contra 640 de un párrafo). Una tarjeta con su acción
-    al costado no es una línea de lectura, y con la medida del párrafo el día y
-    la hora se parten en dos renglones.</li>
+    (860 px en escritorio, contra 640 de un párrafo). El motivo ya no es la
+    acción al costado —se sacó—: es que <b>el título es una fecha</b>, y con la
+    medida del párrafo el día y la hora se parten en dos renglones.</li>
     <li>La tarjeta <b>no muestra un dato porque exista</b>. Cada renglón está
     porque el paciente hace algo con él.</li>
   </ul>
