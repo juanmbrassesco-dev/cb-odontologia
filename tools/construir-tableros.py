@@ -2589,6 +2589,67 @@ def revisar_duracion(pagina, donde):
     return avisos
 
 
+# ------------------------------------------------------------
+# EL TABLERO NO PUEDE DEPENDER DEL TAMAÑO DE LA VENTANA
+#
+# `body { width: 390px }` fija el ancho del DIBUJO, pero una `@media
+# (min-width: 768px)` no mira el dibujo: mira la VENTANA. Así que el tablero de
+# 390 abierto en una ventana ancha se pintaba con los tokens de escritorio —
+# título de 52 px, botones al ancho de su texto, la tarjeta en fila—. Las
+# capturas headless salían bien porque se piden con `--window-size=390`; el
+# navegador de Juan estaba mostrando otra cosa, y lo que él corregía no era lo
+# que yo medía.
+#
+# La solución no inventa ningún valor: se APLANAN las media queries contra el
+# ancho del tablero. Las que corresponden se aplican sin condición, las que no,
+# se van. Los valores siguen saliendo de tokens.css.
+# ------------------------------------------------------------
+
+MEDIA = re.compile(r"@media\s*\(\s*min-width:\s*(\d+)px\s*\)\s*\{")
+
+
+def aplanar(css, ancho):
+    """Resuelve las media queries de min-width contra un ancho fijo."""
+    salida = []
+    pos = 0
+
+    while True:
+        m = MEDIA.search(css, pos)
+
+        if not m:
+            salida.append(css[pos:])
+            return "".join(salida)
+
+        salida.append(css[pos:m.start()])
+
+        # Dónde cierra el bloque: se cuentan las llaves desde la que lo abre.
+        nivel = 1
+        i = m.end()
+
+        while nivel and i < len(css):
+            if css[i] == "{":
+                nivel += 1
+            elif css[i] == "}":
+                nivel -= 1
+            i += 1
+
+        if int(m.group(1)) <= ancho:
+            salida.append(css[m.end():i - 1])
+
+        pos = i
+
+
+ESTILO = re.compile(r"(<style>)(.*?)(</style>)", re.DOTALL)
+
+
+def fijar_al_ancho(pagina, ancho):
+    """Deja el tablero pintado igual en cualquier ventana."""
+    return ESTILO.sub(
+        lambda m: m.group(1) + aplanar(m.group(2), ancho) + m.group(3),
+        pagina,
+    )
+
+
 def main():
     css = TOKENS.read_text(encoding="utf-8")
     tokens = MEDIDOR.leer_tokens(css)
@@ -2604,7 +2665,7 @@ def main():
 
     destino = SALIDA / "01-color-y-contraste" / "1280.html"
     destino.parent.mkdir(parents=True, exist_ok=True)
-    destino.write_text(tablero_color(tokens, css), encoding="utf-8")
+    destino.write_text(fijar_al_ancho(tablero_color(tokens, css), 1280), encoding="utf-8")
     print(f"✓ {destino.relative_to(RAIZ)}")
 
     # el último valor declarado es el de escritorio, que es el que se cuenta
@@ -2614,43 +2675,43 @@ def main():
         destino = SALIDA / "02-escala-tipografica" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
         pagina = tablero_tipografia(tokens, css, ancho).replace("{medida}", medida)
-        destino.write_text(pagina, encoding="utf-8")
+        destino.write_text(fijar_al_ancho(pagina, ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     for ancho in ANCHOS:
         destino = SALIDA / "03-boton" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_text(tablero_boton(tokens, css, ancho), encoding="utf-8")
+        destino.write_text(fijar_al_ancho(tablero_boton(tokens, css, ancho), ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     for ancho in ANCHOS:
         destino = SALIDA / "04-campo" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_text(tablero_campo(tokens, css, ancho), encoding="utf-8")
+        destino.write_text(fijar_al_ancho(tablero_campo(tokens, css, ancho), ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     for ancho in ANCHOS:
         destino = SALIDA / "05-mensaje" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_text(tablero_mensaje(tokens, css, ancho), encoding="utf-8")
+        destino.write_text(fijar_al_ancho(tablero_mensaje(tokens, css, ancho), ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     for ancho in ANCHOS:
         destino = SALIDA / "06-tarjeta" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_text(tablero_tarjeta(tokens, css, ancho), encoding="utf-8")
+        destino.write_text(fijar_al_ancho(tablero_tarjeta(tokens, css, ancho), ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     for ancho in ANCHOS:
         destino = SALIDA / "07-grilla-de-horarios" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_text(tablero_grilla(tokens, css, ancho), encoding="utf-8")
+        destino.write_text(fijar_al_ancho(tablero_grilla(tokens, css, ancho), ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     for ancho in ANCHOS:
         destino = SALIDA / "08-tira-de-contexto" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_text(tablero_contexto(tokens, css, ancho), encoding="utf-8")
+        destino.write_text(fijar_al_ancho(tablero_contexto(tokens, css, ancho), ancho), encoding="utf-8")
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     avisos = []

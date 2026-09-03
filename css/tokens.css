@@ -259,6 +259,15 @@
      sangre y cuadrada, como en el manual. */
   --radio: 3px;
 
+  /* 🔴 DOS BOTONES JUNTOS MIDEN LO MISMO. Lo dictó Juan el 3-sep-2026:
+     «la jerarquía respecto de esos dos botones la da la PALETA, no el tamaño».
+     En el teléfono sale solo, porque los dos van de borde a borde. De tablet
+     para arriba, `auto` los deja del ancho de su texto y «Confirmar turno»
+     queda al lado de «Volver» con dos tamaños distintos: ahí el tamaño empieza
+     a decir algo que ya dice el color, y lo dice peor.
+     ⬜ PENDIENTE, y es del frente de PANTALLA GRANDE, no de éste: hoy sólo se
+     trabaja móvil. El día que se abra, dos botones de la misma fila igualan su
+     ancho al más largo — no se elige un número. */
   --boton-ancho: 100%;
 
   /* El anillo de foco va ADENTRO del control, en los tres anchos. Afuera se
