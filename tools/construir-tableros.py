@@ -3297,10 +3297,12 @@ a 1:1, con su encabezado</p>
 # extracción A · cirugía B · strass B) y los cuatro del brief, que todavía no
 # están vectorizados y se muestran recortando su propia lámina.
 NUEVOS = {
+    # Cambiado el 4-sep-2026: antes era la pieza MORDIDA, o sea la caries. Con
+    # la regla de Juan —el ícono muestra el tratamiento, no el problema— pasa a
+    # ser la pieza entera con la parte repuesta en su esquina.
     "Restauración":
-        '<path d="M17 9 h-1 a5 5 0 0 0 -5 5 v12 a5 5 0 0 0 5 5 h8 '
-        'a5 5 0 0 0 5 -5 v-12 a5 5 0 0 0 -5 -5 h-1"/>'
-        '<path d="M17 9 a3 3 0 0 0 6 0"/>',
+        '<rect x="11" y="9" width="18" height="22" rx="6"/>'
+        '<path d="M20 9 v7 h9"/>',
     "Endodoncia":
         '<rect x="11" y="9" width="18" height="22" rx="6"/>'
         '<rect x="16" y="14" width="8" height="12" rx="3"/>',
@@ -3506,8 +3508,8 @@ reserva: si mañana se agrega uno, aparece en los dos lados.</p>
   <p class="dato" style="margin-top: 12px">🔑 <b>La regla que ordenó los seis
   dibujos, y la puso Juan:</b> el ícono muestra <b>el tratamiento, no el
   problema</b>. Por eso ortodoncia no son dientes torcidos sino tres piezas
-  cruzadas por el alambre. <i>Y por eso queda pendiente revisar restauración,
-  que hoy dibuja la caries.</i></p>
+  cruzadas por el alambre, <b>y por eso restauración se cambió</b>: dibujaba la
+  pieza mordida —la caries— y ahora dibuja la parte repuesta en su esquina.</p>
   <p class="dato" style="margin-top: 12px">🔴 <b>El dorado sobre BLANCO mide
   3,09 y el piso de un dibujo es 3,0; sobre el marfil de la página mide 2,89 y
   no pasa.</b> Los íconos van sobre la tarjeta blanca, nunca sueltos sobre el
