@@ -3119,6 +3119,9 @@ CSS_HERO = """
 .hero-texto .acciones { justify-content: start; }
 """
 
+# ⏱ NO SE USA TODAVÍA, Y ES A PROPÓSITO. El frente es móvil: los tres anchos se
+# generan, pero 768 y 1280 se aprueban en el segundo tiempo, con la página
+# entera delante. Esto queda escrito y apagado hasta ese momento.
 CSS_HERO_ANCHO = """
 /* DE TABLET PARA ARRIBA EL VELO GIRA 90°.
 
@@ -3217,7 +3220,7 @@ def tablero_hero(tokens, css, ancho):
 {CSS_ENCABEZADO}
 {CSS_HERO}
 {CSS_HERO_VELO}
-{CSS_HERO_ANCHO if ancho >= 1280 else ""}
+{""}
 </style>
 
 <div class="prosa">

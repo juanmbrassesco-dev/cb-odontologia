@@ -904,33 +904,6 @@ body { padding: 0; }
 }
 
 
-/* DE TABLET PARA ARRIBA EL VELO GIRA 90°.
-
-   En el teléfono el texto se apoya abajo y el degradado sube. Con pantalla
-   ancha eso desperdicia el ancho y agranda el alto: el texto se va a la
-   IZQUIERDA y el degradado corre en horizontal. Es el mismo reparto de la
-   pág. 17 del brief —texto a la izquierda, foto a la derecha— pero sin partir
-   la foto en una columna: la foto sigue a sangre y el velo hace el corte.
-
-   La foto no cambia de regla: sigue llenando la caja con object-fit. */
-.hero-velo .hero-texto {
-  min-height: 520px;
-  justify-content: center;
-  max-width: 620px;
-  padding: 48px var(--margen-pagina);
-}
-
-.hero-velo::before {
-  background: linear-gradient(
-    to right,
-    rgba(51, 50, 47, 0.93) 0%,
-    rgba(51, 50, 47, 0.90) 40%,
-    rgba(51, 50, 47, 0.66) 60%,
-    rgba(51, 50, 47, 0.18) 82%,
-    rgba(51, 50, 47, 0.00) 100%
-  );
-}
-
 </style>
 
 <div class="prosa">
