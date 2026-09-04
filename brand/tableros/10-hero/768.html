@@ -655,7 +655,11 @@ body { padding: 0; }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px var(--margen-pagina);
+  /* 8 px y no 14: el alto de la barra lo fija el BOTÓN de menú, que no baja
+     de 44 px por ser el piso táctil. Con 14 arriba y abajo la barra medía 72 y
+     el logo —de 32— quedaba flotando en marfil, que se leía como un espacio
+     blanco entre el encabezado y el hero. El botón conserva sus 44. */
+  padding: 8px var(--margen-pagina);
   background: var(--marfil);
   border-bottom: 1px solid var(--dorado);
 }
@@ -756,6 +760,16 @@ body { padding: 0; }
 
 .reglas li { margin-top: 8px; }
 
+
+/* EL ENCABEZADO PEGADO AL HERO. El marco de `.muestra-barra` es andamiaje del
+   tablero de la pieza 9 —ahí sirve para decir «esto es una muestra»—, y acá
+   metía un filo y unos píxeles de marfil entre la barra y la foto. En el sitio
+   no hay nada entre una cosa y la otra: la raya dorada del encabezado ES el
+   borde de arriba del hero. */
+.muestra-barra {
+  border: 0;
+  margin: 0;
+}
 
 /* LA FOTO. Va a sangre y sin esquinas redondeadas: el radio del sistema es de
    controles y superficies, y el manual dibuja la foto cuadrada.
