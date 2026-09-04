@@ -2841,7 +2841,7 @@ def barra(logo, pieza, ancho, con_menu, con_boton, abierto=False):
 def tablero_encabezado(tokens, css, ancho):
     wordmark = leer_png("cb-wordmark-600")
     apilado = leer_png("cb-apilado-600")
-    chico = ancho < 768
+    chico = ancho < 1280
 
     alto_w = alto_logo("wordmark", ancho)
     alto_a = alto_logo("apilado", ancho)
@@ -3120,22 +3120,32 @@ CSS_HERO = """
 """
 
 CSS_HERO_ANCHO = """
-/* De tablet para arriba vuelve el reparto de la pág. 17: el texto a la
-   izquierda, la foto a la derecha y a sangre. Las dos columnas miden lo mismo,
-   y la foto ya no lleva proporción propia: se estira al alto de la fila. */
-.hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
+/* DE TABLET PARA ARRIBA EL VELO GIRA 90°.
+
+   En el teléfono el texto se apoya abajo y el degradado sube. Con pantalla
+   ancha eso desperdicia el ancho y agranda el alto: el texto se va a la
+   IZQUIERDA y el degradado corre en horizontal. Es el mismo reparto de la
+   pág. 17 del brief —texto a la izquierda, foto a la derecha— pero sin partir
+   la foto en una columna: la foto sigue a sangre y el velo hace el corte.
+
+   La foto no cambia de regla: sigue llenando la caja con object-fit. */
+.hero-velo .hero-texto {
+  min-height: 520px;
+  justify-content: center;
+  max-width: 620px;
+  padding: 48px var(--margen-pagina);
 }
 
-.hero-foto {
-  aspect-ratio: auto;
-  height: 100%;
-  min-height: 420px;
+.hero-velo::before {
+  background: linear-gradient(
+    to right,
+    rgba(51, 50, 47, 0.93) 0%,
+    rgba(51, 50, 47, 0.90) 40%,
+    rgba(51, 50, 47, 0.66) 60%,
+    rgba(51, 50, 47, 0.18) 82%,
+    rgba(51, 50, 47, 0.00) 100%
+  );
 }
-
-.hero-texto { padding: 0 var(--margen-pagina); }
 """
 
 
@@ -3191,7 +3201,7 @@ def hero(foto, ancho):
 def tablero_hero(tokens, css, ancho):
     foto = leer_foto()
     logo = leer_png("cb-wordmark-600")
-    chico = ancho < 768
+    chico = ancho < 1280
     alto_foto = round(ancho * 3 / 4)
 
     return f"""<!-- @dsCard group="Components" -->
@@ -3207,7 +3217,7 @@ def tablero_hero(tokens, css, ancho):
 {CSS_ENCABEZADO}
 {CSS_HERO}
 {CSS_HERO_VELO}
-{CSS_HERO_ANCHO if not chico else ""}
+{CSS_HERO_ANCHO if ancho >= 1280 else ""}
 </style>
 
 <div class="prosa">
@@ -3223,11 +3233,6 @@ escritorio—. Acá está pasada a móvil, con los <b>textos definitivos de la
 propuesta · el texto sobre la foto, a 1:1</p>
 {barra(logo, "wordmark", ancho, "boton" if chico else "fila", not chico)}
 {hero_velo(foto, ancho)}
-
-<p class="marca-muestra" style="padding: 0 var(--margen-pagina)">Lo que se
-descarta · la foto arriba y el texto debajo</p>
-{barra(logo, "wordmark", ancho, "boton" if chico else "fila", not chico)}
-{hero(foto, ancho)}
 
 <div class="prosa">
 <section>
