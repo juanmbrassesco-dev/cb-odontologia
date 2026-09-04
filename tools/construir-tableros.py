@@ -3538,6 +3538,357 @@ reserva: si mañana se agrega uno, aparece en los dos lados.</p>
 """
 
 
+# ============================================================
+# PIEZA 12 — CONTACTO
+#
+# Los datos NO se inventan y no son decisión nuestra: los dio Cecilia el
+# 1-sep-2026 y viven en la § 9.1.e del doc de estado. Acá se copian UNA sola
+# vez, en estas constantes, para que el día que cambie uno no haya que
+# cazarlo por el archivo.
+# ============================================================
+
+DIRECCION = "25 de Mayo 3725"
+CIUDAD = "Santa Fe"
+
+# El teléfono se ESCRIBE de una forma y se MARCA de otra. Y el enlace de
+# WhatsApp lleva un 9 que el número escrito no muestra: 54 + el 9 de celular +
+# 342 + el número. Sin ese 9 no abre la conversación (§ 9.1.e).
+TELEFONO_ESCRITO = "+54 342 629-3920"
+TELEFONO_MARCADO = "+543426293920"
+WHATSAPP = "5493426293920"
+
+# 🔴 EL CORREO REAL NO ENTRA A ESTE ARCHIVO. Éste es un repo PÚBLICO, el
+# correo de Cecilia hoy es una casilla personal de Gmail, y el historial de git
+# viaja con el repo y no se reescribe: lo que entra una vez, queda.
+#
+# La decisión ya existía en el proyecto —la base usa `cecilia@example.com` por
+# el mismo motivo (§ 9.1.c)— y acá se respeta. El correo de verdad vive en el
+# doc de estado (§ 9.1.e), que es privado, y se pone al construir el sitio.
+#
+# Se muestra ESCRITO, sin enlace: ver fila_texto.
+CORREO = "cecilia@example.com"
+
+# 🔴 VAN COORDENADAS Y NO LA DIRECCIÓN ESCRITA, y no es un detalle: buscando
+# "25 de Mayo 3725, Santa Fe, Argentina" el primer resultado cae en YBARLUCEA,
+# a 130 km, sobre la colectora 25 de Mayo del Gran Rosario. Las dos están en la
+# provincia de Santa Fe, así que agregar la provincia no desempata.
+#
+# ✅ LA COORDENADA LA MARCÓ JUAN sobre el edificio, en Google Maps, el
+# 4-sep-2026. No sale de ningún geocodificador: la primera que se probó —la de
+# OpenStreetMap para el 3725— caía a media cuadra, con "Av. Aristóbulo del
+# Valle 3716" como dirección más cercana.
+#
+# 🔑 Y el punto marcado Google lo lee como "25 de Mayo 3727", no 3725: la
+# numeración de la cuadra está interpolada. Es la prueba de por qué acá va una
+# coordenada y no la dirección escrita — Google tampoco tiene fichado el 3725,
+# y el 3735 de al lado es el taller de calzados.
+#
+# ⏱ Se cambia por el enlace de la FICHA el día que exista el Perfil de Empresa
+# de Google (§ 14): la ficha muestra nombre, horarios y fotos, y una coordenada
+# pelada deja un pin sin nombre.
+COORDENADAS = "-31.632821,-60.701736"
+
+# El esquema oficial de URL de Google Maps: no lleva clave de API, no carga
+# nada de terceros adentro de nuestra página, y en el teléfono lo levanta la
+# app instalada.
+MAPA = "https://www.google.com/maps/search/?api=1&query=" + COORDENADAS
+
+# 🔴 LOS HORARIOS NO SE PUBLICAN — lo decidió Juan el 4-sep-2026, y el motivo
+# es el de siempre: dos copias del mismo dato se desincronizan. Los horarios de
+# verdad son `horarios_base` + `fin_maximo` + las excepciones + la semana del
+# 15 que Cecilia cierra todos los meses; una tabla fija en el sitio empieza a
+# mentir el primer mes. La disponibilidad real la muestra la grilla de reserva,
+# y los horarios de puertas abiertas van al Perfil de Empresa de Google (§ 14),
+# que es donde se los busca y donde se cargan los días especiales.
+
+# Cada ícono es línea sola, del mismo trazo que los de la pieza 11.
+# El de WhatsApp es una BURBUJA nuestra, no el logotipo: la regla, en el
+# tablero.
+ICONOS = {
+    "pin":
+        '<path d="M12 21.5s7-6.4 7-11.5a7 7 0 1 0-14 0c0 5.1 7 11.5 7 11.5z"/>'
+        '<circle cx="12" cy="10" r="2.6"/>',
+    "telefono":
+        '<path d="M6.6 3.6 h3 l1.5 4 l-2 1.5 a12.4 12.4 0 0 0 5.8 5.8 '
+        'l1.5-2 l4 1.5 v3 a2 2 0 0 1-2.2 2 A17.4 17.4 0 0 1 4.6 5.8 '
+        'A2 2 0 0 1 6.6 3.6 z"/>',
+    "burbuja":
+        '<path d="M20.6 11.6 a8.4 8.4 0 0 1-12.2 7.5 L3.8 20.4 l1.4-4.5 '
+        'a8.4 8.4 0 1 1 15.4-4.3 z"/>',
+    "sobre":
+        '<rect x="3.2" y="5.4" width="17.6" height="13.2" rx="2.4"/>'
+        '<path d="M3.9 7 l8.1 5.9 l8.1-5.9"/>',
+}
+
+CSS_CONTACTO = """
+/* La tarjeta es blanca sobre marfil, y ese par mide 1,03: la forma la marca
+   el BORDE, nunca el relleno. Es la misma regla del campo, del botón apagado
+   y de la tarjeta de tratamiento — la cuarta vez que aparece. */
+.contacto {
+  background: var(--blanco);
+  border: 1px solid var(--dorado-claro);
+  border-radius: var(--radio);
+  max-width: var(--columna-lista);
+  margin-top: 20px;
+}
+
+/* Cada dato es una fila. La línea de arriba las separa; la primera no lleva,
+   porque ahí ya está el borde de la tarjeta. */
+.dato-contacto {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-top: 1px solid var(--dorado-claro);
+  min-height: 44px;
+  text-decoration: none;
+  color: var(--grafito);
+}
+
+.dato-contacto:first-child {
+  border-top: none;
+}
+
+.ico-contacto {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+}
+
+.ico-contacto * {
+  fill: none;
+  stroke: var(--dorado);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dato-contacto h3 {
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+}
+
+.dato-contacto .ciudad {
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  color: var(--texto-segundo);
+}
+
+/* El enlace va en el dorado de texto —decisión del 2-sep— y SUBRAYADO: el
+   color solo no puede ser lo único que diga que algo se toca. */
+.enlace {
+  color: var(--dorado-texto);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.como-llegar {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+"""
+
+
+def icono_contacto(nombre):
+    """Un ícono de 24, del mismo trazo que los de la grilla de tratamientos."""
+    return (
+        f'<svg class="ico-contacto" viewBox="0 0 24 24" aria-hidden="true">'
+        f'{ICONOS[nombre]}</svg>'
+    )
+
+
+def fila_enlace(icono, destino, texto, etiqueta):
+    """Un dato que se toca: el renglón ENTERO es el enlace, no la palabra."""
+    return f"""
+    <a class="dato-contacto" href="{destino}" aria-label="{etiqueta}">
+      {icono_contacto(icono)}
+      <span class="enlace">{texto}</span>
+    </a>"""
+
+
+def fila_texto(icono, texto):
+    """Un dato que se LEE y no se toca: el correo.
+
+    Decisión de Juan del 4-sep-2026. Un `mailto:` abre el programa de correo
+    que tenga configurado la persona, que puede ser uno que no usa; y forzar
+    Gmail rompe en el teléfono. Se muestra escrito y cada uno hace lo suyo.
+    """
+    return f"""
+    <div class="dato-contacto">
+      {icono_contacto(icono)}
+      <span>{texto}</span>
+    </div>"""
+
+
+def fila_direccion():
+    return f"""
+    <div class="dato-contacto">
+      {icono_contacto("pin")}
+      <div>
+        <h3>{DIRECCION}</h3>
+        <p class="ciudad">{CIUDAD}</p>
+        <a class="enlace como-llegar" href="{MAPA}">Cómo llegar</a>
+      </div>
+    </div>"""
+
+
+def tarjeta_contacto():
+    telefono = fila_enlace(
+        "telefono",
+        "tel:" + TELEFONO_MARCADO,
+        TELEFONO_ESCRITO,
+        "Llamar al consultorio",
+    )
+    whatsapp = fila_enlace(
+        "burbuja",
+        "https://wa.me/" + WHATSAPP,
+        "Escribinos por WhatsApp",
+        "Abrir la conversación de WhatsApp",
+    )
+    correo = fila_texto("sobre", CORREO)
+
+    return f"""
+  <div class="contacto">
+    {fila_direccion()}
+    {telefono}
+    {whatsapp}
+    {correo}
+  </div>"""
+
+
+def tablero_contacto(tokens, css, ancho):
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 12 Contacto · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_CONTACTO}
+</style>
+
+<p class="rotulo">Fase ⑧ · Pieza 12 · {ancho} px</p>
+<h1>Contacto</h1>
+<div class="regla"></div>
+<p><b>Los datos no se inventan.</b> La dirección, el teléfono y el correo son
+los que dio Cecilia el 1-sep-2026 (§ 9.1.e). <b>Acá se copian una sola vez</b>,
+en las constantes del generador.</p>
+
+<section>
+  <p class="rotulo">La tarjeta, a 1:1</p>
+  <h2>Cuatro datos</h2>
+  {tarjeta_contacto()}
+</section>
+
+<section>
+  <p class="rotulo">La decisión que esta pieza cerró</p>
+  <h2>Acá no hay mapa</h2>
+  <p><b>La § 4 pide «ubicación», y ubicación no es un mapa incrustado.</b> Un
+  <code>iframe</code> de Google Maps a 390 se come media pantalla, y sobre todo
+  <b>mete a Google adentro de nuestra página antes de que el paciente pida
+  nada</b> — en un sitio que además maneja datos de salud, eso se decide, no se
+  arrastra.</p>
+  <p style="margin-top: 12px"><b>Y en el teléfono nadie mira un mapa adentro de
+  una página:</b> toca la dirección y quiere que se abra su app, con el camino
+  desde donde está parado. Eso hace <b>«Cómo llegar»</b>, con el esquema de URL
+  oficial de Maps: sin clave de API y sin cargar nada de afuera.</p>
+  <p class="dato" style="margin-top: 12px">⏱ <b>Queda abierto para 1280</b>: en
+  escritorio la pantalla sobra y el mapa no le saca lugar a nada. <b>Se decide
+  en la fase B, no acá.</b></p>
+
+  <p class="rotulo">Lo que casi manda al paciente a 130 km</p>
+  <h2>El enlace lleva coordenadas, no la dirección escrita</h2>
+  <p>El enlace decía <code>query=25 de Mayo 3725, Santa Fe, Argentina</code>, y
+  <b>ese texto es ambiguo</b>: hay una colectora 25 de Mayo al 3725 en
+  <b>Ybarlucea, Gran Rosario</b> — a 130 km del consultorio y en la MISMA
+  provincia, así que agregar «Santa Fe» no desempata nada. <b>Una coordenada no
+  se puede malinterpretar.</b> <i>Lo pidió Juan.</i></p>
+  <p class="dato" style="margin-top: 12px">🔑 <b>Y no alcanzaba con
+  geocodificar:</b> la coordenada del 3725 caía a media cuadra. <b>La que está
+  puesta la marcó Juan sobre el edificio</b>, y Google la lee como «25 de Mayo
+  <b>3727</b>» — la numeración de la cuadra está interpolada. <b>Google no
+  tiene fichado el 3725</b>, y el 3735 de al lado es el taller de calzados: por
+  eso acá va una coordenada y no la dirección escrita.</p>
+
+  <p class="rotulo">Una marca que no es nuestra</p>
+  <h2>El logotipo de WhatsApp no entra al sitio</h2>
+  <p><b>Decisión de Juan, 4-sep-2026: «si es verde, no va».</b> El logotipo
+  oficial existe en un solo color —su verde <code>#25D366</code>— y las reglas
+  de Meta dicen textual <b>«you shouldn't modify any colors in our logos»</b>:
+  no hay versión dorada permitida. <b>O entra su verde, o no entra el
+  logotipo.</b></p>
+  <p style="margin-top: 12px"><b>Y sus propias reglas empujan para el mismo
+  lado:</b> <i>«DON'T make WhatsApp the most distinctive or prominent feature
+  of your materials»</i>. Un verde saturado adentro de una tarjeta de íconos
+  dorados sería lo más llamativo de la página — justo lo que la § 4 no quiere,
+  porque WhatsApp acá es <b>canal secundario: disponible, no promovido</b>.</p>
+  <p class="dato" style="margin-top: 12px">🔴 <b>El límite que hay que vigilar
+  al dibujar el nuestro:</b> <i>«DON'T use an image confusingly similar to the
+  WhatsApp telephone logo»</i>. Nuestra burbuja <b>no lleva el teléfono
+  adentro</b>. El día que alguien se lo dibuje «para que se reconozca mejor»,
+  cae justo en lo prohibido.</p>
+  <p class="dato" style="margin-top: 12px">⏱ <b>Lo que esto le deja a la pieza
+  14, y se resuelve ahí:</b> el botón flotante es <b>sólo ícono</b> (§ 4). Sin
+  el logotipo verde, una burbuja sola puede leerse como «chat» y no como
+  WhatsApp. <b>O el botón gana una palabra, o cambia de forma.</b></p>
+  <p class="dato" style="margin-top: 12px">📌 <b>Y toca los textos:</b> se
+  escribe <b>WhatsApp</b>, con las dos mayúsculas, y <b>nunca como verbo</b> —
+  las dos son reglas textuales de ellos. «Escribinos por WhatsApp» cumple.</p>
+
+  <p class="rotulo">Lo que esta pieza sacó</p>
+  <h2>Los horarios no se publican</h2>
+  <p><b>Decisión de Juan, 4-sep-2026.</b> La tarjeta tenía los días y las horas
+  de atención, y salieron: <b>dos copias del mismo dato se desincronizan
+  siempre.</b> Los horarios de verdad son <code>horarios_base</code>,
+  <code>fin_maximo</code>, las excepciones y <b>la semana del 15 que Cecilia
+  cierra todos los meses</b>. Una tabla fija en el sitio empieza a mentir el
+  primer mes.</p>
+  <p style="margin-top: 12px"><b>Y el sitio ya tiene algo mejor:</b> la grilla
+  de reserva muestra la disponibilidad real, calculada. Los horarios de puertas
+  abiertas van al <b>Perfil de Empresa de Google</b> (§ 14), que es donde la
+  gente los busca y donde se cargan los días especiales.</p>
+  <p class="dato" style="margin-top: 12px">⚠ <b>El costo, dicho:</b> el que
+  quiere llamar no sabe cuándo hay alguien del otro lado.</p>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li><b>El renglón entero es el enlace, no la palabra.</b> Los dos datos que
+    se tocan miden 44 px o más de alto, que es el piso táctil del sistema.</li>
+    <li><b>El enlace se marca con color Y con subrayado.</b> El dorado de texto
+    solo no alcanza: el color no puede ser lo único que diga que algo se
+    toca.</li>
+    <li><b>El correo se lee, no se toca.</b> Un <code>mailto:</code> abre el
+    programa de correo que tenga configurado la persona, que puede ser uno que
+    no usa. Escrito, cada uno hace lo suyo.</li>
+    <li><b>El teléfono se escribe de una forma y se marca de otra</b>, y el
+    enlace de WhatsApp lleva un <b>9</b> que el número escrito no muestra. Sin
+    ese 9 no abre la conversación.</li>
+    <li>🔴 <b>El correo es PROVISIONAL y por eso va sólo en el sitio.</b> Un
+    sitio se edita en un minuto; una tanda de recetas, no. En papel va el
+    correo del dominio o no va ninguno.</li>
+    <li>🔴 <b>El que se ve acá es un marcador, no el correo real.</b> Este repo
+    es público y el correo de Cecilia hoy es una casilla personal; el historial
+    de git viaja con el repo y no se reescribe. <b>El de verdad se pone al
+    construir el sitio</b>, igual que en la base (§ 9.1.c).</li>
+    <li><b>El mapa se apunta con coordenada, nunca con la dirección
+    escrita.</b> «25 de Mayo 3725, Santa Fe» tiene dos lugares posibles en la
+    misma provincia.</li>
+    <li><b>La matrícula no va acá: va en el pie</b> (pieza 13). Es un renglón
+    fijo de toda pieza pública, y el pie es donde se lo busca.</li>
+  </ul>
+</section>
+"""
+
+
+
 def revisar_duracion(pagina, donde):
     """Avisos de duración que quedaron adentro de algo que simula la pantalla."""
     avisos = []
@@ -3701,6 +4052,15 @@ def main():
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(
             fijar_al_ancho(tablero_tratamientos(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "12-contacto" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_contacto(tokens, css, ancho), ancho),
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")
