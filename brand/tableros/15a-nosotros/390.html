@@ -1,0 +1,874 @@
+<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 15a Nosotros · 390</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+/* ============================================================
+   CB Odontología y Estética — FUENTE DE VERDAD DEL COLOR
+   Fase ⑦, pieza 1. Ningún hex se escribe fuera de este archivo.
+
+   Cómo se declara un par medido (lo lee tools/medir-contraste.py):
+       @par <texto> sobre <fondo> >= <piso> · <para qué>
+   El piso es 4.5 para texto normal, 3.0 para texto grande
+   (≥24px, o ≥19px semibold) y para bordes y controles.
+   ============================================================ */
+
+:root {
+
+  /* --- LA PALETA DEL BRIEF — cinco colores, no se tocan --- */
+
+  --marfil: #FAF7F2;        /* fondo base */
+  --blanco: #FFFFFF;        /* superficies, tarjetas */
+  --dorado: #B08D57;        /* acento: línea, borde, ícono, fondo */
+  --dorado-claro: #E4D6BC;  /* fondos suaves */
+  --grafito: #33322F;       /* texto de lectura */
+
+  /* --- LOS DERIVADOS — cada uno con el porqué escrito ---
+
+     Un derivado entra sólo si un color del brief NO llega al piso
+     en ese uso. No se inventa ningún tono nuevo: se le baja la
+     luminosidad al que ya existe, dejando el tono y la saturación. */
+
+  /* El dorado del brief mide 2.89 sobre marfil: no sirve de texto.
+     Mismo tono (H 36.4°), misma saturación, 12 puntos menos de luz.
+     DECIDIDO por Juan el 2-sep-2026: los rótulos chicos en mayúsculas y los
+     enlaces van en éste. Son dos dorados y a simple vista no se distinguen;
+     el del brief queda sólo para fondos, líneas e íconos. */
+  --dorado-texto: #896D41;
+
+  /* El grafito aclarado hasta el piso de 3.0 de los bordes de control.
+     Un borde más claro que esto no se ve y el campo deja de leerse. */
+  --borde: #8A8880;
+
+  /* Texto deshabilitado. WCAG exime a los controles apagados, pero se
+     lo hace pasar igual: apagado no es lo mismo que ilegible.
+     ⚠️ Es SÓLO para lo deshabilitado. Un texto que hay que leer no va acá:
+     4.54 pasa el piso pero cuesta, y se notó en la pieza 2. */
+  --apagado: #75716A;
+
+  /* Texto secundario: ayuda de un campo, pie, aclaración. Es texto que SE
+     LEE, sólo que manda menos que el principal — así que se separa del
+     grafito por tono, no por poner el gris al borde del mínimo.
+     Es el grafito aclarado hasta 8.97, no hasta el piso: se subió una vez
+     más porque a 6.97 todavía costaba, y quien lo leyó fue una persona,
+     no el medidor. */
+  --texto-segundo: #464541;
+
+  /* Estados. El brief no tiene ninguno. Se eligieron dentro de la
+     familia cálida de la paleta, no del rojo y verde de sistema. */
+  --error: #9F4E40;
+  --error-fondo: #F6E8E4;
+  --exito: #517255;
+  --exito-fondo: #EFF4F0;
+  --info-fondo: var(--dorado-claro);  /* el informativo no estrena color */
+
+  /* --- EL BOTÓN PRINCIPAL ---
+
+     Fondo DORADO DEL BRIEF con letra BLANCA. Es el candidato D y no cambia:
+     es el dorado que se usa en todo el sitio. Mide 3,09, que pasa el piso de
+     3,0 del texto grande, y por eso la letra no baja de 19 px. */
+  --boton-fondo: var(--dorado);
+  --boton-texto: var(--blanco);
+
+  /* Enviando y foco oscurecen el MISMO dorado hasta el dorado de texto, que
+     ya está en el sistema. No se inventa ningún tono intermedio. */
+  --boton-fondo-oscuro: var(--dorado-texto);
+
+  /* El anillo de foco COINCIDE con el borde del botón: es un contorno que
+     cae justo sobre el filo, no una segunda línea por fuera ni por dentro. */
+  --boton-foco-borde: var(--grafito);
+
+  /* Sombras: hiper leve en reposo, marcada al hacer foco o esperar. */
+  --sombra-boton: 0 1px 2px rgba(51, 50, 47, 0.10);
+  --sombra-boton-foco: 0 3px 8px rgba(51, 50, 47, 0.22);
+
+  /* El botón secundario es el que dibuja el brief en la página 17: GRAFITO
+     MACIZO CON LETRA BLANCA. 12,82, el par más alto del sistema.
+
+     Su foco INVIERTE el botón: fondo blanco, letra grafito, y el filo de 2 px
+     en grafito para que la silueta no se pierda contra la página. Cambia el
+     80 % de la superficie —medido con medir-foco.py—, contra el 24 % que
+     lograba un anillo. Los anillos claros se descartaron los dos: puestos al
+     filo se leen como que el botón se achicó, no como un borde. */
+  --boton-2-fondo: var(--grafito);
+  --boton-2-texto: var(--blanco);
+  --boton-2-foco-fondo: var(--blanco);
+  --boton-2-foco-texto: var(--grafito);
+  --boton-2-foco-filo: var(--grafito);
+
+  /* Deshabilitado. WCAG exime a los controles inactivos; igual se lo deja en
+     4,08, y el botón además DICE por qué está apagado: nunca sólo el color.
+     🔴 Su relleno mide 1,11 contra el marfil: NO SE VE. Ningún gris claro
+     llega al piso de 3,0 sin dejar de parecer apagado, así que la forma del
+     botón la marca un BORDE, no el relleno. */
+  --boton-apagado-fondo: #EFEBE4;
+  --boton-apagado-texto: var(--apagado);
+  --boton-apagado-borde: var(--borde);
+
+
+  /* --- EL CAMPO — pieza 4 ---
+
+     El campo es blanco sobre marfil, y ese par mide 1,03: NO SE VE. Igual que
+     el botón deshabilitado, la forma la marca el BORDE y nunca el relleno. El
+     día que alguien saque el borde "para que quede más limpio", el campo
+     desaparece de la página. */
+  --campo-fondo: var(--blanco);
+  --campo-texto: var(--grafito);
+  --campo-borde: var(--borde);
+
+  /* La etiqueta se lee SIEMPRE y va arriba del campo. Nunca se reemplaza por
+     un texto adentro (placeholder): ese texto se borra al escribir, y quien se
+     distrae pierde el nombre de lo que estaba llenando y no lo puede releer.
+     El formato que se espera va en la AYUDA, que no se borra nunca. */
+  --campo-etiqueta: var(--grafito);
+  --campo-ayuda: var(--texto-segundo);
+
+  /* FOCO. Misma regla que el botón: cae sobre el filo del propio control, no
+     un anillo separado. Pasa de 1 px de borde a 2 px de grafito, así que
+     cambian el color Y el grosor — el foco no puede depender sólo del color. */
+  --campo-foco-filo: var(--grafito);
+  --campo-sombra-foco: var(--sombra-boton-foco);
+
+  /* EL CAMPO NO TIÑE SU SUPERFICIE AL RECIBIR FOCO, y queda escrito porque se
+     probó al revés. Medido con medir-foco.py, el filo de 2 px mueve el 5,3 %
+     de la superficie —el de 3 px, el 7,9 %— contra un piso de casa del 10 %,
+     y con eso se tiñó el fondo, que llegaba al 97,6 %. Se volvió atrás:
+
+     1. Ese piso se calibró sobre el BOTÓN, que no tiene borde en reposo y sólo
+        puede avisar el foco cambiando su superficie. El campo ya tiene filo.
+     2. El filo de 2 px cumple Focus Visible (AA de WCAG 2.0) y llega también a
+        la vara de Focus Appearance (AAA de WCAG 2.2): 2 px con 3:1 contra lo
+        que lo rodea. El grafito mide 12,00 contra el marfil. No había nada
+        que arreglar.
+     3. La regla del sistema no es "el foco tiñe": es que el foco se marca en el
+        FILO del propio control. El botón tiñe porque no tiene filo donde
+        marcarlo. Lo cortó Juan. */
+
+  /* ERROR. Se pinta el filo, pero el error NUNCA se comunica sólo con color:
+     debajo va un mensaje escrito que dice qué hacer, no "campo inválido". */
+  --campo-error-filo: var(--error);
+  --campo-error-texto: var(--error);
+
+  /* Deshabilitado: el mismo relleno y el mismo gris del botón apagado, para
+     que un control inactivo se vea igual en todo el sitio. */
+  --campo-apagado-fondo: var(--boton-apagado-fondo);
+  --campo-apagado-texto: var(--apagado);
+  --campo-apagado-borde: var(--borde);
+
+  /* Alto mínimo. 44 px es el piso táctil del sistema; el campo va a 48 porque
+     además hay que poder apoyar el dedo sin taparse lo que se escribió. */
+  --campo-alto: 48px;
+
+
+  /* --- COLORES AJENOS — NO SON NUESTROS Y NO SE TOCAN ---
+
+     Única excepción a la regla de que ningún color entra al sistema sin
+     porqué: éstos NO los elegimos. Son los de la marca Google para el botón
+     "Continuar con Google", y están acá y no sueltos en un tablero para que
+     igual los mida medir-contraste.py. Fuente: la página de marca de Google
+     Identity, verificada el 2-sep-2026. Si Google los cambia, se cambian acá
+     y en ningún otro lado.
+
+     🏁 TEMA CLARO, decidido por Juan el 2-sep-2026 viendo los cuatro a tamaño
+     real. Google ofrece tres —claro #FFFFFF, oscuro #131314, neutro #F2F2F2—
+     y prohíbe cualquier otro relleno, así que nuestro grafito nunca estuvo
+     disponible. De los tres permitidos:
+
+     · NEUTRO, descartado por el número: mide 1,05 contra el marfil, o sea que
+       sobre nuestro fondo desaparece.
+     · OSCURO, descartado por DOS motivos de Juan. Uno, en nuestro sistema el
+       grafito macizo es el botón SECUNDARIO: vestir de secundario la única
+       acción de la pantalla de entrada la degrada. Dos, "yo sí noto la
+       diferencia con el grafito".
+     · CLARO, el elegido: se ve por su filo (4,24 contra la página) y no le
+       roba el peso a ningún botón nuestro.
+
+     ⚠️ Y queda escrito el error de instrumento, porque es reutilizable: Claude
+     argumentó que el negro de Google y nuestro grafito "al ojo son casi el
+     mismo botón" apoyándose en que su contraste da 1,45. ESE NÚMERO NO MIDE
+     ESO. El contraste WCAG compara luminancia para decidir si un texto se lee;
+     dos colores de luminancia parecida pueden tener tonos bien distintos, y es
+     el caso: el nuestro es cálido y el de Google es neutro. Lo cazó Juan
+     mirando la pantalla. */
+  --google-fondo: #FFFFFF;
+  --google-filo: #747775;
+  --google-texto: #1F1F1F;
+
+  /* Anillo de foco: grafito macizo, 2px, con 2px de separación.
+     Va con el grosor, no sólo con el color (pauta 7). */
+  --foco: #33322F;
+
+}
+
+
+/* ============================================================
+   ESCALA TIPOGRÁFICA — fase ⑦, pieza 2.
+
+   Marcellus tiene UN SOLO PESO: no hay negrita ni liviana. La jerarquía
+   entre títulos es por TAMAÑO, nunca por peso. Jost lleva todo lo demás.
+
+   Los valores de :root son los de MÓVIL — el sitio es mobile-first, así
+   que lo chico es el default y lo grande es la excepción declarada.
+   ============================================================ */
+
+:root {
+  --tipo-h1: 32px;      --alto-h1: 1.15;
+  --tipo-h2: 26px;      --alto-h2: 1.2;
+  --tipo-h3: 20px;      --alto-h3: 1.3;
+  --tipo-cuerpo: 16px;  --alto-cuerpo: 1.6;
+  --tipo-chico: 14px;   --alto-chico: 1.5;
+  --tipo-rotulo: 13px;  --alto-rotulo: 1.4;
+
+  /* El rótulo en mayúsculas necesita aire entre letras o no se lee. */
+  --letra-rotulo: 0.18em;
+
+  /* LA COLUMNA. Todo lo que se dibuja —títulos, párrafos, líneas, tablas—
+     termina acá. Es un valor en píxeles a propósito: `ch` crece con el
+     tamaño de la letra, así que un título de 52 px con la misma medida en
+     `ch` se iría al doble de largo y las líneas dejarían de coincidir.
+     En móvil y tablet ocupa todo; en escritorio son 640 px, que es lo que
+     mide una línea de 66 caracteres en Jost de 17 px. */
+  --columna: 100%;
+
+  /* LA OTRA MEDIDA: la de las LISTAS, que no son prosa. `--columna` existe
+     para que una línea de texto no se pase de 66 caracteres; una tarjeta con
+     su acción a la derecha no es una línea de texto, y con 640 px el día y la
+     hora se parten en dos renglones —medido en el tablero de la pieza 6, a
+     1280—. En móvil y tablet las dos medidas coinciden; en escritorio la lista
+     respira más que el párrafo. */
+  --columna-lista: 100%;
+
+  /* EL MARGEN DE LA PÁGINA — el aire entre el contenido y el filo de la
+     pantalla. Sube acá el 3-sep-2026: los tres números ya existían y ya eran
+     sistemáticos, pero vivían adentro de tools/construir-tableros.py, o sea
+     donde el sitio no los puede leer. Un valor, un lugar.
+
+     Los tres salen del ancho disponible y no de una preferencia: en 390 un
+     margen más grande le come al contenido el ancho que necesita la grilla de
+     horarios —siete columnas que no bajan de 44 px—; en 1280 uno más chico
+     deja el texto pegado al filo de la pantalla. */
+  --margen-pagina: 20px;
+
+  /* EL AIRE ENTRE SECCIONES — un valor por ancho, y lo decidió Juan el
+     3-sep-2026 contra la propuesta de un número único para los tres.
+
+     POR QUÉ NO ES UNO SOLO: el margen de página ya va de 20 a 64 y la escala
+     tipográfica se pisa entera en los dos @media. Un aire único contradiría
+     la única decisión de espacio que el sistema ya había tomado.
+
+     Y EL MOTIVO DE FONDO NO ES EL TAMAÑO: en móvil el aire es el ÚNICO
+     separador entre una sección y la siguiente, porque todo va en una sola
+     columna. A 1280 separan además la disposición, una banda de fondo o una
+     foto a sangre, y el aire deja de cargar solo.
+
+     ⏱ LOS NÚMEROS SON PROVISORIOS: se cierran en el tablero 15, con la página
+     entera delante y a 1:1. Lo que ya está fundado es el PISO — el aire entre
+     dos secciones tiene que superar al aire más grande de adentro de un
+     componente (44 px), o la costura se lee como parte de la sección
+     anterior en vez de como el arranque de la siguiente. */
+  --aire-seccion: 56px;
+
+  /* En el teléfono el botón principal va de borde a borde; de tablet para
+     arriba se ajusta a su texto. Es un token para que el sitio no lo repita. */
+  /* EL RADIO DE LAS ESQUINAS — decidido por Juan el 2-sep-2026.
+
+     El manual dibuja las esquinas CUADRADAS: medido sobre la página 17 a
+     200 dpi, las tres esquinas de sus botones están llenas hasta el píxel de
+     la punta. Se decidió apartarse, con motivo escrito.
+
+     A FAVOR de apartarse: Bar & Neta (Psychological Science, 2006) midieron
+     que las personas prefieren el contorno curvo y que el ángulo filoso
+     comunica amenaza —más activación de amígdala, y en frecuencias espaciales
+     bajas, o sea antes de pensarlo—. En un consultorio que promete calma, eso
+     pesa.
+
+     POR QUÉ 3 Y NO 8: el rango 8-12 lee "amable" y la § 2 pide premium en la
+     forma. 3 px suaviza sin cambiar de registro.
+
+     POR QUÉ NO 0: el argumento de que "la curva ya vive en el anillo de la
+     marca" no se sostiene, porque el anillo NO va a estar en la mayoría de
+     las pantallas —lo levantó Juan—. Donde no hay marca, no hay curva.
+
+     DÓNDE APLICA: controles y superficies —botón, campo, tarjeta, mensaje—.
+     NO aplica al logo, al patrón, ni a las fotos: la foto del hero va a
+     sangre y cuadrada, como en el manual. */
+  --radio: 3px;
+
+  /* 🔴 TODOS LOS BOTONES DEL SISTEMA TIENEN EL MISMO FORMATO. Lo dictó Juan
+     el 3-sep-2026, mirando las tres variantes a 390 y a tamaño real:
+
+     1. Cada botón mide LO QUE MIDE SU TEXTO. Ninguno va de borde a borde, en
+        ningún ancho. El primero que salió así fue el «Cancelar turno» de la
+        tarjeta, y el resto se alineó a ése.
+     2. DOS BOTONES JUNTOS MIDEN LO MISMO — se igualan al más largo de la
+        pareja, y el número no se elige: lo fija el texto. «La jerarquía la da
+        la PALETA, no el tamaño», y un tamaño distinto dice peor lo que el
+        color ya dice bien.
+     3. Van CENTRADOS en su caja, como quedaron adentro de la tarjeta.
+
+     Deja de haber una regla de teléfono y otra de escritorio: es una sola, en
+     los tres anchos. */
+  --boton-ancho: max-content;
+
+  /* El anillo de foco va ADENTRO del control, en los tres anchos. Afuera se
+     salía 4 px del margen y rompía la columna —medido—, y encima el foco
+     habría cambiado de forma según la pantalla. Es una sola señal o no es
+     una señal. */
+  --foco-separacion: -4px;
+}
+
+
+
+
+
+/* --- LOS PARES MEDIDOS — los recorre el medidor, no la confianza ---
+
+   @par grafito sobre marfil >= 4.5 · texto de lectura
+   @par grafito sobre blanco >= 4.5 · texto sobre tarjeta
+   @par grafito sobre dorado-claro >= 4.5 · texto sobre fondo suave
+   @par blanco sobre grafito >= 4.5 · botón principal
+   @par dorado-texto sobre marfil >= 4.5 · rótulos chicos y enlaces
+   @par dorado-texto sobre blanco >= 4.5 · rótulos sobre tarjeta
+   @par error sobre marfil >= 4.5 · mensaje de error
+   @par error sobre error-fondo >= 4.5 · error sobre su propio fondo
+   @par grafito sobre error-fondo >= 4.5 · el cuerpo del mensaje de error
+   @par blanco sobre error >= 4.5 · botón destructivo
+   @par exito sobre marfil >= 4.5 · mensaje de éxito
+   @par exito sobre exito-fondo >= 4.5 · éxito sobre su propio fondo
+   @par grafito sobre exito-fondo >= 4.5 · el cuerpo del mensaje de éxito
+   @par apagado sobre marfil >= 4.5 · texto deshabilitado
+   @par texto-segundo sobre marfil >= 4.5 · ayuda, pie y aclaración
+   @par texto-segundo sobre blanco >= 4.5 · lo mismo, sobre tarjeta
+   @par borde sobre marfil >= 3.0 · borde de campo sobre el fondo
+   @par borde sobre blanco >= 3.0 · borde de campo sobre tarjeta
+   @par foco sobre marfil >= 3.0 · anillo de foco
+   @par grafito sobre dorado >= 3.0 · sólo texto grande sobre dorado
+   @par boton-texto sobre boton-fondo >= 3.0 · el botón principal, en reposo
+   @par boton-texto sobre boton-fondo-oscuro >= 4.5 · el principal, enviando y con foco
+   @par boton-2-texto sobre boton-2-fondo >= 4.5 · la letra del botón secundario
+   @par boton-2-fondo sobre marfil >= 3.0 · la superficie del secundario
+   @par boton-2-foco-texto sobre boton-2-foco-fondo >= 4.5 · el secundario con foco, invertido
+   @par boton-2-foco-filo sobre marfil >= 3.0 · el filo que conserva la silueta
+   @par boton-apagado-texto sobre boton-apagado-fondo >= 3.0 · el botón deshabilitado
+   @par boton-apagado-borde sobre marfil >= 3.0 · el contorno del deshabilitado
+
+   @par campo-texto sobre campo-fondo >= 4.5 · lo que el paciente escribe
+   @par campo-etiqueta sobre marfil >= 4.5 · la etiqueta, arriba del campo
+   @par campo-ayuda sobre marfil >= 4.5 · la ayuda, debajo del campo
+   @par campo-borde sobre marfil >= 3.0 · el filo del campo en reposo
+   @par campo-foco-filo sobre marfil >= 3.0 · el filo del campo con foco
+   @par campo-error-filo sobre marfil >= 3.0 · el filo del campo con error
+   @par campo-error-texto sobre marfil >= 4.5 · el mensaje de error, escrito
+   @par campo-apagado-texto sobre campo-apagado-fondo >= 3.0 · el campo deshabilitado
+   @par campo-apagado-borde sobre marfil >= 3.0 · el contorno del deshabilitado
+
+   @par google-texto sobre google-fondo >= 4.5 · la letra del botón de Google
+   @par google-filo sobre marfil >= 3.0 · el filo del botón de Google, contra la página
+   @par google-filo sobre google-fondo >= 3.0 · el filo contra su propio relleno
+
+*/
+
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 390px;
+  background: var(--marfil);
+  color: var(--grafito);
+  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  padding: 20px 20px 40px;
+}
+
+h1, h2, h3 {
+  font-family: Marcellus, Georgia, serif;
+  font-weight: 400;
+  max-width: var(--columna);
+}
+
+h1 { font-size: var(--tipo-h1); line-height: var(--alto-h1); }
+h2 { font-size: var(--tipo-h2); line-height: var(--alto-h2); }
+h3 { font-size: var(--tipo-h3); line-height: var(--alto-h3); }
+
+p { max-width: var(--columna); }
+
+code {
+  font-family: Jost, sans-serif;
+  letter-spacing: 0.02em;
+  color: var(--dorado-texto);
+}
+
+.rotulo {
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  font-weight: 500;
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+}
+
+.regla {
+  height: 1px;
+  background: var(--dorado);
+  margin: 12px 0 24px;
+  max-width: var(--columna);
+}
+
+section { margin-top: 40px; }
+
+.chico { font-size: var(--tipo-chico); line-height: var(--alto-chico); }
+
+.dato {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.espec {
+  border-top: 1px solid var(--dorado-claro);
+  padding-top: 14px;
+  margin-top: 20px;
+  max-width: var(--columna);
+}
+
+.espec .muestra-texto { margin-top: 6px; }
+
+table {
+  width: 100%;
+  max-width: var(--columna);
+  border-collapse: collapse;
+  margin-top: 18px;
+}
+
+th, td {
+  text-align: left;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+th {
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: var(--tipo-rotulo);
+  color: var(--dorado-texto);
+}
+
+td.n { text-align: right; font-variant-numeric: tabular-nums; }
+th.n { text-align: right; }
+
+.pie {
+  max-width: var(--columna);
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--dorado-claro);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+
+/* El encabezado cruza la pantalla de lado a lado, así que el margen de página
+   lo lleva él y no el <body>. Mismo mecanismo que la tira de la pieza 8. */
+body { padding: 0; }
+
+.prosa {
+  padding: 0 var(--margen-pagina);
+}
+
+.prosa section { margin-top: var(--aire-seccion); }
+
+/* LA BARRA. Tres cosas en una fila: el logo a la izquierda, y a la derecha lo
+   que la decisión de abajo defina. `space-between` las separa sin escribir
+   ningún número de por medio: el hueco es lo que sobra. */
+.barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  /* 8 px y no 14: el alto de la barra lo fija el BOTÓN de menú, que no baja
+     de 44 px por ser el piso táctil. Con 14 arriba y abajo la barra medía 72 y
+     el logo —de 32— quedaba flotando en marfil, que se leía como un espacio
+     blanco entre el encabezado y el hero. El botón conserva sus 44. */
+  padding: 8px var(--margen-pagina);
+  background: var(--marfil);
+  border-bottom: 1px solid var(--dorado);
+}
+
+.barra img {
+  display: block;
+  height: auto;
+}
+
+/* El botón del sistema se centra solo en su caja —así quedó cerrado el
+   3-sep—. Adentro de una fila eso lo empujaría al medio: acá se le sacan los
+   márgenes automáticos y nada más. El formato, el color y el alto no se
+   tocan. */
+.barra .btn,
+.menu-abierto .btn {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.menu-abierto .btn { margin: 6px auto 14px; }
+
+/* EL BOTÓN DE MENÚ. Cuadrado de 44 px, que es el piso táctil del sistema. Las
+   tres rayas son el borde de arriba de tres cajas, sin ninguna imagen. */
+.menu-boton {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 9px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.menu-boton span {
+  display: block;
+  height: 2px;
+  background: var(--grafito);
+}
+
+/* EL MENÚ ABIERTO. Cae debajo de la barra y ocupa el ancho entero: en el
+   teléfono no hay lugar para un panel flotante, y uno que tape media pantalla
+   esconde el sitio detrás de sí mismo. */
+.menu-abierto {
+  padding: 8px var(--margen-pagina) 20px;
+  background: var(--marfil);
+  border-bottom: 1px solid var(--dorado-claro);
+}
+
+.menu-abierto a {
+  display: block;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--dorado-claro);
+  color: var(--grafito);
+  text-decoration: none;
+  font-size: var(--tipo-cuerpo);
+}
+
+.menu-abierto a:last-of-type { border-bottom: 0; }
+
+/* EL MENÚ EN PANTALLA ANCHA. Los tres enlaces en fila, entre el logo y el
+   botón. El rótulo va en versalita como el resto del sistema. */
+.menu-fila {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.menu-fila a {
+  color: var(--grafito);
+  text-decoration: none;
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+}
+
+/* El marco que dice "esto es una muestra, no la página". Es andamiaje del
+   tablero y no existe en el sitio. */
+.muestra-barra {
+  border: 1px solid var(--dorado-claro);
+  margin-top: 16px;
+}
+
+.marca-muestra {
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+  color: var(--texto-segundo);
+  margin-top: 22px;
+}
+
+.reglas { margin-top: 12px; padding-left: 20px; max-width: var(--columna); }
+
+.reglas li { margin-top: 8px; }
+
+
+/* EL RETRATO. Vertical (4/5), que es la forma de un retrato de persona: la
+   proporción del hero (4/3) es de escena, no de cara. Va a sangre como la del
+   hero, por la misma razón — el radio del sistema es de controles, no de
+   fotos. */
+.nosotros-retrato {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+/* VARIANTE «la foto entra en la columna»: en vez de cruzar la pantalla, se
+   mete adentro del margen y arranca donde arranca el texto. La de arriba es
+   la del hero —a sangre, esquinas rectas—; ésta es la que hay que comparar. */
+.nosotros-dentro .nosotros-retrato,
+.nosotros-dentro .nosotros-hueco {
+  width: calc(100% - var(--margen-pagina) * 2);
+  margin: 0 var(--margen-pagina);
+}
+
+/* EL FILO DE LA FOTO, y no es decoración: se midieron los cuatro bordes de la
+   foto de ejemplo contra el marfil y el de ABAJO da 2,78 — por debajo del piso
+   de 3,0 que el sistema le exige a cualquier filo. Los otros tres pasan
+   (4,09 · 4,17 · 6,13), así que sin filo la foto se disuelve por un lado solo,
+   que es peor que disolverse entera.
+
+   Y el argumento que lo vuelve REGLA en vez de arreglo: las fotos las va a
+   cargar Cecilia, no nosotros. Un filo que aparece «cuando hace falta» obliga
+   a medir cada foto nueva y falla en silencio el día que nadie mide. Siempre
+   puesto es una regla sola que no se puede incumplir.
+
+   El color es el mismo filo que ya usan las tarjetas: no estrena nada. */
+.nosotros-dentro .nosotros-retrato {
+  border: 1px solid var(--dorado-claro);
+}
+
+.nosotros-hueco {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: var(--dorado-claro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 24px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+/* EL BLOQUE NO HEREDA EL ANDAMIAJE DEL TABLERO. `base_css` le da 40 px de
+   margen de arriba a todo <section>, que es prosa del tablero; el bloque del
+   sitio no puede traerse ese número puesto, porque el aire entre secciones se
+   decide en el tablero 15 y sale de --aire-seccion. */
+.nosotros {
+  margin-top: 0;
+}
+
+/* El aire entre la foto y el texto. Es el ÚNICO separador que hay entre las
+   dos: no hay línea ni cambio de fondo. A 390 con menos de 24 el nombre se
+   pega a la foto y el bloque se lee como una sola mancha. */
+.nosotros-rotulo {
+  padding: 0 var(--margen-pagina);
+  margin-bottom: 12px;
+}
+
+/* VARIANTE «el título de sección manda»: el nombre de la sección va del
+   tamaño de un h2 —el mismo que van a tener «Tratamientos» y «Contacto»— y el
+   nombre de la profesional baja a h3. */
+.nosotros-titulo {
+  padding: 0 var(--margen-pagina);
+  margin-bottom: 16px;
+}
+
+.nosotros-nombre {
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+}
+
+.nosotros-texto {
+  padding: 24px var(--margen-pagina) 0;
+}
+
+/* ANDAMIAJE, NO SITIO: subraya lo que Cecilia tiene que confirmar. Se saca
+   cuando ella conteste. */
+.x {
+  border-bottom: 1px dotted var(--dorado);
+}
+
+.nosotros-texto h2 {
+  margin-top: 20px;
+}
+
+/* La matrícula va PEGADA al nombre, no al final del bloque: es la credencial
+   de esa persona, y separada de ella deja de leerse como suya. El pie lleva
+   su propia copia, que es la legalmente obligatoria. */
+.nosotros-matricula {
+  margin-top: 4px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+/* El párrafo ES el contenido de la sección, así que va en el gris de LECTURA.
+   Estaba en el secundario y eso lo hundía al mismo plano que las señales:
+   si todo es gris claro, no hay nada destacado. */
+.nosotros-texto p.presentacion {
+  margin-top: 16px;
+  color: var(--grafito);
+}
+
+/* LAS TRES SEÑALES. No son "beneficios": son las tres cosas que la
+   investigación dice que el paciente busca confirmar. Cada una es un hecho
+   comprobable, no una promesa de marketing. */
+.nosotros-senales {
+  list-style: none;
+  margin-top: 24px;
+  margin-bottom: 4px;
+  padding-left: 0;
+}
+
+/* ⚠️ ACÁ ESTUVIERON EN TARJETA BLANCA Y FUE UN ERROR — lo cazó Juan: «agregaste
+   tarjetas en texto que ni siquiera es el principal». Tenía razón, y la
+   literatura lo nombra: para destacar lo principal se DES-destaca lo demás
+   (Refactoring UI), no se le sube el volumen a lo terciario. Una superficie
+   —fondo, filo, radio— es el recurso más fuerte que tiene el sistema, y estaba
+   puesto en el contenido de MENOR rango de la sección.
+
+   Las tres señales vuelven a ser texto, agrupado y apretado: por proximidad
+   (Gestalt) los tres renglones juntos se leen como UN bloque de apoyo, que es
+   exactamente su rango. El contraste con el párrafo de arriba ahora lo hace el
+   tamaño y el color, no una caja. */
+.nosotros-senales li {
+  padding-left: 0;
+  margin-top: 10px;
+  max-width: var(--columna);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.nosotros-senales li::before {
+  content: "—";
+  color: var(--dorado-texto);
+  padding-right: 8px;
+}
+
+.nosotros-senales b {
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+/* ANDAMIAJE DEL TABLERO, NO DEL SITIO: la cinta que grita que el texto es
+   provisorio. No entra al sitio y por eso vive acá abajo, separada. */
+.provisorio {
+  border: 1px dashed var(--dorado);
+  background: var(--info-fondo);
+  padding: 10px 12px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+</style>
+
+<div class="prosa">
+<p class="rotulo">Fase ⑧ · Pieza 15.a · 390 px</p>
+<h1>Nosotros / la clínica</h1>
+<div class="regla"></div>
+<p><b>Es el bloque 3 del mapa del sitio y nunca se había maquetado.</b> El plan
+lo daba por resuelto —«titular, párrafo y foto»—; <b>lo abrió Juan como pieza
+propia</b> el 4-sep-2026, para poder evaluarlo antes de armar la página.</p>
+
+<p class="provisorio" style="margin-top: 20px">🔴 <b>TODO EL TEXTO DE ESTE
+TABLERO ES PROVISORIO Y LO APRUEBA CECILIA.</b> Son afirmaciones sobre una
+persona real y sobre cómo trabaja su consultorio: <b>no se inventan</b>. Lo que
+se está decidiendo acá es la <b>forma</b> —cuántos elementos, de qué largo, con
+cuánto aire—. Las preguntas para ella salen de este tablero.</p>
+</div>
+
+<p class="marca-muestra" style="padding: 0 var(--margen-pagina); margin: 40px 0 12px"
+   >El bloque, a 1:1</p>
+
+  <section class="nosotros nosotros-dentro">
+    <h2 class="nosotros-titulo">Nosotros</h2>
+    <img class="nosotros-retrato" alt="" src="../../fotos/hero-ejemplo.jpg">
+    <div class="nosotros-texto">
+      <h3 class="nosotros-nombre">Cecilia Brassesco</h3>
+      <p class="nosotros-matricula">Matrícula 3636/01</p>
+      <p class="presentacion">Soy odontóloga y atiendo en Santa Fe
+      <span class="x">desde 2015</span>. <span class="x">Trabajo sola y con
+      turnos espaciados</span>: prefiero que cada persona tenga su tiempo antes
+      que ver a mucha gente por día. Hago <span class="x">tratamientos
+      generales y estética dental</span>.</p>
+      <ul class="nosotros-senales">
+        <li><b>Sabés qué se va a hacer antes de empezar.</b>
+        <span class="x">Qué tratamiento, cuántas sesiones lleva y cuánto sale,
+        dicho antes y no en el sillón.</span></li>
+        <li><b>Si te da miedo el dentista, decilo.</b>
+        <span class="x">Se te da un turno más largo y se avanza al ritmo que
+        aguantes, sin apuro.</span></li>
+        <li><b>Instrumental esterilizado, uno por paciente.</b>
+        <span class="x">Esterilización en autoclave con control, y material
+        descartable que se abre delante tuyo.</span></li>
+      </ul>
+    </div>
+  </section>
+
+<div class="prosa">
+<section>
+  <p class="rotulo">Qué va acá, y no salió del gusto</p>
+  <h2>Los cuatro contenidos los eligió la investigación</h2>
+  <p>Se buscó qué pesa cuando un paciente elige odontólogo, y la estructura del
+  bloque sale de ahí: <b>la credencial con nombre</b> (el título profesional lo
+  puntúa como importante el <b>76,9 %</b>), <b>que le expliquen antes de
+  empezar</b> —el constructor de confianza más citado en el estudio
+  cualitativo—, <b>qué se hace con el miedo</b> (ignorar la ansiedad aparece
+  como destructor de confianza) y <b>la higiene y esterilización</b>, que con
+  <b>94 %</b> es el atributo mejor puntuado de todos.</p>
+  <p class="dato" style="margin-top: 12px">⚠ <b>Honestidad sobre la fuente:</b>
+  el estudio de los porcentajes es de <b>117 personas en Bucarest, 2019</b>.
+  Muestra chica y de otro país: <b>orienta la estructura, no prueba nada sobre
+  Santa Fe</b>. El cualitativo de confianza es de otra población todavía.</p>
+
+  <p class="rotulo">El dato que reencuadra el bloque entero</p>
+  <h2>El que lee esto ya viene recomendado</h2>
+  <p>En ese mismo estudio, <b>el 99,1 % llegó por recomendación de un conocido</b>
+  y sólo el <b>23,1 %</b> consideró importante que hubiera sitio web.
+  <b>Entonces el trabajo de este bloque no es convencer a un desconocido: es
+  CONFIRMAR una recomendación que ya existe.</b> Por eso no lleva argumento de
+  venta, ni superlativos, ni «años de experiencia» como titular.</p>
+  <p class="dato" style="margin-top: 12px">🔑 <b>Y es evidencia en contra de
+  nuestro propio proyecto, así que se escribe:</b> ese 23,1 % dice que el sitio
+  pesa poco en la ELECCIÓN. Lo que el sitio sí hace —y el estudio no
+  mide— es <b>dejar reservar solo</b>, que es trabajo que hoy hace una persona.
+  <b>El sitio se justifica por la autogestión del turno, no por captación.</b></p>
+
+  <p class="rotulo">La decisión de forma que esta pieza cierra</p>
+  <h2>El retrato va vertical, 4:5</h2>
+  <p><b>La del hero es 4:3 apaisada, y es una escena.</b> Ésta es una persona:
+  un retrato en una columna de teléfono necesita alto, no ancho. <b>Y hereda la
+  regla de la pieza 10:</b> una foto apaisada no se reencuadra en un hueco
+  vertical, así que <b>hay que pedirla vertical de origen</b>.</p>
+  <p class="dato" style="margin-top: 12px">⚠ <b>La foto no existe todavía</b> y
+  el hueco lo dice en la cara. <b>Va al brief de fotos</b>, con la guía que ya
+  vive en <code>brand/COMO-SACAR-LAS-FOTOS.md</code>.</p>
+
+  <p class="rotulo">Lo que se decidió repetir a propósito</p>
+  <h2>La matrícula aparece dos veces, y está bien</h2>
+  <p>El pie ya la lleva: <b>ésa es la copia legalmente obligatoria</b>. Acá va
+  <b>pegada al nombre</b>, porque es la credencial de esa persona y separada de
+  ella deja de leerse como suya — que es justo lo que la investigación dice que
+  el paciente busca. <b>No contradice la regla de no repetir datos:</b> esa
+  regla existe porque dos copias <b>se desincronizan</b>, y una matrícula no
+  cambia.</p>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li>🔴 <b>Ninguna afirmación sobre Cecilia se escribe sin que ella la
+    confirme.</b> El relleno se inventa donde no hay contenido —una foto de
+    banco, un testimonio genérico—, <b>nunca sobre una persona real</b>.</li>
+    <li>🔴 <b>No entra la palabra «especialista» ni «ortodoncista»</b> como
+    credencial suya hasta el posgrado certificado. Es una restricción sobre una
+    palabra, no sobre un tratamiento.</li>
+    <li><b>Sin superlativos.</b> Además de que el régimen de anuncios del
+    Colegio los suele restringir, contradicen el posicionamiento: premium en la
+    forma, <b>general y humano en el fondo</b>.</li>
+    <li><b>Las tres señales son hechos comprobables</b>, no promesas. Si una no
+    se puede sostener un martes cualquiera, no va.</li>
+  </ul>
+</section>
+</div>

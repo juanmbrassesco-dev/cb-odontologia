@@ -4132,6 +4132,397 @@ def pie_del_sitio(apilado, ancho):
   </footer>"""
 
 
+
+# ============================================================
+# PIEZA 15.a — NOSOTROS / LA CLÍNICA
+#
+# El bloque 3 del mapa del sitio (§ 4). Nunca se había maquetado: el plan lo
+# daba por "titular, párrafo y foto, ya resuelto por la escala tipográfica", y
+# Juan lo abrió como pieza propia el 4-sep-2026.
+#
+# 🔴 TODO EL TEXTO DE ACÁ ES PROVISORIO Y LO APRUEBA CECILIA. Son afirmaciones
+# sobre una persona real y sobre cómo trabaja su consultorio: no se inventan.
+# Lo que se maqueta es la FORMA —cuántos elementos, de qué largo, con cuánto
+# aire—, para poder decidir tipografía y espacios antes de tener el texto.
+#
+# QUÉ VA ACÁ, Y NO SALIÓ DEL GUSTO. La estructura sale de lo que la
+# investigación dice que el paciente pesa al elegir odontólogo:
+#   · la CREDENCIAL con nombre (el título profesional pesa 76,9 %)
+#   · que le EXPLIQUEN antes de empezar (el constructor de confianza más
+#     citado en el estudio cualitativo: "if they explain the process to me
+#     before starting, I trust them")
+#   · qué se hace con el MIEDO (ignorar la ansiedad es destructor de confianza,
+#     y además es el posicionamiento de la marca)
+#   · la HIGIENE y la esterilización (94 %, el atributo mejor puntuado de todos)
+# ⚠ Y el dato que reencuadra el bloque entero: el 99,1 % llega por
+# recomendación de un conocido y sólo el 23,1 % considera importante que haya
+# sitio web. O sea: el que lee esto YA VIENE RECOMENDADO. El trabajo del
+# bloque es CONFIRMAR esa recomendación, no convencer a un desconocido — por
+# eso no lleva argumento de venta ni superlativos.
+# Fuentes: PMC6527403 (n=117, Bucarest, 2019 — muestra chica y de otro país,
+# se usa como orientación, no como verdad local) y PMC13174905 (cualitativo,
+# confianza en odontólogos).
+# ============================================================
+
+CSS_NOSOTROS = """
+/* EL RETRATO. Vertical (4/5), que es la forma de un retrato de persona: la
+   proporción del hero (4/3) es de escena, no de cara. Va a sangre como la del
+   hero, por la misma razón — el radio del sistema es de controles, no de
+   fotos. */
+.nosotros-retrato {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+/* VARIANTE «la foto entra en la columna»: en vez de cruzar la pantalla, se
+   mete adentro del margen y arranca donde arranca el texto. La de arriba es
+   la del hero —a sangre, esquinas rectas—; ésta es la que hay que comparar. */
+.nosotros-dentro .nosotros-retrato,
+.nosotros-dentro .nosotros-hueco {
+  width: calc(100% - var(--margen-pagina) * 2);
+  margin: 0 var(--margen-pagina);
+}
+
+/* EL FILO DE LA FOTO, y no es decoración: se midieron los cuatro bordes de la
+   foto de ejemplo contra el marfil y el de ABAJO da 2,78 — por debajo del piso
+   de 3,0 que el sistema le exige a cualquier filo. Los otros tres pasan
+   (4,09 · 4,17 · 6,13), así que sin filo la foto se disuelve por un lado solo,
+   que es peor que disolverse entera.
+
+   Y el argumento que lo vuelve REGLA en vez de arreglo: las fotos las va a
+   cargar Cecilia, no nosotros. Un filo que aparece «cuando hace falta» obliga
+   a medir cada foto nueva y falla en silencio el día que nadie mide. Siempre
+   puesto es una regla sola que no se puede incumplir.
+
+   El color es el mismo filo que ya usan las tarjetas: no estrena nada. */
+.nosotros-dentro .nosotros-retrato {
+  border: 1px solid var(--dorado-claro);
+}
+
+.nosotros-hueco {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: var(--dorado-claro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 24px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+/* EL BLOQUE NO HEREDA EL ANDAMIAJE DEL TABLERO. `base_css` le da 40 px de
+   margen de arriba a todo <section>, que es prosa del tablero; el bloque del
+   sitio no puede traerse ese número puesto, porque el aire entre secciones se
+   decide en el tablero 15 y sale de --aire-seccion. */
+.nosotros {
+  margin-top: 0;
+}
+
+/* El aire entre la foto y el texto. Es el ÚNICO separador que hay entre las
+   dos: no hay línea ni cambio de fondo. A 390 con menos de 24 el nombre se
+   pega a la foto y el bloque se lee como una sola mancha. */
+.nosotros-rotulo {
+  padding: 0 var(--margen-pagina);
+  margin-bottom: 12px;
+}
+
+/* VARIANTE «el título de sección manda»: el nombre de la sección va del
+   tamaño de un h2 —el mismo que van a tener «Tratamientos» y «Contacto»— y el
+   nombre de la profesional baja a h3. */
+.nosotros-titulo {
+  padding: 0 var(--margen-pagina);
+  margin-bottom: 16px;
+}
+
+.nosotros-nombre {
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+}
+
+.nosotros-texto {
+  padding: 24px var(--margen-pagina) 0;
+}
+
+/* ANDAMIAJE, NO SITIO: subraya lo que Cecilia tiene que confirmar. Se saca
+   cuando ella conteste. */
+.x {
+  border-bottom: 1px dotted var(--dorado);
+}
+
+.nosotros-texto h2 {
+  margin-top: 20px;
+}
+
+/* La matrícula va PEGADA al nombre, no al final del bloque: es la credencial
+   de esa persona, y separada de ella deja de leerse como suya. El pie lleva
+   su propia copia, que es la legalmente obligatoria. */
+.nosotros-matricula {
+  margin-top: 4px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+/* El párrafo ES el contenido de la sección, así que va en el gris de LECTURA.
+   Estaba en el secundario y eso lo hundía al mismo plano que las señales:
+   si todo es gris claro, no hay nada destacado. */
+.nosotros-texto p.presentacion {
+  margin-top: 16px;
+  color: var(--grafito);
+}
+
+/* LAS TRES SEÑALES. No son "beneficios": son las tres cosas que la
+   investigación dice que el paciente busca confirmar. Cada una es un hecho
+   comprobable, no una promesa de marketing. */
+.nosotros-senales {
+  list-style: none;
+  margin-top: 24px;
+  margin-bottom: 4px;
+  padding-left: 0;
+}
+
+/* ⚠️ ACÁ ESTUVIERON EN TARJETA BLANCA Y FUE UN ERROR — lo cazó Juan: «agregaste
+   tarjetas en texto que ni siquiera es el principal». Tenía razón, y la
+   literatura lo nombra: para destacar lo principal se DES-destaca lo demás
+   (Refactoring UI), no se le sube el volumen a lo terciario. Una superficie
+   —fondo, filo, radio— es el recurso más fuerte que tiene el sistema, y estaba
+   puesto en el contenido de MENOR rango de la sección.
+
+   Las tres señales vuelven a ser texto, agrupado y apretado: por proximidad
+   (Gestalt) los tres renglones juntos se leen como UN bloque de apoyo, que es
+   exactamente su rango. El contraste con el párrafo de arriba ahora lo hace el
+   tamaño y el color, no una caja. */
+.nosotros-senales li {
+  padding-left: 0;
+  margin-top: 10px;
+  max-width: var(--columna);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.nosotros-senales li::before {
+  content: "—";
+  color: var(--dorado-texto);
+  padding-right: 8px;
+}
+
+.nosotros-senales b {
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+/* ANDAMIAJE DEL TABLERO, NO DEL SITIO: la cinta que grita que el texto es
+   provisorio. No entra al sitio y por eso vive acá abajo, separada. */
+.provisorio {
+  border: 1px dashed var(--dorado);
+  background: var(--info-fondo);
+  padding: 10px 12px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+"""
+
+
+def nosotros_del_sitio(ancho, jerarquia="titulo", dentro=True):
+    """El bloque tal como iría en el sitio.
+
+    EL ORDEN: el rótulo va ARRIBA DE LA FOTO y el resto abajo. Lo levantó Juan
+    —"¿va la foto de 1 sin ningún título antes? ¿no queda raro?"— y tiene un
+    motivo además del susto: al bloque se llega desde el menú, y quien toca
+    «Nosotros» aterriza acá. Una foto sola no dice dónde cayó; el rótulo sí.
+
+    LO SUBRAYADO son afirmaciones que CECILIA TIENE QUE CONFIRMAR. El texto ya
+    no es relleno mudo: está escrito como iría, para poder decidir si las tres
+    señales se quedan. Ninguna se publica sin su visto bueno.
+    """
+    if jerarquia == "titulo":
+        cabeza = """
+    <h2 class="nosotros-titulo">Nosotros</h2>"""
+        nombre = """<h3 class="nosotros-nombre">Cecilia Brassesco</h3>"""
+    else:
+        cabeza = """
+    <p class="rotulo nosotros-rotulo">Nosotros</p>"""
+        nombre = """<h2>Cecilia Brassesco</h2>"""
+
+    foto = leer_foto()
+
+    # LA MISMA FOTO DE EJEMPLO QUE EL HERO, y sólo para poder juzgar. Es 900 ×
+    # 1350 —2:3 vertical—, así que entra en el hueco 4:5 recortando arriba y
+    # abajo, no de costado. ⚠️ En la página armada esta cara aparecería DOS
+    # veces: es un artefacto de la maqueta, no una decisión.
+    if foto:
+        hueco = (f'<img class="nosotros-retrato" alt="" src="{foto}">')
+    else:
+        hueco = ("""<div class="nosotros-hueco">
+      Retrato de Cecilia en el consultorio.<br>
+      Vertical, 4:5. No existe todavía.
+    </div>""")
+
+    marco = " nosotros-dentro" if dentro else ""
+
+    return f"""
+  <section class="nosotros{marco}">{cabeza}
+    {hueco}
+    <div class="nosotros-texto">
+      {nombre}
+      <p class="nosotros-matricula">Matrícula 3636/01</p>
+      <p class="presentacion">Soy odontóloga y atiendo en Santa Fe
+      <span class="x">desde 2015</span>. <span class="x">Trabajo sola y con
+      turnos espaciados</span>: prefiero que cada persona tenga su tiempo antes
+      que ver a mucha gente por día. Hago <span class="x">tratamientos
+      generales y estética dental</span>.</p>
+      <ul class="nosotros-senales">
+        <li><b>Sabés qué se va a hacer antes de empezar.</b>
+        <span class="x">Qué tratamiento, cuántas sesiones lleva y cuánto sale,
+        dicho antes y no en el sillón.</span></li>
+        <li><b>Si te da miedo el dentista, decilo.</b>
+        <span class="x">Se te da un turno más largo y se avanza al ritmo que
+        aguantes, sin apuro.</span></li>
+        <li><b>Instrumental esterilizado, uno por paciente.</b>
+        <span class="x">Esterilización en autoclave con control, y material
+        descartable que se abre delante tuyo.</span></li>
+      </ul>
+    </div>
+  </section>"""
+
+
+def solo_nosotros(tokens, css, ancho, jerarquia="titulo", dentro=True):
+    """El bloque SOLO, sin una palabra de tablero alrededor.
+
+    Existe porque el tablero mezcla la muestra con la explicación, y a 390 eso
+    hace imposible ver cómo queda la sección: hay que scrollear prosa antes y
+    después. Acá está la página tal como la vería el paciente y nada más.
+    """
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · Nosotros, solo el bloque · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_ENCABEZADO}
+{CSS_NOSOTROS}
+</style>
+
+<p class="provisorio" style="margin: 0 var(--margen-pagina) 20px">🔴 <b>MAQUETA.
+Todo el texto es PROVISORIO y lo aprueba Cecilia</b> — el punteado marca cada
+afirmación por confirmar. <b>La foto es de banco</b>, no es ella.</p>
+{nosotros_del_sitio(ancho, jerarquia, dentro)}
+"""
+
+
+def tablero_nosotros(tokens, css, ancho):
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 15a Nosotros · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_ENCABEZADO}
+{CSS_NOSOTROS}
+</style>
+
+<div class="prosa">
+<p class="rotulo">Fase ⑧ · Pieza 15.a · {ancho} px</p>
+<h1>Nosotros / la clínica</h1>
+<div class="regla"></div>
+<p><b>Es el bloque 3 del mapa del sitio y nunca se había maquetado.</b> El plan
+lo daba por resuelto —«titular, párrafo y foto»—; <b>lo abrió Juan como pieza
+propia</b> el 4-sep-2026, para poder evaluarlo antes de armar la página.</p>
+
+<p class="provisorio" style="margin-top: 20px">🔴 <b>TODO EL TEXTO DE ESTE
+TABLERO ES PROVISORIO Y LO APRUEBA CECILIA.</b> Son afirmaciones sobre una
+persona real y sobre cómo trabaja su consultorio: <b>no se inventan</b>. Lo que
+se está decidiendo acá es la <b>forma</b> —cuántos elementos, de qué largo, con
+cuánto aire—. Las preguntas para ella salen de este tablero.</p>
+</div>
+
+<p class="marca-muestra" style="padding: 0 var(--margen-pagina); margin: 40px 0 12px"
+   >El bloque, a 1:1</p>
+{nosotros_del_sitio(ancho)}
+
+<div class="prosa">
+<section>
+  <p class="rotulo">Qué va acá, y no salió del gusto</p>
+  <h2>Los cuatro contenidos los eligió la investigación</h2>
+  <p>Se buscó qué pesa cuando un paciente elige odontólogo, y la estructura del
+  bloque sale de ahí: <b>la credencial con nombre</b> (el título profesional lo
+  puntúa como importante el <b>76,9 %</b>), <b>que le expliquen antes de
+  empezar</b> —el constructor de confianza más citado en el estudio
+  cualitativo—, <b>qué se hace con el miedo</b> (ignorar la ansiedad aparece
+  como destructor de confianza) y <b>la higiene y esterilización</b>, que con
+  <b>94 %</b> es el atributo mejor puntuado de todos.</p>
+  <p class="dato" style="margin-top: 12px">⚠ <b>Honestidad sobre la fuente:</b>
+  el estudio de los porcentajes es de <b>117 personas en Bucarest, 2019</b>.
+  Muestra chica y de otro país: <b>orienta la estructura, no prueba nada sobre
+  Santa Fe</b>. El cualitativo de confianza es de otra población todavía.</p>
+
+  <p class="rotulo">El dato que reencuadra el bloque entero</p>
+  <h2>El que lee esto ya viene recomendado</h2>
+  <p>En ese mismo estudio, <b>el 99,1 % llegó por recomendación de un conocido</b>
+  y sólo el <b>23,1 %</b> consideró importante que hubiera sitio web.
+  <b>Entonces el trabajo de este bloque no es convencer a un desconocido: es
+  CONFIRMAR una recomendación que ya existe.</b> Por eso no lleva argumento de
+  venta, ni superlativos, ni «años de experiencia» como titular.</p>
+  <p class="dato" style="margin-top: 12px">🔑 <b>Y es evidencia en contra de
+  nuestro propio proyecto, así que se escribe:</b> ese 23,1 % dice que el sitio
+  pesa poco en la ELECCIÓN. Lo que el sitio sí hace —y el estudio no
+  mide— es <b>dejar reservar solo</b>, que es trabajo que hoy hace una persona.
+  <b>El sitio se justifica por la autogestión del turno, no por captación.</b></p>
+
+  <p class="rotulo">La decisión de forma que esta pieza cierra</p>
+  <h2>El retrato va vertical, 4:5</h2>
+  <p><b>La del hero es 4:3 apaisada, y es una escena.</b> Ésta es una persona:
+  un retrato en una columna de teléfono necesita alto, no ancho. <b>Y hereda la
+  regla de la pieza 10:</b> una foto apaisada no se reencuadra en un hueco
+  vertical, así que <b>hay que pedirla vertical de origen</b>.</p>
+  <p class="dato" style="margin-top: 12px">⚠ <b>La foto no existe todavía</b> y
+  el hueco lo dice en la cara. <b>Va al brief de fotos</b>, con la guía que ya
+  vive en <code>brand/COMO-SACAR-LAS-FOTOS.md</code>.</p>
+
+  <p class="rotulo">Lo que se decidió repetir a propósito</p>
+  <h2>La matrícula aparece dos veces, y está bien</h2>
+  <p>El pie ya la lleva: <b>ésa es la copia legalmente obligatoria</b>. Acá va
+  <b>pegada al nombre</b>, porque es la credencial de esa persona y separada de
+  ella deja de leerse como suya — que es justo lo que la investigación dice que
+  el paciente busca. <b>No contradice la regla de no repetir datos:</b> esa
+  regla existe porque dos copias <b>se desincronizan</b>, y una matrícula no
+  cambia.</p>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li>🔴 <b>Ninguna afirmación sobre Cecilia se escribe sin que ella la
+    confirme.</b> El relleno se inventa donde no hay contenido —una foto de
+    banco, un testimonio genérico—, <b>nunca sobre una persona real</b>.</li>
+    <li>🔴 <b>No entra la palabra «especialista» ni «ortodoncista»</b> como
+    credencial suya hasta el posgrado certificado. Es una restricción sobre una
+    palabra, no sobre un tratamiento.</li>
+    <li><b>Sin superlativos.</b> Además de que el régimen de anuncios del
+    Colegio los suele restringir, contradicen el posicionamiento: premium en la
+    forma, <b>general y humano en el fondo</b>.</li>
+    <li><b>Las tres señales son hechos comprobables</b>, no promesas. Si una no
+    se puede sostener un martes cualquiera, no va.</li>
+  </ul>
+</section>
+</div>
+"""
+
+
 def tablero_pie(tokens, css, ancho):
     apilado = leer_png("cb-apilado-600")
     alto = round(PIE_LOGO[ancho] * PROPORCION["apilado"])
@@ -4421,6 +4812,24 @@ def main():
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(
             fijar_al_ancho(tablero_tratamientos(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "15a-nosotros" / f"{ancho}-solo.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(solo_nosotros(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "15a-nosotros" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_nosotros(tokens, css, ancho), ancho),
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")
