@@ -3539,6 +3539,102 @@ reserva: si mañana se agrega uno, aparece en los dos lados.</p>
 
 
 # ============================================================
+# LAS MARCAS AJENAS — lo comparten la pieza 12 y la 13
+# ============================================================
+
+# LOS DOS ISOTIPOS AJENOS — Instagram y WhatsApp.
+#
+# ✅ SON LOS OFICIALES, no un dibujo nuestro. Salen del Brand Resource Center
+# de Meta, bajados el 4-sep-2026, y viven en brand/marcas-ajenas/ con su
+# procedencia escrita al lado. Acá NO se copia ninguna curva: se LEE el archivo
+# y se le cambia el relleno por `currentColor`, así que el color lo pone el CSS
+# y el dibujo no se retoca nunca. Si Meta actualiza uno, se reemplaza el
+# archivo y este código no cambia.
+#
+# 🔑 VAN EN DORADO, LOS DOS, y es DECISIÓN DE JUAN del 4-sep-2026, tomada con
+# el dato en contra sobre la mesa: Instagram permite explícitamente cualquier
+# color sólido; WhatsApp dice lo opuesto —"you shouldn't modify any colors in
+# our logos"— y publica sus tres versiones. Su criterio: es la misma empresa y
+# el uso repintado está en todos lados. El costo queda escrito en
+# brand/marcas-ajenas/PROCEDENCIA.md, no en la memoria de nadie.
+#
+# ⚠️ CUÁL de los dos dorados NO es preferencia, es medida: el dorado del brief
+# mide 2,89 sobre MARFIL —abajo del piso de 3,0 de un dibujo— y 3,09 sobre
+# BLANCO. Por eso en la tarjeta de contacto, que es blanca, va --dorado como el
+# resto de sus íconos; y en el pie, que es marfil, va --dorado-texto. Es la
+# misma regla que ya ordenaba los íconos de la pieza 11.
+
+CUERPO_SVG = re.compile(r"<svg[^>]*viewBox=\"([^\"]+)\"[^>]*>(.*)</svg>", re.DOTALL)
+DEFS_SVG = re.compile(r"<defs>.*?</defs>", re.DOTALL)
+RELLENO = re.compile(r'\s(?:fill|class)="[^"]*"')
+
+
+def leer_isotipo(nombre):
+    """El isotipo oficial, listo para que el CSS le ponga el color.
+
+    Se le sacan los `fill` y las clases del archivo original —que traen el
+    color de ellos— para que el dibujo herede `currentColor`. La geometría no
+    se toca: es la misma que bajó del Brand Resource Center.
+    """
+    bruto = (RAIZ / "brand" / "marcas-ajenas" / f"{nombre}-glyph.svg").read_text(
+        encoding="utf-8"
+    )
+    caja, cuerpo = CUERPO_SVG.search(bruto).groups()
+    cuerpo = DEFS_SVG.sub("", cuerpo)
+    cuerpo = RELLENO.sub("", cuerpo)
+    return caja, " ".join(cuerpo.split())
+
+
+def isotipo(nombre, clase):
+    """Un isotipo ajeno. El color lo pone quien lo usa, con `color`."""
+    caja, cuerpo = leer_isotipo(nombre)
+    return (
+        f'<svg class="iso {clase}" viewBox="{caja}" aria-hidden="true">'
+        f"{cuerpo}</svg>"
+    )
+
+
+ISOTIPOS_AJENOS = ("instagram", "whatsapp")
+
+CSS_ISOTIPO = """
+/* El isotipo hereda el color de su contenedor —`currentColor`— así que el
+   mismo archivo sirve en la tarjeta blanca y en el pie marfil sin duplicarse.
+   Cada lugar declara CUÁL dorado le toca, y eso lo decide el contraste contra
+   su fondo, no el gusto. */
+.iso {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+/* En la tarjeta de contacto, que es BLANCA: el dorado del brief, 3,09.
+   🔴 Y MIDE 18, NO 24 COMO LOS OTROS, y no es un descuido — lo levantó Juan:
+   "da la impresión de que es más grande que el resto". Es cierto y tiene dos
+   causas que se suman. Los íconos nuestros son de LÍNEA y su dibujo no llega
+   al filo de la caja: la tinta del sobre mide 17,6 de ancho adentro de 24. El
+   isotipo ajeno es MACIZO y ocupa su caja entera. A 24 tenía un tercio más de
+   tinta que sus vecinos, y encima rellena.
+   Los 3 px de aire a cada lado devuelven la columna a 24, así que la fila no
+   se mueve. */
+.iso-carta {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 5px 3px 0;
+  color: var(--dorado);
+}
+
+/* En el pie, que es MARFIL: el dorado del brief no llega (2,89), así que va el
+   dorado de texto, el mismo tono con doce puntos menos de luz. */
+.iso-pie {
+  width: 26px;
+  height: 26px;
+  color: var(--dorado-texto);
+}
+"""
+
+
+# ============================================================
 # PIEZA 12 — CONTACTO
 #
 # Los datos NO se inventan y no son decisión nuestra: los dio Cecilia el
@@ -3612,9 +3708,6 @@ ICONOS = {
         '<path d="M6.6 3.6 h3 l1.5 4 l-2 1.5 a12.4 12.4 0 0 0 5.8 5.8 '
         'l1.5-2 l4 1.5 v3 a2 2 0 0 1-2.2 2 A17.4 17.4 0 0 1 4.6 5.8 '
         'A2 2 0 0 1 6.6 3.6 z"/>',
-    "burbuja":
-        '<path d="M20.6 11.6 a8.4 8.4 0 0 1-12.2 7.5 L3.8 20.4 l1.4-4.5 '
-        'a8.4 8.4 0 1 1 15.4-4.3 z"/>',
     "sobre":
         '<rect x="3.2" y="5.4" width="17.6" height="13.2" rx="2.4"/>'
         '<path d="M3.9 7 l8.1 5.9 l8.1-5.9"/>',
@@ -3692,7 +3785,15 @@ CSS_CONTACTO = """
 
 
 def icono_contacto(nombre):
-    """Un ícono de 24, del mismo trazo que los de la grilla de tratamientos."""
+    """El ícono de una fila.
+
+    Los nuestros son línea dorada, dibujados acá; los ajenos son el archivo
+    oficial, que ya viene relleno. Los dos miden 24 px y entran en la misma
+    columna, así que la fila no cambia.
+    """
+    if nombre in ISOTIPOS_AJENOS:
+        return isotipo(nombre, "iso-carta")
+
     return (
         f'<svg class="ico-contacto" viewBox="0 0 24 24" aria-hidden="true">'
         f'{ICONOS[nombre]}</svg>'
@@ -3742,7 +3843,7 @@ def tarjeta_contacto():
         "Llamar al consultorio",
     )
     whatsapp = fila_enlace(
-        "burbuja",
+        "whatsapp",
         "https://wa.me/" + WHATSAPP,
         "Escribinos por WhatsApp",
         "Abrir la conversación de WhatsApp",
@@ -3769,6 +3870,7 @@ def tablero_contacto(tokens, css, ancho):
 {css}
 {base_css(ancho)}
 {CSS_BOTON}
+{CSS_ISOTIPO}
 {CSS_CONTACTO}
 </style>
 
@@ -3815,30 +3917,28 @@ en las constantes del generador.</p>
   tiene fichado el 3725</b>, y el 3735 de al lado es el taller de calzados: por
   eso acá va una coordenada y no la dirección escrita.</p>
 
-  <p class="rotulo">Una marca que no es nuestra</p>
-  <h2>El logotipo de WhatsApp no entra al sitio</h2>
-  <p><b>Decisión de Juan, 4-sep-2026: «si es verde, no va».</b> El logotipo
-  oficial existe en un solo color —su verde <code>#25D366</code>— y las reglas
-  de Meta dicen textual <b>«you shouldn't modify any colors in our logos»</b>:
-  no hay versión dorada permitida. <b>O entra su verde, o no entra el
-  logotipo.</b></p>
-  <p style="margin-top: 12px"><b>Y sus propias reglas empujan para el mismo
-  lado:</b> <i>«DON'T make WhatsApp the most distinctive or prominent feature
-  of your materials»</i>. Un verde saturado adentro de una tarjeta de íconos
-  dorados sería lo más llamativo de la página — justo lo que la § 4 no quiere,
-  porque WhatsApp acá es <b>canal secundario: disponible, no promovido</b>.</p>
-  <p class="dato" style="margin-top: 12px">🔴 <b>El límite que hay que vigilar
-  al dibujar el nuestro:</b> <i>«DON'T use an image confusingly similar to the
-  WhatsApp telephone logo»</i>. Nuestra burbuja <b>no lleva el teléfono
-  adentro</b>. El día que alguien se lo dibuje «para que se reconozca mejor»,
-  cae justo en lo prohibido.</p>
-  <p class="dato" style="margin-top: 12px">⏱ <b>Lo que esto le deja a la pieza
-  14, y se resuelve ahí:</b> el botón flotante es <b>sólo ícono</b> (§ 4). Sin
-  el logotipo verde, una burbuja sola puede leerse como «chat» y no como
-  WhatsApp. <b>O el botón gana una palabra, o cambia de forma.</b></p>
-  <p class="dato" style="margin-top: 12px">📌 <b>Y toca los textos:</b> se
-  escribe <b>WhatsApp</b>, con las dos mayúsculas, y <b>nunca como verbo</b> —
-  las dos son reglas textuales de ellos. «Escribinos por WhatsApp» cumple.</p>
+  <p class="rotulo">Marcas ajenas · decisión de Juan</p>
+  <h2>El isotipo es el oficial, y va en dorado</h2>
+  <p><b>No es un dibujo nuestro.</b> Los dos isotipos —éste y el de Instagram
+  del pie— salen del <b>Brand Resource Center de Meta</b>, bajados el
+  4-sep-2026, y viven en <code>brand/marcas-ajenas/</code> con su procedencia
+  escrita al lado. El generador <b>lee el archivo</b> y sólo le cambia el
+  relleno: la geometría no se toca nunca.</p>
+  <p style="margin-top: 12px"><b>Y van en dorado, los dos. Lo decidió Juan</b>,
+  con el dato en contra sobre la mesa: <b>Instagram permite cualquier color
+  sólido</b> mientras el dibujo no cambie, y <b>WhatsApp dice lo contrario</b>
+  —<i>«you shouldn't modify any colors in our logos»</i>— y publica sus tres
+  versiones. <b>Su criterio: es la misma empresa, y el uso repintado está en
+  todos lados.</b> Queda escrito con su costo al lado, en
+  <code>PROCEDENCIA.md</code>, para no re-discutirlo cada vez.</p>
+  <p class="dato" style="margin-top: 12px">🔴 <b>CUÁL dorado no es preferencia,
+  es medida.</b> Acá la tarjeta es <b>blanca</b> y va el dorado del brief, que
+  ahí mide 3,09 — el mismo de los otros tres íconos. <b>En el pie, que es
+  marfil, el mismo dorado mide 2,89 y no pasa</b>, así que allá va el dorado de
+  texto. Es la regla que ya ordenaba los íconos de la pieza 11.</p>
+  <p class="dato" style="margin-top: 12px">📌 <b>Lo que sí se respeta sin
+  costo:</b> el dibujo no se deforma ni se combina con otro logo, y
+  <b>WhatsApp</b> se escribe con las dos mayúsculas y nunca como verbo.</p>
 
   <p class="rotulo">Lo que esta pieza sacó</p>
   <h2>Los horarios no se publican</h2>
@@ -3878,11 +3978,280 @@ en las constantes del generador.</p>
     es público y el correo de Cecilia hoy es una casilla personal; el historial
     de git viaja con el repo y no se reescribe. <b>El de verdad se pone al
     construir el sitio</b>, igual que en la base (§ 9.1.c).</li>
+    <li>🔴 <b>El isotipo ajeno va a 18 px y los nuestros a 24, y así es como
+    se ven IGUALES.</b> Lo levantó Juan. Los nuestros son de línea y no llegan
+    al filo de su caja —el sobre mide 17,6 de ancho adentro de 24—; el ajeno es
+    macizo y la ocupa entera. <b>Igualar la caja es agrandar el dibujo.</b></li>
+    <li><b>Los isotipos ajenos NO se dibujan a mano.</b> Salen del Brand
+    Resource Center de Meta y se leen del archivo. Lo único que se les cambia
+    es el color, y esa decisión está escrita con su costo.</li>
     <li><b>El mapa se apunta con coordenada, nunca con la dirección
     escrita.</b> «25 de Mayo 3725, Santa Fe» tiene dos lugares posibles en la
     misma provincia.</li>
     <li><b>La matrícula no va acá: va en el pie</b> (pieza 13). Es un renglón
     fijo de toda pieza pública, y el pie es donde se lo busca.</li>
+  </ul>
+</section>
+"""
+
+
+
+# ============================================================
+# PIEZA 13 — EL PIE
+#
+# El pie es el único bloque con contenido OBLIGATORIO, y no lo decide el
+# diseño: el régimen de anuncios publicitarios está delegado por la Ley 3950
+# al Colegio de Odontólogos, y pide nombre y matrícula visibles (§ 14). Por eso
+# esos dos renglones no se acortan ni se mueven a otro lado.
+# ============================================================
+
+PROFESIONAL = "Dra. Cecilia Brassesco"
+
+# 🔴 SE ESCRIBE "Matrícula", no una sigla. No se consiguió el texto del
+# reglamento del Colegio (§ 14, sigue esperando respuesta), así que la abrevia-
+# tura sería inventada. La palabra entera no puede estar mal.
+MATRICULA = "Matrícula 3636/01"
+
+# Tomado el 12-ago-2026, junto con el dominio y el nombre de WhatsApp (16.7).
+INSTAGRAM = "cbodontologiayestetica"
+
+NOMBRE_COMERCIAL = "CB Odontología y Estética"
+
+CSS_PIE = """
+/* La línea dorada es lo único que separa el pie del bloque de arriba. NO va
+   banda de fondo: la primera banda oscura del sitio es una decisión de la
+   página entera, y se toma en el tablero 15 con las seis secciones juntas.
+   Adelantarla acá sería decidir el ritmo del sitio desde su último bloque. */
+.pie-sitio {
+  border-top: 1px solid var(--dorado);
+  padding-top: 24px;
+  margin-top: 24px;
+  max-width: var(--columna-lista);
+  text-align: center;
+}
+
+/* 🔑 EL AIRE AGRUPA, y lo dictó Juan mirando el pie: los cuatro renglones de
+   abajo —nombre, matrícula, redes, copyright— son UN grupo, y el logo es otra
+   cosa. Así que el hueco grande va entre el logo y el bloque, y los de adentro
+   del bloque se cierran. Antes estaban todos parecidos —18, 14, 12— y el pie
+   se leía como cuatro cosas sueltas. */
+.pie-marca {
+  display: block;
+  margin: 0 auto 24px;
+}
+
+/* El nombre y la matrícula son el contenido obligatorio: van en el gris de
+   lectura, no en el de las aclaraciones. */
+.pie-nombre {
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+}
+
+.pie-matricula {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+/* El enlace se toca, así que necesita alto: el relleno lo lleva de los 21 px
+   de su renglón a los 44 del piso táctil. */
+.pie-red {
+  display: inline-block;
+  padding: 12px 0;
+  margin-top: 6px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--dorado-texto);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Los dos isotipos, uno al lado del otro.
+
+   🔴 EL RELLENO ES DE 9 PX PORQUE EL PISO TÁCTIL ES 44 y el dibujo mide 26:
+   26 + 9 + 9 = 44. Acá decía que ya medía 44 con 4 px de relleno, y era falso
+   —daba 34—. Corregido el 4-sep-2026.
+
+   Y como ese relleno también empuja hacia afuera, los márgenes de arriba y de
+   abajo se descuentan: el hueco que se VE es 10 arriba y 9 abajo, que es lo
+   que pide el agrupamiento. Un piso táctil no tiene por qué verse. */
+.pie-redes {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.pie-redes a {
+  display: block;
+  padding: 9px;
+}
+
+.pie-legal {
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  color: var(--texto-segundo);
+  margin-top: 0;
+}
+"""
+
+
+# 🔴 EL TAMAÑO SE COMPARA POR ÁREA, NO POR ANCHO — corregido el 4-sep-2026,
+# lo cazó Juan mirando: "si va más chico que el encabezado, yo lo sigo viendo
+# más grande". Tenía razón y el error era de método, no de gusto.
+#
+# El encabezado lleva el WORDMARK, que es una tira: 200 x 32 = 6.400 px². El
+# pie lleva el APILADO, que es un bloque: a 160 de ancho mide 84 de alto y da
+# 13.440 px², o sea MÁS DEL DOBLE. Comparar los anchos de dos dibujos con
+# proporciones distintas no dice nada.
+#
+# A 120 px el apilado mide 63 de alto y da 7.560 px², un 18 % más que el
+# encabezado (6.400). Se subió dos veces a pedido de Juan, mirando: 100 → 110
+# → 120. El número no se eligió por regla, se eligió a 1:1.
+PIE_LOGO = {390: 120, 768: 142, 1280: 158}
+
+
+def pie_del_sitio(apilado, ancho):
+    """El cierre de la página: la marca, quién firma, y dónde encontrarla."""
+    return f"""
+  <footer class="pie-sitio">
+    <img class="pie-marca"
+         src="data:image/png;base64,{apilado}"
+         alt="{NOMBRE_COMERCIAL}"
+         width="{PIE_LOGO[ancho]}">
+    <p class="pie-nombre">{PROFESIONAL}</p>
+    <p class="pie-matricula">{MATRICULA}</p>
+    <div class="pie-redes">
+      <a href="https://instagram.com/{INSTAGRAM}"
+         aria-label="Instagram de CB Odontología y Estética"
+         >{isotipo("instagram", "iso-pie")}</a>
+      <a href="https://wa.me/{WHATSAPP}"
+         aria-label="Escribir por WhatsApp al consultorio"
+         >{isotipo("whatsapp", "iso-pie")}</a>
+    </div>
+    <p class="pie-legal">© 2026 {NOMBRE_COMERCIAL}</p>
+  </footer>"""
+
+
+def tablero_pie(tokens, css, ancho):
+    apilado = leer_png("cb-apilado-600")
+    alto = round(PIE_LOGO[ancho] * PROPORCION["apilado"])
+
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 13 Pie · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_ISOTIPO}
+{CSS_PIE}
+</style>
+
+<p class="rotulo">Fase ⑧ · Pieza 13 · {ancho} px</p>
+<h1>El pie</h1>
+<div class="regla"></div>
+<p><b>Es el único bloque con contenido obligatorio</b>, y no lo decide el
+diseño: en Santa Fe el régimen de anuncios está delegado al Colegio de
+Odontólogos por la Ley 3950, y pide <b>nombre y matrícula visibles</b>. Esos
+dos renglones no se acortan.</p>
+
+<section>
+  <p class="rotulo">El pie, a 1:1</p>
+  <h2>Cuatro renglones</h2>
+  {pie_del_sitio(apilado, ancho)}
+</section>
+
+<section>
+  <p class="rotulo">La decisión que esta pieza cerró</p>
+  <h2>Acá aparece el emblema, y en ningún otro lado</h2>
+  <p>El encabezado lleva el <b>wordmark</b> (pieza 9). Si el pie repitiera el
+  mismo dibujo, el emblema —la parte de la marca que se dibujó con más
+  cuidado— <b>no aparecería en toda la página</b>. Va el <b>apilado</b>.</p>
+  <p class="dato" style="margin-top: 12px">🔴 <b>Y el tamaño se compara por
+  ÁREA, no por ancho — lo cazó Juan mirando.</b> Acá decía «va más chico que el
+  encabezado» porque 160 es menos que 200. <b>Era falso:</b> el wordmark del
+  encabezado es una tira de 200 × 32 = <b>6.400 px²</b>, y el apilado a 160
+  medía 84 de alto = <b>13.440 px², más del doble</b>. Comparar los anchos de
+  dos dibujos de proporciones distintas no dice nada.</p>
+  <p class="dato" style="margin-top: 12px">✅ <b>Corregido a
+  {PIE_LOGO[ancho]} px:</b> mide {alto} de alto y da <b>{PIE_LOGO[ancho] * alto}
+  px²</b>, contra los 6.400 del encabezado. Y queda arriba del mínimo del
+  manual para el apilado, que son 80 px.</p>
+
+  <p class="rotulo">La única excepción de alineación del sitio</p>
+  <h2>El pie va centrado, y todo lo demás no</h2>
+  <p><b>Se probaron los dos.</b> Al margen, como el resto del sitio, el
+  apilado queda mal: <b>es una composición centrada</b> —el emblema sobre el
+  nombre— y pegada a la izquierda parece corrida, no alineada. El medidor lo
+  marcó solo: la tinta del emblema caía en una posición que no es ninguna de
+  las tres legítimas.</p>
+  <p style="margin-top: 12px"><b>Centrado, el pie cierra la página.</b> Los 18
+  bloques vuelven a caer en su lugar —siete centrados, once en el margen— y el
+  centrado <b>se mide, no se declara</b>.</p>
+  <p class="dato" style="margin-top: 12px">🔑 <b>Cuándo convendría lo otro:</b>
+  si el pie creciera a varias columnas —menú, tratamientos, redes—, la
+  alineación al margen vuelve a ganar, porque ahí lo que ordena son las
+  columnas y no el cierre. <b>Con cuatro renglones, no.</b></p>
+
+  <p class="rotulo">Lo que el pie NO repite</p>
+  <h2>La dirección y el teléfono no vuelven</h2>
+  <p><b>Contacto está justo arriba.</b> En una página de un solo scroll,
+  repetir el teléfono a 200 px del teléfono no agrega un camino: agrega un
+  renglón que hay que mantener en dos lados. <b>Es la misma regla que sacó los
+  horarios de la pieza 12:</b> dos copias del mismo dato se desincronizan.</p>
+  <p class="dato" style="margin-top: 12px">⚠ <b>Se revisa en el tablero 15</b>,
+  que es donde se ve la distancia real entre los dos bloques. Si en pantalla
+  grande Contacto y el pie quedan lejos, esto se reabre.</p>
+
+  <p class="rotulo">Acá me equivoqué yo, y lo cazó Juan</p>
+  <h2>Los isotipos van, y van en dorado</h2>
+  <p>Este tablero llegó a decir que el isotipo de Instagram no se podía
+  repintar. <b>Era falso:</b> sus reglas dicen que se puede llevar a
+  <b>cualquier color sólido</b> mientras el dibujo no cambie. <i>El error de
+  fondo no fue el dato: fue meter dos marcas en la misma bolsa</i> —se le
+  aplicó a Instagram una regla leída en las de WhatsApp—.</p>
+  <p style="margin-top: 12px"><b>WhatsApp sí dice que no se repinta</b>, y aun
+  así va en dorado: <b>lo decidió Juan</b>, con ese dato delante y con el
+  criterio de que es la misma empresa y el uso repintado está en todos lados.
+  <b>La decisión y su costo viven en <code>brand/marcas-ajenas/PROCEDENCIA.md</code></b>,
+  no en la memoria de nadie.</p>
+  <p class="dato" style="margin-top: 12px">✅ <b>Y los archivos son los
+  oficiales.</b> Se bajaron los dos packs del Brand Resource Center de Meta el
+  4-sep-2026 — el de WhatsApp trae las versiones verde, blanca y negra; el de
+  Instagram, degradada, blanca y negra—. <b>Se guardó la negra de cada uno</b>,
+  que es silueta plana, y el generador le pone el color. <b>Ninguna curva se
+  dibujó a mano.</b></p>
+  <p class="dato" style="margin-top: 12px">🔴 <b>Acá van en el dorado de TEXTO,
+  no en el del brief:</b> el pie es marfil y ahí el dorado del brief mide 2,89,
+  abajo del piso de 3,0 de un dibujo. En la tarjeta de contacto, que es blanca,
+  va el del brief. <b>El fondo decide, no el gusto.</b></p>
+
+  <p class="rotulo">Lo que quedó dicho y hay que confirmar</p>
+  <h2>La matrícula se escribe con la palabra entera</h2>
+  <p>Va <b>«Matrícula 3636/01»</b> y no una sigla. <b>No se consiguió el texto
+  del reglamento del Colegio</b> —la consulta está hecha y esperando
+  respuesta—, así que cualquier abreviatura sería inventada. <b>La palabra
+  entera no puede estar mal.</b></p>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li>🔴 <b>El nombre y la matrícula son obligatorios</b>, no decorativos.
+    Van en el gris de lectura, no en el de las aclaraciones.</li>
+    <li><b>El pie no lleva banda de fondo.</b> La primera banda oscura del
+    sitio es una decisión de la página entera y se toma en el tablero 15.
+    Decidir el ritmo del sitio desde su último bloque es al revés.</li>
+    <li><b>El pie es el único bloque centrado del sitio.</b> Es una excepción
+    con motivo —su marca es una composición centrada—, no una preferencia.</li>
+    <li><b>El enlace de Instagram mide 44 px de alto</b>, como todo lo que se
+    toca. El relleno está para eso, no para separar.</li>
+    <li><b>Ningún isotipo ajeno entra al sitio</b> — ni el de WhatsApp ni el de
+    Instagram. La palabra hace el trabajo.</li>
   </ul>
 </section>
 """
@@ -4052,6 +4421,15 @@ def main():
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(
             fijar_al_ancho(tablero_tratamientos(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "13-pie" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_pie(tokens, css, ancho), ancho),
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")
