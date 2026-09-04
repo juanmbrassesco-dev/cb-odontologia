@@ -3344,13 +3344,22 @@ NUEVOS = {
     "Strass dentales":
         '<rect x="11" y="9" width="18" height="22" rx="6"/>'
         '<path d="M25 13 l3.5 3.5 l-3.5 3.5 l-3.5 -3.5 z"/>',
+    # 🔴 REDIBUJADO, y es el único del brief que se cambia. El original era un
+    # óvalo con dos patas: ampliado a 120 px lee MESA, y es el único de los seis
+    # dibujado en perspectiva —los otros cinco son frontales—. Tres piezas
+    # cruzadas por el alambre dicen ortodoncia sin dibujar dientes torcidos, que
+    # sería dibujar el problema y no el tratamiento. Elegido por Juan.
+    "Ortodoncia":
+        '<rect x="7" y="12" width="7" height="15" rx="2.5"/>'
+        '<rect x="16.5" y="11" width="7" height="16" rx="2.5"/>'
+        '<rect x="26" y="12" width="7" height="15" rx="2.5"/>'
+        '<path d="M4 19.5 h32"/>',
 }
 
 # Centros medidos sobre brand/fotos/iconos-del-brief.png (900 px de ancho).
 DEL_BRIEF = {
     "Carillas": 230,
     "Blanqueamiento": 376,
-    "Ortodoncia": 521,
     "Limpieza": 667,
 }
 
