@@ -240,6 +240,36 @@
      respira más que el párrafo. */
   --columna-lista: 100%;
 
+  /* EL MARGEN DE LA PÁGINA — el aire entre el contenido y el filo de la
+     pantalla. Sube acá el 3-sep-2026: los tres números ya existían y ya eran
+     sistemáticos, pero vivían adentro de tools/construir-tableros.py, o sea
+     donde el sitio no los puede leer. Un valor, un lugar.
+
+     Los tres salen del ancho disponible y no de una preferencia: en 390 un
+     margen más grande le come al contenido el ancho que necesita la grilla de
+     horarios —siete columnas que no bajan de 44 px—; en 1280 uno más chico
+     deja el texto pegado al filo de la pantalla. */
+  --margen-pagina: 20px;
+
+  /* EL AIRE ENTRE SECCIONES — un valor por ancho, y lo decidió Juan el
+     3-sep-2026 contra la propuesta de un número único para los tres.
+
+     POR QUÉ NO ES UNO SOLO: el margen de página ya va de 20 a 64 y la escala
+     tipográfica se pisa entera en los dos @media. Un aire único contradiría
+     la única decisión de espacio que el sistema ya había tomado.
+
+     Y EL MOTIVO DE FONDO NO ES EL TAMAÑO: en móvil el aire es el ÚNICO
+     separador entre una sección y la siguiente, porque todo va en una sola
+     columna. A 1280 separan además la disposición, una banda de fondo o una
+     foto a sangre, y el aire deja de cargar solo.
+
+     ⏱ LOS NÚMEROS SON PROVISORIOS: se cierran en el tablero 15, con la página
+     entera delante y a 1:1. Lo que ya está fundado es el PISO — el aire entre
+     dos secciones tiene que superar al aire más grande de adentro de un
+     componente (44 px), o la costura se lee como parte de la sección
+     anterior en vez de como el arranque de la siguiente. */
+  --aire-seccion: 56px;
+
   /* En el teléfono el botón principal va de borde a borde; de tablet para
      arriba se ajusta a su texto. Es un token para que el sitio no lo repita. */
   /* EL RADIO DE LAS ESQUINAS — decidido por Juan el 2-sep-2026.
@@ -445,14 +475,24 @@ th.n { text-align: right; }
 
 .btn {
   display: inline-block;
+  text-decoration: none;
   font-family: Jost, sans-serif;
   font-size: 19px;
   font-weight: 600;
   line-height: 1.2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+
+  /* 🔴 SIN MAYÚSCULAS — decidido por Juan el 3-sep-2026, viendo los botones
+     dentro del hero y no sueltos en un tablero. «R E S E R V A R» ocupaba un
+     30 % más que «Reservar» y no aportaba legibilidad.
+
+     Lo que NO se tocó, y es lo que hace que el cambio sea seguro: el alto
+     mínimo de 44 px (piso táctil) y la letra de 19 px, que la exige el
+     contraste — blanco sobre el dorado del brief mide 3,09, y ese número
+     sólo alcanza para texto grande. */
+  letter-spacing: 0.01em;
+  text-transform: none;
   text-align: center;
-  padding: 12px 26px;
+  padding: 12px 20px;
   min-height: 44px;
   border: 0;
   border-radius: var(--radio);

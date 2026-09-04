@@ -633,7 +633,41 @@ CHICO_MUESTRA = (
 
 ANCHOS = [390, 768, 1280]
 
-MARGENES = {390: 20, 768: 40, 1280: 64}
+
+def leer_espacio(nombre):
+    """Un token de espacio, resuelto ancho por ancho.
+
+    Mismo mecanismo que leer_escala y por el mismo motivo: el :root trae el
+    valor de móvil y cada @media lo pisa. Acá NO se escribe ningún número —
+    los tres viven en css/tokens.css, que es lo que también lee el sitio.
+    """
+    css = TOKENS.read_text(encoding="utf-8")
+    partes = re.split(r"@media\s*\(min-width:\s*(\d+)px\)", css)
+    patron = re.compile(rf"--{nombre}\s*:\s*(\d+)px")
+
+    hallado = patron.findall(partes[0])
+
+    if not hallado:
+        raise SystemExit(f"✗ tokens.css no declara --{nombre} en :root")
+
+    ultimo = int(hallado[-1])
+    valores = {390: ultimo}
+
+    for i in range(1, len(partes), 2):
+        corte = int(partes[i])
+        hallado = patron.findall(partes[i + 1])
+
+        if hallado:
+            ultimo = int(hallado[-1])
+
+        valores[corte] = ultimo
+
+    return valores
+
+
+MARGENES = leer_espacio("margen-pagina")
+
+AIRE = leer_espacio("aire-seccion")
 
 
 def leer_escala(css):
@@ -852,14 +886,24 @@ al volver.</p>
 CSS_BOTON = """
 .btn {
   display: inline-block;
+  text-decoration: none;
   font-family: Jost, sans-serif;
   font-size: 19px;
   font-weight: 600;
   line-height: 1.2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+
+  /* 🔴 SIN MAYÚSCULAS — decidido por Juan el 3-sep-2026, viendo los botones
+     dentro del hero y no sueltos en un tablero. «R E S E R V A R» ocupaba un
+     30 % más que «Reservar» y no aportaba legibilidad.
+
+     Lo que NO se tocó, y es lo que hace que el cambio sea seguro: el alto
+     mínimo de 44 px (piso táctil) y la letra de 19 px, que la exige el
+     contraste — blanco sobre el dorado del brief mide 3,09, y ese número
+     sólo alcanza para texto grande. */
+  letter-spacing: 0.01em;
+  text-transform: none;
   text-align: center;
-  padding: 12px 26px;
+  padding: 12px 20px;
   min-height: 44px;
   border: 0;
   border-radius: var(--radio);
@@ -2590,6 +2634,649 @@ PANTALLA = [
 ]
 
 
+# ============================================================
+# PIEZA 9 — EL ENCABEZADO Y EL MENÚ
+#
+# Es la primera pieza de la LANDING: de la 4 a la 8 son la pantalla de reserva,
+# y el encabezado no lo diseñó nadie todavía. La tira de contexto (pieza 8) ya
+# dibujó UNO —logo solo, sin navegación—, y dejó escrito que la navegación "no
+# es una pieza cerrada". Ésta la cierra.
+# ============================================================
+
+
+def leer_png(nombre):
+    """Un PNG de la marca, embebido, para que el tablero se abra solo."""
+    import base64
+
+    ruta = RAIZ / "brand" / "logo" / "png" / f"{nombre}.png"
+    return base64.b64encode(ruta.read_bytes()).decode("ascii")
+
+
+# El ancho del logo en el encabezado, por ancho de pantalla.
+#
+# 🔴 A 390 SON 200 PX, Y EL NÚMERO NO SE ELIGIÓ ACÁ: es el que la pieza 8 ya
+# usa en su encabezado. Se probó bajarlo a 160 para meter el botón en la barra;
+# al salir el botón del encabezado (decisión de Juan) el motivo desapareció, y
+# volver a 200 deja los dos tableros diciendo lo mismo. Los mínimos medidos del
+# manual —wordmark 100 px en un celular moderno, apilado 80— quedan bien abajo.
+ENCABEZADO_LOGO = {390: 200, 768: 260, 1280: 320}
+
+# La proporción real de cada archivo, medida sobre el PNG. Con ella se calcula
+# el ALTO que cada logo le cuesta al encabezado, que es el número que decide.
+PROPORCION = {"wordmark": 97 / 600, "apilado": 316 / 600}
+
+
+def alto_logo(pieza, ancho):
+    """Cuánto mide de alto el logo dentro de la barra, en píxeles."""
+    return round(ENCABEZADO_LOGO[ancho] * PROPORCION[pieza])
+
+
+CSS_ENCABEZADO = """
+/* El encabezado cruza la pantalla de lado a lado, así que el margen de página
+   lo lleva él y no el <body>. Mismo mecanismo que la tira de la pieza 8. */
+body { padding: 0; }
+
+.prosa {
+  padding: 0 var(--margen-pagina);
+}
+
+.prosa section { margin-top: var(--aire-seccion); }
+
+/* LA BARRA. Tres cosas en una fila: el logo a la izquierda, y a la derecha lo
+   que la decisión de abajo defina. `space-between` las separa sin escribir
+   ningún número de por medio: el hueco es lo que sobra. */
+.barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px var(--margen-pagina);
+  background: var(--marfil);
+  border-bottom: 1px solid var(--dorado);
+}
+
+.barra img {
+  display: block;
+  height: auto;
+}
+
+/* El botón del sistema se centra solo en su caja —así quedó cerrado el
+   3-sep—. Adentro de una fila eso lo empujaría al medio: acá se le sacan los
+   márgenes automáticos y nada más. El formato, el color y el alto no se
+   tocan. */
+.barra .btn,
+.menu-abierto .btn {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.menu-abierto .btn { margin: 6px auto 14px; }
+
+/* EL BOTÓN DE MENÚ. Cuadrado de 44 px, que es el piso táctil del sistema. Las
+   tres rayas son el borde de arriba de tres cajas, sin ninguna imagen. */
+.menu-boton {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 9px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.menu-boton span {
+  display: block;
+  height: 2px;
+  background: var(--grafito);
+}
+
+/* EL MENÚ ABIERTO. Cae debajo de la barra y ocupa el ancho entero: en el
+   teléfono no hay lugar para un panel flotante, y uno que tape media pantalla
+   esconde el sitio detrás de sí mismo. */
+.menu-abierto {
+  padding: 8px var(--margen-pagina) 20px;
+  background: var(--marfil);
+  border-bottom: 1px solid var(--dorado-claro);
+}
+
+.menu-abierto a {
+  display: block;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--dorado-claro);
+  color: var(--grafito);
+  text-decoration: none;
+  font-size: var(--tipo-cuerpo);
+}
+
+.menu-abierto a:last-of-type { border-bottom: 0; }
+
+/* EL MENÚ EN PANTALLA ANCHA. Los tres enlaces en fila, entre el logo y el
+   botón. El rótulo va en versalita como el resto del sistema. */
+.menu-fila {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.menu-fila a {
+  color: var(--grafito);
+  text-decoration: none;
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+}
+
+/* El marco que dice "esto es una muestra, no la página". Es andamiaje del
+   tablero y no existe en el sitio. */
+.muestra-barra {
+  border: 1px solid var(--dorado-claro);
+  margin-top: 16px;
+}
+
+.marca-muestra {
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+  color: var(--texto-segundo);
+  margin-top: 22px;
+}
+
+.reglas { margin-top: 12px; padding-left: 20px; max-width: var(--columna); }
+
+.reglas li { margin-top: 8px; }
+"""
+
+
+def barra(logo, pieza, ancho, con_menu, con_boton, abierto=False):
+    """Una barra de encabezado: el logo, y lo que se le ponga al lado."""
+    derecha = ""
+
+    if con_menu == "fila":
+        derecha += """
+      <nav class="menu-fila">
+        <a href="#tratamientos">Tratamientos</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#contacto">Contacto</a>
+      </nav>"""
+
+    if con_boton:
+        derecha += """
+      <a class="btn btn-1" href="#reservar">Reservar</a>"""
+
+    if con_menu == "boton":
+        derecha += """
+      <button class="menu-boton" aria-label="Abrir el menú">
+        <span></span><span></span><span></span>
+      </button>"""
+
+    panel = ""
+
+    if abierto:
+        panel = """
+    <div class="menu-abierto">
+      <a class="btn btn-1" href="#reservar">Reservar</a>
+      <a href="#tratamientos">Tratamientos</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#contacto">Contacto</a>
+    </div>"""
+
+    return f"""
+  <div class="muestra-barra">
+    <div class="barra">
+      <img src="data:image/png;base64,{logo}"
+           alt="CB Odontología y Estética"
+           width="{ENCABEZADO_LOGO[ancho]}">
+      <div style="display: flex; align-items: center; gap: 12px">{derecha}
+      </div>
+    </div>{panel}
+  </div>"""
+
+
+def tablero_encabezado(tokens, css, ancho):
+    wordmark = leer_png("cb-wordmark-600")
+    apilado = leer_png("cb-apilado-600")
+    chico = ancho < 768
+
+    alto_w = alto_logo("wordmark", ancho)
+    alto_a = alto_logo("apilado", ancho)
+
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 09 Encabezado y menú · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_ENCABEZADO}
+</style>
+
+<div class="prosa">
+<p class="rotulo">Fase ⑧ · Pieza 9 · {ancho} px</p>
+<h1>Encabezado y menú</h1>
+<div class="regla"></div>
+<p><b>Es lo primero que se ve y lo único que está en toda la página.</b> La
+pieza 8 ya dibujó un encabezado —el logo solo— y dejó escrito que la navegación
+no era una pieza cerrada. <b>Ésta la cierra.</b></p>
+
+<section>
+  <p class="rotulo">La decisión que esta pieza tiene que cerrar</p>
+  <h2>Cuál logo va en la barra</h2>
+  <p>El manual asigna el <b>apilado</b> al «encabezado del sitio en el
+  celular», y el brief dibuja el <b>wordmark</b>. <b>La pieza 8 ya eligió el
+  wordmark sin que nadie lo decidiera</b>, así que confirmar o cambiar acá
+  también toca ese tablero.</p>
+  <p class="marca-muestra">Wordmark · {ENCABEZADO_LOGO[ancho]} px de ancho ·
+  <b>{alto_w} px de alto</b></p>
+  {barra(wordmark, "wordmark", ancho, "boton" if chico else "fila", not chico)}
+  <p class="marca-muestra">Apilado · {ENCABEZADO_LOGO[ancho]} px de ancho ·
+  <b>{alto_a} px de alto</b></p>
+  {barra(apilado, "apilado", ancho, "boton" if chico else "fila", not chico)}
+  <p style="margin-top: 12px">🏁 <b>Resuelto por Juan el 3-sep-2026: va el
+  WORDMARK a 200 px</b>, «es más sobrio». Es el mismo ancho que ya usa la
+  pieza 8, así que los dos encabezados del proyecto dicen lo mismo.</p>
+  <p class="dato" style="margin-top: 12px"><b>Se probaron cuatro y se
+  midieron:</b> wordmark a 200 y 240, apilado a 150 y 180. <b>El apilado a
+  180 daba la misma letra que el wordmark de 240 ocupando el 51 % del ancho
+  en vez del 69 %</b> —el «CB» mide el <b>21,5 %</b> del ancho del logo en el
+  apilado y el <b>16,2 %</b> en el wordmark, medido sobre la tinta del
+  archivo— <b>y se descartó igual, por alto de barra: 123 px contra 60.</b>
+  <i>Con el wordmark «más grande» y «más a la izquierda» son la misma perilla
+  tirando para lados opuestos, porque el nombre va al lado y no abajo.</i></p>
+  <p class="dato" style="margin-top: 16px"><b>El número que decide es el
+  ALTO</b>, no el ancho: el apilado mide <b>{alto_a} px</b> contra
+  <b>{alto_w}</b> del wordmark, y la barra queda
+  <b>{round(alto_a / alto_w, 1)} veces más alta</b>. En un encabezado que
+  acompaña el scroll, ese alto se paga en cada pantalla del sitio.</p>
+</section>
+
+<section>
+  <p class="rotulo">La segunda decisión</p>
+  <h2>Qué va del otro lado</h2>
+  <p>Las tres cosas que pide la § 4 —el logo, los enlaces y el botón
+  <b>Reservar</b>— <b>no entran juntas a {ancho} px</b>, y no es una
+  impresión: el logo mide 200, el botón 160 y el de menú 44, más dos huecos
+  de 12. Son <b>428 px</b> contra los <b>350</b> que deja el margen de
+  página.</p>
+  <p style="margin-top: 12px">🏁 <b>Resuelto por Juan: el que se va del
+  encabezado es el BOTÓN.</b> Queda el logo y el menú, y el <b>Reservar</b>
+  vive en el hero —que es donde el paciente llega leyendo— y adentro del menú
+  abierto. <i>El encabezado no es el único lugar donde puede estar la acción;
+  el menú sí es el único lugar donde pueden estar los enlaces.</i></p>
+  <p class="marca-muestra">El encabezado, cerrado</p>
+  {barra(wordmark, "wordmark", ancho, "boton", False)}
+  <p class="marca-muestra">Con el menú abierto</p>
+  {barra(wordmark, "wordmark", ancho, "boton", False, abierto=True)}
+  <p class="dato" style="margin-top: 16px">⚠️ <b>Y queda anotado lo que Juan
+  levantó al mirarlo a 1:1: a {ancho} px el botón del sistema es
+  ENORME.</b> Mide 160 px de ancho y 44 de alto con letra de 19 — casi la
+  mitad del ancho útil de la pantalla. <b>El formato único de botón se cerró
+  el 3-sep sin haberlo visto adentro de una barra</b>, y ésta es la primera
+  pieza que lo mete en una. No se toca acá: se decide con la página entera
+  delante, en el tablero 15.</p>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li><b>El botón es el mismo del sistema</b>, sin achicar: mismo alto, misma
+    letra de 19 px, mismo dorado. Lo único que se le saca adentro de la barra
+    son los márgenes automáticos que lo centraban.</li>
+    <li><b>El botón de menú no baja de 44 px de lado</b>, que es el piso táctil
+    del sistema.</li>
+    <li><b>La raya de abajo es la dorada</b>, la misma que separa bloques en
+    todos los tableros.</li>
+    <li><b>El menú abierto empuja la página, no la tapa.</b> Un panel que cubre
+    media pantalla esconde el sitio detrás de sí mismo.</li>
+    <li><b>Los enlaces son anclas de la misma página</b>: el sitio es una sola
+    página y el menú no navega a ningún lado.</li>
+  </ul>
+</section>
+</div>
+"""
+
+
+# ============================================================
+# PIEZA 10 — EL HERO
+#
+# Es la única pantalla que el brief SÍ trae (pág. 17), y de escritorio. Acá se
+# pasa a móvil, que es donde manda el sitio, y se le suman las dos cosas que el
+# brief no tiene: los textos definitivos de la § 4 y la PROPORCIÓN de la foto,
+# que es el primer dato del brief de fotos.
+# ============================================================
+
+H1 = ("Odontología y estética dental en Santa Fe, "
+      "con la calma que tu sonrisa merece.")
+
+SUBTITULO = ("Blanqueamiento, tratamientos generales y estética dental en un "
+             "espacio pensado para tu tranquilidad.")
+
+# La foto de ejemplo vive en brand/reference/, que NO se publica: es material
+# del brief, de un tercero. Si falta, el tablero dibuja el hueco en vez de
+# romperse — un tablero que no abre no se puede aprobar.
+FOTO = RAIZ / "brand" / "reference" / "hero-ejemplo.png"
+
+
+def leer_foto():
+    import base64
+
+    if not FOTO.exists():
+        return None
+
+    return base64.b64encode(FOTO.read_bytes()).decode("ascii")
+
+
+CSS_HERO_VELO = """
+/* EL HERO SOBRE LA FOTO — la forma que se propone.
+
+   La foto ocupa la pantalla y el texto va ARRIBA de ella, no debajo. Lo que
+   hace que eso se pueda leer no es el color de la letra: es el VELO, un
+   degradado del propio grafito de la marca que baja de transparente arriba a
+   casi opaco abajo. No entra ningún color nuevo al sistema — es el grafito
+   con transparencia.
+
+   🔴 El velo NO se elige a ojo: se mide sobre la captura, en la franja donde
+   cae el texto, con tools/medir-velo.py. Si el par blanco/fondo real no llega
+   a 4.5, el velo sube. */
+.hero-velo {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero-velo .hero-foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  object-fit: cover;
+  object-position: 50% 10%;
+  z-index: -2;
+}
+
+.hero-velo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to top,
+    rgba(51, 50, 47, 0.88) 0%,
+    rgba(51, 50, 47, 0.80) 48%,
+    rgba(51, 50, 47, 0.44) 68%,
+    rgba(51, 50, 47, 0.10) 86%,
+    rgba(51, 50, 47, 0.00) 100%
+  );
+}
+
+/* El texto se apoya ABAJO. Arriba queda la foto sola, que es lo que hace que
+   la pieza se lea como una foto con texto y no como una foto tapada. */
+.hero-velo .hero-texto {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 660px;
+  padding: 20px var(--margen-pagina) 24px;
+}
+
+.hero-velo h1 { color: var(--blanco); }
+
+/* La bajada baja al nivel «chico» de la escala —el que el sistema ya usa para
+   texto que se lee pero manda menos—. No se inventa ningún tamaño: se elige
+   otro peldaño de la escala, y con eso el bloque de texto ocupa menos y la
+   foto recupera cara. */
+.hero-velo .bajada {
+  margin-top: 12px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--blanco);
+  opacity: 0.92;
+}
+
+/* La raya dorada arriba del titular: es la misma que separa los bloques en
+   todo el sistema, y acá hace de arranque del texto. */
+.hero-velo .filo {
+  width: 56px;
+  height: 2px;
+  background: var(--dorado);
+  margin-bottom: 14px;
+}
+
+.hero-velo .acciones { justify-content: start; margin-top: 20px; }
+
+
+/* El secundario sobre la foto no puede ser grafito macizo: se hunde en el
+   velo. Se invierte —filo y letra blancos, relleno transparente—, que es el
+   mismo gesto que el sistema ya usa para el foco del secundario. */
+.hero-velo .btn-2 {
+  background: transparent;
+  color: var(--blanco);
+  box-shadow: none;
+  border: 2px solid var(--blanco);
+}
+"""
+
+
+CSS_HERO = """
+/* LA FOTO. Va a sangre y sin esquinas redondeadas: el radio del sistema es de
+   controles y superficies, y el manual dibuja la foto cuadrada.
+
+   `aspect-ratio` fija la FORMA del hueco y `object-fit: cover` recorta la foto
+   para llenarlo sin deformarla — la proporción de la imagen no manda, manda la
+   del hueco. `object-position` dice qué parte se conserva al recortar: acá la
+   sonrisa, que es el motivo de la foto. */
+.hero-foto {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: 50% 52%;
+}
+
+.hero-hueco {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--dorado-claro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-chico);
+  text-align: center;
+  padding: 0 24px;
+}
+
+.hero-texto { padding: 26px var(--margen-pagina) 32px; }
+
+.hero-texto h1 { max-width: var(--columna); }
+
+.hero-texto p {
+  margin-top: 16px;
+  max-width: var(--columna);
+  color: var(--texto-segundo);
+}
+
+/* Los dos botones ya vienen apilados e igualados por `.acciones` de la pieza
+   3. Acá sólo se los pega al margen izquierdo en vez de centrarlos: en el hero
+   el texto arranca en el margen y los botones lo siguen. */
+.hero-texto .acciones { justify-content: start; }
+"""
+
+CSS_HERO_ANCHO = """
+/* De tablet para arriba vuelve el reparto de la pág. 17: el texto a la
+   izquierda, la foto a la derecha y a sangre. Las dos columnas miden lo mismo,
+   y la foto ya no lleva proporción propia: se estira al alto de la fila. */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+}
+
+.hero-foto {
+  aspect-ratio: auto;
+  height: 100%;
+  min-height: 420px;
+}
+
+.hero-texto { padding: 0 var(--margen-pagina); }
+"""
+
+
+def hero_velo(foto, ancho):
+    """El hero propuesto: la foto entera, y el texto encima."""
+    imagen = (f'<img class="hero-foto" alt="" '
+              f'src="data:image/png;base64,{foto}">'
+              if foto else "")
+
+    return f"""
+  <div class="hero hero-velo">
+    {imagen}
+    <div class="hero-texto">
+      <div class="filo"></div>
+      <h1>{H1}</h1>
+      <div class="acciones">
+        <a class="btn btn-1" href="#reservar">Reservar</a>
+        <a class="btn btn-2" href="#tratamientos">Ver tratamientos</a>
+      </div>
+    </div>
+  </div>"""
+
+
+def hero(foto, ancho):
+    """El hero entero: la foto, el titular, el subtítulo y las dos acciones."""
+    if foto:
+        imagen = (f'<img class="hero-foto" alt="" '
+                  f'src="data:image/png;base64,{foto}">')
+    else:
+        imagen = ('<div class="hero-hueco">Falta '
+                  'brand/reference/hero-ejemplo.png</div>')
+
+    texto = f"""
+      <div class="hero-texto">
+        <h1>{H1}</h1>
+        <p>{SUBTITULO}</p>
+        <div class="acciones">
+          <a class="btn btn-1" href="#reservar">Reservar</a>
+          <a class="btn btn-2" href="#tratamientos">Ver tratamientos</a>
+        </div>
+      </div>"""
+
+    if ancho >= 768:
+        return f"""
+  <div class="hero">{texto}
+    {imagen}
+  </div>"""
+
+    return f"""
+  <div class="hero">
+    {imagen}{texto}
+  </div>"""
+
+
+def tablero_hero(tokens, css, ancho):
+    foto = leer_foto()
+    logo = leer_png("cb-wordmark-600")
+    chico = ancho < 768
+    alto_foto = round(ancho * 3 / 4)
+
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 10 Hero · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_ENCABEZADO}
+{CSS_HERO}
+{CSS_HERO_VELO}
+{CSS_HERO_ANCHO if not chico else ""}
+</style>
+
+<div class="prosa">
+<p class="rotulo">Fase ⑧ · Pieza 10 · {ancho} px</p>
+<h1>El hero</h1>
+<div class="regla"></div>
+<p><b>Es la única pantalla que el brief trae dibujada</b> —la pág. 17, de
+escritorio—. Acá está pasada a móvil, con los <b>textos definitivos de la
+§ 4</b> y con el encabezado de la pieza 9 arriba, que es como se va a ver.</p>
+</div>
+
+<p class="marca-muestra" style="padding: 0 var(--margen-pagina)">La
+propuesta · el texto sobre la foto, a 1:1</p>
+{barra(logo, "wordmark", ancho, "boton" if chico else "fila", not chico)}
+{hero_velo(foto, ancho)}
+
+<p class="marca-muestra" style="padding: 0 var(--margen-pagina)">Lo que se
+descarta · la foto arriba y el texto debajo</p>
+{barra(logo, "wordmark", ancho, "boton" if chico else "fila", not chico)}
+{hero(foto, ancho)}
+
+<div class="prosa">
+<section>
+  <p class="rotulo">Lo que esta pieza entrega además del dibujo</p>
+  <h2>El primer dato del brief de fotos</h2>
+  <p>🔴 <b>La forma elegida DICTA la foto, y eso es el entregable.</b> Con el
+  texto encima, el velo tapa el tercio de abajo: <b>si la cara está centrada,
+  la sonrisa queda debajo del velo</b> — que es exactamente lo que pasa con la
+  foto de ejemplo, que es un primer plano apaisado del brief. <b>La foto del
+  hero se pide VERTICAL, 2:3 o más alta, con la cara en el TERCIO DE
+  ARRIBA</b> y aire abajo para que el velo tenga dónde caer.</p>
+  <ul class="reglas">
+    <li><b>En el hero apilado, proporción 4:3 apaisada en el teléfono</b> — a {ancho} px son
+    {ancho} × {alto_foto}. De tablet para arriba la foto ocupa media pantalla
+    y se estira al alto del texto, así que <b>hay que entregarla vertical y
+    recortarla desde el centro</b>: una foto apaisada no sobrevive a esa
+    columna.</li>
+    <li><b>El motivo va en el centro y un poco abajo</b> —la sonrisa—, porque
+    el recorte se hace desde ahí. Es lo que dice
+    <code>object-position: 50% 52%</code>.</li>
+    <li><b>Margen de sobra alrededor de la cara.</b> El mismo archivo se
+    recorta 4:3 en el teléfono y casi vertical en escritorio: lo que quede
+    justo en uno se corta en el otro.</li>
+  </ul>
+  <p class="dato" style="margin-top: 14px">⚠️ <b>La foto de arriba es de
+  ejemplo y sale del brief.</b> Vive en <code>brand/reference/</code>, que no
+  se publica: es material de un tercero. <b>No es la foto del sitio.</b></p>
+</section>
+
+<section>
+  <p class="rotulo">Las reglas</p>
+  <h2>Lo que no se negocia</h2>
+  <ul class="reglas">
+    <li><b>La foto va a sangre y sin esquinas redondeadas.</b> El radio de 3 px
+    es de controles y superficies; el manual dibuja la foto cuadrada.</li>
+    <li><b>El titular es el de la § 4, palabra por palabra.</b> El del brief
+    —«Estética dental de alta precisión»— está escrito sobre otro
+    posicionamiento y no se copia.</li>
+    <li><b>Dos acciones y no más:</b> <b>Reservar</b>, que es la conversión, y
+    <b>Ver tratamientos</b>. Miden lo mismo porque las iguala la pieza 3.</li>
+    <li><b>El velo es el grafito de la marca con transparencia</b>, no un
+    color nuevo, y <b>no se elige a ojo: se mide sobre la captura con el
+    texto apagado</b>. Hoy da <b>6,29</b> contra un piso de 4,5.</li>
+    <li><b>El secundario sobre la foto va invertido</b> —filo y letra
+    blancos, sin relleno—: el grafito macizo se hunde en el velo. Es el mismo
+    gesto que el sistema ya usa para el foco del secundario.</li>
+    <li>⬜ <b>Falta el patrón de ondas del brief</b>, que hoy sólo existe
+    dibujado adentro del PDF. Se vectoriza en la fase ⑩.</li>
+  </ul>
+</section>
+</div>
+"""
+
+
 def revisar_duracion(pagina, donde):
     """Avisos de duración que quedaron adentro de algo que simula la pantalla."""
     avisos = []
@@ -2728,6 +3415,24 @@ def main():
         destino = SALIDA / "08-tira-de-contexto" / f"{ancho}.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(fijar_al_ancho(tablero_contexto(tokens, css, ancho), ancho), encoding="utf-8")
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "09-encabezado-y-menu" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_encabezado(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "10-hero" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_hero(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
         print(f"✓ {destino.relative_to(RAIZ)}")
 
     avisos = []
