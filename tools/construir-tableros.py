@@ -3185,36 +3185,6 @@ def hero_velo(foto, ancho):
   </div>"""
 
 
-def hero(foto, ancho):
-    """El hero entero: la foto, el titular, el subtítulo y las dos acciones."""
-    if foto:
-        imagen = f'<img class="hero-foto" alt="" src="{foto}">'
-    else:
-        imagen = ('<div class="hero-hueco">Falta '
-                  'brand/reference/hero-ejemplo.png</div>')
-
-    texto = f"""
-      <div class="hero-texto">
-        <h1>{H1}</h1>
-        <p>{SUBTITULO}</p>
-        <div class="acciones">
-          <a class="btn btn-1" href="#reservar">Reservar</a>
-          <a class="btn btn-2" href="#tratamientos">Ver tratamientos</a>
-        </div>
-      </div>"""
-
-    if ancho >= 768:
-        return f"""
-  <div class="hero">{texto}
-    {imagen}
-  </div>"""
-
-    return f"""
-  <div class="hero">
-    {imagen}{texto}
-  </div>"""
-
-
 def tablero_hero(tokens, css, ancho):
     foto = leer_foto()
     logo = leer_png("cb-wordmark-600")
@@ -3246,8 +3216,8 @@ escritorio—. Acá está pasada a móvil, con los <b>textos definitivos de la
 § 4</b> y con el encabezado de la pieza 9 arriba, que es como se va a ver.</p>
 </div>
 
-<p class="marca-muestra" style="padding: 0 var(--margen-pagina)">La
-propuesta · el texto sobre la foto, a 1:1</p>
+<p class="marca-muestra" style="padding: 0 var(--margen-pagina)">El hero,
+a 1:1, con su encabezado</p>
 {barra(logo, "wordmark", ancho, "boton" if chico else "fila", not chico)}
 {hero_velo(foto, ancho)}
 
@@ -3524,29 +3494,25 @@ reserva: si mañana se agrega uno, aparece en los dos lados.</p>
 </section>
 
 <section>
-  <p class="rotulo">La decisión que esta pieza cierra</p>
-  <h2>La grilla va sin ícono</h2>
-  <p><b>Los seis íconos del brief SÍ son para esto</b> — su página se llama
-  «pack de íconos por servicio»—, <b>pero el juego no es el nuestro.</b> El
-  brief nombra <i>Diseño de Sonrisa · Carillas de Porcelana · Blanqueamiento
-  Dental · Ortodoncia Estética · Higiene Dental · Chequeo General</i>. Contra
-  nuestras nueve tarjetas eso da <b>cuatro coincidencias</b>: carillas,
-  blanqueamiento, ortodoncia y limpieza. «Chequeo general» es la consulta, que
-  no es tarjeta, y «diseño de sonrisa» no existe en nuestra tabla.</p>
-  <p style="margin-top: 12px">🔑 <b>Y lo que falta no falta al azar: quedarían
-  sin ícono restauración, endodoncia, extracción, cirugía y strass.</b> O sea
-  que la grilla mostraría <b>con ícono lo estético y sin ícono lo general</b>
-  — justo el sesgo que la § 2 corrigió cuando bajó el posicionamiento de
-  «alta gama» a odontología general con veta estética. <b>Media grilla con
-  ícono no es un problema de prolijidad: dibuja el posicionamiento
-  equivocado.</b></p>
-  <p class="dato" style="margin-top: 12px">⬜ <b>Queda abierto, no descartado.</b>
-  Completar el juego son <b>cinco dibujos nuevos</b> con el mismo trazo, y eso
-  es crear marca: fase ⑩, con aprobación aparte. La tarjeta ya tiene lugar
-  para el ícono sin cambiar de forma.</p>
-</section>
+  <p class="rotulo">La decisión que esta pieza cerró</p>
+  <h2>La grilla lleva ícono</h2>
+  <p><b>El brief traía seis</b>, en una página que se llama «pack de íconos por
+  servicio», <b>y de esos sirven tres</b>: carillas, blanqueamiento e higiene
+  —que es nuestra <b>limpieza</b>—. «Chequeo general» es la consulta, que no es
+  tarjeta; «diseño de sonrisa» no existe en nuestra tabla y queda sin uso.</p>
+  <p style="margin-top: 12px"><b>Se dibujaron cinco nuevos</b> —restauración,
+  endodoncia, extracción, cirugía y strass— <b>y se redibujó ortodoncia</b>,
+  que era el único del brief en perspectiva y ampliado leía <b>mesa</b>.</p>
+  <p class="dato" style="margin-top: 12px">🔑 <b>La regla que ordenó los seis
+  dibujos, y la puso Juan:</b> el ícono muestra <b>el tratamiento, no el
+  problema</b>. Por eso ortodoncia no son dientes torcidos sino tres piezas
+  cruzadas por el alambre. <i>Y por eso queda pendiente revisar restauración,
+  que hoy dibuja la caries.</i></p>
+  <p class="dato" style="margin-top: 12px">🔴 <b>El dorado sobre BLANCO mide
+  3,09 y el piso de un dibujo es 3,0; sobre el marfil de la página mide 2,89 y
+  no pasa.</b> Los íconos van sobre la tarjeta blanca, nunca sueltos sobre el
+  fondo.</p>
 
-<section>
   <p class="rotulo">Las reglas</p>
   <h2>Lo que no se negocia</h2>
   <ul class="reglas">
@@ -3566,236 +3532,6 @@ reserva: si mañana se agrega uno, aparece en los dos lados.</p>
     agenda en el medio del catálogo frena la lectura. <b>El aviso vive en la
     pantalla de reserva</b>, que es donde el paciente elige a qué viene.</li>
   </ul>
-</section>
-"""
-
-
-# ============================================================
-# PIEZA 11b — LOS ÍCONOS QUE FALTAN
-#
-# El brief trae seis (pág. 7, «pack de íconos por servicio») y de esos, cuatro
-# sirven para nuestras tarjetas. Faltan cinco: restauración, endodoncia,
-# extracción, cirugía y strass.
-#
-# 🔑 EL LENGUAJE, MEDIDO SOBRE EL BRIEF A 300 dpi, no supuesto:
-#   · Trazo parejo, terminaciones REDONDEADAS, sin relleno.
-#   · NINGUNO dibuja un diente realista. Son METÁFORAS: chispa =
-#     blanqueamiento, gota = higiene, lupa con tilde = chequeo, tilde adentro
-#     de una forma = carillas. Dibujar molares anatómicos rompería el juego.
-#   · Geometría blanda: esquinas redondeadas y arcos, nada anguloso.
-#   · Cada uno va centrado en un círculo blanco con filo clarísimo, y ocupa
-#     cerca del 36 % de su diámetro.
-# ============================================================
-
-CSS_ICONOS = """
-.tira-iconos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.ficha-icono { width: 96px; text-align: center; }
-
-.disco {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background: var(--blanco);
-  border: 1px solid var(--dorado-claro);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.disco svg {
-  width: 36px;
-  height: 36px;
-  display: block;
-}
-
-.disco svg * {
-  fill: none;
-  stroke: var(--dorado);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-
-.ficha-icono p {
-  margin-top: 8px;
-  font-size: var(--tipo-rotulo);
-  line-height: var(--alto-rotulo);
-  color: var(--texto-segundo);
-}
-
-.del-brief {
-  width: 100%;
-  max-width: var(--columna-lista);
-  margin-top: 16px;
-  border: 1px solid var(--dorado-claro);
-  border-radius: var(--radio);
-  display: block;
-}
-"""
-
-# --- LOS DIBUJOS ---------------------------------------------------------
-#
-# Todos en un lienzo de 40 x 40. La "pieza" es el mismo rectángulo redondeado
-# que el brief usa para carillas: es la única forma del juego que representa un
-# diente, así que reusarla mantiene la familia unida.
-
-PIEZA = '<rect x="11" y="9" width="18" height="22" rx="6"/>'
-
-ICONOS = [
-    ("restauracion", "Restauración · A",
-     "La parte que falta, repuesta en su esquina",
-     PIEZA + '<path d="M20 9 v7 h9"/>'),
-
-    ("restauracion", "Restauración · B",
-     "El hueco que se cierra: la mordida de arriba es lo que se saca",
-     '<path d="M17 9 h-1 a5 5 0 0 0 -5 5 v12 a5 5 0 0 0 5 5 h8 '
-     'a5 5 0 0 0 5 -5 v-12 a5 5 0 0 0 -5 -5 h-1"/>'
-     '<path d="M17 9 a3 3 0 0 0 6 0"/>'),
-
-    ("endodoncia", "Endodoncia · A",
-     "Adentro de la pieza: un contorno dentro del contorno",
-     PIEZA + '<rect x="16" y="14" width="8" height="12" rx="3"/>'),
-
-    ("endodoncia", "Endodoncia · B",
-     "Lo de adentro, ya sellado",
-     PIEZA + '<rect x="16" y="14" width="8" height="12" rx="3"/>'
-     '<circle cx="20" cy="20" r="1.6"/>'),
-
-    ("extraccion", "Extracción · A",
-     "La pieza se va hacia arriba",
-     PIEZA + '<path d="M20 5 v-3"/><path d="M17 4 l3 -3 l3 3"/>'),
-
-    ("extraccion", "Extracción · B",
-     "La pieza sale de la fila",
-     '<path d="M6 32 h11"/><path d="M27 32 h7"/>'
-     '<rect x="18" y="6" width="12" height="16" rx="5" '
-     'transform="rotate(14 24 14)"/>'),
-
-    ("cirugia", "Cirugía · A",
-     "La línea por donde se interviene, marcada antes",
-     PIEZA + '<path d="M20 5 v30" stroke-dasharray="3 3.5"/>'),
-
-    ("cirugia", "Cirugía · B",
-     "La muela retenida empujando a la de al lado",
-     '<rect x="7" y="11" width="13" height="18" rx="5"/>'
-     '<rect x="22" y="14" width="12" height="16" rx="5" '
-     'transform="rotate(24 28 22)"/>'),
-
-    ("strass", "Strass · A",
-     "La piedra apoyada sobre la pieza",
-     PIEZA + '<path d="M20 14 l4 4 l-4 4 l-4 -4 z"/>'),
-
-    ("strass", "Strass · B",
-     "La piedra en una esquina, como se coloca",
-     PIEZA + '<path d="M25 13 l3.5 3.5 l-3.5 3.5 l-3.5 -3.5 z"/>'),
-]
-
-
-def ficha(nombre, dibujo):
-    return f"""
-    <div class="ficha-icono">
-      <div class="disco">
-        <svg viewBox="0 0 40 40" aria-hidden="true">{dibujo}</svg>
-      </div>
-      <p>{nombre}</p>
-    </div>"""
-
-
-def leer_tira_del_brief():
-    """La fila de los seis del brief, embebida: no están vectorizados."""
-    import base64
-
-    ruta = RAIZ / "brand" / "fotos" / "iconos-del-brief.png"
-
-    if not ruta.exists():
-        return None
-
-    return base64.b64encode(ruta.read_bytes()).decode("ascii")
-
-
-def tablero_iconos(tokens, css, ancho):
-    del_brief = leer_tira_del_brief()
-    tira = (f'<img class="del-brief" alt="Los seis íconos del brief" '
-            f'src="data:image/png;base64,{del_brief}">'
-            if del_brief else "<p class=\"dato\">Falta la tira del brief.</p>")
-
-    fichas = "".join(ficha(n, d) for _, n, _, d in ICONOS)
-    motivos = "".join(
-        f"<li><b>{n}</b> — {m}</li>" for _, n, m, _ in ICONOS
-    )
-
-    return f"""<!-- @dsCard group="Components" -->
-<meta charset="utf-8">
-<title>CB · 11b Íconos · {ancho}</title>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
-<style>
-{css}
-{base_css(ancho)}
-{CSS_ICONOS}
-</style>
-
-<p class="rotulo">Fase ⑧ · Pieza 11b · {ancho} px</p>
-<h1>Los íconos que faltan</h1>
-<div class="regla"></div>
-<p><b>Todos juntos, los del brief y los nuevos</b>, para elegir cuáles quedan.
-Los de arriba son los seis del brief tal como están —todavía no vectorizados—;
-los de abajo son dibujos nuevos, dos por tratamiento.</p>
-
-<section>
-  <p class="rotulo">Los seis que ya existen</p>
-  <h2>Y cuáles nos sirven</h2>
-  {tira}
-  <ul class="reglas">
-    <li><b>Sirven cuatro:</b> carillas, blanqueamiento, ortodoncia e higiene
-    —que es nuestra <b>limpieza</b>—.</li>
-    <li><b>«Chequeo general» es la consulta</b>, que no es tarjeta pero sí
-    aparece en la reserva: se guarda.</li>
-    <li><b>«Diseño de sonrisa» no existe en nuestra tabla.</b> Es un servicio
-    del posicionamiento viejo. <b>Queda sin uso</b> — o se retira, o se le
-    encuentra lugar en otra pieza.</li>
-  </ul>
-</section>
-
-<section>
-  <p class="rotulo">El lenguaje, medido y no supuesto</p>
-  <h2>Ninguno dibuja un diente</h2>
-  <p>Se abrió la página a <b>300 dpi</b> y se miró qué hacen los seis:
-  <b>chispa</b> = blanqueamiento, <b>gota</b> = higiene, <b>lupa con tilde</b> =
-  chequeo, <b>tilde adentro de una forma</b> = carillas. <b>Son metáforas, no
-  anatomía</b>: dibujar un molar realista rompería el juego. Trazo parejo,
-  puntas redondeadas, sin relleno, geometría blanda.</p>
-  <p class="dato" style="margin-top: 10px">Los cinco nuevos reusan <b>el
-  rectángulo redondeado de carillas</b> como «la pieza»: es la única forma del
-  juego que ya representa un diente, así que la familia no se abre.</p>
-</section>
-
-<section>
-  <p class="rotulo">Los cinco que faltan, con dos caminos cada uno</p>
-  <h2>Diez dibujos para elegir cinco</h2>
-  <div class="tira-iconos">{fichas}</div>
-  <ul class="reglas">{motivos}</ul>
-</section>
-
-<section>
-  <p class="rotulo">Un número que el brief no dice y hay que respetar</p>
-  <h2>El disco blanco no es decoración</h2>
-  <p><b>El dorado del brief sobre BLANCO mide 3,09</b>, y el piso de un dibujo
-  es <b>3,0</b>: pasa raspando. <b>Ese mismo dorado sobre el marfil de la
-  página mide 2,89 y no pasa.</b></p>
-  <p style="margin-top: 10px">⇒ <b>El disco blanco es lo que hace legible al
-  ícono.</b> El día que alguien apoye estos dibujos directamente sobre el fondo
-  de la página «para que respiren», dejan de cumplir. <i>Si algún día hace
-  falta un ícono sin disco, el trazo va en el dorado de texto, que mide 4,85
-  sobre blanco.</i></p>
 </section>
 """
 
@@ -3963,15 +3699,6 @@ def main():
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(
             fijar_al_ancho(tablero_tratamientos(tokens, css, ancho), ancho),
-            encoding="utf-8",
-        )
-        print(f"✓ {destino.relative_to(RAIZ)}")
-
-    for ancho in ANCHOS:
-        destino = SALIDA / "11b-iconos" / f"{ancho}.html"
-        destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_text(
-            fijar_al_ancho(tablero_iconos(tokens, css, ancho), ancho),
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")
