@@ -2960,19 +2960,26 @@ H1 = ("Odontología y estética dental en Santa Fe, "
 SUBTITULO = ("Blanqueamiento, tratamientos generales y estética dental en un "
              "espacio pensado para tu tranquilidad.")
 
-# La foto de ejemplo vive en brand/reference/, que NO se publica: es material
-# del brief, de un tercero. Si falta, el tablero dibuja el hueco en vez de
-# romperse — un tablero que no abre no se puede aprobar.
-FOTO = RAIZ / "brand" / "reference" / "hero-ejemplo.png"
+# La foto de ejemplo vive en brand/fotos/, versionada, con su procedencia y su
+# licencia al lado. NO va embebida en el HTML: se enlaza por ruta relativa, así
+# el tablero pesa lo que pesa y la foto se cambia sin regenerar nada.
+FOTO = RAIZ / "brand" / "fotos" / "hero-ejemplo.jpg"
+
+# Desde brand/tableros/10-hero/<ancho>.html hasta brand/fotos/.
+FOTO_RELATIVA = "../../fotos/hero-ejemplo.jpg"
 
 
 def leer_foto():
-    import base64
+    """La ruta a la foto, o None si falta.
 
+    Devuelve la RUTA y no el contenido: si el archivo no está, el tablero
+    dibuja el hueco marcado en vez de romperse — un tablero que no abre no se
+    puede aprobar.
+    """
     if not FOTO.exists():
         return None
 
-    return base64.b64encode(FOTO.read_bytes()).decode("ascii")
+    return FOTO_RELATIVA
 
 
 CSS_HERO_VELO = """
@@ -3134,8 +3141,7 @@ CSS_HERO_ANCHO = """
 
 def hero_velo(foto, ancho):
     """El hero propuesto: la foto entera, y el texto encima."""
-    imagen = (f'<img class="hero-foto" alt="" '
-              f'src="data:image/png;base64,{foto}">'
+    imagen = (f'<img class="hero-foto" alt="" src="{foto}">'
               if foto else "")
 
     return f"""
@@ -3155,8 +3161,7 @@ def hero_velo(foto, ancho):
 def hero(foto, ancho):
     """El hero entero: la foto, el titular, el subtítulo y las dos acciones."""
     if foto:
-        imagen = (f'<img class="hero-foto" alt="" '
-                  f'src="data:image/png;base64,{foto}">')
+        imagen = f'<img class="hero-foto" alt="" src="{foto}">'
     else:
         imagen = ('<div class="hero-hueco">Falta '
                   'brand/reference/hero-ejemplo.png</div>')
@@ -3248,8 +3253,11 @@ descarta · la foto arriba y el texto debajo</p>
     justo en uno se corta en el otro.</li>
   </ul>
   <p class="dato" style="margin-top: 14px">⚠️ <b>La foto de arriba es de
-  ejemplo y sale del brief.</b> Vive en <code>brand/reference/</code>, que no
-  se publica: es material de un tercero. <b>No es la foto del sitio.</b></p>
+  ejemplo.</b> Vive en <code>brand/fotos/</code>, con su autor y su licencia
+  escritos al lado. <b>No es la foto del sitio</b>, y hay un motivo que no es
+  de gusto: la persona es identificable, y la licencia de la foto no es el
+  permiso de esa persona. <b>Para publicidad sanitaria hace falta autorización
+  de imagen.</b></p>
 </section>
 
 <section>
