@@ -4649,6 +4649,711 @@ dos renglones no se acortan.</p>
 
 
 
+# ============================================================
+# PIEZA 15.b — PRUEBA
+#
+# El bloque 4 del mapa del sitio (§ 4), que ahí ocupa CUATRO PALABRAS:
+# "antes/después, testimonios". Es la sección menos definida del sitio y la
+# única que se apoya entera en material de terceros.
+#
+# 🔴 LA DECISIÓN DE FORMA QUE ORDENA TODO EL BLOQUE: los testimonios van
+# PRIMERO y el par antes/después va de CIERRE. No es gusto — el par es la
+# pieza con más chance de caerse, por dos motivos independientes:
+#   · el régimen de anuncios lo dicta el Colegio de Odontólogos de Santa Fe
+#     (Ley 3950), se preguntó y NO CONTESTÓ;
+#   · el Código Argentino de Ética y Deontología Dental, Art. 53, prohíbe
+#     avalar "resultados de actuaciones profesionales que no haya efectuado y
+#     comprobado personalmente", y el Art. 49.3 pide que la publicidad no
+#     pueda "dar lugar a falsas esperanzas".
+# Con el par arriba, si mañana se cae queda una sección hueca; con el par
+# abajo, se saca un bloque y la sección sigue en pie.
+#
+# 🔴 EL PAR DE FOTOS DE ESTA MAQUETA SON DOS BOCAS DISTINTAS DE BANCO — lo
+# decidió Juan el 8-sep-2026 y para juzgar la forma alcanza. NO SE PUBLICA:
+# publicado sería exactamente el resultado clínico fabricado que prohíbe el
+# Art. 53. El detalle vive en brand/fotos/PROCEDENCIA.md.
+#
+# POR QUÉ EL TESTIMONIO ES EL CONTENIDO PRINCIPAL, y no las fotos: el dato que
+# reencuadró la 15.a vale más todavía acá — el 99,1 % de los pacientes llega
+# por recomendación de un conocido. Un testimonio ES esa recomendación puesta
+# por escrito; el antes/después es un argumento de venta, que es el registro
+# que la § 2 descartó (premium en la forma, no lujo).
+#
+# 🔑 Y LA RELACIÓN CON NOSOTROS (15.a), QUE NO ES REDUNDANCIA: allá Cecilia
+# PROMETE tres cosas (que te explican, que el miedo se atiende, que el
+# instrumental está esterilizado); acá un paciente CONFIRMA que le pasó. Es la
+# diferencia entre "yo hago X" y "a mí me hicieron X", y es justo lo que hace
+# valer a la sección. Por eso el eco es deseable — lo que no puede es ser la
+# misma frase con otras comillas.
+# ============================================================
+
+CSS_PRUEBA = """
+/* El bloque no hereda los 40 px que base_css le da a todo <section>: ése es
+   andamiaje del tablero. El aire entre secciones sale de --aire-seccion y se
+   cierra en el tablero 15. */
+.prueba {
+  margin-top: 0;
+}
+
+.prueba-titulo {
+  padding: 0 var(--margen-pagina);
+  margin-bottom: 16px;
+}
+
+.prueba-lista {
+  padding: 0 var(--margen-pagina);
+}
+
+/* LA TARJETA BLANCA SÍ VA ACÁ, y conviene decir por qué no contradice la
+   lección de la 15.a. Allá la tarjeta estaba puesta sobre el contenido de
+   MENOR rango (las tres señales) y por eso sobraba. Acá el testimonio ES el
+   contenido de la sección: la superficie está sobre lo principal, que es
+   donde el sistema la puso (pieza 6). Mismos tokens, sin inventar ninguno. */
+.testimonio {
+  max-width: var(--columna-lista);
+  margin-top: 12px;
+  padding: 18px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+/* La cita va en el gris de LECTURA y en cuerpo: es lo que se viene a leer.
+   Sin comillas dibujadas ni bastardilla — la caja ya dice que es una cita, y
+   una tipografía inclinada a 16 px en un teléfono se lee peor. */
+.testimonio p {
+  color: var(--grafito);
+  max-width: none;
+}
+
+/* QUIÉN LO DIJO va abajo, chico y en el gris segundo. Arriba competiría con
+   la cita, que es el contenido; abajo cierra y ancla. */
+.testimonio footer {
+  margin-top: 12px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.testimonio footer b {
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+/* EL CASO — el par antes/después. Va de cierre y separado del grupo de
+   testimonios por más aire del que hay entre tarjeta y tarjeta: por
+   proximidad (Gestalt) las tres tarjetas tienen que leerse como UN grupo y el
+   caso como otra cosa. 12 px adentro, 32 afuera. */
+.prueba-caso {
+  margin-top: 32px;
+  padding: 0 var(--margen-pagina);
+}
+
+.prueba-par {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.prueba-par figure {
+  margin: 0;
+}
+
+/* CUADRADAS, y el motivo es la comparación: dos fotos que se miran una al
+   lado de la otra tienen que tener la misma caja, o la diferencia de forma se
+   lee antes que la diferencia de contenido. El recorte lo hace object-fit,
+   así que el archivo original no se toca.
+
+   EL FILO VA SIEMPRE — regla ya cerrada el 4-sep: las fotos las va a cargar
+   Cecilia, y un filo que aparece "cuando hace falta" falla en silencio el día
+   que nadie mide. Esquinas rectas: el radio del sistema es de controles. */
+.prueba-par img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border: 1px solid var(--dorado-claro);
+}
+
+/* Cada foto trae su object-position propia porque los originales no están
+   encuadrados igual: el "antes" es apaisado con la boca al medio, el
+   "después" es vertical con la boca en el tercio de arriba. Sin esto, el
+   recorte cuadrado del segundo se come los dientes. */
+.prueba-par .antes img {
+  object-position: center 55%;
+}
+
+.prueba-par .despues img {
+  object-position: center 25%;
+}
+
+/* La etiqueta va DEBAJO de su foto y en el rótulo del sistema: arriba
+   empujaría las dos fotos hacia abajo y separaría el par justo donde tiene
+   que leerse junto. */
+.prueba-par figcaption {
+  margin-top: 8px;
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  font-weight: 500;
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+  color: var(--dorado-texto);
+}
+
+/* EL HUECO, para cuando las fotos no estén. Misma caja cuadrada que la foto,
+   para que el bloque mida igual con archivo y sin archivo. */
+.prueba-hueco {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--dorado-claro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 12px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+/* QUÉ TRATAMIENTO FUE. No es un pie decorativo: sin él, dos fotos juntas
+   prometen un resultado sin decir de qué, que es lo que el Art. 49.3 llama
+   "falsas esperanzas". Con el tratamiento nombrado, el par informa. */
+/* VARIANTE «CITA»: sin caja, con el dorado de línea a la izquierda. Pesa
+   menos que la tarjeta y no repite el recurso; las comillas y el filo ya
+   dicen que es una cita. El rango no baja porque el testimonio sigue siendo
+   lo único que hay en la sección. */
+.testimonio.cita {
+  background: none;
+  border: none;
+  border-left: 2px solid var(--dorado);
+  border-radius: 0;
+  padding: 2px 0 2px 16px;
+  margin-top: 24px;
+}
+
+.testimonio.destacada p {
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+}
+
+.testimonio.destacada {
+  margin-top: 4px;
+  border-left-width: 3px;
+}
+
+/* Las dos que acompañan se cierran entre sí: por proximidad se leen como un
+   par que apoya a la de arriba, no como dos piezas más de una lista. */
+.testimonio.menor {
+  margin-top: 20px;
+}
+
+.testimonio.menor p {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+.prueba-detalle {
+  margin-top: 12px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+"""
+
+
+# LOS TRES TESTIMONIOS SON PROVISORIOS Y LOS TRAE CECILIA. Están escritos como
+# irían —no "lorem ipsum"— para poder decidir cuántos renglones aguanta la
+# tarjeta y cuánto mide la sección. Cada uno confirma UNA de las tres cosas
+# que Nosotros promete, dicho por quien lo recibió y no por quien lo ofrece.
+#
+# ⚠️ LO QUE NINGUNO HACE, y es deliberado: prometer un resultado ("me quedaron
+# perfectos", "es la mejor de Santa Fe"). Eso es lo que el Art. 49.3 marca
+# como falsas esperanzas y lo que la § 2 descarta por registro.
+TESTIMONIOS = [
+    (
+        "Hacía cuatro años que no pisaba un consultorio de puro miedo. "
+        "Me explicó todo antes de tocarme y paramos cuando lo necesité.",
+        "Marina G.",
+        "Consulta y dos arreglos",
+    ),
+    (
+        "Me dijo cuántas sesiones eran y cuánto salía antes de empezar. "
+        "No apareció ningún costo que yo no supiera.",
+        "Diego R.",
+        "Tratamiento de conducto",
+    ),
+    (
+        "Vengo con mis dos hijos. Los turnos son a la hora que dice y el "
+        "instrumental lo abre delante nuestro.",
+        "Laura P.",
+        "Controles",
+    ),
+]
+
+
+def testimonio(texto, quien, que, estilo=""):
+    return f"""
+      <blockquote class="testimonio{estilo}">
+        <p>«{texto}»</p>
+        <footer>
+          <b>{quien}</b> · {que}
+        </footer>
+      </blockquote>"""
+
+
+def leer_par():
+    """Las dos fotos del caso, o None si falta alguna.
+
+    Devuelve rutas y no contenido, igual que leer_foto(): si un archivo no
+    está, el bloque dibuja el hueco marcado en vez de romperse. Un tablero que
+    no abre no se puede aprobar.
+    """
+    antes = RAIZ / "brand" / "fotos" / "antes-ejemplo.jpg"
+    despues = RAIZ / "brand" / "fotos" / "despues-ejemplo.jpg"
+
+    if not antes.exists() or not despues.exists():
+        return None
+
+    return (
+        "../../fotos/antes-ejemplo.jpg",
+        "../../fotos/despues-ejemplo.jpg",
+    )
+
+
+def prueba_del_sitio(ancho, con_caso=False, estilo=""):
+    """El bloque tal como iría en el sitio.
+
+    con_caso=False dibuja la sección SIN el par antes/después, que es
+    como quedaría si esas fotos no salen en la primera carga.
+    """
+    par = leer_par()
+
+    if par:
+        caso = f"""
+      <figure class="antes">
+        <img alt="" src="{par[0]}">
+        <figcaption>Antes</figcaption>
+      </figure>
+      <figure class="despues">
+        <img alt="" src="{par[1]}">
+        <figcaption>Después</figcaption>
+      </figure>"""
+    else:
+        caso = """
+      <figure class="antes">
+        <div class="prueba-hueco">Antes. No existe todavía.</div>
+      </figure>
+      <figure class="despues">
+        <div class="prueba-hueco">Después. No existe todavía.</div>
+      </figure>"""
+
+    if estilo == " jerarquia":
+        rangos = [" cita destacada", " cita menor", " cita menor"]
+        tarjetas = "".join(
+            testimonio(texto, quien, que, rangos[i])
+            for i, (texto, quien, que) in enumerate(TESTIMONIOS)
+        )
+    else:
+        tarjetas = "".join(
+            testimonio(texto, quien, que, estilo)
+            for texto, quien, que in TESTIMONIOS
+        )
+
+    if not con_caso:
+        return f"""
+  <section class="prueba">
+    <h2 class="prueba-titulo">Testimonios</h2>
+    <div class="prueba-lista">{tarjetas}
+    </div>
+  </section>"""
+
+    return f"""
+  <section class="prueba">
+    <h2 class="prueba-titulo">Testimonios</h2>
+    <div class="prueba-lista">{tarjetas}
+    </div>
+    <div class="prueba-caso">
+      <div class="prueba-par">{caso}
+      </div>
+      <p class="prueba-detalle"><span class="x">Blanqueamiento y dos
+      restauraciones en las caras de adelante. Tres sesiones.</span>
+      Caso propio, publicado con autorización del paciente.</p>
+    </div>
+  </section>"""
+
+
+def solo_prueba(tokens, css, ancho, con_caso=False, estilo=""):
+    """El bloque SOLO, sin una palabra de tablero alrededor."""
+    if con_caso:
+        aviso_par = (
+            "🔴 <b>Esta versión lleva el par antes/después, que NO va en la "
+            "landing</b> — decidido por Juan el 8-sep-2026: va en la página por "
+            "tratamiento, donde el paciente ya buscó ese tratamiento. Además, "
+            "<b>el «antes» y el «después» son DOS BOCAS DISTINTAS de banco</b> "
+            "y <b>no se publican</b>."
+        )
+    else:
+        aviso_par = (
+            "El punteado marca lo que hay que reemplazar."
+        )
+
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · Pacientes, solo el bloque · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_ENCABEZADO}
+{CSS_NOSOTROS}
+{CSS_PRUEBA}
+</style>
+
+<p class="provisorio" style="margin: 0 var(--margen-pagina) 20px">🔴 <b>MAQUETA.
+Los tres testimonios son PROVISORIOS y los trae Cecilia.</b> {aviso_par}</p>
+{prueba_del_sitio(ancho, con_caso, estilo)}
+"""
+
+
+def tablero_prueba(tokens, css, ancho):
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 15b Prueba · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_ENCABEZADO}
+{CSS_NOSOTROS}
+{CSS_PRUEBA}
+</style>
+
+<div class="prosa">
+<p class="rotulo">Fase ⑧ · Pieza 15.b · {ancho} px</p>
+<h1>Prueba</h1>
+<div class="regla"></div>
+<p><b>Es el bloque 4 del mapa del sitio, y ahí ocupa cuatro palabras:</b>
+«antes/después, testimonios». <b>Es la sección menos definida del sitio</b> y la
+única que se apoya entera en material que traen otros.</p>
+
+<p class="provisorio" style="margin-top: 20px">🔴 <b>LOS TRES TESTIMONIOS SON
+PROVISORIOS Y LOS TRAE CECILIA</b>, que tiene más de diez años de trabajo de
+donde sacarlos. <b>El par de fotos son DOS BOCAS DISTINTAS de banco</b> —lo
+decidió Juan, y para juzgar tamaño y aire alcanza—: <b>ese par no se
+publica</b>.</p>
+</div>
+
+<p class="marca-muestra" style="padding: 0 var(--margen-pagina); margin: 40px 0 12px"
+   >El bloque, a 1:1</p>
+{prueba_del_sitio(ancho)}
+
+<div class="prosa">
+<section>
+  <p class="rotulo">La decisión que ordena el bloque</p>
+  <h2>Los testimonios van primero y el par va de cierre</h2>
+  <p><b>El par antes/después es la pieza con más chance de caerse</b>, y por dos
+  motivos que no dependen de nosotros. <b>Uno:</b> en Santa Fe el régimen de
+  anuncios lo dicta el Colegio de Odontólogos por la <b>Ley 3950</b>, se
+  preguntó y <b>no contestó</b>. <b>Dos:</b> el <b>Código Argentino de Ética y
+  Deontología Dental</b> prohíbe en su <b>Art. 53</b> avalar <i>«resultados de
+  actuaciones profesionales que no haya efectuado y comprobado
+  personalmente»</i>.</p>
+  <p style="margin-top: 12px"><b>Con el par arriba, si se cae queda una sección
+  hueca. Con el par abajo, se saca un bloque y la sección sigue en pie.</b>
+  <i>Ordenar por fragilidad no es una regla del sistema: es lo que corresponde
+  cuando un contenido depende de un permiso que todavía no llegó.</i></p>
+  <p class="dato" style="margin-top: 12px">⚠ <b>Honestidad sobre la fuente:</b>
+  el código de la AOA es <b>el marco nacional de la profesión, no el reglamento
+  de Santa Fe</b>. El que manda acá sigue sin estar. Lo que sí es seguro es que
+  ninguno de los dos va a pedir MENOS que el otro.</p>
+</section>
+
+<section>
+  <p class="rotulo">Por qué el testimonio es lo principal</p>
+  <h2>El paciente ya viene recomendado</h2>
+  <p>El dato que reencuadró la 15.a vale más todavía acá: <b>el 99,1 % llega
+  por recomendación de un conocido</b> y sólo el 23,1 % considera importante que
+  haya sitio web. <b>Un testimonio es esa recomendación puesta por escrito</b>;
+  el antes/después es un argumento de venta, que es el registro que la § 2
+  descartó — <b>premium en la forma, no lujo</b>.</p>
+  <p class="dato" style="margin-top: 12px">⚠ Los porcentajes son del mismo
+  estudio de <b>117 personas en Bucarest, 2019</b> que ya se usó en la 15.a.
+  <b>Orienta la estructura, no prueba nada sobre Santa Fe.</b></p>
+</section>
+
+<section>
+  <p class="rotulo">Qué relación tiene con Nosotros</p>
+  <h2>Allá se promete, acá se confirma</h2>
+  <p>Los tres testimonios <b>hacen eco de las tres señales de la 15.a</b> —que
+  te explican, que el miedo se atiende, que el instrumental está esterilizado—
+  y <b>eso es a propósito, no una repetición</b>. Allá lo dice Cecilia, acá lo
+  dice quien lo recibió: <b>es la diferencia entre «yo hago X» y «a mí me
+  hicieron X»</b>, y es lo que le da valor a la sección.</p>
+  <p class="dato" style="margin-top: 12px">🔴 <b>Lo que no puede pasar</b> es
+  que sean la misma frase con otras comillas. Si Cecilia trae testimonios
+  reales que dicen otra cosa, <b>mandan los reales</b> y estas tres señales se
+  vuelven a mirar.</p>
+</section>
+
+<section>
+  <p class="rotulo">Los nombres</p>
+  <h2>Nombre de pila e inicial, y no es timidez</h2>
+  <p><b>Que una persona fue paciente de un odontólogo es un dato de salud.</b>
+  Publicar «Marina G. · tratamiento de conducto» con nombre completo expondría
+  el dato de un tercero aunque él lo autorice. <b>Se publica el mínimo que
+  sirve</b> — el principio se llama <b>minimización de datos (data
+  minimization)</b> y es el mismo criterio con el que este proyecto trata
+  <code>turnos.observaciones_paciente</code>.</p>
+  <p style="margin-top: 12px"><b>Y por eso tampoco lleva foto del paciente.</b>
+  Una cara de banco con un nombre inventado no es relleno: es un paciente que
+  no existe. <b>Si Cecilia consigue retrato y autorización, se vuelve a
+  mirar</b> — con foto el testimonio se cree más, y ahí eso sería una ventaja
+  y no un riesgo.</p>
+</section>
+
+<section>
+  <p class="rotulo">Lo que hay que decidir</p>
+  <h2>Tres cosas, y las decide Juan</h2>
+  <ul class="reglas">
+    <li>🔴 <b>Cómo se llama la sección.</b> Acá dice <b>«Pacientes»</b>, que
+    cubre las dos partes y es la palabra que usa la gente. <b>Las
+    alternativas:</b> «Testimonios» (sólo cubre la mitad y suena a publicidad)
+    y «Lo que dicen los pacientes» (más claro, pero a 390 son dos renglones de
+    título). <i>Y ojo con el menú: la barra promete tres palabras y esta
+    sección no está en ninguna — si entra, el nombre tiene que servir de
+    botón.</i></li>
+    <li><b>Cuántos testimonios.</b> Van tres. Con menos la sección se ve
+    flaca; con más, a 390, hay que scrollear tres pantallas de citas.</li>
+    <li><b>Si el par de fotos se queda.</b> Hoy está de cierre y la sección se
+    sostiene sin él. <b>La respuesta del Colegio puede sacarlo</b>, y en ese
+    caso no hay que rediseñar nada.</li>
+  </ul>
+</section>
+</div>
+"""
+
+
+# ------------------------------------------------------------
+# LA VISTA «RESEÑAS DE GOOGLE» — pedida por Juan el 8-sep-2026
+#
+# Qué es y qué NO es. Es una COPIA VISUAL de cómo se vería la sección el día
+# que las reseñas sean reales: no enlaza nada, no trae nada de Google y no hay
+# integración detrás. Sirve para una sola cosa — decidir la FORMA antes de que
+# el contenido exista.
+#
+# 🔴 LAS TRES RESEÑAS SON INVENTADAS Y NO SE PUBLICAN NUNCA. Una reseña falsa
+# con estrellas y nombre completo no es relleno de maqueta: es prueba social
+# fabricada, del mismo orden que el par antes/después que salió de la landing.
+# Va con su cinta encima, igual que aquél.
+#
+# POR QUÉ ESTA VISTA GANA, y es lo que decidió el cambio: NN/g encontró que
+# los testimonios que la empresa pone en su propio sitio se leen con recelo
+# —"si la empresa eligió sólo los favorables"— y que la gente se va a Google
+# Reviews a buscar "una imagen más realista". Una reseña de Google no la
+# escribimos nosotros, y eso es exactamente lo que le falta a las citas.
+#
+# EL TEXTO DE LAS TRES ES EL MISMO QUE EL DE LAS CITAS, a propósito: así lo
+# único que cambia entre una vista y la otra es el FORMATO. Comparar dos cosas
+# que cambian en dos variables a la vez no dice nada.
+#
+# EL LOGOTIPO ES EL ARCHIVO OFICIAL que ya vive en el repo
+# (brand/ajenos/googleg_standard_color_128dp.png, el mismo del botón de
+# entrar). Regla ya cerrada del proyecto: un isotipo ajeno sale de su brand
+# resource center, nunca de un dibujo nuestro.
+#
+# ⚠️ EL AMARILLO DE LAS ESTRELLAS ES EL DE GOOGLE (#FBBC04), NO UN COLOR
+# NUESTRO. Se usa acá porque la vista existe para mostrar cómo se ve lo de
+# Google; si el día de mañana se decide repintarlo con el dorado de la marca,
+# eso es una decisión aparte —y de las que ya sabemos que se discuten, como
+# pasó con los isotipos de Meta—.
+# ------------------------------------------------------------
+
+CSS_GOOGLE_RESENAS = """
+/* La cabecera: qué es esto y cuánto puntúa. Es lo primero porque el número
+   agregado es lo que la gente mira antes que cualquier reseña suelta. */
+.google-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 var(--margen-pagina);
+  margin-bottom: 4px;
+}
+
+.google-cabecera img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.google-cabecera .puntaje {
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+  font-family: Marcellus, Georgia, serif;
+}
+
+.google-cabecera .cuantas {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.resena {
+  padding: 0 var(--margen-pagina);
+  margin-top: 24px;
+  max-width: var(--columna-lista);
+}
+
+/* La firma va ARRIBA en una reseña, al revés que en la cita. No es capricho:
+   en Google lo primero es quién habla y cuántas estrellas puso — el texto se
+   lee después, y muchos ni lo leen. */
+.resena-firma {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* El círculo con la inicial. Google muestra la foto de perfil; acá va la
+   inicial, que es lo que él mismo dibuja cuando no hay foto — y evita meter
+   una cara inventada. */
+.resena-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--dorado-claro);
+  color: var(--grafito);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--tipo-chico);
+  font-weight: 500;
+  flex: none;
+}
+
+.resena-quien {
+  font-size: var(--tipo-cuerpo);
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+.resena-cuando {
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  color: var(--texto-segundo);
+}
+
+/* EL AMARILLO ES EL DE GOOGLE, no el dorado de la marca. Las estrellas son
+   caracteres tipográficos, no un dibujo: no hay ningún archivo de marca que
+   estemos redibujando. */
+.estrellas {
+  color: #FBBC04;
+  letter-spacing: 0.06em;
+  font-size: var(--tipo-chico);
+}
+
+.resena-texto {
+  margin-top: 10px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--grafito);
+  max-width: none;
+}
+
+/* El pie de la sección: en el sitio real acá va el enlace a la ficha. En esta
+   copia visual NO enlaza a ningún lado, y se dice. */
+.google-pie {
+  padding: 0 var(--margen-pagina);
+  margin-top: 24px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--dorado-texto);
+  font-weight: 500;
+}
+"""
+
+
+# Las tres reseñas de ejemplo. Mismo texto que las citas, para que lo único
+# que cambie entre las dos vistas sea el formato. Nombre completo y fecha
+# porque así se ven en Google — y es justo lo que en una cita nuestra no
+# pondríamos, por el dato de salud.
+RESENAS = [
+    ("Marina Gómez", "M", "hace 2 meses", 5,
+     "Hacía cuatro años que no pisaba un consultorio de puro miedo. "
+     "Me explicó todo antes de tocarme y paramos cuando lo necesité."),
+    ("Diego Ramírez", "D", "hace 1 mes", 5,
+     "Me dijo cuántas sesiones eran y cuánto salía antes de empezar. "
+     "No apareció ningún costo que yo no supiera."),
+    ("Laura Peralta", "L", "hace 3 semanas", 5,
+     "Vengo con mis dos hijos. Los turnos son a la hora que dice y el "
+     "instrumental lo abre delante nuestro."),
+]
+
+
+def resena(quien, inicial, cuando, estrellas, texto):
+    return f"""
+    <div class="resena">
+      <div class="resena-firma">
+        <div class="resena-avatar">{inicial}</div>
+        <div>
+          <div class="resena-quien">{quien}</div>
+          <div class="resena-cuando">
+            <span class="estrellas">{"★" * estrellas}</span> · {cuando}
+          </div>
+        </div>
+      </div>
+      <p class="resena-texto">{texto}</p>
+    </div>"""
+
+
+def google_del_sitio(ancho):
+    """La sección tal como se vería con las reseñas reales de Google."""
+    logo = leer_logo_google()
+    filas = "".join(resena(*r) for r in RESENAS)
+
+    return f"""
+  <section class="prueba">
+    <h2 class="prueba-titulo">Reseñas de Google</h2>
+    <div class="google-cabecera">
+      <img alt="" src="data:image/png;base64,{logo}">
+      <span class="puntaje">4,9</span>
+      <span class="estrellas">★★★★★</span>
+      <span class="cuantas">23 reseñas</span>
+    </div>{filas}
+    <p class="google-pie">Ver las 23 reseñas en Google</p>
+  </section>"""
+
+
+def solo_google(tokens, css, ancho):
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · Testimonios con reseñas de Google · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_ENCABEZADO}
+{CSS_NOSOTROS}
+{CSS_PRUEBA}
+{CSS_GOOGLE_RESENAS}
+</style>
+
+<p class="provisorio" style="margin: 0 var(--margen-pagina) 20px">🔴 <b>COPIA
+VISUAL — CÓMO QUEDARÍA con reseñas de Google.</b> Las tres reseñas, el puntaje
+y la cantidad <b>son INVENTADOS</b>, no hay ninguna integración detrás y
+<b>el pie no enlaza a ningún lado</b>. <b>Esto no se publica jamás:</b> una
+reseña falsa con estrellas y nombre completo es prueba social fabricada.
+<b>Existe para decidir la forma antes de que el contenido exista.</b></p>
+{google_del_sitio(ancho)}
+"""
+
+
 def revisar_duracion(pagina, donde):
     """Avisos de duración que quedaron adentro de algo que simula la pantalla."""
     avisos = []
@@ -4830,6 +5535,64 @@ def main():
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(
             fijar_al_ancho(tablero_nosotros(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "15b-prueba" / f"{ancho}-solo.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(solo_prueba(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "15b-prueba" / f"{ancho}-google.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(solo_google(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "15b-prueba" / f"{ancho}-jerarquia.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(
+                solo_prueba(tokens, css, ancho, estilo=" jerarquia"), ancho
+            ),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "15b-prueba" / f"{ancho}-cita.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(
+                solo_prueba(tokens, css, ancho, estilo=" cita"), ancho
+            ),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "15b-prueba" / f"{ancho}-con-caso.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(solo_prueba(tokens, css, ancho, con_caso=True), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    for ancho in ANCHOS:
+        destino = SALIDA / "15b-prueba" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_prueba(tokens, css, ancho), ancho),
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")

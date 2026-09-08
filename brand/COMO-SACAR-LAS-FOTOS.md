@@ -94,6 +94,31 @@ banco de una dentadura perfecta promete un resultado que nadie firmó.**
 🔴 **Nadie aparece sin haber dicho que sí.** Si en una foto se reconoce a un
 paciente, esa foto no se publica — aunque haya salido linda.
 
+### ⚠️ PRECISIÓN DEL 8-sep-2026 — la sección «Prueba» maquetó un antes/después, y NO contradice lo de arriba
+
+**Los dos renglones de arriba se quedan como están.** Lo que cambió es que la
+pieza **15.b** maquetó la sección con un par de fotos, y hay que decir en qué
+condiciones ese par puede llegar a existir, porque leído solo el renglón de
+arriba parece que la sección no va nunca.
+
+- **La maqueta usa dos fotos de banco de DOS BOCAS DISTINTAS**, marcadas como
+  tales. Sirven para decidir tamaño y aire. **No se publican.**
+- **El fundamento ahora tiene artículo, no impresión:** el **Código Argentino de
+  Ética y Deontología Dental** prohíbe en su **Art. 53** avalar *"resultados de
+  actuaciones profesionales que no haya efectuado y comprobado personalmente"*,
+  y en el **Art. 49.3** pide que la publicidad no pueda *"dar lugar a falsas
+  esperanzas"*. *El renglón de arriba decía "suele estar restringida"; esto es
+  más firme.*
+- **La sección está construida para sostenerse SIN el par** — los testimonios
+  van primero y el par de cierre. **Si el Colegio dice que no, se saca un bloque
+  y no hay que rediseñar nada.**
+
+**Y si algún día SÍ se pueden sacar, éste es el encuadre — la maqueta lo dejó a
+la vista:** las dos fotos del par tienen que estar **a la misma distancia, con
+la misma luz y el mismo encuadre**. En la maqueta una es un primer plano de la
+boca y la otra muestra media cara, y **lo primero que se compara es la
+distancia, no los dientes**. Un par mal apareado no engaña a nadie: distrae.
+
 ---
 
 ## Cómo mandarlas
