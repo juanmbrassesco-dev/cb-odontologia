@@ -50,20 +50,8 @@ _METRICA = None  # ídem en ancho_de()
 SALIDA = RAIZ / "brand" / "carteleria"
 WORDMARK = RAIZ / "brand" / "logo" / "curvas" / "cb-wordmark-curvas.svg"
 
-# El lienzo, en milímetros. 200 × 300 son 600 cm², por debajo de los 800 que
-# fija el
-# Reglamento de Publicidad del Colegio de MÉDICOS de Santa Fe (art. 10) para
-# una placa de fachada — y ese tope es un TECHO, no un objetivo: a 400 mm de
-# alto sobraban 18 cm de blanco, y el art. 89 pide "tamaño discreto". ⚠ El
-# reglamento es de médicos, no de odontólogos: se usa como
-# criterio, no como obligación — el reglamento propio del Colegio de
-# Odontólogos se pidió y no contestó.
-ESCALA = 1.15
-
-ANCHO = round(200 * ESCALA)
-MARGEN = round(22 * ESCALA)
-# ALTO no se declara: lo calcula placa() a partir de lo que mide el contenido.
-ALTO = 0
+FUENTE = None    # se completa en leer_fuente(), una sola vez
+_METRICA = None  # ídem en ancho_de()
 
 # Los colores salen de la paleta, no se inventan acá.
 GRAFITO = "#33322F"
@@ -76,38 +64,7 @@ WHATSAPP = "https://wa.me/5493426293920"
 TELEFONO = "+54 342 629-3920"
 DIRECCION = "25 de Mayo 3725 · Santa Fe"
 
-# LOS TRATAMIENTOS, AGRUPADOS. Los nueve del sitio no entran legibles a un
-# metro, así que se agrupan en cinco ramas. No es un recorte de contenido: es
-# el mismo criterio del art. 89, que habla de "ramas", y la lista completa
-# vive en el sitio. ⚠ Ortodoncia va sola y con su palabra entera, porque es
-# un tratamiento que la gente busca por su nombre.
-RAMAS = [
-    "Odontología general",
-    "Limpieza y blanqueamiento",
-    "Ortodoncia",
-    "Estética dental",
-    "Cirugía",
-]
-
-# LOS NUEVE, con el nombre que tienen en la tabla `tratamientos` y en el
-# sitio. En dos columnas ocupan casi lo mismo que las cinco ramas apiladas,
-# así que la elección NO es de espacio: es de criterio. A favor de los nueve,
-# que el que pasa busca lo suyo por su nombre y "Odontología general" no le
-# dice si hacen endodoncia. A favor de las cinco, que el art. 90 pide
-# discreción y una lista larga se lee como menú.
-TRATAMIENTOS = [
-    "Blanqueamiento",
-    "Limpieza",
-    "Carillas",
-    "Ortodoncia",
-    "Restauración",
-    "Endodoncia",
-    "Extracción",
-    "Cirugía",
-]
-
-# ⚠ "Strass dentales" NO está en esta lista y es a propósito: ver el
-# comentario de arriba. Vive en el sitio, no en la placa.
+CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 
 def leer_fuente():
@@ -200,52 +157,6 @@ def ancho_de(texto, tamano):
     return total / upm * tamano
 
 
-def repartir(nombres, cuantos):
-    """Parte la lista en renglones lo más parejos posible.
-
-    Dos criterios, y el primero manda: EL ÚLTIMO RENGLÓN TIENE QUE SER EL MÁS
-    CORTO. En texto centrado ésa es la forma que se lee bien —el bloque cierra
-    hacia adentro, como una copa—, y la contraria deja un hueco raro justo
-    debajo del filete. Entre las particiones que lo cumplen, gana la más
-    pareja: la que deja menor diferencia entre el renglón más largo y el más
-    corto.
-
-    🔑 Los dos criterios salieron de MIRAR las tres particiones posibles
-    generadas y capturadas, no de razonarlas: minimizando sólo el renglón más
-    largo, el reparto que ganaba dejaba el corto ARRIBA y se veía peor.
-
-    El largo se mide en caracteres, que es un proxy —una "i" no ocupa lo que
-    una "m"—, pero alcanza: el resultado se mira igual con una sonda en el
-    archivo antes de darlo por bueno.
-    """
-    import itertools
-
-    mejor = None
-
-    for cortes in itertools.combinations(range(1, len(nombres)), cuantos - 1):
-        limites = (0,) + cortes + (len(nombres),)
-        tramos = [
-            " · ".join(nombres[limites[i]:limites[i + 1]])
-            for i in range(cuantos)
-        ]
-
-        if any(not tramo for tramo in tramos):
-            continue
-
-        largos = [len(tramo) for tramo in tramos]
-
-        # El último tiene que ser el más corto, y solo.
-        if largos[-1] != min(largos) or largos.count(min(largos)) > 1:
-            continue
-
-        diferencia = max(largos) - min(largos)
-
-        if mejor is None or diferencia < mejor[0]:
-            mejor = (diferencia, tramos)
-
-    return mejor[1]
-
-
 def qr_svg(lado_mm):
     """El QR del WhatsApp, vectorial, generado con qrencode.
 
@@ -274,162 +185,6 @@ def qr_svg(lado_mm):
     adentro = adentro.replace("</svg>", "")
 
     return adentro, modulos
-
-
-def placa(lista="tira", alineacion="centro"):
-    """El SVG de la placa, con 1 unidad = 1 milímetro.
-
-    lista="ramas" son los cinco grupos; lista="nueve" son los nueve
-    tratamientos en dos columnas. alineacion="izquierda" alinea todo al
-    margen, como el resto del sistema — en el sitio el pie es el ÚNICO bloque
-    centrado, y esta pieza había copiado esa excepción sin justificarla.
-    """
-    centrado = alineacion == "centro"
-    eje = ANCHO / 2 if centrado else MARGEN
-    ancla = "middle" if centrado else "start"
-
-    logo, logo_ancho, logo_alto, logo_x, logo_y = wordmark_a_una_tinta()
-    qr, qr_modulos = qr_svg(50)
-
-    # EL WORDMARK. 150 mm de ancho, muy por encima del mínimo de la técnica:
-    # grabado arranca en 6,3 cm y serigrafía en 12,6 (COMO-USAR-EL-LOGO.md).
-    logo_ancho_mm = 150 * ESCALA
-    escala = logo_ancho_mm / logo_ancho
-    logo_alto_mm = logo_alto * escala
-    logo_izq = (ANCHO - logo_ancho_mm) / 2 if centrado else MARGEN
-    logo_arriba = 26 * ESCALA
-
-    # EL FILETE. Es el único dorado de la pieza y no lleva texto encima: ahí
-    # el dorado sí cumple, porque su trabajo es separar, no ser leído.
-    filete_y = logo_arriba + logo_alto_mm + 16 * ESCALA
-
-    # LOS RENGLONES. 7 mm de altura de mayúscula: la regla práctica de
-    # señalética pide ~1 mm de letra por cada 200 mm de distancia de lectura,
-    # así que 7 mm se lee cómodo hasta 1,4 m. Se lee parado a un metro.
-    ramas_y = filete_y + 22 * ESCALA
-    interlinea = 14 * ESCALA
-    util = ANCHO - MARGEN * 2
-
-    if lista == "tira":
-        # Tres renglones cortos en vez de nueve largos. El separador es el
-        # punto medio, que el sistema ya usa en la dirección y en la firma de
-        # los testimonios: no se estrena ningún recurso.
-        filas_tira = repartir(TRATAMIENTOS, 3)
-        interlinea = 13 * ESCALA
-        renglones = "\n".join(
-            f'    <text x="{eje}" y="{ramas_y + interlinea * i}" '
-            f'class="rama">{fila}</text>'
-            for i, fila in enumerate(filas_tira)
-        )
-        alto_lista = interlinea * (len(filas_tira) - 1)
-    elif lista == "nueve":
-        # Dos columnas, cinco y cuatro. Es la misma disposición que la grilla
-        # de tratamientos del sitio, así que la placa no inventa una forma
-        # propia. En dos columnas el bloque mide lo mismo que las cinco ramas
-        # apiladas: la elección no la decide el espacio.
-        mitad = (len(TRATAMIENTOS) + 1) // 2
-        columnas = [TRATAMIENTOS[:mitad], TRATAMIENTOS[mitad:]]
-        paso = util / 2
-        ejes = (
-            [MARGEN + paso * 0.5, MARGEN + paso * 1.5]
-            if centrado
-            else [MARGEN, MARGEN + paso]
-        )
-        interlinea = 12 * ESCALA
-        renglones = "\n".join(
-            f'    <text x="{ejes[c]}" y="{ramas_y + interlinea * i}" '
-            f'class="rama">{nombre}</text>'
-            for c, columna in enumerate(columnas)
-            for i, nombre in enumerate(columna)
-        )
-        alto_lista = interlinea * (mitad - 1)
-    else:
-        renglones = "\n".join(
-            f'    <text x="{eje}" y="{ramas_y + interlinea * i}" '
-            f'class="rama">{rama}</text>'
-            for i, rama in enumerate(RAMAS)
-        )
-        alto_lista = interlinea * (len(RAMAS) - 1)
-
-    direccion_y = ramas_y + alto_lista + 26 * ESCALA
-    telefono_y = direccion_y + 11 * ESCALA
-
-    # EL QR. La regla es 10:1 — un lado de 1 cm se escanea desde 10 cm. Con
-    # 66 mm se escanea desde 66 cm, o sea SIN acercarse: se lee desde donde la
-    # persona ya está parada. A 45 mm había que arrimarse, y además era el
-    # bloque más angosto de la placa, lo que dejaba el contorno irregular.
-    qr_lado = 66 * ESCALA
-    qr_izq = (ANCHO - qr_lado) / 2 if centrado else MARGEN
-    qr_arriba = telefono_y + 20 * ESCALA
-    qr_escala = qr_lado / qr_modulos
-
-    rotulo_y = qr_arriba + qr_lado + 10 * ESCALA
-
-    # El borde de abajo del último texto, no su línea de base.
-    fondo_texto = rotulo_y + 7 * ESCALA * 0.3
-    alto = round(fondo_texto + logo_arriba * 1.2)
-
-    dibujo = f"""<svg xmlns="http://www.w3.org/2000/svg"
-     width="{ANCHO}mm" height="{alto}mm"
-     viewBox="0 0 {ANCHO} {alto}">
-  <style>
-    /* LA FUENTE VA ADENTRO DEL ARCHIVO. Jost no está instalada en el sistema
-       y el SVG tiene que verse igual en cualquier máquina, incluida la de la
-       imprenta. Referenciarla por ruta NO alcanza: probado, el PDF salía en
-       Helvetica porque un SVG cargado como imagen no trae recursos externos.
-       La OFL permite embeberla. */
-    @font-face {{
-      font-family: Jost;
-      src: url(data:font/ttf;base64,{leer_fuente()}) format("truetype");
-      font-weight: 100 900;
-    }}
-
-    text {{
-      font-family: Jost, sans-serif;
-      fill: {GRAFITO};
-      text-anchor: {ancla};
-    }}
-    .rama {{
-      font-size: {8.8 * ESCALA:.2f}px;
-      font-weight: 400;
-      letter-spacing: 0.02em;
-    }}
-    .direccion {{
-      font-size: {9 * ESCALA:.2f}px;
-      font-weight: 500;
-    }}
-    .rotulo {{
-      font-size: {7 * ESCALA:.2f}px;
-      font-weight: 500;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }}
-  </style>
-
-  <rect x="0" y="0" width="{ANCHO}" height="{alto}" fill="{BLANCO}"/>
-
-  <g transform="translate({logo_izq} {logo_arriba}) scale({escala}) translate({-float(logo_x)} {-float(logo_y)})">
-{logo}
-  </g>
-
-  <rect x="{MARGEN}" y="{filete_y}" width="{util}" height="0.8" fill="{DORADO}"/>
-
-{renglones}
-
-  <text x="{eje}" y="{direccion_y}" class="direccion">{DIRECCION}</text>
-  <text x="{eje}" y="{telefono_y}" class="direccion">{TELEFONO}</text>
-
-  <g transform="translate({qr_izq} {qr_arriba}) scale({qr_escala})">
-{qr}
-  </g>
-
-  <text x="{eje}" y="{rotulo_y}" class="rotulo">Turnos y consultas</text>
-</svg>
-"""
-
-    return dibujo, alto
-
-
 
 
 # ============================================================
@@ -492,7 +247,7 @@ def cartel():
     logo_izq = (CARTEL_ANCHO - logo_ancho_mm) / 2
     logo_arriba = 22
 
-    filete_y = logo_arriba + logo_alto_mm + 16
+    filete_y = logo_arriba + logo_alto_mm + 11
 
     # LOS TAMAÑOS SALEN DE LA DISTANCIA DE LECTURA, no del gusto. Con la
     # fórmula de señalética —x-height = distancia en metros × 2,5 mm— los 17
@@ -501,7 +256,7 @@ def cartel():
     # es el dato que alguien anota desde lejos.
     grupo_tam = 17
     interlinea = 18
-    grupos_y = filete_y + 24
+    grupos_y = filete_y + 28
 
     renglones = "\n".join(
         f'    <text x="{CARTEL_ANCHO / 2}" y="{grupos_y + interlinea * i}" '
@@ -513,16 +268,16 @@ def cartel():
     # El teléfono cierra abajo de todo y el QR queda en el medio del bloque.
     # Se arma desde el BORDE hacia arriba, que es lo que impide que un
     # elemento termine tocando el filo.
-    qr_lado = 44
+    qr_lado = 40
     qr_escala = qr_lado / qr_modulos
     eje_texto = CARTEL_ANCHO / 2
 
     margen_abajo = 22
     pie_y = CARTEL_ALTO - margen_abajo
     telefono_y = pie_y - 15
-    qr_arriba = telefono_y - 20 - qr_lado
+    qr_arriba = telefono_y - 24 - qr_lado
     qr_izq = (CARTEL_ANCHO - qr_lado) / 2
-    rotulo_base = qr_arriba - 10
+    rotulo_base = qr_arriba - 9
 
     # El borde de abajo del último renglón de la lista, con su descendente.
     lista_abajo = grupos_y + interlinea * (len(GRUPOS) - 1) + grupo_tam * 0.25
@@ -597,11 +352,11 @@ def cartel():
 
 
 
-def tablero(nombre_svg, medidas, alto, nombre_cartel):
-    """El tablero con el porqué de cada número, como los de la fase ⑦.
+def tablero(nombre_svg, medidas):
+    """El tablero con el porqué de cada decisión y de cada número.
 
-    La placa va A ESCALA acá y a tamaño real en el PDF: un tablero se lee en
-    pantalla, y en pantalla 300 mm no entran.
+    La pieza va A ESCALA acá y a tamaño real en el PDF: un tablero se lee en
+    pantalla, y en pantalla medio metro no entra.
     """
     filas = "\n".join(
         f"    <tr><td>{que}</td><td class='n'>{cuanto}</td><td>{porque}</td></tr>"
@@ -610,7 +365,7 @@ def tablero(nombre_svg, medidas, alto, nombre_cartel):
 
     return f"""<!doctype html>
 <meta charset="utf-8">
-<title>CB · Placa de acceso · {ANCHO} × {alto} mm</title>
+<title>CB · Letrero del consultorio · {CARTEL_ANCHO} × {CARTEL_ALTO} mm</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
@@ -657,42 +412,62 @@ def tablero(nombre_svg, medidas, alto, nombre_cartel):
     background: #FFFFFF; border: 1px solid #E4D6BC;
     display: inline-block; padding: 24px; margin-top: 16px;
   }}
-  .pieza img {{ display: block; width: {ANCHO * 1.4}px; height: auto; }}
+  .pieza img {{ display: block; width: 700px; height: auto; }}
   code {{ font-family: Jost, sans-serif; letter-spacing: 0.02em; color: #896D41; }}
 </style>
 
 <div class="prosa">
-<p class="rotulo">Entregable físico · Placa de acceso</p>
-<h1>La placa del consultorio</h1>
+<p class="rotulo">Entregable físico · Cartelería</p>
+<h1>El letrero del consultorio</h1>
 <div class="regla"></div>
 
-<p><b>No es el cartel de la fachada y no es la chapa de la profesional.</b> Es
-la placa chica que va al costado de la puerta, y <b>su función la definió
-Cecilia</b>: que el que pasa por la vereda —o el paciente derivado que nunca
-estuvo— <b>se acerque y confirme que el consultorio es ahí</b>. El cartel
-grande se ve de lejos; <b>esto se lee a un metro, parado</b>.</p>
+<p><b>Es la pieza que ANUNCIA lo que se hace adentro.</b> Va en la fachada,
+debajo del cartel de identificación, y <b>se lee desde la vereda</b>. La lista
+de tratamientos y su orden los dictó Cecilia: <b>el orden es la decisión</b> —
+lo primero que se lee es lo que quiere destacar.</p>
 
 <p class="provisorio" style="margin-top: 20px">🔴 <b>Lo que falta antes de
-mandar a fabricar:</b> <b>probar el QR en la calle</b> con un teléfono real, y
-decidir <b>si el filete dorado se queda</b> — ver «El material», abajo.</p>
+mandar a fabricar:</b> <b>probar el QR en la calle</b> con un teléfono real ·
+decidir <b>si el filete dorado se queda</b> (ver «El material») · y <b>tres de
+los cinco grupos no existen en el sistema</b> (ver abajo).</p>
 </div>
 
 <div class="pieza"><img src="{nombre_svg}" alt=""></div>
 
 <div class="prosa">
 <section>
-  <p class="rotulo">La decisión que más cambia la pieza</p>
-  <h2>No lleva matrícula ni nombre propio</h2>
+  <p class="rotulo">Las piezas de la fachada</p>
+  <h2>Son dos, y la placa chica se cayó</h2>
+  <p><b>Arriba, el cartel de IDENTIFICACIÓN</b> —logo y la palabra
+  «Consultorios»—, que es lo que hace que alguien encuentre el lugar.
+  <b>Debajo, este letrero, que ANUNCIA.</b> La distinción no es cosmética:
+  <b>el que cae bajo el art. 89 es éste</b>, y el de identificación es el que
+  cualquier consultorio tiene y la normativa espera que exista.</p>
+  <p style="margin-top: 12px">🏁 <b>La placa chica de 23 × 32 se descartó el
+  10-sep-2026.</b> Su función —que el que pasa confirme que es ahí— <b>la
+  cumple mejor el cartel de arriba</b>, y <b>tres piezas en una fachada se
+  leen como comercio</b>, que es justo lo contrario de lo que la § 2 fijó para
+  esta marca. <i>Su diseño y todas sus mediciones viven en el historial de git
+  (commit <code>efbe2c0</code>); lo que sobrevivió es su investigación, que es
+  la que sigue en este tablero.</i></p>
+  <p class="dato" style="margin-top: 12px">🔑 <b>Y la palabra «Consultorios»
+  trae un dato de producto:</b> el plural dice que <b>el local está pensado
+  para más de un profesional</b> — que es lo mismo que asumió el modelo de
+  datos en agosto, y la mejor confirmación de que <b>ninguna pieza de fachada
+  debe llevar una matrícula.</b></p>
+</section>
+
+<section>
+  <p class="rotulo">La decisión que más cambia las piezas</p>
+  <h2>No llevan matrícula ni nombre propio</h2>
   <p><b>Lo definió Juan, y el argumento es de arquitectura, no de gusto:</b>
-  la placa identifica al <b>consultorio</b>, no a una persona. El día que
-  entre otro profesional, <b>una matrícula grabada empieza a mentir</b> — y en
-  metal eso no se corrige editando un archivo: <b>se fabrica la placa de
-  nuevo</b>.</p>
+  identifican al <b>consultorio</b>, no a una persona. El día que entre otro
+  profesional, <b>una matrícula grabada empieza a mentir</b> — y en un cartel
+  eso no se corrige editando un archivo: <b>se fabrica de nuevo</b>.</p>
   <p>Es la misma regla que sacó los horarios de la sección Contacto del sitio
   —<i>«un dato publicado no se copia si ya vive en la base, porque empieza a
   mentir»</i>— <b>aplicada al material físico</b>, donde el error es mucho más
-  caro. El modelo de datos ya se había reabierto en agosto para soportar
-  varios profesionales.</p>
+  caro.</p>
   <p class="dato" style="margin-top: 12px">🔑 <b>Dónde se cumple entonces la
   identificación profesional: ADENTRO</b>, con el diploma y la matrícula a la
   vista, que es lo que la normativa pide y suele ser requisito de
@@ -711,7 +486,9 @@ decidir <b>si el filete dorado se queda</b> — ver «El material», abajo.</p>
   horas de consulta · <b>dirección</b> · <b>teléfono</b>.
   <i>«Todo otro ofrecimiento es industrialismo.»</i></p>
   <p><b>Art. 90 — reñido con la ética:</b> tamaño desmedido, caracteres
-  llamativos <b>o fotografías</b> · tarifas · agradecimiento de pacientes.</p>
+  llamativos <b>o fotografías</b> · tarifas · agradecimiento de pacientes ·
+  y <b>los que, colocados en el domicilio del profesional, adquieran el tamaño
+  y forma de carteles</b>.</p>
   <ul>
     <li>✅ <b>Los tratamientos entran</b> — son «las ramas a que se dedica».</li>
     <li>✅ <b>Dirección y teléfono entran.</b></li>
@@ -719,13 +496,33 @@ decidir <b>si el filete dorado se queda</b> — ver «El material», abajo.</p>
     WhatsApp y no a la página</b>: el teléfono sí está permitido y el QR es
     sólo su formato.</li>
     <li>🔴 <b>Nada de fotos. Tamaño discreto.</b></li>
+    <li>⚠️ <b>1600 cm² es el doble del tope de 800</b> que el criterio local
+    fija para una placa de fachada. <b>Se construye porque lo pidió la
+    profesional para su propia fachada; el costo está dicho, no escondido.</b></li>
   </ul>
   <p class="dato" style="margin-top: 12px">⚠ <b>Falta el reglamento propio del
   Colegio de Odontólogos</b> — se preguntó en agosto y no contestó. El tope de
-  <b>800 cm²</b> y la regla «si no es metal, blanco con letras negras» salen
-  del <b>Reglamento de Publicidad del Colegio de MÉDICOS de Santa Fe, 1ª
+  800 cm² y la regla «si no es metal, blanco con letras negras» salen del
+  <b>Reglamento de Publicidad del Colegio de MÉDICOS de Santa Fe, 1ª
   Circunscripción, art. 10</b>: misma provincia, otra profesión. <b>Se usa
   como criterio, no como obligación.</b></p>
+</section>
+
+<section>
+  <p class="rotulo">Lo que el letrero destapó, y no es de diseño</p>
+  <h2>Tres de los cinco grupos no existen en el sistema</h2>
+  <p>🔴 <b>Ortopedia, ATM y bruxismo, y prótesis no están en la tabla
+  <code>tratamientos</code> ni en el sitio.</b> <b>La lista con la que se
+  construyó el backend quedó corta</b>, y el sistema de turnos <b>filtra por
+  tratamiento</b>: hoy un paciente que quiere turno por bruxismo no lo puede
+  pedir, y el desplegable del panel tampoco lo ofrece.</p>
+  <p class="dato" style="margin-top: 12px">⏱ <b>Va a la lista de preguntas
+  para Cecilia:</b> cuál es la lista completa y real de lo que hace. Con eso
+  hay que actualizar la tabla, el sitio y la grilla de reserva.</p>
+  <p class="dato" style="margin-top: 12px">⬜ <b>Y una duda de contenido:
+  ¿un paciente sabe qué es «ATM»?</b> El que ya tiene el diagnóstico sí, y
+  «bruxismo» al lado ayuda — pero el que sólo siente dolor de mandíbula quizá
+  no se reconoce ahí.</p>
 </section>
 
 <section>
@@ -735,7 +532,7 @@ decidir <b>si el filete dorado se queda</b> — ver «El material», abajo.</p>
   <b>65-70 % de contraste</b> y sube el piso a <b>7:1</b> donde se lee a
   distancia con luz cambiante. Corrido <code>tools/medir-contraste.py</code>:</p>
   <table>
-    <tr><th>par</th><th class="n">contraste</th><th>sirve para una placa</th></tr>
+    <tr><th>par</th><th class="n">contraste</th><th>sirve para un letrero</th></tr>
     <tr><td>grafito sobre blanco</td><td class="n">12,82</td><td>✅ pasa 7:1 con el doble de margen</td></tr>
     <tr><td>dorado sobre marfil</td><td class="n">2,89</td><td>❌ no llega ni al mínimo básico</td></tr>
     <tr><td>grafito sobre fondo dorado</td><td class="n">4,15</td><td>❌ sólo aguanta texto grande</td></tr>
@@ -753,49 +550,6 @@ decidir <b>si el filete dorado se queda</b> — ver «El material», abajo.</p>
 </section>
 
 <section>
-  <p class="rotulo">La segunda pieza</p>
-  <h2>El cartel de 50 × 32, pedido por Cecilia</h2>
-  <p><b>Es otra pieza, no un tamaño distinto de la misma:</b> es apaisada,
-  tiene <b>su propia lista de tratamientos</b> —en el orden que ella dictó, y
-  el orden ES la decisión— y su propia disposición.</p>
-</section>
-
-<div class="pieza"><img src="{nombre_cartel}" alt="" style="width: 620px"></div>
-
-<div class="prosa">
-<section>
-  <p class="rotulo">Lo que hay que saber antes de mandarlo a hacer</p>
-  <h2>A este tamaño cambia de categoría</h2>
-  <ul>
-    <li>🔴 <b>1600 cm² es el DOBLE del tope de 800</b> que fija el criterio
-    local para una placa de fachada.</li>
-    <li>🔴 <b>Y el art. 90.k de la Ley 4931</b> —la que sí le aplica— pone
-    entre lo reñido con la ética los anuncios que, colocados en el domicilio
-    del profesional, <i>«adquieran el tamaño y forma de <b>carteles</b>»</i>.
-    <b>A 50 × 32 esto ya no es una placa.</b></li>
-    <li>⏱ <b>Si es un cartel, entonces ES el cartel de fachada</b>, que estaba
-    anotado como pieza aparte. <b>Hay que decidir si lo reemplaza o si van los
-    dos</b> — y dos anuncios en la misma fachada es justo lo que ese artículo
-    mira con lupa. <i>Por eso la placa no se borró.</i></li>
-    <li>🔴 <b>Tres de los cinco grupos NO EXISTEN en el sistema:</b> ortopedia,
-    ATM y bruxismo, y prótesis <b>no están en la tabla <code>tratamientos</code>
-    ni en el sitio</b>. No es un problema del cartel: <b>la lista con la que se
-    construyó el backend quedó corta</b>, y el sistema de turnos filtra por
-    tratamiento.</li>
-  </ul>
-  <p class="dato" style="margin-top: 12px">📐 <b>Los tamaños salen de la
-  distancia de lectura:</b> con la fórmula de señalética —x-height = distancia
-  en metros × 2,5 mm— los <b>16 mm</b> de la lista dan <b>7,4 mm de minúscula,
-  o sea unos 3 metros</b>. El teléfono va más grande que la dirección a
-  propósito: es el dato que alguien anota desde lejos.</p>
-  <p class="dato" style="margin-top: 12px">🔑 <b>La lista va alineada a la
-  izquierda DENTRO de un bloque centrado</b>, que no es lo mismo que «todo a
-  la izquierda». El motivo es medible: «Prótesis» tiene 8 caracteres y
-  «Tratamiento de ATM y bruxismo» tiene 29 — centrados, esos cinco renglones
-  dejan un borde dentado que se ve antes que el texto.</p>
-</section>
-
-<section>
   <p class="rotulo">El material</p>
   <h2>Acrílico — confirmado por Cecilia</h2>
   <ul>
@@ -804,19 +558,16 @@ decidir <b>si el filete dorado se queda</b> — ver «El material», abajo.</p>
     el texto justo cuando pega el sol. <b>El que más sufre es el QR</b>: un
     reflejo sobre el código y la cámara no engancha.</li>
     <li><b>Acrílico BLANCO OPACO</b>, no transparente pintado por detrás — el
-    criterio local pide, para una placa que no sea de metal, <b>blanco con
+    criterio local pide, para una pieza que no sea de metal, <b>blanco con
     letras negras</b>, y el grafito es un negro cálido que lo cumple.</li>
-    <li>🔴 <b>El filete dorado es el único elemento de color de la pieza, y
-    ahí hay una decisión.</b> Si se lee ese criterio al pie de la letra,
-    sobra. <b>Las dos salidas: dejarlo</b> —es un filete, no texto, y es lo
-    único que ata la placa a la identidad— <b>o pasarlo a grafito</b>.
-    <i>Decide Juan; el reglamento que lo pediría es el de médicos, no el de
-    odontólogos.</i></li>
+    <li>🔴 <b>El filete dorado es el único elemento de color, y ahí hay una
+    decisión.</b> Si se lee ese criterio al pie de la letra, sobra. <b>Las dos
+    salidas: dejarlo</b> —es un filete, no texto, y es lo único que ata la
+    pieza a la identidad— <b>o pasarlo a grafito</b>. <i>Decide Juan.</i></li>
     <li><b>El acrílico no amarillea:</b> el PMMA es estable a los UV —a
     diferencia del policarbonato, que sin protección se pone amarillo en dos
     años—. <b>Cinco a diez años a la intemperie sin cambio apreciable.</b></li>
-    <li><b>Espesor: 5 mm</b> para una pieza de este tamaño. Con 3 mm una placa
-    de 23 × 32 cm flexiona.</li>
+    <li><b>Espesor: 5 mm</b> como mínimo. A 50 cm de ancho, con 3 mm flexiona.</li>
   </ul>
 </section>
 
@@ -831,22 +582,33 @@ decidir <b>si el filete dorado se queda</b> — ver «El material», abajo.</p>
     <li>En señales <b>direccionales</b> (wayfinding) la alineación óptima es
     <b>a la izquierda</b>. Es la regla que se había aplicado, y es de otro
     tipo de señal.</li>
-    <li>🔑 En señales de <b>IDENTIFICACIÓN</b> —que es lo que esta placa
-    es— <b>el centrado es lo aceptado</b>.</li>
-    <li><b>Y el matiz que resolvió el problema:</b> el centrado funciona en
-    <b>líneas cortas</b> y <b>se degrada arriba de tres renglones</b>. La
-    lista de nueve centrada se veía mal <b>no por estar centrada, sino por
-    ser larga</b>.</li>
+    <li>🔑 En señales de <b>IDENTIFICACIÓN</b> —que es lo que esto es— <b>el
+    centrado es lo aceptado</b>.</li>
+    <li><b>El matiz:</b> el centrado funciona en <b>líneas cortas</b> y <b>se
+    degrada arriba de tres renglones</b>.</li>
   </ul>
-  <p style="margin-top: 14px">Por eso los tratamientos van <b>en tira, con
-  punto medio, en tres renglones casi del mismo largo</b>: entran los nueve,
-  no hay columnas asimétricas y el bloque cierra parejo. <b>El punto medio ya
-  lo usa el sistema</b> en la dirección y en la firma de los testimonios.</p>
   <p class="dato" style="margin-top: 12px">📌 <b>Lo que esto deja como
   criterio:</b> una regla del sitio no se copia a una pieza física sin
   verificar qué hace el mundo con ese objeto. <b>El pie centrado del sitio es
-  una excepción declarada; una placa centrada es la convención.</b> No son lo
+  una excepción declarada; un letrero centrado es la convención.</b> No son lo
   mismo y se habían mezclado.</p>
+</section>
+
+<section>
+  <p class="rotulo">Los espacios</p>
+  <h2>Auditados con <code>medir-espacios.py</code></h2>
+  <p><b>La regla es una sola:</b> el hueco que <b>SEPARA</b> dos grupos tiene
+  que ser claramente mayor que el mayor hueco de <b>ADENTRO</b> de cualquiera
+  de los dos. Si no, lo que se ve junto no es lo que está junto.</p>
+  <p style="margin-top: 12px"><b>Dos cosas que a ojo no se veían y la medición
+  destapó:</b> el <b>filete</b> estaba a 16 mm del logo y a 4,5 de la lista
+  —o sea pegado a la lista, y <b>un separador que toca un lado deja de
+  separar</b>— y el <b>teléfono</b> estaba a 1,7 mm del QR mientras el rótulo
+  estaba a 6,6.</p>
+  <p class="dato" style="margin-top: 12px">✅ <b>Cómo quedó:</b> logo → filete
+  <b>11,0</b> · filete → lista <b>8,5</b> · adentro de la lista <b>~6</b> ·
+  <b>lista → bloque de contacto 17,4</b> · adentro del contacto <b>5,6 · 5,7 ·
+  6</b>. <b>La separación entre grupos es tres veces la de adentro.</b></p>
 </section>
 
 <section>
@@ -862,29 +624,27 @@ decidir <b>si el filete dorado se queda</b> — ver «El material», abajo.</p>
   <p class="rotulo">Cómo se produce</p>
   <h2>Qué archivo se le manda al cartelero</h2>
   <ul>
-    <li><b><code>placa-{ANCHO}x{alto}.pdf</code></b> — vectorial, a tamaño
-    real. <b>Verificado con <code>pdfinfo</code>: mide 200,05 × 299,9 mm.</b></li>
-    <li><b><code>placa-{ANCHO}x{alto}.svg</code></b> — el mismo dibujo,
-    editable, <b>con la tipografía adentro del archivo</b>.</li>
-    <li>🔴 <b>Se GENERAN con <code>tools/construir-placa.py</code>, nunca se
-    editan a mano.</b> Los colores salen de <code>css/tokens.css</code> y el
+    <li><b><code>{nombre_svg.replace(".svg", ".pdf")}</code></b> — vectorial, a
+    tamaño real.</li>
+    <li><b><code>{nombre_svg}</code></b> — el mismo dibujo, editable, <b>con la
+    tipografía adentro del archivo</b>.</li>
+    <li>🔴 <b>Se GENERAN con <code>tools/construir-carteleria.py</code>, nunca
+    se editan a mano.</b> Los colores salen de <code>css/tokens.css</code> y el
     logo de <code>brand/logo/curvas/</code>.</li>
   </ul>
-  <p class="dato" style="margin-top: 12px">⚠️ <b>Un fallo que sólo apareció
-  midiendo, y conviene no repetirlo:</b> con la tipografía referenciada por
-  ruta, el archivo se veía perfecto en pantalla y <b>el PDF salía en
-  Helvetica</b> — un SVG cargado como imagen no trae recursos externos.
-  <b>Lo destapó <code>pdffonts</code>, no el ojo.</b> Ahora la fuente va
-  embebida y el PDF sale con Jost.</p>
+  <p class="dato" style="margin-top: 12px">⚠️ <b>Dos fallos que sólo
+  aparecieron midiendo, y conviene no repetirlos:</b> con la tipografía
+  referenciada por ruta, el archivo se veía perfecto en pantalla y <b>el PDF
+  salía en Helvetica</b> — lo destapó <code>pdffonts</code>, no el ojo. Y al
+  reordenar el pie, <b>el QR terminó encima de un renglón</b> y el archivo se
+  generó igual. <b>Ahora el generador se niega a escribir una pieza cuyos
+  bloques se pisen.</b></p>
 </section>
 </div>
 """
 
 
-CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-
-
-def envoltorio(nombre_svg, alto, ancho=ANCHO):
+def envoltorio(nombre_svg, alto, ancho):
     """El HTML que Chrome imprime, para que el PDF salga con medida exacta.
 
     Chrome respeta @page, así que la hoja mide lo que mide la placa y no
@@ -916,71 +676,53 @@ def envoltorio(nombre_svg, alto, ancho=ANCHO):
 def main():
     SALIDA.mkdir(parents=True, exist_ok=True)
 
-    dibujo, alto = placa()
-    nombre = f"placa-{ANCHO}x{alto}"
+    nombre = f"letrero-{CARTEL_ANCHO}x{CARTEL_ALTO}"
 
     svg = SALIDA / f"{nombre}.svg"
-    svg.write_text(dibujo, encoding="utf-8")
+    svg.write_text(cartel(), encoding="utf-8")
     print(f"✓ {svg.relative_to(RAIZ)}")
 
-    nombre_cartel = f"cartel-{CARTEL_ANCHO}x{CARTEL_ALTO}"
-
     medidas = [
-        ("La placa entera",
-         f"{ANCHO} × {alto} mm · {ANCHO * alto / 100:.0f} cm²",
-         "Casi una hoja A4 (210 × 297). El tope del criterio local es 800 "
-         "cm² y queda por debajo. 🔴 EL ALTO NO ES UN NÚMERO ELEGIDO: sale "
-         "del contenido más un margen inferior un 20 % mayor que el "
-         "superior, que es la compensación óptica de toda pieza colgada. Con "
-         "el alto fijo, el margen de abajo había quedado siendo el DOBLE."),
-        ("El wordmark", "150 mm de ancho",
-         "El mínimo por técnica es 6,3 cm en grabado y 12,6 en serigrafía "
-         "(COMO-USAR-EL-LOGO.md). Entra con holgura en las dos."),
-        ("El margen lateral", "22 mm · 11 %",
-         "Los manuales de señalización piden de 10 a 15 % del ancho del "
-         "panel por lado, y que el espacio hasta el borde sea del orden de la "
-         "altura de la letra más grande. Nuestra propia guía del logo pide un "
-         "aire de al menos la altura de la «C». Las tres convergen acá."),
-        ("Los tratamientos", "6,16 mm de altura de mayúscula",
-         "Medido sobre la tipografía real, no estimado. Por la fórmula de "
-         "señalética —x-height = distancia en metros × 2,5 mm— se leen hasta "
-         "1,62 m."),
-        ("Los tratamientos, la forma", "3 renglones",
-         "Los nueve, en tira separada por punto medio. Centrar una lista de "
-         "nueve renglones es el caso que la literatura desaconseja; tres "
-         "renglones cortos y parejos es el que recomienda."),
-        ("El renglón más largo", "156,1 mm · 78 %",
-         "Medido con una sonda en el archivo, no calculado a ojo. Antes "
-         "medía 170,4 y dejaba 14,8 mm de margen: se comía el margen "
-         "declarado de 18."),
-        ("Dirección y teléfono", "6,3 mm",
-         "Se leen hasta 1,66 m."),
-        ("El rótulo del QR", "4,9 mm",
-         "Hasta 1,29 m. Es el elemento de menor rango y se lee cuando ya "
-         "estás enfrente."),
-        ("El QR", "66 mm de lado",
-         "La regla es 10:1 — un lado de 1 cm se escanea desde 10 cm. Con 66 "
-         "mm se escanea SIN acercarse, desde donde la persona ya está "
-         "parada. A 45 mm había que arrimarse, y además era el bloque más "
-         "angosto de la placa. Lleva sus 4 módulos de zona de silencio "
-         "(ISO/IEC 18004)."),
+        ("El letrero entero",
+         f"{CARTEL_ANCHO} × {CARTEL_ALTO} mm · {CARTEL_ANCHO * CARTEL_ALTO / 100:.0f} cm²",
+         "La medida la pidió Cecilia. ⚠ Es el DOBLE del tope de 800 cm² que "
+         "el criterio local fija para una placa de fachada, y a este tamaño "
+         "cae en lo que el art. 90.k llama «tamaño y forma de carteles»."),
+        ("El margen lateral", f"{CARTEL_MARGEN} mm · 10 %",
+         "Los manuales de señalización piden de 10 a 15 % del ancho del panel "
+         "por lado, y que el espacio hasta el borde sea del orden de la altura "
+         "de la letra más grande."),
+        ("El wordmark", "270 mm de ancho",
+         "El 54 % del ancho. El mínimo por técnica es 6,3 cm en grabado y "
+         "12,6 en serigrafía (COMO-USAR-EL-LOGO.md): entra con holgura."),
+        ("Los tratamientos", "11,9 mm de altura de mayúscula",
+         "Medido sobre la tipografía real. Por la fórmula de señalética "
+         "—x-height = distancia en metros × 2,5 mm— los 7,8 mm de minúscula "
+         "se leen desde 3,1 m, o sea desde la vereda."),
+        ("El teléfono", "más grande que la dirección",
+         "A propósito: es el dato que alguien anota desde lejos. La dirección "
+         "va abajo de todo porque quien lee el letrero YA está en ella."),
+        ("El QR", "40 mm de lado",
+         "La regla es 10:1 — un lado de 1 cm se escanea desde 10 cm. Lleva "
+         "sus 4 módulos de zona de silencio (ISO/IEC 18004). ⏱ Falta "
+         "probarlo en la calle con un teléfono real: un QR que no se escaneó "
+         "no está verificado."),
         ("El QR, verificado", "decodificado",
          "No se dio por bueno: se rasterizó el PDF a 300 dpi y se leyó con "
          "zbar. Devuelve wa.me/5493426293920."),
-        ("El filete dorado", "0,8 mm",
+        ("El filete dorado", "1,2 mm",
          "Es el único dorado de la pieza y no lleva texto encima: ahí el "
          "dorado sí cumple, porque su trabajo es separar, no ser leído."),
     ]
 
-    tab = SALIDA / f"{nombre}-tablero.html"
-    tab.write_text(
-        tablero(svg.name, medidas, alto, f"{nombre_cartel}.svg"),
-        encoding="utf-8",
-    )
+    tab = SALIDA / "carteleria-tablero.html"
+    tab.write_text(tablero(svg.name, medidas), encoding="utf-8")
     print(f"✓ {tab.relative_to(RAIZ)}")
 
     html = SALIDA / f"{nombre}-imprimir.html"
-    html.write_text(envoltorio(svg.name, alto), encoding="utf-8")
+    html.write_text(
+        envoltorio(svg.name, CARTEL_ALTO, CARTEL_ANCHO), encoding="utf-8"
+    )
     print(f"✓ {html.relative_to(RAIZ)}")
 
     pdf = SALIDA / f"{nombre}.pdf"
@@ -997,37 +739,6 @@ def main():
         check=True,
     )
     print(f"✓ {pdf.relative_to(RAIZ)}")
-
-    # EL CARTEL, que es otra pieza y no un tamaño distinto de la misma:
-    # apaisado, con su propia lista y su propia disposición. La placa NO se
-    # borra — todavía no está decidido si el cartel la reemplaza o si van las
-    # dos, y dos anuncios en la misma fachada es justo lo que el art. 90.k
-    # mira con lupa.
-    svg_cartel = SALIDA / f"{nombre_cartel}.svg"
-    svg_cartel.write_text(cartel(), encoding="utf-8")
-    print(f"✓ {svg_cartel.relative_to(RAIZ)}")
-
-    html_cartel = SALIDA / f"{nombre_cartel}-imprimir.html"
-    html_cartel.write_text(
-        envoltorio(svg_cartel.name, CARTEL_ALTO, CARTEL_ANCHO),
-        encoding="utf-8",
-    )
-    print(f"✓ {html_cartel.relative_to(RAIZ)}")
-
-    pdf_cartel = SALIDA / f"{nombre_cartel}.pdf"
-    subprocess.run(
-        [
-            CHROME,
-            "--headless",
-            "--disable-gpu",
-            "--no-pdf-header-footer",
-            f"--print-to-pdf={pdf_cartel}",
-            f"file://{html_cartel}",
-        ],
-        capture_output=True,
-        check=True,
-    )
-    print(f"✓ {pdf_cartel.relative_to(RAIZ)}")
 
     return 0
 

@@ -1,0 +1,285 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>CB · Letrero del consultorio · 500 × 320 mm</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #FAF7F2;
+    color: #33322F;
+    font-family: Jost, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 40px 40px 80px;
+  }
+  .prosa, table { max-width: 720px; }
+  h1 { font-family: Marcellus, Georgia, serif; font-weight: 400; font-size: 34px; line-height: 1.2; }
+  h2 { font-family: Marcellus, Georgia, serif; font-weight: 400; font-size: 24px; line-height: 1.3; margin-bottom: 8px; }
+  .rotulo {
+    font-size: 13px; font-weight: 500; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #896D41;
+  }
+  .regla { height: 1px; background: #B08D57; margin: 12px 0 24px; max-width: 720px; }
+  section { margin-top: 40px; }
+  p { margin-top: 10px; }
+  .dato { font-size: 14px; line-height: 1.5; color: #464541; }
+  .provisorio {
+    border: 1px dashed #B08D57; background: #E4D6BC;
+    padding: 10px 12px; font-size: 14px; line-height: 1.5; color: #464541;
+    max-width: 720px;
+  }
+  table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+  th, td {
+    text-align: left; padding: 9px 10px 9px 0;
+    border-bottom: 1px solid #E4D6BC; font-size: 14px; line-height: 1.5;
+    vertical-align: top;
+  }
+  th {
+    font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+    font-size: 13px; color: #896D41;
+  }
+  td.n { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 500; }
+  ul { margin-top: 12px; padding-left: 20px; max-width: 720px; }
+  li { margin-top: 8px; }
+  .pieza {
+    background: #FFFFFF; border: 1px solid #E4D6BC;
+    display: inline-block; padding: 24px; margin-top: 16px;
+  }
+  .pieza img { display: block; width: 700px; height: auto; }
+  code { font-family: Jost, sans-serif; letter-spacing: 0.02em; color: #896D41; }
+</style>
+
+<div class="prosa">
+<p class="rotulo">Entregable físico · Cartelería</p>
+<h1>El letrero del consultorio</h1>
+<div class="regla"></div>
+
+<p><b>Es la pieza que ANUNCIA lo que se hace adentro.</b> Va en la fachada,
+debajo del cartel de identificación, y <b>se lee desde la vereda</b>. La lista
+de tratamientos y su orden los dictó Cecilia: <b>el orden es la decisión</b> —
+lo primero que se lee es lo que quiere destacar.</p>
+
+<p class="provisorio" style="margin-top: 20px">🔴 <b>Lo que falta antes de
+mandar a fabricar:</b> <b>probar el QR en la calle</b> con un teléfono real ·
+decidir <b>si el filete dorado se queda</b> (ver «El material») · y <b>tres de
+los cinco grupos no existen en el sistema</b> (ver abajo).</p>
+</div>
+
+<div class="pieza"><img src="letrero-500x320.svg" alt=""></div>
+
+<div class="prosa">
+<section>
+  <p class="rotulo">Las piezas de la fachada</p>
+  <h2>Son dos, y la placa chica se cayó</h2>
+  <p><b>Arriba, el cartel de IDENTIFICACIÓN</b> —logo y la palabra
+  «Consultorios»—, que es lo que hace que alguien encuentre el lugar.
+  <b>Debajo, este letrero, que ANUNCIA.</b> La distinción no es cosmética:
+  <b>el que cae bajo el art. 89 es éste</b>, y el de identificación es el que
+  cualquier consultorio tiene y la normativa espera que exista.</p>
+  <p style="margin-top: 12px">🏁 <b>La placa chica de 23 × 32 se descartó el
+  10-sep-2026.</b> Su función —que el que pasa confirme que es ahí— <b>la
+  cumple mejor el cartel de arriba</b>, y <b>tres piezas en una fachada se
+  leen como comercio</b>, que es justo lo contrario de lo que la § 2 fijó para
+  esta marca. <i>Su diseño y todas sus mediciones viven en el historial de git
+  (commit <code>efbe2c0</code>); lo que sobrevivió es su investigación, que es
+  la que sigue en este tablero.</i></p>
+  <p class="dato" style="margin-top: 12px">🔑 <b>Y la palabra «Consultorios»
+  trae un dato de producto:</b> el plural dice que <b>el local está pensado
+  para más de un profesional</b> — que es lo mismo que asumió el modelo de
+  datos en agosto, y la mejor confirmación de que <b>ninguna pieza de fachada
+  debe llevar una matrícula.</b></p>
+</section>
+
+<section>
+  <p class="rotulo">La decisión que más cambia las piezas</p>
+  <h2>No llevan matrícula ni nombre propio</h2>
+  <p><b>Lo definió Juan, y el argumento es de arquitectura, no de gusto:</b>
+  identifican al <b>consultorio</b>, no a una persona. El día que entre otro
+  profesional, <b>una matrícula grabada empieza a mentir</b> — y en un cartel
+  eso no se corrige editando un archivo: <b>se fabrica de nuevo</b>.</p>
+  <p>Es la misma regla que sacó los horarios de la sección Contacto del sitio
+  —<i>«un dato publicado no se copia si ya vive en la base, porque empieza a
+  mentir»</i>— <b>aplicada al material físico</b>, donde el error es mucho más
+  caro.</p>
+  <p class="dato" style="margin-top: 12px">🔑 <b>Dónde se cumple entonces la
+  identificación profesional: ADENTRO</b>, con el diploma y la matrícula a la
+  vista, que es lo que la normativa pide y suele ser requisito de
+  habilitación. <b>Eso entra al paquete de señalética interna</b>, hoy
+  pausado — y le da una función que antes no tenía.</p>
+</section>
+
+<section>
+  <p class="rotulo">Qué puede decir, y no es opinión</p>
+  <h2>Ley 4931 de Santa Fe, artículos 89 y 90</h2>
+  <p><b>Verificado que nos aplica:</b> su art. 1 abarca a <i>«todos los
+  profesionales del arte de curar»</i>, nombra a los odontólogos en el art. 34
+  y tiene un <b>Título IV, «Asuntos exclusivamente odontológicos»</b>.</p>
+  <p><b>Art. 89 — lista cerrada de lo que se puede anunciar:</b> nombre y
+  apellido · títulos · <b>las ramas y especialidades a que se dedique</b> ·
+  horas de consulta · <b>dirección</b> · <b>teléfono</b>.
+  <i>«Todo otro ofrecimiento es industrialismo.»</i></p>
+  <p><b>Art. 90 — reñido con la ética:</b> tamaño desmedido, caracteres
+  llamativos <b>o fotografías</b> · tarifas · agradecimiento de pacientes ·
+  y <b>los que, colocados en el domicilio del profesional, adquieran el tamaño
+  y forma de carteles</b>.</p>
+  <ul>
+    <li>✅ <b>Los tratamientos entran</b> — son «las ramas a que se dedica».</li>
+    <li>✅ <b>Dirección y teléfono entran.</b></li>
+    <li>🔴 <b>El sitio web NO está en la lista.</b> Por eso <b>el QR va al
+    WhatsApp y no a la página</b>: el teléfono sí está permitido y el QR es
+    sólo su formato.</li>
+    <li>🔴 <b>Nada de fotos. Tamaño discreto.</b></li>
+    <li>⚠️ <b>1600 cm² es el doble del tope de 800</b> que el criterio local
+    fija para una placa de fachada. <b>Se construye porque lo pidió la
+    profesional para su propia fachada; el costo está dicho, no escondido.</b></li>
+  </ul>
+  <p class="dato" style="margin-top: 12px">⚠ <b>Falta el reglamento propio del
+  Colegio de Odontólogos</b> — se preguntó en agosto y no contestó. El tope de
+  800 cm² y la regla «si no es metal, blanco con letras negras» salen del
+  <b>Reglamento de Publicidad del Colegio de MÉDICOS de Santa Fe, 1ª
+  Circunscripción, art. 10</b>: misma provincia, otra profesión. <b>Se usa
+  como criterio, no como obligación.</b></p>
+</section>
+
+<section>
+  <p class="rotulo">Lo que el letrero destapó, y no es de diseño</p>
+  <h2>Tres de los cinco grupos no existen en el sistema</h2>
+  <p>🔴 <b>Ortopedia, ATM y bruxismo, y prótesis no están en la tabla
+  <code>tratamientos</code> ni en el sitio.</b> <b>La lista con la que se
+  construyó el backend quedó corta</b>, y el sistema de turnos <b>filtra por
+  tratamiento</b>: hoy un paciente que quiere turno por bruxismo no lo puede
+  pedir, y el desplegable del panel tampoco lo ofrece.</p>
+  <p class="dato" style="margin-top: 12px">⏱ <b>Va a la lista de preguntas
+  para Cecilia:</b> cuál es la lista completa y real de lo que hace. Con eso
+  hay que actualizar la tabla, el sitio y la grilla de reserva.</p>
+  <p class="dato" style="margin-top: 12px">⬜ <b>Y una duda de contenido:
+  ¿un paciente sabe qué es «ATM»?</b> El que ya tiene el diagnóstico sí, y
+  «bruxismo» al lado ayuda — pero el que sólo siente dolor de mandíbula quizá
+  no se reconoce ahí.</p>
+</section>
+
+<section>
+  <p class="rotulo">El color</p>
+  <h2>Grafito, y no es una excepción a la marca</h2>
+  <p><b>Lo propuso Juan y la medición lo respalda.</b> La señalética pide
+  <b>65-70 % de contraste</b> y sube el piso a <b>7:1</b> donde se lee a
+  distancia con luz cambiante. Corrido <code>tools/medir-contraste.py</code>:</p>
+  <table>
+    <tr><th>par</th><th class="n">contraste</th><th>sirve para un letrero</th></tr>
+    <tr><td>grafito sobre blanco</td><td class="n">12,82</td><td>✅ pasa 7:1 con el doble de margen</td></tr>
+    <tr><td>dorado sobre marfil</td><td class="n">2,89</td><td>❌ no llega ni al mínimo básico</td></tr>
+    <tr><td>grafito sobre fondo dorado</td><td class="n">4,15</td><td>❌ sólo aguanta texto grande</td></tr>
+  </table>
+  <p style="margin-top: 14px">🔑 <b>El dorado no falla sólo como tinta:
+  también falla como fondo.</b> Queda de <b>filete</b>, que es el rol que la
+  pieza 1 ya le había dado — <i>«acento, línea, o fondo con letra
+  grafito»</i>. <b>Esto no es un desvío de la identidad: es la misma regla
+  aplicada al material.</b></p>
+  <p class="dato" style="margin-top: 12px">📌 <b>Regla que queda para todo el
+  proyecto:</b> pantalla y redes → dorado de acento · <b>cartelería →
+  grafito sobre claro, dorado sólo de filete</b> · <b>acabado mate siempre</b>,
+  sea metal o acrílico. Un brillo tapa el texto, y la norma de señalética lo
+  pide explícito.</p>
+</section>
+
+<section>
+  <p class="rotulo">El material</p>
+  <h2>Acrílico — confirmado por Cecilia</h2>
+  <ul>
+    <li>🔴 <b>ACRÍLICO MATE, no brillante.</b> No es preferencia: la norma de
+    señalética pide <b>acabado antirreflejo</b>, y en la calle un brillo tapa
+    el texto justo cuando pega el sol. <b>El que más sufre es el QR</b>: un
+    reflejo sobre el código y la cámara no engancha.</li>
+    <li><b>Acrílico BLANCO OPACO</b>, no transparente pintado por detrás — el
+    criterio local pide, para una pieza que no sea de metal, <b>blanco con
+    letras negras</b>, y el grafito es un negro cálido que lo cumple.</li>
+    <li>🔴 <b>El filete dorado es el único elemento de color, y ahí hay una
+    decisión.</b> Si se lee ese criterio al pie de la letra, sobra. <b>Las dos
+    salidas: dejarlo</b> —es un filete, no texto, y es lo único que ata la
+    pieza a la identidad— <b>o pasarlo a grafito</b>. <i>Decide Juan.</i></li>
+    <li><b>El acrílico no amarillea:</b> el PMMA es estable a los UV —a
+    diferencia del policarbonato, que sin protección se pone amarillo en dos
+    años—. <b>Cinco a diez años a la intemperie sin cambio apreciable.</b></li>
+    <li><b>Espesor: 5 mm</b> como mínimo. A 50 cm de ancho, con 3 mm flexiona.</li>
+  </ul>
+</section>
+
+<section>
+  <p class="rotulo">La alineación</p>
+  <h2>Centrado, y la regla del sitio acá no manda</h2>
+  <p><b>Lo corrigió Juan:</b> <i>«esto es cartelería, puede ir centrado —
+  nuestras reglas tienen que respetar los usos y costumbres del mundo
+  también»</i>. <b>Tenía razón, y la investigación lo confirma con una
+  distinción que no teníamos:</b></p>
+  <ul>
+    <li>En señales <b>direccionales</b> (wayfinding) la alineación óptima es
+    <b>a la izquierda</b>. Es la regla que se había aplicado, y es de otro
+    tipo de señal.</li>
+    <li>🔑 En señales de <b>IDENTIFICACIÓN</b> —que es lo que esto es— <b>el
+    centrado es lo aceptado</b>.</li>
+    <li><b>El matiz:</b> el centrado funciona en <b>líneas cortas</b> y <b>se
+    degrada arriba de tres renglones</b>.</li>
+  </ul>
+  <p class="dato" style="margin-top: 12px">📌 <b>Lo que esto deja como
+  criterio:</b> una regla del sitio no se copia a una pieza física sin
+  verificar qué hace el mundo con ese objeto. <b>El pie centrado del sitio es
+  una excepción declarada; un letrero centrado es la convención.</b> No son lo
+  mismo y se habían mezclado.</p>
+</section>
+
+<section>
+  <p class="rotulo">Los espacios</p>
+  <h2>Auditados con <code>medir-espacios.py</code></h2>
+  <p><b>La regla es una sola:</b> el hueco que <b>SEPARA</b> dos grupos tiene
+  que ser claramente mayor que el mayor hueco de <b>ADENTRO</b> de cualquiera
+  de los dos. Si no, lo que se ve junto no es lo que está junto.</p>
+  <p style="margin-top: 12px"><b>Dos cosas que a ojo no se veían y la medición
+  destapó:</b> el <b>filete</b> estaba a 16 mm del logo y a 4,5 de la lista
+  —o sea pegado a la lista, y <b>un separador que toca un lado deja de
+  separar</b>— y el <b>teléfono</b> estaba a 1,7 mm del QR mientras el rótulo
+  estaba a 6,6.</p>
+  <p class="dato" style="margin-top: 12px">✅ <b>Cómo quedó:</b> logo → filete
+  <b>11,0</b> · filete → lista <b>8,5</b> · adentro de la lista <b>~6</b> ·
+  <b>lista → bloque de contacto 17,4</b> · adentro del contacto <b>5,6 · 5,7 ·
+  6</b>. <b>La separación entre grupos es tres veces la de adentro.</b></p>
+</section>
+
+<section>
+  <p class="rotulo">Los números</p>
+  <h2>Todos medidos, ninguno estimado</h2>
+  <table>
+    <tr><th>qué</th><th class="n">cuánto</th><th>por qué</th></tr>
+    <tr><td>El letrero entero</td><td class='n'>500 × 320 mm · 1600 cm²</td><td>La medida la pidió Cecilia. ⚠ Es el DOBLE del tope de 800 cm² que el criterio local fija para una placa de fachada, y a este tamaño cae en lo que el art. 90.k llama «tamaño y forma de carteles».</td></tr>
+    <tr><td>El margen lateral</td><td class='n'>50 mm · 10 %</td><td>Los manuales de señalización piden de 10 a 15 % del ancho del panel por lado, y que el espacio hasta el borde sea del orden de la altura de la letra más grande.</td></tr>
+    <tr><td>El wordmark</td><td class='n'>270 mm de ancho</td><td>El 54 % del ancho. El mínimo por técnica es 6,3 cm en grabado y 12,6 en serigrafía (COMO-USAR-EL-LOGO.md): entra con holgura.</td></tr>
+    <tr><td>Los tratamientos</td><td class='n'>11,9 mm de altura de mayúscula</td><td>Medido sobre la tipografía real. Por la fórmula de señalética —x-height = distancia en metros × 2,5 mm— los 7,8 mm de minúscula se leen desde 3,1 m, o sea desde la vereda.</td></tr>
+    <tr><td>El teléfono</td><td class='n'>más grande que la dirección</td><td>A propósito: es el dato que alguien anota desde lejos. La dirección va abajo de todo porque quien lee el letrero YA está en ella.</td></tr>
+    <tr><td>El QR</td><td class='n'>40 mm de lado</td><td>La regla es 10:1 — un lado de 1 cm se escanea desde 10 cm. Lleva sus 4 módulos de zona de silencio (ISO/IEC 18004). ⏱ Falta probarlo en la calle con un teléfono real: un QR que no se escaneó no está verificado.</td></tr>
+    <tr><td>El QR, verificado</td><td class='n'>decodificado</td><td>No se dio por bueno: se rasterizó el PDF a 300 dpi y se leyó con zbar. Devuelve wa.me/5493426293920.</td></tr>
+    <tr><td>El filete dorado</td><td class='n'>1,2 mm</td><td>Es el único dorado de la pieza y no lleva texto encima: ahí el dorado sí cumple, porque su trabajo es separar, no ser leído.</td></tr>
+  </table>
+</section>
+
+<section>
+  <p class="rotulo">Cómo se produce</p>
+  <h2>Qué archivo se le manda al cartelero</h2>
+  <ul>
+    <li><b><code>letrero-500x320.pdf</code></b> — vectorial, a
+    tamaño real.</li>
+    <li><b><code>letrero-500x320.svg</code></b> — el mismo dibujo, editable, <b>con la
+    tipografía adentro del archivo</b>.</li>
+    <li>🔴 <b>Se GENERAN con <code>tools/construir-carteleria.py</code>, nunca
+    se editan a mano.</b> Los colores salen de <code>css/tokens.css</code> y el
+    logo de <code>brand/logo/curvas/</code>.</li>
+  </ul>
+  <p class="dato" style="margin-top: 12px">⚠️ <b>Dos fallos que sólo
+  aparecieron midiendo, y conviene no repetirlos:</b> con la tipografía
+  referenciada por ruta, el archivo se veía perfecto en pantalla y <b>el PDF
+  salía en Helvetica</b> — lo destapó <code>pdffonts</code>, no el ojo. Y al
+  reordenar el pie, <b>el QR terminó encima de un renglón</b> y el archivo se
+  generó igual. <b>Ahora el generador se niega a escribir una pieza cuyos
+  bloques se pisen.</b></p>
+</section>
+</div>
