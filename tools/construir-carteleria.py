@@ -241,22 +241,22 @@ def cartel():
 
     # EL WORDMARK. 300 mm son el 60 % del ancho: en una pieza que se ve de
     # lejos, la marca es lo primero que tiene que llegar.
-    logo_ancho_mm = 270
+    logo_ancho_mm = 160
     escala = logo_ancho_mm / logo_ancho
     logo_alto_mm = logo_alto * escala
     logo_izq = (CARTEL_ANCHO - logo_ancho_mm) / 2
-    logo_arriba = 22
+    logo_arriba = 18
 
     filete_y = logo_arriba + logo_alto_mm + 11
 
     # LOS TAMAÑOS SALEN DE LA DISTANCIA DE LECTURA, no del gusto. Con la
-    # fórmula de señalética —x-height = distancia en metros × 2,5 mm— los 17
-    # mm de cuerpo dan 7,8 mm de minúscula: se lee desde 3,1 metros, o sea
-    # desde la vereda. El teléfono va más grande que la dirección a propósito:
+    # fórmula de señalética —x-height = distancia en metros × 2,5 mm— los 21
+    # mm de cuerpo dan 9,7 mm de minúscula: se lee desde casi 4 metros, o sea
+    # desde la vereda de enfrente. El teléfono va más grande que la dirección a propósito:
     # es el dato que alguien anota desde lejos.
-    grupo_tam = 17
-    interlinea = 18
-    grupos_y = filete_y + 28
+    grupo_tam = 21
+    interlinea = 23
+    grupos_y = filete_y + 32
 
     renglones = "\n".join(
         f'    <text x="{CARTEL_ANCHO / 2}" y="{grupos_y + interlinea * i}" '
@@ -605,10 +605,15 @@ los cinco grupos no existen en el sistema</b> (ver abajo).</p>
   —o sea pegado a la lista, y <b>un separador que toca un lado deja de
   separar</b>— y el <b>teléfono</b> estaba a 1,7 mm del QR mientras el rótulo
   estaba a 6,6.</p>
+  <p class="dato" style="margin-top: 12px">🔑 <b>Y el filete volvió a
+  descolocarse al agrandar la letra</b>, el 11-sep: pasó a 4,3 mm de la lista.
+  <b>No es un descuido nuevo, es un patrón</b> — cada vez que cambia un
+  tamaño, los huecos que estaban calculados dejan de estarlo. <b>Por eso la
+  medición se corre después de CADA cambio, no una sola vez.</b></p>
   <p class="dato" style="margin-top: 12px">✅ <b>Cómo quedó:</b> logo → filete
-  <b>11,0</b> · filete → lista <b>8,5</b> · adentro de la lista <b>~6</b> ·
-  <b>lista → bloque de contacto 17,4</b> · adentro del contacto <b>5,6 · 5,7 ·
-  6</b>. <b>La separación entre grupos es tres veces la de adentro.</b></p>
+  <b>11,0</b> · filete → lista <b>8,3</b> · adentro de la lista <b>~6</b> ·
+  <b>lista → bloque de contacto 13,6</b> · adentro del contacto <b>5,6 · 5,7 ·
+  6</b>. <b>La separación entre grupos es más del doble de la de adentro.</b></p>
 </section>
 
 <section>
@@ -692,13 +697,18 @@ def main():
          "Los manuales de señalización piden de 10 a 15 % del ancho del panel "
          "por lado, y que el espacio hasta el borde sea del orden de la altura "
          "de la letra más grande."),
-        ("El wordmark", "270 mm de ancho",
-         "El 54 % del ancho. El mínimo por técnica es 6,3 cm en grabado y "
-         "12,6 en serigrafía (COMO-USAR-EL-LOGO.md): entra con holgura."),
-        ("Los tratamientos", "11,9 mm de altura de mayúscula",
+        ("El wordmark", "160 mm de ancho",
+         "Bajó de 270 el 11-sep-2026, al ver la fachada real: el cartel "
+         "grande de arriba lleva el mismo wordmark y las dos piezas SE VEN "
+         "JUNTAS. Achicarlo evita que compitan, deja que la pieza siga "
+         "funcionando sola si el cartel grande tarda, y libera el alto que "
+         "los tratamientos necesitaban. El mínimo por técnica es 6,3 cm en "
+         "grabado y 12,6 en serigrafía: sigue con holgura."),
+        ("Los tratamientos", "14,7 mm de altura de mayúscula",
          "Medido sobre la tipografía real. Por la fórmula de señalética "
-         "—x-height = distancia en metros × 2,5 mm— los 7,8 mm de minúscula "
-         "se leen desde 3,1 m, o sea desde la vereda."),
+         "—x-height = distancia en metros × 2,5 mm— los 9,7 mm de minúscula "
+         "se leen desde casi 4 m, o sea desde la vereda de enfrente. Eran "
+         "3,1 m antes de achicar el wordmark."),
         ("El teléfono", "más grande que la dirección",
          "A propósito: es el dato que alguien anota desde lejos. La dirección "
          "va abajo de todo porque quien lee el letrero YA está en ella."),
