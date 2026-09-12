@@ -10,3 +10,8 @@ __pycache__/
 
 # Salida intermedia del generador del logo: los entregables van en brand/logo/
 tools/letras-cb/salida/
+
+# Salida intermedia de tools/armar-artefacto.py: la maqueta con las fotos
+# embebidas pesa medio mega y se regenera con un comando. El que se publica
+# es ése, no uno versionado.
+brand/tableros/15-pagina/artefacto.html
