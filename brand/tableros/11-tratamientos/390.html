@@ -626,11 +626,17 @@ th.n { text-align: right; }
 }
 
 
+/* EL MARGEN ES DE LA SECCIÓN, no del tablero que la muestra. Antes se lo
+   prestaba el `padding` del body de su tablero, y apilada en la página —donde
+   ese padding no existe— la grilla se iba a sangre. Se escribe acá, en la
+   sección, para que mida lo mismo la mire quien la mire. */
 .grilla-tratamientos {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 20px;
+  margin-left: var(--margen-pagina);
+  margin-right: var(--margen-pagina);
   max-width: var(--columna-lista);
 }
 
@@ -692,8 +698,21 @@ th.n { text-align: right; }
   line-height: var(--alto-chico);
 }
 
+
+/* El margen lateral se lo lleva la prosa: la muestra de abajo trae el suyo. */
+body {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.prosa {
+  padding-left: var(--margen-pagina);
+  padding-right: var(--margen-pagina);
+}
+
 </style>
 
+<div class="prosa">
 <p class="rotulo">Fase ⑧ · Pieza 11 · 390 px</p>
 <h1>Tratamientos</h1>
 <div class="regla"></div>
@@ -704,7 +723,10 @@ reserva: si mañana se agrega uno, aparece en los dos lados.</p>
 <section>
   <p class="rotulo">La grilla, a 1:1</p>
   <h2>Nueve tarjetas</h2>
-  
+</section>
+</div>
+
+
   <div class="grilla-tratamientos">
     <a class="tratamiento" href="#reservar">
       <span class="ico ico-brief" aria-hidden="true" style="background-position: -312.9px -75.3px"></span>
@@ -752,8 +774,8 @@ reserva: si mañana se agrega uno, aparece en los dos lados.</p>
       <p>Piedra adherida al esmalte, con fin estético. La coloca y la retira la profesional, sin tallar el diente.</p>
     </a>
   </div>
-</section>
 
+<div class="prosa">
 <section>
   <p class="rotulo">La decisión que esta pieza cerró</p>
   <h2>La grilla lleva ícono</h2>
@@ -794,3 +816,4 @@ reserva: si mañana se agrega uno, aparece en los dos lados.</p>
     pantalla de reserva</b>, que es donde el paciente elige a qué viene.</li>
   </ul>
 </section>
+</div>

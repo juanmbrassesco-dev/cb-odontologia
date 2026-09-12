@@ -795,6 +795,34 @@ th.n {{ text-align: right; }}
 """
 
 
+def css_margen_en_la_prosa():
+    """El margen lateral del tablero lo lleva la PROSA, no el <body>.
+
+    Lo usan los tres tableros cuya muestra es una sección del sitio que ya trae
+    su propio margen —11 Tratamientos, 12 Contacto y 13 Pie—. Si el body lo
+    pusiera también, esa sección mediría DOS márgenes en el tablero y uno en la
+    página: dos números distintos para la misma pieza, que es exactamente lo
+    que una aprobación a 1:1 no puede permitirse.
+
+    Sólo se muda el margen LATERAL, que es el que la sección reclama para sí.
+    El de arriba y el de abajo siguen en el body, porque ésos son del tablero.
+
+    Es el mismo mecanismo que ya usan la pieza 8 y la 9: no se estrena nada.
+    """
+    return """
+/* El margen lateral se lo lleva la prosa: la muestra de abajo trae el suyo. */
+body {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.prosa {
+  padding-left: var(--margen-pagina);
+  padding-right: var(--margen-pagina);
+}
+"""
+
+
 def espec(token, nombre, tipo, uso, muestra, escala, ancho):
     """Un nivel de la escala: qué es, cuánto mide acá, y cómo se ve."""
     px = escala[ancho][token]
@@ -3388,11 +3416,17 @@ TRATAMIENTOS = [
 ]
 
 CSS_TRATAMIENTOS = """
+/* EL MARGEN ES DE LA SECCIÓN, no del tablero que la muestra. Antes se lo
+   prestaba el `padding` del body de su tablero, y apilada en la página —donde
+   ese padding no existe— la grilla se iba a sangre. Se escribe acá, en la
+   sección, para que mida lo mismo la mire quien la mire. */
 .grilla-tratamientos {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 20px;
+  margin-left: var(--margen-pagina);
+  margin-right: var(--margen-pagina);
   max-width: var(--columna-lista);
 }
 
@@ -3499,8 +3533,10 @@ def tablero_tratamientos(tokens, css, ancho):
 {base_css(ancho)}
 {CSS_BOTON}
 {CSS_TRATAMIENTOS}
+{css_margen_en_la_prosa()}
 </style>
 
+<div class="prosa">
 <p class="rotulo">Fase ⑧ · Pieza 11 · {ancho} px</p>
 <h1>Tratamientos</h1>
 <div class="regla"></div>
@@ -3511,9 +3547,12 @@ reserva: si mañana se agrega uno, aparece en los dos lados.</p>
 <section>
   <p class="rotulo">La grilla, a 1:1</p>
   <h2>Nueve tarjetas</h2>
-  {grilla_tratamientos()}
 </section>
+</div>
 
+{grilla_tratamientos()}
+
+<div class="prosa">
 <section>
   <p class="rotulo">La decisión que esta pieza cerró</p>
   <h2>La grilla lleva ícono</h2>
@@ -3554,6 +3593,7 @@ reserva: si mañana se agrega uno, aparece en los dos lados.</p>
     pantalla de reserva</b>, que es donde el paciente elige a qué viene.</li>
   </ul>
 </section>
+</div>
 """
 
 
@@ -3736,12 +3776,16 @@ CSS_CONTACTO = """
 /* La tarjeta es blanca sobre marfil, y ese par mide 1,03: la forma la marca
    el BORDE, nunca el relleno. Es la misma regla del campo, del botón apagado
    y de la tarjeta de tratamiento — la cuarta vez que aparece. */
+/* El margen lateral es de la sección, no del tablero — mismo motivo que la
+   grilla de la pieza 11. */
 .contacto {
   background: var(--blanco);
   border: 1px solid var(--dorado-claro);
   border-radius: var(--radio);
   max-width: var(--columna-lista);
   margin-top: 20px;
+  margin-left: var(--margen-pagina);
+  margin-right: var(--margen-pagina);
 }
 
 /* Cada dato es una fila. La línea de arriba las separa; la primera no lleva,
@@ -3891,8 +3935,10 @@ def tablero_contacto(tokens, css, ancho):
 {CSS_BOTON}
 {CSS_ISOTIPO}
 {CSS_CONTACTO}
+{css_margen_en_la_prosa()}
 </style>
 
+<div class="prosa">
 <p class="rotulo">Fase ⑧ · Pieza 12 · {ancho} px</p>
 <h1>Contacto</h1>
 <div class="regla"></div>
@@ -3903,9 +3949,12 @@ en las constantes del generador.</p>
 <section>
   <p class="rotulo">La tarjeta, a 1:1</p>
   <h2>Cuatro datos</h2>
-  {tarjeta_contacto()}
 </section>
+</div>
 
+{tarjeta_contacto()}
+
+<div class="prosa">
 <section>
   <p class="rotulo">La decisión que esta pieza cerró</p>
   <h2>Acá no hay mapa</h2>
@@ -4011,6 +4060,7 @@ en las constantes del generador.</p>
     fijo de toda pieza pública, y el pie es donde se lo busca.</li>
   </ul>
 </section>
+</div>
 """
 
 
@@ -4045,6 +4095,11 @@ CSS_PIE = """
   border-top: 1px solid var(--dorado);
   padding-top: 24px;
   margin-top: 24px;
+  /* El margen lateral es del pie, no del tablero — mismo motivo que la pieza
+     11 y la 12. Y acá importa doble: la línea dorada de arriba arranca donde
+     arranca el margen, así que si el margen no fuera suyo, la línea tampoco. */
+  margin-left: var(--margen-pagina);
+  margin-right: var(--margen-pagina);
   max-width: var(--columna-lista);
   text-align: center;
 }
@@ -4565,8 +4620,10 @@ def tablero_pie(tokens, css, ancho):
 {CSS_BOTON}
 {CSS_ISOTIPO}
 {CSS_PIE}
+{css_margen_en_la_prosa()}
 </style>
 
+<div class="prosa">
 <p class="rotulo">Fase ⑧ · Pieza 13 · {ancho} px</p>
 <h1>El pie</h1>
 <div class="regla"></div>
@@ -4578,9 +4635,12 @@ dos renglones no se acortan.</p>
 <section>
   <p class="rotulo">El pie, a 1:1</p>
   <h2>Cuatro renglones</h2>
-  {pie_del_sitio(apilado, ancho)}
 </section>
+</div>
 
+{pie_del_sitio(apilado, ancho)}
+
+<div class="prosa">
 <section>
   <p class="rotulo">La decisión que esta pieza cerró</p>
   <h2>Acá aparece el emblema, y en ningún otro lado</h2>
@@ -4671,6 +4731,7 @@ dos renglones no se acortan.</p>
     Instagram. La palabra hace el trabajo.</li>
   </ul>
 </section>
+</div>
 """
 
 
@@ -5424,28 +5485,27 @@ CSS_PAGINA = """
   margin-top: 0;
 }
 
-/* 🔴 TRES SECCIONES NO TRAÍAN SU PROPIO MARGEN, y esto lo destapó la página.
+/* 🏁 ACÁ VIVÍA UN PARCHE Y YA NO HACE FALTA — 12-sep-2026.
 
-   Tratamientos, Contacto y el Pie se aprobaron midiendo 350 px dentro de una
-   página de 390 — o sea, EN la columna. Pero ese margen no era de ellas: se lo
-   prestaba el `padding` del body de su tablero. Apiladas acá, donde el body no
-   tiene padding, las tres se iban a sangre de borde a borde.
+   La página destapó que tres secciones no traían su propio margen:
+   Tratamientos, Contacto y el Pie se aprobaron midiendo 350 dentro de 390,
+   pero ese margen se lo prestaba el `padding` del body de SU tablero.
+   Apiladas acá, donde ese padding no existe, las tres se iban a sangre.
 
-   Medido, no supuesto: en `11-tratamientos/390.html` la grilla arranca en 20 y
-   mide 350; en la página arrancaba en 0 y medía 390. Igual el pie y contacto.
-   «Nosotros» y «Testimonios» no aparecen acá porque ya traen el suyo, que es
-   como debería ser.
+   Se tapó con una regla en este bloque —`.pagina .grilla-tratamientos, …`—
+   que les devolvía el margen sólo cuando estaban dentro de la página. Andaba,
+   y aun así estaba mal: el margen quedaba escrito en el lugar que MUESTRA la
+   sección y no en la sección, así que seguía sin ser suyo.
 
-   ⚠️ ESTO ES UN PARCHE CONSCIENTE, y el arreglo de fondo es otro: que cada
-   sección lleve su margen y no dependa del tablero que la muestra. No se hace
-   hoy porque obliga a envolver la prosa de esos tres tableros en `.prosa`
-   —tocar tres piezas ya aprobadas— y eso se decide, no se cuela. */
-.pagina .grilla-tratamientos,
-.pagina .contacto,
-.pagina .pie-sitio {
-  margin-left: var(--margen-pagina);
-  margin-right: var(--margen-pagina);
-}
+   🔑 EL ARREGLO DE FONDO, que es el que está puesto hoy: cada sección lleva su
+   `margin-left`/`margin-right` en SU bloque de CSS —ver `CSS_TRATAMIENTOS`,
+   `CSS_CONTACTO` y `CSS_PIE`—, y los tres tableros que las muestran dejaron de
+   poner el margen en el body: lo pone `.prosa`, igual que la pieza 8 y la 9.
+
+   Verificado midiendo con Chrome las tres secciones en su tablero y en la
+   página, a 390, 768 y 1280: los seis pares dan el mismo número que antes del
+   cambio. «Nosotros» y «Testimonios» nunca estuvieron acá porque ya traían el
+   suyo, que es como debía ser desde el principio. */
 
 /* EL RÓTULO DE LAS DOS SECCIONES QUE NO LO TRAÍAN. «Nosotros» y «Testimonios»
    ya tienen el suyo; «Tratamientos» y «Contacto» vivían sin título porque en

@@ -665,12 +665,16 @@ th.n { text-align: right; }
 /* La tarjeta es blanca sobre marfil, y ese par mide 1,03: la forma la marca
    el BORDE, nunca el relleno. Es la misma regla del campo, del botón apagado
    y de la tarjeta de tratamiento — la cuarta vez que aparece. */
+/* El margen lateral es de la sección, no del tablero — mismo motivo que la
+   grilla de la pieza 11. */
 .contacto {
   background: var(--blanco);
   border: 1px solid var(--dorado-claro);
   border-radius: var(--radio);
   max-width: var(--columna-lista);
   margin-top: 20px;
+  margin-left: var(--margen-pagina);
+  margin-right: var(--margen-pagina);
 }
 
 /* Cada dato es una fila. La línea de arriba las separa; la primera no lleva,
@@ -730,8 +734,21 @@ th.n { text-align: right; }
   line-height: var(--alto-chico);
 }
 
+
+/* El margen lateral se lo lleva la prosa: la muestra de abajo trae el suyo. */
+body {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.prosa {
+  padding-left: var(--margen-pagina);
+  padding-right: var(--margen-pagina);
+}
+
 </style>
 
+<div class="prosa">
 <p class="rotulo">Fase ⑧ · Pieza 12 · 390 px</p>
 <h1>Contacto</h1>
 <div class="regla"></div>
@@ -742,7 +759,10 @@ en las constantes del generador.</p>
 <section>
   <p class="rotulo">La tarjeta, a 1:1</p>
   <h2>Cuatro datos</h2>
-  
+</section>
+</div>
+
+
   <div class="contacto">
     
     <div class="dato-contacto">
@@ -769,8 +789,8 @@ en las constantes del generador.</p>
       <span>cecilia@example.com</span>
     </div>
   </div>
-</section>
 
+<div class="prosa">
 <section>
   <p class="rotulo">La decisión que esta pieza cerró</p>
   <h2>Acá no hay mapa</h2>
@@ -876,3 +896,4 @@ en las constantes del generador.</p>
     fijo de toda pieza pública, y el pie es donde se lo busca.</li>
   </ul>
 </section>
+</div>

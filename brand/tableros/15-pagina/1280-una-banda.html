@@ -918,11 +918,17 @@ body { padding: 0; }
 }
 
 
+/* EL MARGEN ES DE LA SECCIÓN, no del tablero que la muestra. Antes se lo
+   prestaba el `padding` del body de su tablero, y apilada en la página —donde
+   ese padding no existe— la grilla se iba a sangre. Se escribe acá, en la
+   sección, para que mida lo mismo la mire quien la mire. */
 .grilla-tratamientos {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 20px;
+  margin-left: var(--margen-pagina);
+  margin-right: var(--margen-pagina);
   max-width: var(--columna-lista);
 }
 
@@ -1370,12 +1376,16 @@ body { padding: 0; }
 /* La tarjeta es blanca sobre marfil, y ese par mide 1,03: la forma la marca
    el BORDE, nunca el relleno. Es la misma regla del campo, del botón apagado
    y de la tarjeta de tratamiento — la cuarta vez que aparece. */
+/* El margen lateral es de la sección, no del tablero — mismo motivo que la
+   grilla de la pieza 11. */
 .contacto {
   background: var(--blanco);
   border: 1px solid var(--dorado-claro);
   border-radius: var(--radio);
   max-width: var(--columna-lista);
   margin-top: 20px;
+  margin-left: var(--margen-pagina);
+  margin-right: var(--margen-pagina);
 }
 
 /* Cada dato es una fila. La línea de arriba las separa; la primera no lleva,
@@ -1444,6 +1454,11 @@ body { padding: 0; }
   border-top: 1px solid var(--dorado);
   padding-top: 24px;
   margin-top: 24px;
+  /* El margen lateral es del pie, no del tablero — mismo motivo que la pieza
+     11 y la 12. Y acá importa doble: la línea dorada de arriba arranca donde
+     arranca el margen, así que si el margen no fuera suyo, la línea tampoco. */
+  margin-left: var(--margen-pagina);
+  margin-right: var(--margen-pagina);
   max-width: var(--columna-lista);
   text-align: center;
 }
@@ -1540,28 +1555,27 @@ body { padding: 0; }
   margin-top: 0;
 }
 
-/* 🔴 TRES SECCIONES NO TRAÍAN SU PROPIO MARGEN, y esto lo destapó la página.
+/* 🏁 ACÁ VIVÍA UN PARCHE Y YA NO HACE FALTA — 12-sep-2026.
 
-   Tratamientos, Contacto y el Pie se aprobaron midiendo 350 px dentro de una
-   página de 390 — o sea, EN la columna. Pero ese margen no era de ellas: se lo
-   prestaba el `padding` del body de su tablero. Apiladas acá, donde el body no
-   tiene padding, las tres se iban a sangre de borde a borde.
+   La página destapó que tres secciones no traían su propio margen:
+   Tratamientos, Contacto y el Pie se aprobaron midiendo 350 dentro de 390,
+   pero ese margen se lo prestaba el `padding` del body de SU tablero.
+   Apiladas acá, donde ese padding no existe, las tres se iban a sangre.
 
-   Medido, no supuesto: en `11-tratamientos/390.html` la grilla arranca en 20 y
-   mide 350; en la página arrancaba en 0 y medía 390. Igual el pie y contacto.
-   «Nosotros» y «Testimonios» no aparecen acá porque ya traen el suyo, que es
-   como debería ser.
+   Se tapó con una regla en este bloque —`.pagina .grilla-tratamientos, …`—
+   que les devolvía el margen sólo cuando estaban dentro de la página. Andaba,
+   y aun así estaba mal: el margen quedaba escrito en el lugar que MUESTRA la
+   sección y no en la sección, así que seguía sin ser suyo.
 
-   ⚠️ ESTO ES UN PARCHE CONSCIENTE, y el arreglo de fondo es otro: que cada
-   sección lleve su margen y no dependa del tablero que la muestra. No se hace
-   hoy porque obliga a envolver la prosa de esos tres tableros en `.prosa`
-   —tocar tres piezas ya aprobadas— y eso se decide, no se cuela. */
-.pagina .grilla-tratamientos,
-.pagina .contacto,
-.pagina .pie-sitio {
-  margin-left: var(--margen-pagina);
-  margin-right: var(--margen-pagina);
-}
+   🔑 EL ARREGLO DE FONDO, que es el que está puesto hoy: cada sección lleva su
+   `margin-left`/`margin-right` en SU bloque de CSS —ver `CSS_TRATAMIENTOS`,
+   `CSS_CONTACTO` y `CSS_PIE`—, y los tres tableros que las muestran dejaron de
+   poner el margen en el body: lo pone `.prosa`, igual que la pieza 8 y la 9.
+
+   Verificado midiendo con Chrome las tres secciones en su tablero y en la
+   página, a 390, 768 y 1280: los seis pares dan el mismo número que antes del
+   cambio. «Nosotros» y «Testimonios» nunca estuvieron acá porque ya traían el
+   suyo, que es como debía ser desde el principio. */
 
 /* EL RÓTULO DE LAS DOS SECCIONES QUE NO LO TRAÍAN. «Nosotros» y «Testimonios»
    ya tienen el suyo; «Tratamientos» y «Contacto» vivían sin título porque en
