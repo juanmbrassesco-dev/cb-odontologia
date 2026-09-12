@@ -2986,6 +2986,25 @@ def leer_foto():
     return FOTO_RELATIVA
 
 
+# LA FOTO DE «NOSOTROS» ES OTRA, Y ES UNA SEGUNDA PERSONA A PROPÓSITO.
+#
+# Hasta el 11-sep-2026 este bloque reusaba la foto del hero, así que en la
+# página armada la misma cara aparecía DOS VECES. Estaba anotado como artefacto
+# de la maqueta, no como decisión, y se arregla acá: un archivo propio, ya
+# recortado a 4:5, que es la proporción del hueco.
+FOTO_NOSOTROS = RAIZ / "brand" / "fotos" / "nosotros-ejemplo.jpg"
+
+FOTO_NOSOTROS_RELATIVA = "../../fotos/nosotros-ejemplo.jpg"
+
+
+def leer_foto_nosotros():
+    """La ruta al retrato, o None si falta. Misma regla que leer_foto()."""
+    if not FOTO_NOSOTROS.exists():
+        return None
+
+    return FOTO_NOSOTROS_RELATIVA
+
+
 CSS_HERO_VELO = """
 /* EL HERO SOBRE LA FOTO — la forma que se propone.
 
@@ -4239,9 +4258,17 @@ CSS_NOSOTROS = """
   margin-bottom: 16px;
 }
 
+/* EL NOMBRE SUBE UN ESCALÓN, y la decisión de la 15.a se respeta entera: ahí
+   se cerró que «Nosotros» es el título de sección y que el nombre va UN
+   ESCALÓN ABAJO. Lo que cambió es el escalón de arriba —el título pasó a
+   --tipo-h1 porque no mandaba—, así que el nombre lo sigue a --tipo-h2.
+
+   El problema medido era éste: el nombre estaba a 20 y el párrafo a 16, o sea
+   1,25 a 1, con el mismo peso y el mismo color. Quien mira no sabía qué era
+   más importante. Ahora la escalera de la sección es 32 › 26 › 16 › 14. */
 .nosotros-nombre {
-  font-size: var(--tipo-h3);
-  line-height: var(--alto-h3);
+  font-size: var(--tipo-h2);
+  line-height: var(--alto-h2);
 }
 
 .nosotros-texto {
@@ -4351,12 +4378,11 @@ def nosotros_del_sitio(ancho, jerarquia="titulo", dentro=True):
     <p class="rotulo nosotros-rotulo">Nosotros</p>"""
         nombre = """<h2>Cecilia Brassesco</h2>"""
 
-    foto = leer_foto()
+    foto = leer_foto_nosotros()
 
-    # LA MISMA FOTO DE EJEMPLO QUE EL HERO, y sólo para poder juzgar. Es 900 ×
-    # 1350 —2:3 vertical—, así que entra en el hueco 4:5 recortando arriba y
-    # abajo, no de costado. ⚠️ En la página armada esta cara aparecería DOS
-    # veces: es un artefacto de la maqueta, no una decisión.
+    # SU PROPIA FOTO, NO LA DEL HERO — corregido el 11-sep-2026. Es 900 × 1125,
+    # o sea 4:5 exacto: el mismo número que pide el hueco, así que `cover` no
+    # recorta nada y lo que se aprueba en el tablero es lo que se ve.
     if foto:
         hueco = (f'<img class="nosotros-retrato" alt="" src="{foto}">')
     else:
@@ -5369,6 +5395,216 @@ def revisar_duracion(pagina, donde):
     return avisos
 
 
+CSS_PAGINA = """
+/* LA PÁGINA ENTERA — PIEZA 15.
+
+   Lo único que esta pieza AGREGA es el aire entre secciones y los dos rótulos
+   que faltaban. Ninguna sección se retoca: cada una se aprobó mirándola a 1:1,
+   que es la aprobación más fuerte del proyecto. Acá se apilan tal como están.
+
+   EL AIRE VA ENTRE HERMANOS, no bloque por bloque: escrito así, sumar una
+   sección mañana no obliga a tocar esta regla. Sale de --aire-seccion, que
+   tiene un valor por ancho, porque en móvil el aire es el ÚNICO separador que
+   hay —no existe la banda de fondo ni la segunda columna que separan en
+   escritorio—.
+
+   ⚠️ Esta regla PISA a propósito los `margin-top: 0` que cada sección trae
+   puesto (`.nosotros`, por ejemplo). Empatan en especificidad, así que gana la
+   que va última en el archivo: por eso este bloque se escribe AL FINAL de la
+   lista de estilos y no antes. */
+.pagina > * + * {
+  margin-top: var(--aire-seccion);
+}
+
+/* LA ÚNICA EXCEPCIÓN, y no es un ajuste: es una decisión ya tomada. El hero
+   arranca PEGADO al encabezado —la pieza 9 cerró el logo sin hueco debajo y la
+   10 dibujó la foto a sangre—. Un aire acá abriría una franja blanca entre el
+   logo y la foto, que es exactamente lo que la pieza 9 corrigió. */
+.pagina > .hero {
+  margin-top: 0;
+}
+
+/* 🔴 TRES SECCIONES NO TRAÍAN SU PROPIO MARGEN, y esto lo destapó la página.
+
+   Tratamientos, Contacto y el Pie se aprobaron midiendo 350 px dentro de una
+   página de 390 — o sea, EN la columna. Pero ese margen no era de ellas: se lo
+   prestaba el `padding` del body de su tablero. Apiladas acá, donde el body no
+   tiene padding, las tres se iban a sangre de borde a borde.
+
+   Medido, no supuesto: en `11-tratamientos/390.html` la grilla arranca en 20 y
+   mide 350; en la página arrancaba en 0 y medía 390. Igual el pie y contacto.
+   «Nosotros» y «Testimonios» no aparecen acá porque ya traen el suyo, que es
+   como debería ser.
+
+   ⚠️ ESTO ES UN PARCHE CONSCIENTE, y el arreglo de fondo es otro: que cada
+   sección lleve su margen y no dependa del tablero que la muestra. No se hace
+   hoy porque obliga a envolver la prosa de esos tres tableros en `.prosa`
+   —tocar tres piezas ya aprobadas— y eso se decide, no se cuela. */
+.pagina .grilla-tratamientos,
+.pagina .contacto,
+.pagina .pie-sitio {
+  margin-left: var(--margen-pagina);
+  margin-right: var(--margen-pagina);
+}
+
+/* EL RÓTULO DE LAS DOS SECCIONES QUE NO LO TRAÍAN. «Nosotros» y «Testimonios»
+   ya tienen el suyo; «Tratamientos» y «Contacto» vivían sin título porque en
+   su tablero el título lo ponía la prosa. Los valores son los mismos que ya
+   usan los otros dos: esto no estrena ningún estilo. */
+.titulo-seccion {
+  padding: 0 var(--margen-pagina);
+  margin-bottom: 16px;
+}
+
+/* 🔴 EL TÍTULO DE SECCIÓN NO MANDABA, y no es una impresión: está medido.
+   Todo el texto de la página pesa 400 y casi todo comparte color, así que de
+   las tres palancas de jerarquía —tamaño, peso, color— el sistema usaba UNA.
+   Y la distancia entre un título (26) y lo más grande que tiene debajo (20)
+   era de 1,3 a 1: casi nada.
+
+   ⚠️ LA PALANCA DEL PESO ESTÁ CERRADA, y se verificó contra la fuente: se le
+   pidieron a Google Fonts los pesos 400 y 700 de Marcellus y devuelve UN SOLO
+   archivo, el 400. La familia no tiene negrita; pedírsela obliga al navegador
+   a inventar una falsa, que en una serif fina se ve sucia.
+
+   ⇒ Se compensa con las dos palancas que quedan: sube a --tipo-h1 —32 px a
+   390, que es el techo que NN/g recomienda para un título— y estrena NINGÚN
+   tamaño nuevo: es el que ya usa el h1. */
+.pagina .titulo-seccion,
+.pagina .nosotros-titulo,
+.pagina .prueba-titulo {
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+}
+
+/* Y EL FILO ENCIMA DEL TÍTULO, que es el mismo recurso que ya usa el hero
+   —56 × 2 px de dorado—: no se estrena nada. No es adorno: marca dónde
+   ARRANCA cada capa de la página, que es como se recorre una página larga
+   (el «layer-cake pattern» de NN/g: la vista salta de título en título).
+
+   Va como ::before del propio título para no tener que tocar el HTML de
+   «Nosotros» ni el de «Testimonios», que se arman en su propia función. */
+.pagina .titulo-seccion::before,
+.pagina .nosotros-titulo::before,
+.pagina .prueba-titulo::before {
+  content: "";
+  display: block;
+  width: 56px;
+  height: 2px;
+  background: var(--dorado);
+  margin-bottom: 14px;
+}
+
+/* 🔴 LA BANDA DE FONDO — el recurso que separa una sección de la otra.
+
+   El hueco solo no alcanzaba: la página se leía como un rollo continuo. Lo
+   que falta es «common region» (región común): lo que comparte un fondo se
+   lee como un grupo, y NN/g lo mide como una señal MÁS FUERTE que la
+   proximidad — un borde da vuelta la lectura de un grupo sin mover nada de
+   lugar. La misma fuente marca el orden: primero el espacio, y el contenedor
+   cuando el espacio no alcanza. Acá no alcanzó.
+
+   EL COLOR SALE DE LA PALETA, no se estrena: --dorado-claro. Medido contra el
+   marfil da 1,34 —sutil pero visible—, mientras que el blanco daba 1,07, o
+   sea invisible. El grafito encima mide 8,94: legible de sobra.
+
+   LA BANDA COME EL HUECO en vez de sumarse a él: anula su margen y lo
+   convierte en padding propio. Si no, la sección con banda quedaría al doble
+   de distancia que las demás y el ritmo se rompería. */
+.bandas-alternada > #tratamientos,
+.bandas-alternada > .prueba,
+.bandas-una > #tratamientos {
+  background: var(--dorado-claro);
+  margin-top: 0;
+  padding-top: var(--aire-seccion);
+  padding-bottom: var(--aire-seccion);
+}
+"""
+
+
+def pagina_del_sitio(ancho, bandas=""):
+    """La landing entera, en el orden del mapa del sitio (§ 4 del doc).
+
+    Hero → Tratamientos → Nosotros → Testimonios → Contacto → Pie, con el
+    encabezado arriba. El orden es de CONVERSIÓN y está decidido: no se
+    reordena acá.
+
+    ⚠️ TESTIMONIOS VA EN SU VARIANTE APROBADA, la de jerarquía: tres citas SIN
+    caja, una que manda y dos que acompañan (8-sep-2026). La variante por
+    defecto de `prueba_del_sitio()` son tarjetas con caja, que es la que se
+    descartó — y se ve igual de bien suelta, así que el error no grita.
+    """
+    wordmark = leer_png("cb-wordmark-600")
+    apilado = leer_png("cb-apilado-600")
+    foto = leer_foto()
+    chico = ancho < 1280
+
+    menu = "boton" if chico else "fila"
+
+    return f"""
+<div class="pagina{bandas}">
+{barra(wordmark, "wordmark", ancho, menu, not chico)}
+{hero_velo(foto, ancho)}
+  <section id="tratamientos">
+    <h2 class="titulo-seccion">Tratamientos</h2>
+{grilla_tratamientos()}
+  </section>
+{nosotros_del_sitio(ancho)}
+{prueba_del_sitio(ancho, estilo=" jerarquia")}
+  <section id="contacto">
+    <h2 class="titulo-seccion">Contacto</h2>
+{tarjeta_contacto()}
+  </section>
+{pie_del_sitio(apilado, ancho)}
+</div>"""
+
+
+def estilos_de_la_pagina(css, ancho):
+    """Todos los estilos del sitio, en un solo lugar.
+
+    Se junta acá y no en cada tablero porque la página entera es la primera
+    pantalla donde TODAS las piezas conviven: si dos se pisan, se ve acá.
+    """
+    return "\n".join([
+        css,
+        base_css(ancho),
+        CSS_BOTON,
+        CSS_ENCABEZADO,
+        CSS_HERO,
+        CSS_HERO_VELO,
+        CSS_TRATAMIENTOS,
+        CSS_NOSOTROS,
+        CSS_PRUEBA,
+        CSS_ISOTIPO,
+        CSS_CONTACTO,
+        CSS_PIE,
+        CSS_PAGINA,
+    ])
+
+
+def solo_pagina(tokens, css, ancho, bandas=""):
+    """La landing sola, sin una palabra de tablero alrededor.
+
+    Es la que se mira para aprobar: el aire entre secciones no se puede juzgar
+    con prosa intercalada, porque la prosa mete su propio ritmo y lo que se
+    estaría evaluando sería el tablero, no la página.
+
+    `bandas` elige el recurso de separación, y las tres versiones se generan
+    para poder compararlas al mismo tamaño: sin banda, una sola, o alternadas.
+    """
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · La página entera · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{estilos_de_la_pagina(css, ancho)}
+</style>
+{pagina_del_sitio(ancho, bandas)}
+"""
+
+
 # ------------------------------------------------------------
 # EL TABLERO NO PUEDE DEPENDER DEL TAMAÑO DE LA VENTANA
 #
@@ -5614,6 +5850,26 @@ def main():
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")
+
+    # LA PÁGINA ENTERA VA ÚLTIMA, y el orden no es capricho: se arma con las
+    # secciones ya escritas, así que cualquier cambio en una de ellas tiene que
+    # haber corrido antes de que ésta las apile.
+    # Las tres versiones del recurso de separación, para poder compararlas al
+    # mismo tamaño: sin banda es el punto de partida, y las otras dos son lo
+    # que hay que elegir.
+    for nombre, bandas in (
+        ("solo", ""),
+        ("una-banda", " bandas-una"),
+        ("alternada", " bandas-alternada"),
+    ):
+        for ancho in ANCHOS:
+            destino = SALIDA / "15-pagina" / f"{ancho}-{nombre}.html"
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            destino.write_text(
+                fijar_al_ancho(solo_pagina(tokens, css, ancho, bandas), ancho),
+                encoding="utf-8",
+            )
+            print(f"✓ {destino.relative_to(RAIZ)}")
 
     avisos = []
 

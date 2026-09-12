@@ -671,9 +671,17 @@ body { padding: 0; }
   margin-bottom: 16px;
 }
 
+/* EL NOMBRE SUBE UN ESCALÓN, y la decisión de la 15.a se respeta entera: ahí
+   se cerró que «Nosotros» es el título de sección y que el nombre va UN
+   ESCALÓN ABAJO. Lo que cambió es el escalón de arriba —el título pasó a
+   --tipo-h1 porque no mandaba—, así que el nombre lo sigue a --tipo-h2.
+
+   El problema medido era éste: el nombre estaba a 20 y el párrafo a 16, o sea
+   1,25 a 1, con el mismo peso y el mismo color. Quien mira no sabía qué era
+   más importante. Ahora la escalera de la sección es 32 › 26 › 16 › 14. */
 .nosotros-nombre {
-  font-size: var(--tipo-h3);
-  line-height: var(--alto-h3);
+  font-size: var(--tipo-h2);
+  line-height: var(--alto-h2);
 }
 
 .nosotros-texto {

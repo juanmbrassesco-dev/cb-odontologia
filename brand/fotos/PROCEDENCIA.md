@@ -7,8 +7,15 @@ gris. **Se reemplazan por fotos propias antes de publicar.**
 | archivo | autor | fuente | licencia |
 |---|---|---|---|
 | `hero-ejemplo.jpg` | Brooke Balentine (@brookebalentine) | Unsplash, `xSEFkIAopxA` | Unsplash License |
+| `nosotros-ejemplo.jpg` | Jonathan Borba (@jonathanborba) | Unsplash, `ctrQhye5SWs` | Unsplash License |
 | `antes-ejemplo.jpg` | Ozkan Guner (@dentistozkanguner) | Unsplash, `Uyv7g3kroJM` | Unsplash License |
 | `despues-ejemplo.jpg` | Tony Litvyak (@justatony) | Unsplash, `glPVwPr1FKo` | Unsplash License |
+
+⚠️ **Unsplash tiene DOS licencias y la diferencia no se ve en la foto.** Las que
+publica **Getty Images** —y cualquiera marcada `plus`— son **Unsplash+**, de
+suscripción paga: **no entran acá**. Al elegir `nosotros-ejemplo.jpg` la mitad
+de las candidatas buenas eran de ésas y se descartaron por eso, no por la
+imagen. *El dato se verifica en la ficha de la foto: `plus: true`.*
 
 **Qué permite la Unsplash License:** usar la foto gratis, incluso con fines
 comerciales, sin pedir permiso y sin atribución obligatoria. Lo que prohíbe es
@@ -22,6 +29,31 @@ que el permiso de esa persona**. Para publicidad de un servicio de salud hace
 falta autorización de imagen. **Para una maqueta interna no hace falta; para el
 sitio en el aire, sí.** Es un motivo más para que las fotos propias existan
 antes de noviembre — cómo se sacan está en `brand/COMO-SACAR-LAS-FOTOS.md`.
+
+---
+
+## 📐 `nosotros-ejemplo.jpg` VIENE RECORTADO, y eso es a propósito *(11-sep-2026)*
+
+El original de Unsplash es **5464 × 8192** (2:3). Acá vive recortado y reducido
+a **900 × 1125**, que es **4:5 exacto** — la misma proporción del hueco que le
+da el bloque «Nosotros». **Por qué se recorta el archivo en vez de dejar que lo
+recorte el navegador:** con `object-fit: cover` el recorte lo decide el
+navegador, siempre por el centro; recortándolo antes, **lo que se aprueba en el
+tablero es exactamente lo que se ve**, y el encuadre —cara en el tercio de
+arriba, corte por el antebrazo y no por las manos— es una decisión y no una
+casualidad.
+
+**Los cuatro bordes, medidos contra el marfil `#FAF7F2`:** arriba **11,82** ·
+abajo **4,78** · izquierda **9,53** · derecha **15,36**. **Los cuatro pasan el
+piso de 3,0**, así que esta foto no se disuelve contra la página por ningún
+lado. *(La del hero da **2,92 abajo** y por eso existe el filo de 1 px del
+bloque. El filo se queda igual: es una regla, no un arreglo — las fotos
+definitivas las va a cargar Cecilia y un filo que aparece «cuando hace falta»
+obliga a medir cada foto nueva.)*
+
+⚠️ **LO QUE ESTA FOTO NO RESUELVE: no muestra el consultorio.** El fondo es
+liso. Sirve para juzgar encuadre, peso y jerarquía del bloque; **no** para
+juzgar si «Nosotros» transmite el lugar. Eso se contesta con el retrato real.
 
 ---
 
