@@ -3230,6 +3230,7 @@ CSS_HERO_VELO = """
     display: grid;
     grid-template-columns: 1fr 1fr;
     isolation: auto;
+    position: relative;
     /* 🔴 EL HERO OCUPA LA PANTALLA, menos el encabezado — lo pidió Juan el
        13-sep-2026: «el tamaño del hero es más pequeño que el total de la
        pantalla». Con un alto fijo quedaba una franja de marfil abajo antes de
@@ -3239,6 +3240,25 @@ CSS_HERO_VELO = """
        están medidos, no estimados: logo 52 + aire 22 arriba + 22 abajo +
        1 del filo dorado. Si el aire de la barra cambia, este número cambia. */
     min-height: calc(100vh - 97px);
+
+    /* 🔴 Y LA FILA TIENE QUE PODER ENCOGER, si no el hero no entra en la
+       pantalla. Medido: sin esto el hero daba 960 px FIJOS con ventanas de
+       673, 773 y 863 — o sea que el `100vh` de arriba no mandaba nada.
+
+       Lo imponía la FOTO: en una columna de 640 px, su proporción natural la
+       estira a 960 de alto, y una fila de grilla crece hasta el alto
+       intrínseco de lo que tiene adentro. Por eso el hero se salía de la
+       pantalla y quedaba cortado. `1fr` más el `min-height: 0` de abajo le
+       sacan ese poder a la foto: la fila mide lo que el hero le da y la foto
+       se recorta con `cover`, que es para lo que está. */
+    /* ⚠️ `minmax(0, 1fr)` Y NO `1fr` A SECAS, y la diferencia es todo: un
+       `1fr` pelado es en realidad `minmax(auto, 1fr)`, y ese `auto` significa
+       «nunca menos que el tamaño intrínseco de lo que hay adentro». Con la
+       foto adentro eso eran 960 px, así que la fila se plantaba en 960 y el
+       `min-height` de arriba no tenía nada que hacer — medido: 616 px de
+       min-height computado contra una fila de 960. El `0` del minmax le saca
+       ese piso. */
+    grid-template-rows: minmax(0, 1fr);
   }
 
   /* 🔴 Y EL TITULAR SUBE CON EL HERO — 13-sep-2026. Juan dijo «se achicaron
@@ -3254,21 +3274,51 @@ CSS_HERO_VELO = """
      misma proporción en que creció su caja. El titular del hero es el ÚNICO
      que vive a pantalla completa, así que sube él solo y no el token — los
      títulos de sección siguen en 52. */
+  /* ⚠️ 56 Y NO 64. Los 64 se eligieron mientras Juan miraba la página con el
+     zoom del navegador bajo —culpa mía, se lo había bajado yo— así que todo
+     se veía chico y el número salió inflado. Al verlo al 100 % real: «ahora
+     es muy grande». 56 sigue arriba de los 52 del token, que es lo que pedía
+     el hero a pantalla completa, sin pasarse. */
   .hero-velo h1 {
-    font-size: 64px;
+    font-size: 56px;
     line-height: 1.12;
   }
 
   /* La foto deja de ser un fondo absoluto y pasa a ser la columna derecha. */
+  /* 🔴 LA FOTO VA FUERA DEL FLUJO, y es el tercer intento sobre lo mismo.
+
+     Qué pasaba, medido: el hero daba 960 px con ventanas de 673, 773 y 863 —
+     el `min-height` computaba bien (616) y no servía de nada—. La causa es
+     una regla de CSS que engaña: `height: 100%` NO se aplica cuando el padre
+     sólo tiene `min-height` y no `height`, así que la foto caía en su alto
+     natural —640 de ancho por su proporción, 960— e inflaba la fila entera.
+     Ni `minmax(0, 1fr)` ni `min-height: 0` lo arreglan, porque el problema no
+     era el mínimo de la fila sino la altura de la imagen.
+
+     Sacándola del flujo con `position: absolute`, la foto deja de tener voz
+     en cuánto mide el hero: se estira entre el borde de arriba y el de abajo
+     de lo que el hero termine midiendo, y `cover` recorta lo que sobre. El
+     alto lo deciden ahora el `min-height` y el texto, que es como tiene que
+     ser. */
   .hero-velo .hero-foto {
-    position: static;
-    grid-column: 2;
-    grid-row: 1;
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    /* ⚠️ `left: auto` NO SOBRA: la regla de arriba pone `inset: 0`, que fija
+       los cuatro lados a la vez. Con `left` y `right` los dos en 0 y un
+       ancho del 50 %, el navegador resuelve el conflicto quedándose con el
+       IZQUIERDO, así que la foto se iba al lado equivocado y tapaba el texto.
+       Anular el lado que no se usa es lo que la manda a la derecha. */
+    left: auto;
+    width: 50%;
+    height: auto;
+    aspect-ratio: auto;
+    object-fit: cover;
     object-position: 50% 30%;
     z-index: auto;
   }
+
 
   /* Sin foto debajo no hay nada que velar. */
   .hero-velo::before {
