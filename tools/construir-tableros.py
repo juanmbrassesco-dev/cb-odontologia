@@ -6206,6 +6206,38 @@ def main():
             )
             print(f"✓ {destino.relative_to(RAIZ)}")
 
+    # ------------------------------------------------------------
+    # LA PÁGINA "EN CONTEXTO" — la única que NO tiene el ancho clavado.
+    #
+    # La pidió Juan el 13-sep-2026 para verla como la va a ver un visitante:
+    # achicando y agrandando la ventana. Los tableros existen para lo contrario
+    # —medir siempre lo mismo— y por eso llevan el ancho fijo y las media
+    # queries aplanadas; ésta deja las dos cosas vivas.
+    #
+    # ⚠️ HASTA DÓNDE ES FIEL, y hay que decirlo porque se ve igual de terminada:
+    # el CSS responde de verdad al ancho de la ventana, pero hay decisiones que
+    # NO viven en el CSS sino en Python — cuál logo va en la barra, si el menú
+    # es sándwich o fila, el tamaño del logo del pie—. Ésas quedan congeladas
+    # en su versión de escritorio. O sea: de 1280 para arriba es exacta, y por
+    # debajo el layout se adapta pero el encabezado no.
+    #
+    # NO REEMPLAZA A LOS TABLEROS: lo que se aprueba se sigue aprobando a
+    # 390, 768 y 1280 con el ancho clavado, que es lo único que garantiza que
+    # lo que Claude mide y lo que Juan ve sean lo mismo.
+    # ------------------------------------------------------------
+    destino = SALIDA / "15-pagina" / "en-contexto.html"
+    pagina_fluida = solo_pagina(tokens, css, 1280)
+    pagina_fluida = pagina_fluida.replace(
+        f"  width: {1280}px;\n", "", 1
+    )
+    pagina_fluida = pagina_fluida.replace(
+        "<title>CB · La página entera · 1280</title>",
+        "<title>CB · La página, en contexto</title>",
+        1,
+    )
+    destino.write_text(pagina_fluida, encoding="utf-8")
+    print(f"✓ {destino.relative_to(RAIZ)}  (sin ancho clavado)")
+
     avisos = []
 
     for pagina in sorted(SALIDA.rglob("*.html")):
