@@ -3143,13 +3143,71 @@ CSS_HERO_VELO = """
 
    ⚠️ La lección operativa, y va en serio: un cambio de CSS no se da por hecho
    porque la captura parezca distinta. Se pide el valor computado. */
+/* 🔴 EN ESCRITORIO EL HERO SE PARTE: TEXTO A LA IZQUIERDA, FOTO A LA DERECHA.
+
+   POR QUÉ SE LLEGÓ ACÁ, y es el tercer intento sobre el mismo problema. Los
+   dos anteriores movieron el RECORTE de la foto para que el texto no cayera
+   sobre la cara, y los dos fallaron por la misma razón de fondo: a 1280 la
+   foto llena los 1280 px de ancho y el texto ocupa la mitad izquierda, así
+   que la cara —que está en el centro— queda debajo del texto SIEMPRE. Subir
+   el recorte mueve la foto hacia arriba, no la cara hacia el costado. No
+   había `object-position` que lo arreglara: el problema era el layout.
+
+   🔑 Y ESTABA PREVISTO DESDE LA PIEZA 10, que lo dejó escrito en su brief de
+   fotos: «de tablet para arriba la foto ocupa media pantalla y se estira al
+   alto del texto». Esto no inventa una forma nueva: construye la que ya se
+   había decidido y nunca se había implementado.
+
+   LO QUE CAE SOLO AL PARTIRLO: el velo. Existía para que la letra blanca se
+   leyera sobre la foto; con el texto sobre marfil no hay nada que velar, y el
+   par grafito/marfil mide 12,00 contra los 7,7 que daba el velo. Los botones
+   vuelven a su forma normal del sistema por el mismo motivo. */
 @media (min-width: 1280px) {
   .hero-velo {
-    min-height: 780px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 620px;
+    isolation: auto;
   }
 
+  /* La foto deja de ser un fondo absoluto y pasa a ser la columna derecha. */
   .hero-velo .hero-foto {
-    object-position: 50% 4%;
+    position: static;
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    height: 100%;
+    object-position: 50% 30%;
+    z-index: auto;
+  }
+
+  /* Sin foto debajo no hay nada que velar. */
+  .hero-velo::before {
+    display: none;
+  }
+
+  .hero-velo .hero-texto {
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: center;
+    min-height: 0;
+    padding: 48px var(--margen-pagina);
+  }
+
+  /* El texto vuelve al grafito: sobre marfil mide 12,00, que es el par más
+     alto del sistema. La letra blanca sólo existía por el velo. */
+  .hero-velo h1,
+  .hero-velo .bajada {
+    color: var(--grafito);
+    opacity: 1;
+  }
+
+  /* Y el secundario vuelve a su forma normal —grafito macizo—: la inversión
+     era para que no se hundiera en el velo, y el velo ya no está. */
+  .hero-velo .btn-2 {
+    background: var(--boton-2-fondo);
+    color: var(--boton-2-texto);
+    border: 0;
   }
 }
 
@@ -3886,9 +3944,34 @@ CSS_CONTACTO = """
 
      Es la misma regla que ya corrigió las tres señales de la 15.a — para
      destacar lo principal se DES-destaca lo demás. */
+  /* 🔴 LA TARJETA NO USA TODO EL ANCHO, y esto lo levantó Juan: «esas
+     tarjetas de contacto son enormes con el texto a la izquierda».
+
+     Tenía razón y la fuente lo nombra: Baymard, sobre pantallas grandes,
+     describe exactamente este defecto —demasiado aire alrededor de un par de
+     contenidos deja el sitio «demasiado abierto, con espacios grandes y
+     desparejos»—. Acá eran cuatro renglones cortos dentro de una caja de
+     1100 px: ~800 px de blanco a la derecha de cada dato.
+
+     🔑 EL TECHO VA EN EL COMPONENTE, NO EN LA PÁGINA. La sección sigue
+     midiendo 1100 —por eso el título no se mueve y la alineación del sitio no
+     cambia—; lo que se acota es la tarjeta, con la medida que el sistema ya
+     usa para lo que se LEE de corrido. No se estrena ningún número.
+
+     El QR va dentro de ese mismo ancho y centrado ahí adentro, no contra la
+     página: centrado contra 1100 se despegaba de la tarjeta que rotula. */
+  .contacto,
+  .contacto-qr {
+    max-width: var(--columna);
+    margin-right: auto;
+  }
+
+  /* El aire de arriba iguala al de abajo. Con 24 arriba y el aire de sección
+     abajo, el QR se leía colgando de la tarjeta en vez de acompañándola —lo
+     marcó Juan: «mucho inferior y casi nada de superior». */
   .contacto-qr {
     display: block;
-    margin-top: 24px;
+    margin-top: 48px;
     text-align: center;
   }
 

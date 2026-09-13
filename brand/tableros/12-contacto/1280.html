@@ -798,9 +798,34 @@ th.n { text-align: right; }
 
      Es la misma regla que ya corrigió las tres señales de la 15.a — para
      destacar lo principal se DES-destaca lo demás. */
+  /* 🔴 LA TARJETA NO USA TODO EL ANCHO, y esto lo levantó Juan: «esas
+     tarjetas de contacto son enormes con el texto a la izquierda».
+
+     Tenía razón y la fuente lo nombra: Baymard, sobre pantallas grandes,
+     describe exactamente este defecto —demasiado aire alrededor de un par de
+     contenidos deja el sitio «demasiado abierto, con espacios grandes y
+     desparejos»—. Acá eran cuatro renglones cortos dentro de una caja de
+     1100 px: ~800 px de blanco a la derecha de cada dato.
+
+     🔑 EL TECHO VA EN EL COMPONENTE, NO EN LA PÁGINA. La sección sigue
+     midiendo 1100 —por eso el título no se mueve y la alineación del sitio no
+     cambia—; lo que se acota es la tarjeta, con la medida que el sistema ya
+     usa para lo que se LEE de corrido. No se estrena ningún número.
+
+     El QR va dentro de ese mismo ancho y centrado ahí adentro, no contra la
+     página: centrado contra 1100 se despegaba de la tarjeta que rotula. */
+  .contacto,
+  .contacto-qr {
+    max-width: var(--columna);
+    margin-right: auto;
+  }
+
+  /* El aire de arriba iguala al de abajo. Con 24 arriba y el aire de sección
+     abajo, el QR se leía colgando de la tarjeta en vez de acompañándola —lo
+     marcó Juan: «mucho inferior y casi nada de superior». */
   .contacto-qr {
     display: block;
-    margin-top: 24px;
+    margin-top: 48px;
     text-align: center;
   }
 
