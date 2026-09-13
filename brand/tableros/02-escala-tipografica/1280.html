@@ -404,8 +404,25 @@
     --tipo-h1: 52px;
     --tipo-h2: 36px;
     --tipo-h3: 24px;
-    --tipo-cuerpo: 17px;
-    --tipo-chico: 15px;
+    /* 🔴 EL CUERPO Y EL TEXTO CHICO SUBEN MÁS EN ESCRITORIO — 13-sep-2026,
+       y lo levantó Juan mirando la página entera: «los que no son destacados
+       también muy chicos».
+
+       🔑 QUÉ PASABA, y se ve poniendo la escala en fila: de 390 a 1280 los
+       títulos crecían 32→52 (+63 %), 26→36 (+38 %) y 20→24 (+20 %), mientras
+       el cuerpo iba de 16 a 17 (+6 %) y el texto chico de 14 a 15 (+7 %). La
+       escala se estaba ABRIENDO: los títulos se iban y el texto de lectura se
+       quedaba, así que todo lo que no era título se leía hundido.
+
+       No es sólo apariencia: en una pantalla grande la distancia de lectura
+       es mayor que con el teléfono en la mano, y 17 px a esa distancia rinden
+       menos que 16 a 40 cm. Subir el cuerpo acompaña esa distancia.
+
+       Sube UNA SOLA VEZ y en el token, así lo heredan de golpe las tarjetas
+       de tratamientos, «Nosotros», los testimonios y los datos de contacto —
+       que son los cuatro lugares que él nombró. Ninguno se toca por separado. */
+    --tipo-cuerpo: 19px;
+    --tipo-chico: 17px;
     --columna: 640px;
     --columna-lista: 860px;
     --ancho-pagina: 1100px;
@@ -611,11 +628,11 @@ Los tamaños salen de <code>css/tokens.css</code> y cambian solos con el ancho.<
     <h3 class="muestra-texto">Limpieza</h3>
   </div>
   <div class="espec">
-    <p class="dato">Texto de leer · Jost · <b>17 px</b> · párrafos, respuestas, descripciones</p>
+    <p class="dato">Texto de leer · Jost · <b>19 px</b> · párrafos, respuestas, descripciones</p>
     <p class="muestra-texto">La primera consulta incluye el diagnóstico y el plan de tratamiento. Si necesitás cambiar el horario, se puede hasta el día anterior.</p>
   </div>
   <div class="espec">
-    <p class="dato">Texto chico · Jost · <b>15 px</b> · ayuda de un campo, pie, aclaración</p>
+    <p class="dato">Texto chico · Jost · <b>17 px</b> · ayuda de un campo, pie, aclaración</p>
     <p class="muestra-texto chico">Te va a llegar un correo de confirmación con la dirección del consultorio.</p>
   </div>
   <div class="espec">
@@ -629,7 +646,7 @@ Los tamaños salen de <code>css/tokens.css</code> y cambian solos con el ancho.<
   <h2>Qué mide cada nivel en cada pantalla</h2>
   <p class="dato" style="margin-top: 8px">El móvil es el default; los otros dos
   son excepciones declaradas. En píxeles.</p>
-  <table><tr><th>nivel</th><th>tipografía</th><th class="n">390</th><th class="n">768</th><th class="n">1280</th></tr><tr><td>Título de página</td><td>Marcellus</td><td class="n">32</td><td class="n">42</td><td class="n">52</td></tr><tr><td>Título de sección</td><td>Marcellus</td><td class="n">26</td><td class="n">32</td><td class="n">36</td></tr><tr><td>Título de tarjeta</td><td>Marcellus</td><td class="n">20</td><td class="n">22</td><td class="n">24</td></tr><tr><td>Texto de leer</td><td>Jost</td><td class="n">16</td><td class="n">17</td><td class="n">17</td></tr><tr><td>Texto chico</td><td>Jost</td><td class="n">14</td><td class="n">14</td><td class="n">15</td></tr><tr><td>Rótulo</td><td>Jost</td><td class="n">13</td><td class="n">13</td><td class="n">13</td></tr></table>
+  <table><tr><th>nivel</th><th>tipografía</th><th class="n">390</th><th class="n">768</th><th class="n">1280</th></tr><tr><td>Título de página</td><td>Marcellus</td><td class="n">32</td><td class="n">42</td><td class="n">52</td></tr><tr><td>Título de sección</td><td>Marcellus</td><td class="n">26</td><td class="n">32</td><td class="n">36</td></tr><tr><td>Título de tarjeta</td><td>Marcellus</td><td class="n">20</td><td class="n">22</td><td class="n">24</td></tr><tr><td>Texto de leer</td><td>Jost</td><td class="n">16</td><td class="n">17</td><td class="n">19</td></tr><tr><td>Texto chico</td><td>Jost</td><td class="n">14</td><td class="n">14</td><td class="n">17</td></tr><tr><td>Rótulo</td><td>Jost</td><td class="n">13</td><td class="n">13</td><td class="n">13</td></tr></table>
 </section>
 
 <section>

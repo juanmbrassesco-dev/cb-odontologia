@@ -2837,6 +2837,17 @@ body { padding: 0; }
   gap: 28px;
 }
 
+/* 🔴 EL MENÚ EN FILA SUBE — 13-sep-2026, lo pidió Juan: «tratamientos,
+   nosotros y contacto del header muy chico».
+
+   Usaba --tipo-rotulo (13 px), que es la medida de los RÓTULOS de andamiaje
+   —esas líneas en versalitas que dicen de qué se trata un bloque—. El menú no
+   es un rótulo: es el único control de navegación del sitio y se toca. 15 px
+   con las versalitas y el espaciado que ya tiene lo deja legible sin dejar de
+   ser discreto, que es lo que la barra pide.
+
+   Va sólo en escritorio porque a 390 y 768 el menú no es esta fila: es el
+   sándwich, que abre un panel con el texto a --tipo-cuerpo. */
 .menu-fila a {
   color: var(--grafito);
   text-decoration: none;
@@ -2844,6 +2855,16 @@ body { padding: 0; }
   line-height: var(--alto-rotulo);
   letter-spacing: var(--letra-rotulo);
   text-transform: uppercase;
+}
+
+@media (min-width: 1280px) {
+  .menu-fila a {
+    font-size: 15px;
+  }
+
+  .menu-fila {
+    gap: 34px;
+  }
 }
 
 /* El marco que dice "esto es una muestra, no la página". Es andamiaje del
@@ -4109,8 +4130,8 @@ CSS_CONTACTO = """
     bottom: 32px;
     /* 56 px es el tamaño que Baymard mide en los casos que testeó, y queda
        por encima del piso táctil de 44 del sistema. */
-    width: 56px;
-    height: 56px;
+    width: 68px;
+    height: 68px;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
@@ -4129,8 +4150,8 @@ CSS_CONTACTO = """
      brand/marcas-ajenas/PROCEDENCIA.md— y un botón verde sería el único color
      del sistema que no sale de la paleta. */
   .wa-flotante .iso-wa {
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     fill: currentColor;
   }
 }

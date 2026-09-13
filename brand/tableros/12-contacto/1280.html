@@ -404,8 +404,25 @@
     --tipo-h1: 52px;
     --tipo-h2: 36px;
     --tipo-h3: 24px;
-    --tipo-cuerpo: 17px;
-    --tipo-chico: 15px;
+    /* 🔴 EL CUERPO Y EL TEXTO CHICO SUBEN MÁS EN ESCRITORIO — 13-sep-2026,
+       y lo levantó Juan mirando la página entera: «los que no son destacados
+       también muy chicos».
+
+       🔑 QUÉ PASABA, y se ve poniendo la escala en fila: de 390 a 1280 los
+       títulos crecían 32→52 (+63 %), 26→36 (+38 %) y 20→24 (+20 %), mientras
+       el cuerpo iba de 16 a 17 (+6 %) y el texto chico de 14 a 15 (+7 %). La
+       escala se estaba ABRIENDO: los títulos se iban y el texto de lectura se
+       quedaba, así que todo lo que no era título se leía hundido.
+
+       No es sólo apariencia: en una pantalla grande la distancia de lectura
+       es mayor que con el teléfono en la mano, y 17 px a esa distancia rinden
+       menos que 16 a 40 cm. Subir el cuerpo acompaña esa distancia.
+
+       Sube UNA SOLA VEZ y en el token, así lo heredan de golpe las tarjetas
+       de tratamientos, «Nosotros», los testimonios y los datos de contacto —
+       que son los cuatro lugares que él nombró. Ninguno se toca por separado. */
+    --tipo-cuerpo: 19px;
+    --tipo-chico: 17px;
     --columna: 640px;
     --columna-lista: 860px;
     --ancho-pagina: 1100px;
@@ -937,8 +954,8 @@ th.n { text-align: right; }
     bottom: 32px;
     /* 56 px es el tamaño que Baymard mide en los casos que testeó, y queda
        por encima del piso táctil de 44 del sistema. */
-    width: 56px;
-    height: 56px;
+    width: 68px;
+    height: 68px;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
@@ -957,8 +974,8 @@ th.n { text-align: right; }
      brand/marcas-ajenas/PROCEDENCIA.md— y un botón verde sería el único color
      del sistema que no sale de la paleta. */
   .wa-flotante .iso-wa {
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     fill: currentColor;
   }
 

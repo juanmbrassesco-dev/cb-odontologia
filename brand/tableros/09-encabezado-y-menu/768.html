@@ -824,6 +824,17 @@ body { padding: 0; }
   gap: 28px;
 }
 
+/* 🔴 EL MENÚ EN FILA SUBE — 13-sep-2026, lo pidió Juan: «tratamientos,
+   nosotros y contacto del header muy chico».
+
+   Usaba --tipo-rotulo (13 px), que es la medida de los RÓTULOS de andamiaje
+   —esas líneas en versalitas que dicen de qué se trata un bloque—. El menú no
+   es un rótulo: es el único control de navegación del sitio y se toca. 15 px
+   con las versalitas y el espaciado que ya tiene lo deja legible sin dejar de
+   ser discreto, que es lo que la barra pide.
+
+   Va sólo en escritorio porque a 390 y 768 el menú no es esta fila: es el
+   sándwich, que abre un panel con el texto a --tipo-cuerpo. */
 .menu-fila a {
   color: var(--grafito);
   text-decoration: none;
@@ -832,6 +843,8 @@ body { padding: 0; }
   letter-spacing: var(--letra-rotulo);
   text-transform: uppercase;
 }
+
+
 
 /* El marco que dice "esto es una muestra, no la página". Es andamiaje del
    tablero y no existe en el sitio. */
