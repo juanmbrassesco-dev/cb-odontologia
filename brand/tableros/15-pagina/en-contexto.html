@@ -1121,7 +1121,17 @@ body { padding: 0; }
 @media (min-width: 1280px) {
   .hero-velo {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* 🔴 LA COLUMNA DE LA FOTO ES MÁS ANGOSTA QUE LA DEL TEXTO, y el motivo
+       es la foto, no el texto. La del hero es VERTICAL —900 × 1350, y el
+       brief de la pieza 10 pide que la definitiva también lo sea—. Metida en
+       un hueco apaisado, `cover` la escala por el ancho y recorta el resto:
+       medido, con las columnas al 50 % se veía sólo el 60 % del alto de la
+       foto, así que la persona salía cortada. Lo levantó Juan.
+
+       Cuanto más angosto el hueco, más parecido a la proporción de la foto y
+       menos recorte. 57/43 es lo más lejos que se puede ir sin que el titular
+       empiece a partirse feo. */
+    grid-template-columns: 1.33fr 1fr;
     isolation: auto;
     position: relative;
     /* 🔴 EL HERO OCUPA LA PANTALLA, menos el encabezado — lo pidió Juan el
@@ -1132,7 +1142,12 @@ body { padding: 0; }
        Los 97 px que se restan son el alto REAL de la barra en escritorio y
        están medidos, no estimados: logo 52 + aire 22 arriba + 22 abajo +
        1 del filo dorado. Si el aire de la barra cambia, este número cambia. */
-    min-height: calc(100vh - 97px);
+    /* El `max()` pone un PISO al alto: en una ventana baja, `100vh - 97` daba
+       un hero tan chato que la foto vertical no tenía dónde entrar y se
+       recortaba el doble. Con el piso, en esas ventanas el hero se pasa un
+       poco de la pantalla —hay que hacer scroll— y a cambio la foto se ve
+       entera, que es lo que importa en la portada. */
+    min-height: max(680px, calc(100vh - 97px));
 
     /* 🔴 Y LA FILA TIENE QUE PODER ENCOGER, si no el hero no entra en la
        pantalla. Medido: sin esto el hero daba 960 px FIJOS con ventanas de
@@ -1204,7 +1219,7 @@ body { padding: 0; }
        IZQUIERDO, así que la foto se iba al lado equivocado y tapaba el texto.
        Anular el lado que no se usa es lo que la manda a la derecha. */
     left: auto;
-    width: 50%;
+    width: 43%;
     /* ⚠️ `100%` Y NO `auto`, y la diferencia es de manual: en un DIV, `auto`
        con `top` y `bottom` puestos calcula el alto por los bordes. En una
        IMAGEN no — es un elemento reemplazado, así que `auto` significa «usá
