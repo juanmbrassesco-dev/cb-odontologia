@@ -15,3 +15,8 @@ tools/letras-cb/salida/
 # embebidas pesa medio mega y se regenera con un comando. El que se publica
 # es ése, no uno versionado.
 brand/tableros/15-pagina/artefacto.html
+
+# Copias de un solo uso que se abren para mirar la maqueta sin que Chrome la
+# saque del caché. Se generan con un nombre distinto cada vez y se borran; no
+# tienen por qué viajar al repo. (Una se coló el 13-sep-2026.)
+brand/tableros/15-pagina/ver-*.html
