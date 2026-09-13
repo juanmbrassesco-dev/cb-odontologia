@@ -1206,7 +1206,16 @@ body { padding: 0; }
        Anular el lado que no se usa es lo que la manda a la derecha. */
     left: auto;
     width: 50%;
-    height: auto;
+    /* ⚠️ `100%` Y NO `auto`, y la diferencia es de manual: en un DIV, `auto`
+       con `top` y `bottom` puestos calcula el alto por los bordes. En una
+       IMAGEN no — es un elemento reemplazado, así que `auto` significa «usá
+       tu propia proporción» y el `bottom` se ignora. Medido: daba 960 px y se
+       pasaba 344 del hero, metiéndose adentro de Tratamientos.
+
+       Con la foto ya fuera del flujo, `100%` sí resuelve: el bloque de
+       referencia es el hero, cuya altura a esta altura del cálculo ya está
+       decidida. */
+    height: 100%;
     aspect-ratio: auto;
     object-fit: cover;
     object-position: 50% 30%;
