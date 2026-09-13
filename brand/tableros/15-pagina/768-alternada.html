@@ -1737,7 +1737,11 @@ body { padding: 0; }
      cierre de la página quedaba demasiado suelto —lo midió Juan a ojo y pidió
      cortar «entre un 30 y un 40 %»—. Sale del mismo token para que siga
      escalando con el ancho: 36 · 47 · 62 en vez de 56 · 72 · 96. */
-  padding-bottom: calc(var(--aire-seccion) * 0.65);
+  /* 0,4 y no 0,65: el primer recorte lo dejó en 62 px y Juan lo midió con
+     DevTools —el verde de abajo de la caja— y seguía siendo demasiado. Queda
+     en 38 a 1280 (29 a 768, 22 a 390). Sigue saliendo del token del aire de
+     sección, así que acompaña al ancho sin ser un número suelto. */
+  padding-bottom: calc(var(--aire-seccion) * 0.4);
 }
 
 /* 🔑 EL AIRE AGRUPA, y lo dictó Juan mirando el pie: los cuatro renglones de
