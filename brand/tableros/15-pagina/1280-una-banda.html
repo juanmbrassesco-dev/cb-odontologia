@@ -1690,76 +1690,45 @@ body { padding: 0; }
 }
 
 
-  /* 🔴 EL QR VA DEBAJO Y CENTRADO, NO AL COSTADO — corregido el 13-sep-2026.
-
-     El primer intento lo puso en una segunda columna, en su propia tarjeta
-     blanca con su propio borde. Juan lo bajó mirando: «no me gusta como queda
-     el qr ahí al costado, como si fuera un compartimiento distinto», y pidió
-     probar la estrategia del pie — centrado y sin caja.
-
-     🔑 Y tenía razón por una razón de sistema: la tarjeta blanca con filo es
-     el recurso más fuerte que tiene esta página, y estaba puesto sobre algo
-     que NO es un dato de contacto más: es un atajo para el que no puede tocar
-     un enlace. Con su propia caja al lado de la tarjeta, las dos cosas se
-     leían como dos bloques del mismo rango. Debajo y sin caja, el QR se lee
-     como lo que es: el remate de la sección.
-
-     Es la misma regla que ya corrigió las tres señales de la 15.a — para
-     destacar lo principal se DES-destaca lo demás. */
   /* 🔴 LA TARJETA NO USA TODO EL ANCHO, y esto lo levantó Juan: «esas
      tarjetas de contacto son enormes con el texto a la izquierda».
 
-     Tenía razón y la fuente lo nombra: Baymard, sobre pantallas grandes,
-     describe exactamente este defecto —demasiado aire alrededor de un par de
-     contenidos deja el sitio «demasiado abierto, con espacios grandes y
-     desparejos»—. Acá eran cuatro renglones cortos dentro de una caja de
-     1100 px: ~800 px de blanco a la derecha de cada dato.
+     Baymard nombra el defecto para pantallas grandes: demasiado aire
+     alrededor de un par de contenidos deja el sitio «demasiado abierto, con
+     espacios grandes y desparejos». Acá eran cuatro renglones cortos dentro
+     de una caja de 1100 px, con unos 800 de blanco al costado de cada dato.
 
-     🔑 EL TECHO VA EN EL COMPONENTE, NO EN LA PÁGINA. La sección sigue
+     🔑 EL TECHO VA EN EL COMPONENTE, NO EN LA PÁGINA: la sección sigue
      midiendo 1100 —por eso el título no se mueve y la alineación del sitio no
-     cambia—; lo que se acota es la tarjeta, con la medida que el sistema ya
-     usa para lo que se LEE de corrido. No se estrena ningún número.
-
-     El QR va dentro de ese mismo ancho y centrado ahí adentro, no contra la
-     página: centrado contra 1100 se despegaba de la tarjeta que rotula. */
-  .contacto,
-  .contacto-qr {
+     cambia— y lo que se acota es la tarjeta. */
+  .contacto {
     max-width: var(--columna);
     margin-right: auto;
   }
 
-  /* El aire de arriba iguala al de abajo. Con 24 arriba y el aire de sección
-     abajo, el QR se leía colgando de la tarjeta en vez de acompañándola —lo
-     marcó Juan: «mucho inferior y casi nada de superior». */
+  /* 🔴 EL QR ES UNA FILA MÁS DE LA TARJETA — tercera forma, y es la que pidió
+     Juan: «metele blanco alrededor de todo y que se una desde el blanco de
+     arriba».
+
+     Las dos anteriores fallaron por lo mismo aunque se vieran distintas: las
+     dos lo trataban como una PIEZA APARTE. Primero una tarjeta con borde al
+     costado, que competía con los datos; después un cuadrado blanco suelto
+     sobre el marfil, que quedaba flotando. Acá no hay pieza aparte — el QR
+     vive DENTRO de la tarjeta, sobre el mismo blanco, separado de la fila de
+     arriba por la misma línea que separa a todas las demás.
+
+     Y el blanco de la tarjeta ES la zona de silencio que la norma pide
+     alrededor del código (ISO/IEC 18004, cuatro módulos): no hace falta
+     pintar ningún recuadro propio. */
   .contacto-qr {
     display: block;
-    margin-top: 48px;
+    padding: 28px 14px 24px;
+    border-top: 1px solid var(--dorado-claro);
     text-align: center;
   }
 
-  /* 🔴 EL QR RECUPERA SU FONDO BLANCO — y no es una vuelta atrás del cambio
-     anterior: lo que Juan rechazó fue la CAJA AL COSTADO, que competía con la
-     tarjeta de datos. Suelto sobre el marfil quedaba «muy descolgado», y
-     tenía razón por dos motivos distintos.
-
-     🔑 EL SEGUNDO NO ES ESTÉTICO Y ES EL QUE MANDA: un QR necesita una ZONA
-     DE SILENCIO clara alrededor para que la cámara distinga dónde empieza el
-     código (ISO/IEC 18004 pide cuatro módulos). Se generó con `-m 0` porque
-     el aire lo ponía el recuadro; al sacar el recuadro, el código quedó sobre
-     marfil y sin margen propio. El fondo blanco con relleno ES esa zona.
-
-     Va SIN borde, que es lo que lo separa de la tarjeta: no es otro bloque de
-     datos, es el soporte del código. */
-  .contacto-qr .qr {
-    box-sizing: content-box;
-    background: var(--blanco);
-    padding: 16px;
-    border-radius: var(--radio);
-  }
-
-  /* 180 px de lado. El piso real no es estético: un QR de este contenido
-     necesita módulos de al menos 2 px en pantalla para que la cámara los
-     separe, y por debajo de ~150 px empieza a costar. */
+  /* 180 px de lado. El piso no es estético: los módulos de este código
+     necesitan al menos 2 px en pantalla para que la cámara los separe. */
   .qr {
     display: block;
     width: 180px;
@@ -1768,10 +1737,6 @@ body { padding: 0; }
     margin-right: auto;
   }
 
-  /* ⚠️ EL MISMO ERROR DEL PIE, REPETIDO Y CORREGIDO EL MISMO DÍA: `max-width`
-     acota pero NO centra, así que este párrafo se centraba adentro de una caja
-     de 640 pegada a la izquierda del bloque de 1100, y quedaba a 200 px del
-     QR que debía rotular. Se centra la CAJA. */
   .qr-pie {
     margin-top: 12px;
     margin-left: auto;
@@ -2251,7 +2216,6 @@ body { padding: 0; }
       <svg class="ico-contacto" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.4" width="17.6" height="13.2" rx="2.4"/><path d="M3.9 7 l8.1 5.9 l8.1-5.9"/></svg>
       <span>cecilia@example.com</span>
     </div>
-    </div>
     <div class="contacto-qr">
       <svg class="qr" viewBox="0 0 25 25"
        role="img" aria-label="Código QR que abre la conversación de WhatsApp">
@@ -2600,7 +2564,8 @@ body { padding: 0; }
 
 
   </svg>
-      <p class="qr-pie">Escaneá y escribinos<br>por WhatsApp</p>
+      <p class="qr-pie">Escaneá y escribinos por WhatsApp</p>
+    </div>
     </div>
   </div>
   </section>
