@@ -240,6 +240,22 @@
      respira más que el párrafo. */
   --columna-lista: 100%;
 
+  /* EL ANCHO DE LA LANDING — y NO es lo mismo que las dos medidas de arriba.
+
+     Se separa el 13-sep-2026, y el motivo es un error que hay que dejar
+     escrito: la landing estaba usando `--columna-lista`, que se decidió para
+     la LISTA DE HORARIOS de la pantalla de turnos —siete columnas que no
+     bajan de 44 px—. Con ese techo, a 1280 el contenido ocupaba el 67 % del
+     ancho y la página se leía como la de móvil estirada y centrada.
+     Lo cazó Juan mirando la captura: «¿a vos eso te parece de 1280?».
+
+     Son tres medidas distintas porque contestan tres preguntas distintas:
+     `--columna` hasta dónde puede crecer una LÍNEA de texto sin perder
+     legibilidad · `--columna-lista` cuánto necesita una lista de controles
+     para no partirse · `--ancho-pagina` cuánto de la pantalla ocupa la
+     LANDING, que es una decisión de composición y no de legibilidad. */
+  --ancho-pagina: 100%;
+
   /* EL MARGEN DE LA PÁGINA — el aire entre el contenido y el filo de la
      pantalla. Sube acá el 3-sep-2026: los tres números ya existían y ya eran
      sistemáticos, pero vivían adentro de tools/construir-tableros.py, o sea
@@ -250,6 +266,25 @@
      horarios —siete columnas que no bajan de 44 px—; en 1280 uno más chico
      deja el texto pegado al filo de la pantalla. */
   --margen-pagina: 20px;
+
+  /* CÓMO SE POSICIONA UNA SECCIÓN A LOS COSTADOS — el token que CENTRA.
+
+     El problema que resuelve, y está medido: en escritorio el contenido tiene
+     techo —`--columna-lista`, 860 px— y la pantalla mide 1280. Con un margen
+     fijo de 64 la página entera queda pegada a la IZQUIERDA y sobran ~350 px
+     muertos a la derecha. Con `auto` el navegador reparte lo que sobra en dos
+     partes iguales, o sea centra, sin que haya que escribir ningún número.
+
+     POR QUÉ NO ES `auto` EN LOS TRES ANCHOS: en móvil y tablet el techo vale
+     `100%`, así que no sobra nada y `auto` daría CERO — las secciones
+     perderían su margen y se irían a sangre. El margen fijo sigue siendo
+     necesario ahí. Es el mismo criterio que ya usan `--columna` y
+     `--columna-lista`: una medida que cambia de naturaleza al haber pantalla.
+
+     ⚠️ Lo usan las secciones que llevan su margen como MARGEN. Las que lo
+     llevan como `padding` propio —«Nosotros» y «Testimonios»— se centran con
+     `auto` directo, porque ahí `auto` ya vale cero en los anchos chicos. */
+  --margen-seccion: var(--margen-pagina);
 
   /* EL AIRE ENTRE SECCIONES — un valor por ancho, y lo decidió Juan el
      3-sep-2026 contra la propuesta de un número único para los tres.
@@ -684,9 +719,9 @@ th.n { text-align: right; }
   /* El margen lateral es del pie, no del tablero — mismo motivo que la pieza
      11 y la 12. Y acá importa doble: la línea dorada de arriba arranca donde
      arranca el margen, así que si el margen no fuera suyo, la línea tampoco. */
-  margin-left: var(--margen-pagina);
-  margin-right: var(--margen-pagina);
-  max-width: var(--columna-lista);
+  margin-left: var(--margen-seccion);
+  margin-right: var(--margen-seccion);
+  max-width: var(--ancho-pagina);
   text-align: center;
 }
 

@@ -240,6 +240,22 @@
      respira más que el párrafo. */
   --columna-lista: 100%;
 
+  /* EL ANCHO DE LA LANDING — y NO es lo mismo que las dos medidas de arriba.
+
+     Se separa el 13-sep-2026, y el motivo es un error que hay que dejar
+     escrito: la landing estaba usando `--columna-lista`, que se decidió para
+     la LISTA DE HORARIOS de la pantalla de turnos —siete columnas que no
+     bajan de 44 px—. Con ese techo, a 1280 el contenido ocupaba el 67 % del
+     ancho y la página se leía como la de móvil estirada y centrada.
+     Lo cazó Juan mirando la captura: «¿a vos eso te parece de 1280?».
+
+     Son tres medidas distintas porque contestan tres preguntas distintas:
+     `--columna` hasta dónde puede crecer una LÍNEA de texto sin perder
+     legibilidad · `--columna-lista` cuánto necesita una lista de controles
+     para no partirse · `--ancho-pagina` cuánto de la pantalla ocupa la
+     LANDING, que es una decisión de composición y no de legibilidad. */
+  --ancho-pagina: 100%;
+
   /* EL MARGEN DE LA PÁGINA — el aire entre el contenido y el filo de la
      pantalla. Sube acá el 3-sep-2026: los tres números ya existían y ya eran
      sistemáticos, pero vivían adentro de tools/construir-tableros.py, o sea
@@ -250,6 +266,25 @@
      horarios —siete columnas que no bajan de 44 px—; en 1280 uno más chico
      deja el texto pegado al filo de la pantalla. */
   --margen-pagina: 20px;
+
+  /* CÓMO SE POSICIONA UNA SECCIÓN A LOS COSTADOS — el token que CENTRA.
+
+     El problema que resuelve, y está medido: en escritorio el contenido tiene
+     techo —`--columna-lista`, 860 px— y la pantalla mide 1280. Con un margen
+     fijo de 64 la página entera queda pegada a la IZQUIERDA y sobran ~350 px
+     muertos a la derecha. Con `auto` el navegador reparte lo que sobra en dos
+     partes iguales, o sea centra, sin que haya que escribir ningún número.
+
+     POR QUÉ NO ES `auto` EN LOS TRES ANCHOS: en móvil y tablet el techo vale
+     `100%`, así que no sobra nada y `auto` daría CERO — las secciones
+     perderían su margen y se irían a sangre. El margen fijo sigue siendo
+     necesario ahí. Es el mismo criterio que ya usan `--columna` y
+     `--columna-lista`: una medida que cambia de naturaleza al haber pantalla.
+
+     ⚠️ Lo usan las secciones que llevan su margen como MARGEN. Las que lo
+     llevan como `padding` propio —«Nosotros» y «Testimonios»— se centran con
+     `auto` directo, porque ahí `auto` ya vale cero en los anchos chicos. */
+  --margen-seccion: var(--margen-pagina);
 
   /* EL AIRE ENTRE SECCIONES — un valor por ancho, y lo decidió Juan el
      3-sep-2026 contra la propuesta de un número único para los tres.
@@ -664,6 +699,17 @@ body { padding: 0; }
    decide en el tablero 15 y sale de --aire-seccion. */
 .nosotros {
   margin-top: 0;
+  /* Mismo mecanismo que «Testimonios»: el margen lo lleva por dentro, así que
+     el centrado es `auto` a secas. En los anchos chicos vale cero.
+
+     ⚠️ Y EL TECHO LLEVA EL MARGEN SUMADO, que no es un ajuste fino: el techo
+     mide la CAJA, y esta sección se guarda el margen adentro. Con 860 pelado
+     su contenido arrancaba 64 px más adentro que el de «Tratamientos», que no
+     tiene padding — dos secciones de la misma página empezando en dos líneas
+     distintas. Sumándoselo, las cuatro arrancan donde mismo. */
+  max-width: calc(var(--ancho-pagina) + var(--margen-pagina) * 2);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* El aire entre la foto y el texto. Es el ÚNICO separador que hay entre las
@@ -767,6 +813,28 @@ body { padding: 0; }
   font-weight: 500;
   color: var(--grafito);
 }
+
+/* 🔴 EN ESCRITORIO LA FOTO Y EL TEXTO VAN LADO A LADO — 13-sep-2026.
+
+   El problema medido: apilados, esta sección se comía 1377 px de alto a 1280,
+   o sea casi un tercio de la página, y la foto quedaba más ancha que el texto
+   que la acompaña. Con pantalla de sobra, ponerlos en dos columnas es
+   exactamente «se AGREGA algo al haber más pantalla» (§ 4, mobile-first), no
+   un diseño nuevo: el orden de lectura y el contenido no cambian.
+
+   EL REPARTO ES 5 A 7 y no mitad y mitad: la foto es un retrato 4:5, así que
+   cuanto más ancha más alta se vuelve, y es justo el alto lo que hay que
+   bajar. Con 5/7 el texto queda cerca de --columna (640), que es la medida en
+   la que una línea se sigue leyendo bien.
+
+   EL MARGEN SE MUDA AL PADRE. Apilado, cada hijo llevaba el suyo; en dos
+   columnas eso deja 128 px de aire entre la foto y el texto, además del hueco
+   de la grilla. Acá lo lleva la sección y los hijos van pegados a su columna.
+
+   ⚠️ Y el selector de la foto repite `.nosotros-dentro` a propósito: una
+   `@media` NO suma prioridad, así que `.nosotros-retrato` a secas perdería
+   contra la regla de dos clases de más arriba y no pasaría nada. */
+
 
 /* ANDAMIAJE DEL TABLERO, NO DEL SITIO: la cinta que grita que el texto es
    provisorio. No entra al sitio y por eso vive acá abajo, separada. */

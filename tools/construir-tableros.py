@@ -3425,9 +3425,25 @@ CSS_TRATAMIENTOS = """
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 20px;
-  margin-left: var(--margen-pagina);
-  margin-right: var(--margen-pagina);
-  max-width: var(--columna-lista);
+  margin-left: var(--margen-seccion);
+  margin-right: var(--margen-seccion);
+  max-width: var(--ancho-pagina);
+}
+
+/* EN ESCRITORIO SON TRES COLUMNAS, y el número no es estético: son NUEVE
+   tarjetas, así que tres columnas dan tres filas COMPLETAS. Con cuatro
+   quedaría una sola tarjeta colgando en la última fila, y con dos —lo que
+   heredaba del teléfono— son cinco filas de tarjetas muy anchas para el texto
+   corto que llevan.
+
+   El hueco también sube: a 390 son 10 px porque no sobra ancho; con pantalla
+   el mismo 10 pega las tarjetas entre sí y la grilla se lee como una sola
+   mancha. Es la misma regla del aire entre secciones — un valor por ancho. */
+@media (min-width: 1280px) {
+  .grilla-tratamientos {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
 }
 
 /* LA TARJETA. Blanca sobre marfil, y ese par mide 1,03: la forma la marca el
@@ -3782,10 +3798,10 @@ CSS_CONTACTO = """
   background: var(--blanco);
   border: 1px solid var(--dorado-claro);
   border-radius: var(--radio);
-  max-width: var(--columna-lista);
+  max-width: var(--ancho-pagina);
   margin-top: 20px;
-  margin-left: var(--margen-pagina);
-  margin-right: var(--margen-pagina);
+  margin-left: var(--margen-seccion);
+  margin-right: var(--margen-seccion);
 }
 
 /* Cada dato es una fila. La línea de arriba las separa; la primera no lleva,
@@ -4098,9 +4114,9 @@ CSS_PIE = """
   /* El margen lateral es del pie, no del tablero — mismo motivo que la pieza
      11 y la 12. Y acá importa doble: la línea dorada de arriba arranca donde
      arranca el margen, así que si el margen no fuera suyo, la línea tampoco. */
-  margin-left: var(--margen-pagina);
-  margin-right: var(--margen-pagina);
-  max-width: var(--columna-lista);
+  margin-left: var(--margen-seccion);
+  margin-right: var(--margen-seccion);
+  max-width: var(--ancho-pagina);
   text-align: center;
 }
 
@@ -4295,6 +4311,17 @@ CSS_NOSOTROS = """
    decide en el tablero 15 y sale de --aire-seccion. */
 .nosotros {
   margin-top: 0;
+  /* Mismo mecanismo que «Testimonios»: el margen lo lleva por dentro, así que
+     el centrado es `auto` a secas. En los anchos chicos vale cero.
+
+     ⚠️ Y EL TECHO LLEVA EL MARGEN SUMADO, que no es un ajuste fino: el techo
+     mide la CAJA, y esta sección se guarda el margen adentro. Con 860 pelado
+     su contenido arrancaba 64 px más adentro que el de «Tratamientos», que no
+     tiene padding — dos secciones de la misma página empezando en dos líneas
+     distintas. Sumándoselo, las cuatro arrancan donde mismo. */
+  max-width: calc(var(--ancho-pagina) + var(--margen-pagina) * 2);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* El aire entre la foto y el texto. Es el ÚNICO separador que hay entre las
@@ -4397,6 +4424,54 @@ CSS_NOSOTROS = """
 .nosotros-senales b {
   font-weight: 500;
   color: var(--grafito);
+}
+
+/* 🔴 EN ESCRITORIO LA FOTO Y EL TEXTO VAN LADO A LADO — 13-sep-2026.
+
+   El problema medido: apilados, esta sección se comía 1377 px de alto a 1280,
+   o sea casi un tercio de la página, y la foto quedaba más ancha que el texto
+   que la acompaña. Con pantalla de sobra, ponerlos en dos columnas es
+   exactamente «se AGREGA algo al haber más pantalla» (§ 4, mobile-first), no
+   un diseño nuevo: el orden de lectura y el contenido no cambian.
+
+   EL REPARTO ES 5 A 7 y no mitad y mitad: la foto es un retrato 4:5, así que
+   cuanto más ancha más alta se vuelve, y es justo el alto lo que hay que
+   bajar. Con 5/7 el texto queda cerca de --columna (640), que es la medida en
+   la que una línea se sigue leyendo bien.
+
+   EL MARGEN SE MUDA AL PADRE. Apilado, cada hijo llevaba el suyo; en dos
+   columnas eso deja 128 px de aire entre la foto y el texto, además del hueco
+   de la grilla. Acá lo lleva la sección y los hijos van pegados a su columna.
+
+   ⚠️ Y el selector de la foto repite `.nosotros-dentro` a propósito: una
+   `@media` NO suma prioridad, así que `.nosotros-retrato` a secas perdería
+   contra la regla de dos clases de más arriba y no pasaría nada. */
+@media (min-width: 1280px) {
+  .nosotros {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    column-gap: 40px;
+    align-items: start;
+    padding-left: var(--margen-pagina);
+    padding-right: var(--margen-pagina);
+  }
+
+  /* El título cruza las dos columnas: encabeza la sección entera. */
+  .nosotros-titulo {
+    grid-column: 1 / -1;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .nosotros-dentro .nosotros-retrato,
+  .nosotros-dentro .nosotros-hueco {
+    width: 100%;
+    margin: 0;
+  }
+
+  .nosotros-texto {
+    padding: 0;
+  }
 }
 
 /* ANDAMIAJE DEL TABLERO, NO DEL SITIO: la cinta que grita que el texto es
@@ -4780,6 +4855,16 @@ CSS_PRUEBA = """
    cierra en el tablero 15. */
 .prueba {
   margin-top: 0;
+  /* El techo y el centrado. Esta sección lleva su margen como `padding` de
+     adentro, no como margen, así que acá alcanza con `auto`: en móvil y
+     tablet el techo vale 100%, no sobra nada y `auto` da cero — no cambia
+     nada de lo aprobado. En escritorio sobra pantalla y centra.
+
+     El techo lleva el margen sumado por el mismo motivo que «Nosotros»: mide
+     la caja, y el margen de esta sección vive adentro. */
+  max-width: calc(var(--ancho-pagina) + var(--margen-pagina) * 2);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .prueba-titulo {
@@ -5511,8 +5596,19 @@ CSS_PAGINA = """
    ya tienen el suyo; «Tratamientos» y «Contacto» vivían sin título porque en
    su tablero el título lo ponía la prosa. Los valores son los mismos que ya
    usan los otros dos: esto no estrena ningún estilo. */
+/* 🔴 Y EL TÍTULO SE CENTRA CON SU SECCIÓN, no con la página. Lo destapó el
+   centrado de escritorio: «Tratamientos» y «Contacto» son hijos directos de
+   la página, así que con el margen de página quedaban a 64 mientras sus
+   tarjetas arrancaban a 210 — el título despegado de lo que encabeza. Por eso
+   lleva el mismo techo y el mismo token que la sección de abajo.
+
+   Va como MARGEN y no como `padding` justamente para que el techo de 860
+   mida el CONTENIDO: con `border-box`, 860 de `max-width` más 128 de padding
+   habrían dejado el texto arrancando 64 px adentro de la grilla. */
 .titulo-seccion {
-  padding: 0 var(--margen-pagina);
+  max-width: var(--ancho-pagina);
+  margin-left: var(--margen-seccion);
+  margin-right: var(--margen-seccion);
   margin-bottom: 16px;
 }
 
