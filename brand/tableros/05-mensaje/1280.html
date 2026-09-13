@@ -778,6 +778,26 @@ section > h2 + p { margin-top: 8px; }
    al medio de 1280 mientras su texto vivía en los primeros 640. Lo encontró
    medir-alineacion.py el mismo día en que aprendió a medir el centrado — un
    bloque centrado en la página no está centrado en su columna. */
+/* 🔴 EL BOTÓN CRECE EN ESCRITORIO — 13-sep-2026, lo levantó Juan mirando el
+   hero partido: «¿no quedaron chicos los botones para este tamaño?».
+
+   Tenía razón y es un problema de PROPORCIÓN, no de tamaño absoluto: los 19 px
+   del rótulo se decidieron contra un titular de 32 px en el teléfono; en
+   escritorio ese titular mide 52 y el botón se quedó donde estaba, así que la
+   distancia entre los dos pasó de 1,7 a 2,7 y el botón dejó de pesar lo que
+   tiene que pesar al lado de la promesa.
+
+   ⚠️ EL PISO DE 19 px NO SE TOCA HACIA ABAJO NUNCA: lo exige el contraste
+   —blanco sobre el dorado del brief mide 3,09, que es el piso del texto
+   GRANDE—. Acá sube, que es el lado seguro. */
+
+  .btn {
+    font-size: 22px;
+    padding: 16px 32px;
+    min-height: 56px;
+  }
+
+
 .acciones {
   display: grid;
   grid-template-columns: max-content;

@@ -980,6 +980,26 @@ CSS_BOTON = """
    al medio de 1280 mientras su texto vivía en los primeros 640. Lo encontró
    medir-alineacion.py el mismo día en que aprendió a medir el centrado — un
    bloque centrado en la página no está centrado en su columna. */
+/* 🔴 EL BOTÓN CRECE EN ESCRITORIO — 13-sep-2026, lo levantó Juan mirando el
+   hero partido: «¿no quedaron chicos los botones para este tamaño?».
+
+   Tenía razón y es un problema de PROPORCIÓN, no de tamaño absoluto: los 19 px
+   del rótulo se decidieron contra un titular de 32 px en el teléfono; en
+   escritorio ese titular mide 52 y el botón se quedó donde estaba, así que la
+   distancia entre los dos pasó de 1,7 a 2,7 y el botón dejó de pesar lo que
+   tiene que pesar al lado de la promesa.
+
+   ⚠️ EL PISO DE 19 px NO SE TOCA HACIA ABAJO NUNCA: lo exige el contraste
+   —blanco sobre el dorado del brief mide 3,09, que es el piso del texto
+   GRANDE—. Acá sube, que es el lado seguro. */
+@media (min-width: 1280px) {
+  .btn {
+    font-size: 22px;
+    padding: 16px 32px;
+    min-height: 56px;
+  }
+}
+
 .acciones {
   display: grid;
   grid-template-columns: max-content;
@@ -3188,8 +3208,16 @@ CSS_HERO_VELO = """
   .hero-velo {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    min-height: 620px;
     isolation: auto;
+    /* 🔴 EL HERO OCUPA LA PANTALLA, menos el encabezado — lo pidió Juan el
+       13-sep-2026: «el tamaño del hero es más pequeño que el total de la
+       pantalla». Con un alto fijo quedaba una franja de marfil abajo antes de
+       la primera sección, y el hero dejaba de leerse como la portada.
+
+       Los 97 px que se restan son el alto REAL de la barra en escritorio y
+       están medidos, no estimados: logo 52 + aire 22 arriba + 22 abajo +
+       1 del filo dorado. Si el aire de la barra cambia, este número cambia. */
+    min-height: calc(100vh - 97px);
   }
 
   /* La foto deja de ser un fondo absoluto y pasa a ser la columna derecha. */
@@ -3961,9 +3989,50 @@ CSS_CONTACTO = """
      🔑 EL TECHO VA EN EL COMPONENTE, NO EN LA PÁGINA: la sección sigue
      midiendo 1100 —por eso el título no se mueve y la alineación del sitio no
      cambia— y lo que se acota es la tarjeta. */
+  /* 🔴 EN ESCRITORIO NO HAY TARJETA — 13-sep-2026, lo pidió Juan: «hay que
+     sacar las tarjetas, hacer que se entienda que es otra sección a través
+     de los márgenes, jerarquía de elementos, colores y tamaño de letra».
+
+     🔑 ES SU PROPIA MANIJA, la que entró al método esta misma madrugada:
+     antes de separar dos bloques con una SUPERFICIE, probá el marcador de
+     arranque. La tarjeta era la superficie; el título de sección con su filo
+     dorado ya es el marcador, y alcanza. Suelta sobre los 1100 px la caja
+     además quedaba descolgada, que es lo que él vio.
+
+     Lo que separa ahora los cuatro datos es AIRE y JERARQUÍA: la dirección
+     manda —es a dónde hay que ir—, el resto baja un escalón, y el ícono
+     dorado hace de viñeta. Ningún borde, ningún fondo, ningún color nuevo. */
   .contacto {
     max-width: var(--columna);
     margin-right: auto;
+    background: none;
+    border: 0;
+    border-radius: 0;
+  }
+
+  /* ⚠️ LOS TRES SELECTORES DE ABAJO REPITEN `.contacto` A PROPÓSITO, y es la
+     tercera vez en el día que hace falta aprender lo mismo: con la MISMA
+     prioridad gana la regla que va última en el archivo, y las originales de
+     `.dato-contacto` viven MÁS ABAJO que esta `@media`. Escritas con una sola
+     clase, estas reglas no se aplicaban — y no daban ningún error.
+
+     Subir la prioridad en vez de mover el bloque es lo que lo vuelve estable:
+     así deja de importar en qué orden se peguen los bloques de CSS. */
+  .contacto .dato-contacto {
+    border-top: 0;
+    padding: 0 0 22px;
+    align-items: baseline;
+  }
+
+  .contacto .dato-contacto:last-child {
+    padding-bottom: 0;
+  }
+
+  /* La dirección es el dato principal de la sección: es a dónde hay que ir.
+     Sube al escalón de arriba de la escala, que ya existe. */
+  .contacto .dato-contacto h3 {
+    font-size: var(--tipo-h2);
+    line-height: var(--alto-h2);
   }
 
   /* 🔴 EL QR ES UNA FILA MÁS DE LA TARJETA — tercera forma, y es la que pidió
@@ -4027,8 +4096,12 @@ CSS_CONTACTO = """
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: var(--grafito);
-    color: var(--marfil);
+    /* Dorado del brief con el isotipo en BLANCO — lo pidió Juan el
+       13-sep-2026. Es el mismo par que ya usa el botón principal, así que no
+       estrena nada: blanco sobre ese dorado mide 3,09 y el piso de un dibujo
+       es 3,0. */
+    background: var(--dorado);
+    color: var(--blanco);
     box-shadow: var(--sombra-boton-foco);
     z-index: 10;
   }
@@ -4038,8 +4111,8 @@ CSS_CONTACTO = """
      brand/marcas-ajenas/PROCEDENCIA.md— y un botón verde sería el único color
      del sistema que no sale de la paleta. */
   .wa-flotante .iso-wa {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     fill: currentColor;
   }
 }
