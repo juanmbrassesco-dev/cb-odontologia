@@ -429,8 +429,26 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* 🔴 EL TABLERO TIENE QUE TERMINAR DONDE TERMINA EL DIBUJO — 13-sep-2026.
+
+   `body` ya venía con el ancho clavado, pero el fondo se DERRAMABA a toda la
+   ventana: cuando <html> no declara fondo, el navegador propaga el del <body>
+   al lienzo entero. Efecto: el tablero de 768 abierto en una ventana de 1360
+   pintaba marfil de lado a lado, y como el hero es oscuro parecía un bloque
+   suelto en medio de una página más ancha. Juan lo leyó como una rotura del
+   hero —«parte no queda en el cuadro»— y no lo era: era el tablero mintiendo
+   sobre dónde termina la pantalla.
+
+   El gris de acá es ANDAMIAJE, no entra al sistema del sitio: es neutro justo
+   para no teñir el marfil que está al lado. */
+html {
+  background: #8C8C8C;
+}
+
 body {
   width: 390px;
+  /* Centrado para poder mirarlo sin arrimar la ventana al borde. */
+  margin: 0 auto;
   background: var(--marfil);
   color: var(--grafito);
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
@@ -821,9 +839,20 @@ body { padding: 0; }
    con las versalitas y el espaciado que ya tiene lo deja legible sin dejar de
    ser discreto, que es lo que la barra pide.
 
-   Va sólo en escritorio porque a 390 y 768 el menú no es esta fila: es el
-   sándwich, que abre un panel con el texto a --tipo-cuerpo. */
+   A 390 el menú no es esta fila: es el sándwich, que abre un panel con el
+   texto a --tipo-cuerpo. De 768 para arriba sí es la fila. */
 .menu-fila a {
+  /* EL ÁREA TÁCTIL, y por eso el enlace es una caja y no texto suelto. A 768
+     lo más probable es una tablet, o sea un dedo. El texto mide 18 px de alto
+     y el piso táctil del sistema son 44: sin esto, los tres destinos quedan a
+     la vista pero apenas se pueden tocar.
+
+     No agranda la barra, y eso está medido: por dentro mide 45 px a 768 y 52
+     a 1280, así que los 44 entran en los dos. */
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+
   color: var(--grafito);
   text-decoration: none;
   font-size: var(--tipo-rotulo);
@@ -922,16 +951,19 @@ no era una pieza cerrada. <b>Ésta la cierra.</b></p>
 <section>
   <p class="rotulo">La segunda decisión</p>
   <h2>Qué va del otro lado</h2>
-  <p>Las tres cosas que pide la § 4 —el logo, los enlaces y el botón
-  <b>Reservar</b>— <b>no entran juntas a 390 px</b>, y no es una
-  impresión: el logo mide 200, el botón 160 y el de menú 44, más dos huecos
-  de 12. Son <b>428 px</b> contra los <b>350</b> que deja el margen de
-  página.</p>
-  <p style="margin-top: 12px">🏁 <b>Resuelto por Juan: el que se va del
-  encabezado es el BOTÓN.</b> Queda el logo y el menú, y el <b>Reservar</b>
-  vive en el hero —que es donde el paciente llega leyendo— y adentro del menú
-  abierto. <i>El encabezado no es el único lugar donde puede estar la acción;
-  el menú sí es el único lugar donde pueden estar los enlaces.</i></p>
+  <p>Las tres cosas que pide la § 4 —el logo, los enlaces y el botón <b>Reservar</b>— <b>no entran juntas a 390 px</b>, y no es una impresión: <b>logo 200 + menú 344 + botón 117,5</b>, más dos huecos de 12, son <b>685,5 px</b> contra los <b>350</b> que deja el margen de página. <b>Tampoco entran solos el logo y el menú</b> (556), y por eso acá el menú no puede ser una fila: es el sándwich de 44 px.</p>
+  <p style="margin-top: 12px">🏁 <b>Resuelto por Juan: donde no entran los
+  tres, el que se va del encabezado es el BOTÓN</b> —a 390 el 3-sep-2026, y a
+  768 el 13-sep con la misma cuenta—. Ahí el <b>Reservar</b> vive en el hero,
+  que es donde el paciente llega leyendo. <b>A 1280 entra y se queda en la
+  barra.</b> <i>El encabezado no es el único lugar donde puede estar la
+  acción; el menú sí es el único lugar donde pueden estar los enlaces.</i></p>
+  <p class="dato" style="margin-top: 12px">🔴 <b>Y la forma del menú cambia con
+  el ancho, por la misma cuenta:</b> a 390 los enlaces no entran ni sin el
+  botón, así que van adentro del <b>sándwich</b>; <b>de 768 para arriba van en
+  fila, a la vista</b>. <i>Un menú escondido cuando hay lugar para mostrarlo es
+  un toque de más por cada destino.</i></p>
+  
   <p class="marca-muestra">El encabezado, cerrado</p>
   
   <div class="muestra-barra">

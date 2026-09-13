@@ -429,8 +429,26 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* 🔴 EL TABLERO TIENE QUE TERMINAR DONDE TERMINA EL DIBUJO — 13-sep-2026.
+
+   `body` ya venía con el ancho clavado, pero el fondo se DERRAMABA a toda la
+   ventana: cuando <html> no declara fondo, el navegador propaga el del <body>
+   al lienzo entero. Efecto: el tablero de 768 abierto en una ventana de 1360
+   pintaba marfil de lado a lado, y como el hero es oscuro parecía un bloque
+   suelto en medio de una página más ancha. Juan lo leyó como una rotura del
+   hero —«parte no queda en el cuadro»— y no lo era: era el tablero mintiendo
+   sobre dónde termina la pantalla.
+
+   El gris de acá es ANDAMIAJE, no entra al sistema del sitio: es neutro justo
+   para no teñir el marfil que está al lado. */
+html {
+  background: #8C8C8C;
+}
+
 body {
   width: 390px;
+  /* Centrado para poder mirarlo sin arrimar la ventana al borde. */
+  margin: 0 auto;
   background: var(--marfil);
   color: var(--grafito);
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
@@ -654,9 +672,20 @@ body { padding: 0; }
    con las versalitas y el espaciado que ya tiene lo deja legible sin dejar de
    ser discreto, que es lo que la barra pide.
 
-   Va sólo en escritorio porque a 390 y 768 el menú no es esta fila: es el
-   sándwich, que abre un panel con el texto a --tipo-cuerpo. */
+   A 390 el menú no es esta fila: es el sándwich, que abre un panel con el
+   texto a --tipo-cuerpo. De 768 para arriba sí es la fila. */
 .menu-fila a {
+  /* EL ÁREA TÁCTIL, y por eso el enlace es una caja y no texto suelto. A 768
+     lo más probable es una tablet, o sea un dedo. El texto mide 18 px de alto
+     y el piso táctil del sistema son 44: sin esto, los tres destinos quedan a
+     la vista pero apenas se pueden tocar.
+
+     No agranda la barra, y eso está medido: por dentro mide 45 px a 768 y 52
+     a 1280, así que los 44 entran en los dos. */
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+
   color: var(--grafito);
   text-decoration: none;
   font-size: var(--tipo-rotulo);
@@ -828,6 +857,16 @@ body { padding: 0; }
   padding-left: 0;
 }
 
+/* EL RENGLÓN HUÉRFANO. En columna angosta una señal terminaba con una sola
+   palabra colgando (38 px de línea contra 321 de la anterior). `pretty` le
+   pide al navegador que reparta las últimas líneas para que eso no pase.
+   Medido: esa línea pasó de 38 a 59 px. Es una mejora chica y gratis — el
+   rag del párrafo ya era sano (36 px sobre 324, o sea 11 %). */
+.presentacion,
+.nosotros-senales li {
+  text-wrap: pretty;
+}
+
 /* ⚠️ ACÁ ESTUVIERON EN TARJETA BLANCA Y FUE UN ERROR — lo cazó Juan: «agregaste
    tarjetas en texto que ni siquiera es el principal». Tenía razón, y la
    literatura lo nombra: para destacar lo principal se DES-destaca lo demás
@@ -880,6 +919,22 @@ body { padding: 0; }
    `@media` NO suma prioridad, así que `.nosotros-retrato` a secas perdería
    contra la regla de dos clases de más arriba y no pasaría nada. */
 
+/* 🔴 LAS DOS COLUMNAS ARRANCAN EN 768 — 13-sep-2026, y el motivo es que la
+   SECCIÓN ENTRE EN LA PANTALLA, que es lo que pidió Juan.
+
+   Apilada medía 964 px de alto y había que scrollear para verla completa; en
+   dos columnas mide 533 y entra entera. Se probó apilada con la foto a 440 y
+   no alcanzó: la foto sola ya se come media pantalla.
+
+   ⚠️ LO QUE ESTE REPARTO CUESTA, y se escribe porque es una decisión y no un
+   descuido: la columna de texto queda más alta que la foto (452 contra 405),
+   así que la foto NO domina por tamaño. Que entre en el cuadro y que la foto
+   mande no se pueden las dos cosas a 768: los 688 de ancho no dan. Se eligió
+   que entre.
+
+   6 y 6, no 5 y 7: parte el ancho por la mitad y deja la foto en 324 en vez
+   de 270 — el máximo que se le puede dar sin ahogar el texto. */
+
 
 /* ANDAMIAJE DEL TABLERO, NO DEL SITIO: la cinta que grita que el texto es
    provisorio. No entra al sitio y por eso vive acá abajo, separada. */
@@ -891,6 +946,10 @@ body { padding: 0; }
   line-height: var(--alto-chico);
   color: var(--texto-segundo);
 }
+
+/* 1280 conserva SU reparto: allá el ancho sobra y la foto puede ser más
+   angosta sin apretar el texto. El 6/6 es la decisión de 768. */
+
 
 </style>
 
@@ -912,7 +971,7 @@ cuánto aire—. Las preguntas para ella salen de este tablero.</p>
 <p class="marca-muestra" style="padding: 0 var(--margen-pagina); margin: 40px 0 12px"
    >El bloque, a 1:1</p>
 
-  <section class="nosotros nosotros-dentro">
+  <section class="nosotros nosotros-dentro" id="nosotros">
     <h2 class="nosotros-titulo">Nosotros</h2>
     <img class="nosotros-retrato" alt="" src="../../fotos/nosotros-ejemplo.jpg">
     <div class="nosotros-texto">

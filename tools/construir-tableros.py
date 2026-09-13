@@ -695,8 +695,26 @@ def base_css(ancho):
     return f"""
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 
+/* 🔴 EL TABLERO TIENE QUE TERMINAR DONDE TERMINA EL DIBUJO — 13-sep-2026.
+
+   `body` ya venía con el ancho clavado, pero el fondo se DERRAMABA a toda la
+   ventana: cuando <html> no declara fondo, el navegador propaga el del <body>
+   al lienzo entero. Efecto: el tablero de 768 abierto en una ventana de 1360
+   pintaba marfil de lado a lado, y como el hero es oscuro parecía un bloque
+   suelto en medio de una página más ancha. Juan lo leyó como una rotura del
+   hero —«parte no queda en el cuadro»— y no lo era: era el tablero mintiendo
+   sobre dónde termina la pantalla.
+
+   El gris de acá es ANDAMIAJE, no entra al sistema del sitio: es neutro justo
+   para no teñir el marfil que está al lado. */
+html {{
+  background: #8C8C8C;
+}}
+
 body {{
   width: {ancho}px;
+  /* Centrado para poder mirarlo sin arrimar la ventana al borde. */
+  margin: 0 auto;
   background: var(--marfil);
   color: var(--grafito);
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
@@ -2846,9 +2864,20 @@ body { padding: 0; }
    con las versalitas y el espaciado que ya tiene lo deja legible sin dejar de
    ser discreto, que es lo que la barra pide.
 
-   Va sólo en escritorio porque a 390 y 768 el menú no es esta fila: es el
-   sándwich, que abre un panel con el texto a --tipo-cuerpo. */
+   A 390 el menú no es esta fila: es el sándwich, que abre un panel con el
+   texto a --tipo-cuerpo. De 768 para arriba sí es la fila. */
 .menu-fila a {
+  /* EL ÁREA TÁCTIL, y por eso el enlace es una caja y no texto suelto. A 768
+     lo más probable es una tablet, o sea un dedo. El texto mide 18 px de alto
+     y el piso táctil del sistema son 44: sin esto, los tres destinos quedan a
+     la vista pero apenas se pueden tocar.
+
+     No agranda la barra, y eso está medido: por dentro mide 45 px a 768 y 52
+     a 1280, así que los 44 entran en los dos. */
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+
   color: var(--grafito);
   text-decoration: none;
   font-size: var(--tipo-rotulo);
@@ -2887,6 +2916,99 @@ body { padding: 0; }
 
 .reglas li { margin-top: 8px; }
 """
+
+
+# LOS NÚMEROS DE LA BARRA — MEDIDOS con Chrome sobre la página real el
+# 13-sep-2026, no calculados. El ancho de un texto lo sabe la tipografía: el
+# menú en fila mide 344 a 768 y 400,3 a 1280 porque allá la letra sube de 13 a
+# 15, y eso no sale de ninguna cuenta que se pueda escribir acá.
+#
+# 🔴 POR QUÉ ESTÁN ESCRITOS Y NO EN UN PÁRRAFO A MANO: el tablero explicaba la
+# decisión con «el botón mide 160» y «son 428 px contra 350». Los dos números
+# eran viejos —hoy el botón mide 117,5 a 390— y además se imprimían IGUAL en
+# los tres anchos cambiando sólo la cifra del título, así que a 768 el tablero
+# argumentaba con las medidas de 390. Quedó a la vista el 13-sep-2026, al
+# mirar el tablero a 768 después de mover el menú.
+#
+# ⚠️ SE VUELVEN A MEDIR si cambia la escala tipográfica, el ancho del logo o
+# el texto de los enlaces. No fallan con error: quedan viejos y convencen.
+BARRA_MEDIDA = {
+    390: {
+        "util": 350,
+        "logo": 200,
+        "menu": 344,
+        "boton": 117.5,
+        "sandwich": 44,
+    },
+    768: {
+        "util": 688,
+        "logo": 260,
+        "menu": 344,
+        "boton": 117.5,
+        "sandwich": 44,
+    },
+    1280: {
+        "util": 1152,
+        "logo": 320,
+        "menu": 400.3,
+        "boton": 153.8,
+        "sandwich": 44,
+    },
+}
+
+HUECO_BARRA = 12
+
+
+def cuenta_de_la_barra(ancho):
+    """El párrafo que explica qué entra y qué no, con los números DE ESE ancho.
+
+    Devuelve el texto ya armado: la cuenta de los tres elementos juntos, la de
+    logo + menú, y la conclusión que corresponde. Cada ancho llega a una
+    conclusión distinta y por eso el párrafo no puede ser uno solo.
+    """
+    m = BARRA_MEDIDA[ancho]
+
+    con_todo = m["logo"] + HUECO_BARRA + m["menu"] + HUECO_BARRA + m["boton"]
+    sin_boton = m["logo"] + HUECO_BARRA + m["menu"]
+
+    def num(valor):
+        return f"{valor:g}".replace(".", ",")
+
+    cuenta = (f'<b>logo {num(m["logo"])} + menú {num(m["menu"])} + botón '
+              f'{num(m["boton"])}</b>, más dos huecos de {HUECO_BARRA}, son '
+              f'<b>{num(round(con_todo, 1))} px</b> contra los '
+              f'<b>{num(m["util"])}</b> que deja el margen de página')
+
+    if sin_boton > m["util"]:
+        return (f'<p>Las tres cosas que pide la § 4 —el logo, los enlaces y el '
+                f'botón <b>Reservar</b>— <b>no entran juntas a {ancho} px</b>, y '
+                f'no es una impresión: {cuenta}. <b>Tampoco entran solos el logo '
+                f'y el menú</b> ({num(round(sin_boton, 1))}), y por eso acá el '
+                f'menú no puede ser una fila: es el sándwich de '
+                f'{num(m["sandwich"])} px.</p>')
+
+    if con_todo > m["util"]:
+        return (f'<p>A {ancho} px <b>el logo y los enlaces entran</b> '
+                f'—{num(m["logo"])} + {num(m["menu"])} = '
+                f'<b>{num(round(sin_boton, 1))}</b> contra {num(m["util"])}, '
+                f'sobran {num(round(m["util"] - sin_boton, 1))}—, <b>pero con el '
+                f'botón no</b>: {cuenta}, así que <b>faltan '
+                f'{num(round(con_todo - m["util"], 1))}</b>.</p>')
+
+    return (f'<p>A {ancho} px <b>entran las tres</b>: {cuenta}, o sea que '
+            f'sobran {num(round(m["util"] - con_todo, 1))}. Es el único ancho '
+            f'donde el <b>Reservar</b> puede estar en la barra sin sacarle el '
+            f'lugar a nada.</p>')
+
+
+def menu_del_ancho(ancho):
+    """Sándwich o fila: el corte está en 768, y la cuenta que lo decidió vive
+    en `pagina_del_sitio`. Se escribe una sola vez para que el tablero de una
+    pieza no pueda mostrar una forma distinta de la que muestra la página."""
+    if ancho < 768:
+        return "boton"
+
+    return "fila"
 
 
 def barra(logo, pieza, ancho, con_menu, con_boton, abierto=False):
@@ -2934,6 +3056,33 @@ def barra(logo, pieza, ancho, con_menu, con_boton, abierto=False):
   </div>"""
 
 
+def muestras_del_encabezado(logo, ancho):
+    """El encabezado como queda cerrado EN ESE ancho, con su muestra al lado.
+
+    Antes había dos muestras fijas —el sándwich cerrado y el sándwich abierto—
+    y se imprimían en los tres anchos. A 768 y 1280 el menú ya no es un
+    sándwich, así que el tablero mostraba una forma que el sitio no usa.
+    """
+    menu = menu_del_ancho(ancho)
+    m = BARRA_MEDIDA[ancho]
+
+    con_todo = m["logo"] + HUECO_BARRA + m["menu"] + HUECO_BARRA + m["boton"]
+    con_boton = con_todo <= m["util"]
+
+    salida = f"""
+  <p class="marca-muestra">El encabezado, cerrado</p>
+  {barra(logo, "wordmark", ancho, menu, con_boton)}"""
+
+    # El panel existe SÓLO donde hay sándwich: es lo que el botón abre. Donde
+    # el menú está a la vista no hay nada que desplegar.
+    if menu == "boton":
+        salida += f"""
+  <p class="marca-muestra">Con el menú abierto</p>
+  {barra(logo, "wordmark", ancho, menu, False, abierto=True)}"""
+
+    return salida
+
+
 def tablero_encabezado(tokens, css, ancho):
     wordmark = leer_png("cb-wordmark-600")
     apilado = leer_png("cb-apilado-600")
@@ -2972,10 +3121,10 @@ no era una pieza cerrada. <b>Ésta la cierra.</b></p>
   también toca ese tablero.</p>
   <p class="marca-muestra">Wordmark · {ENCABEZADO_LOGO[ancho]} px de ancho ·
   <b>{alto_w} px de alto</b></p>
-  {barra(wordmark, "wordmark", ancho, "boton" if chico else "fila", not chico)}
+  {barra(wordmark, "wordmark", ancho, menu_del_ancho(ancho), not chico)}
   <p class="marca-muestra">Apilado · {ENCABEZADO_LOGO[ancho]} px de ancho ·
   <b>{alto_a} px de alto</b></p>
-  {barra(apilado, "apilado", ancho, "boton" if chico else "fila", not chico)}
+  {barra(apilado, "apilado", ancho, menu_del_ancho(ancho), not chico)}
   <p style="margin-top: 12px">🏁 <b>Resuelto por Juan el 3-sep-2026: va el
   WORDMARK a 200 px</b>, «es más sobrio». Es el mismo ancho que ya usa la
   pieza 8, así que los dos encabezados del proyecto dicen lo mismo.</p>
@@ -2997,20 +3146,19 @@ no era una pieza cerrada. <b>Ésta la cierra.</b></p>
 <section>
   <p class="rotulo">La segunda decisión</p>
   <h2>Qué va del otro lado</h2>
-  <p>Las tres cosas que pide la § 4 —el logo, los enlaces y el botón
-  <b>Reservar</b>— <b>no entran juntas a {ancho} px</b>, y no es una
-  impresión: el logo mide 200, el botón 160 y el de menú 44, más dos huecos
-  de 12. Son <b>428 px</b> contra los <b>350</b> que deja el margen de
-  página.</p>
-  <p style="margin-top: 12px">🏁 <b>Resuelto por Juan: el que se va del
-  encabezado es el BOTÓN.</b> Queda el logo y el menú, y el <b>Reservar</b>
-  vive en el hero —que es donde el paciente llega leyendo— y adentro del menú
-  abierto. <i>El encabezado no es el único lugar donde puede estar la acción;
-  el menú sí es el único lugar donde pueden estar los enlaces.</i></p>
-  <p class="marca-muestra">El encabezado, cerrado</p>
-  {barra(wordmark, "wordmark", ancho, "boton", False)}
-  <p class="marca-muestra">Con el menú abierto</p>
-  {barra(wordmark, "wordmark", ancho, "boton", False, abierto=True)}
+  {cuenta_de_la_barra(ancho)}
+  <p style="margin-top: 12px">🏁 <b>Resuelto por Juan: donde no entran los
+  tres, el que se va del encabezado es el BOTÓN</b> —a 390 el 3-sep-2026, y a
+  768 el 13-sep con la misma cuenta—. Ahí el <b>Reservar</b> vive en el hero,
+  que es donde el paciente llega leyendo. <b>A 1280 entra y se queda en la
+  barra.</b> <i>El encabezado no es el único lugar donde puede estar la
+  acción; el menú sí es el único lugar donde pueden estar los enlaces.</i></p>
+  <p class="dato" style="margin-top: 12px">🔴 <b>Y la forma del menú cambia con
+  el ancho, por la misma cuenta:</b> a 390 los enlaces no entran ni sin el
+  botón, así que van adentro del <b>sándwich</b>; <b>de 768 para arriba van en
+  fila, a la vista</b>. <i>Un menú escondido cuando hay lugar para mostrarlo es
+  un toque de más por cada destino.</i></p>
+  {muestras_del_encabezado(wordmark, ancho)}
   <p class="dato" style="margin-top: 16px">⚠️ <b>Y queda anotado lo que Juan
   levantó al mirarlo a 1:1: a {ancho} px el botón del sistema es
   ENORME.</b> Mide 160 px de ancho y 44 de alto con letra de 19 — casi la
@@ -3050,7 +3198,13 @@ no era una pieza cerrada. <b>Ésta la cierra.</b></p>
 # que es el primer dato del brief de fotos.
 # ============================================================
 
-H1 = ("Odontología y estética dental en Santa Fe, "
+# 🔴 «Santa Fe» LLEVA ESPACIO DURO y no se parte nunca — lo pidió Juan el
+# 13-sep-2026, al ver el titular cortado en «…en Santa / Fe, con la calma…».
+# Es un nombre propio de dos palabras: partido, la primera línea termina
+# nombrando otra cosa. `&nbsp;` es un espacio que se ve igual pero por el que
+# el navegador no corta, así que vale en los tres anchos y no hay que
+# acordarse de revisarlo cada vez que cambia un tamaño.
+H1 = ("Odontología y estética dental en Santa&nbsp;Fe, "
       "con la calma que tu sonrisa merece.")
 
 SUBTITULO = ("Blanqueamiento, tratamientos generales y estética dental en un "
@@ -3225,6 +3379,60 @@ CSS_HERO_VELO = """
    leyera sobre la foto; con el texto sobre marfil no hay nada que velar, y el
    par grafito/marfil mide 12,00 contra los 7,7 que daba el velo. Los botones
    vuelven a su forma normal del sistema por el mismo motivo. */
+/* 🔴 EL HERO A 768 — 13-sep-2026. Hasta hoy acá se pintaba el hero de móvil
+   con la pantalla el doble de ancha, y eso movía el texto justo ENCIMA de la
+   cara: a 390 la foto es vertical y la cara queda arriba del texto; a 768 la
+   caja se volvió apaisada, la cara bajó al centro y el texto la pisó.
+
+   Lo cazó Juan mirando la página, y eligió arreglar la forma que ya está
+   aprobada en vez de estrenar otra. Son TRES NÚMEROS, ninguna forma nueva:
+
+   1. EL TEXTO DEJA DE CRUZAR LA FOTO ENTERA. Sin techo medía los 688 de la
+      columna; con 520 la foto respira a la derecha y la línea no se estira.
+   2. 🔴 EL ALTO NO SE TOCA: 660, el mismo que a 390. Se probó subirlo a 820
+      para alejar el texto de la cara y FUE PEOR — con la barra encima, la
+      sección dejaba de entrar en la ventana de una notebook y había que
+      scrollear para ver el hero completo. Lo cazó Juan de una: «la sección
+      entera no queda en el cuadro». Un hero que no entra en la pantalla deja
+      de ser un hero.
+      Lo que aleja el texto de la cara es el ENCUADRE, que no cuesta alto.
+   3. LOS BOTONES VAN EN FILA. Apilados dejaban tres cuartos del ancho
+      vacíos; `.acciones` los apila a propósito en el teléfono, donde no
+      entran de a dos. Acá entran. */
+@media (min-width: 768px) {
+  /* EL TITULAR VA EN DOS RENGLONES Y A TODO EL CUADRO — lo pidió Juan el
+     13-sep-2026. El techo de 520 lo partía en cuatro y lo empujaba contra la
+     cara; con el ancho entero y `balance` los dos renglones quedan parejos y
+     el bloque de texto mide la mitad de alto. */
+  .hero-velo .hero-texto {
+    max-width: none;
+  }
+
+  /* 36 y no 42: es el tamaño MÁS GRANDE que deja el titular en dos renglones
+     a todo el ancho del cuadro. Medido: a 42 son tres líneas; a 37 todavía
+     son tres; a 36 son dos, de 688 y 582 px.
+
+     ⚠️ El rag de 106 px NO se arregla con el tamaño: con «Santa Fe» atado por
+     su espacio duro, el único corte posible es el de la coma. Achicar más la
+     letra baja los dos números a la vez y el desnivel queda igual. */
+  .hero-velo h1 {
+    font-size: 36px;
+  }
+
+  /* EL ENCUADRE SE CORRE A LA DERECHA. A 768 la caja es más apaisada que la
+     foto, así que `cover` recorta a los LADOS y no arriba: mover el foco en
+     horizontal es lo único que cambia qué queda a la vista. Con el foco al
+     68 % la persona se acomoda hacia la derecha y la esquina de abajo a la
+     izquierda —que es donde se apoya el texto— queda sobre fondo. */
+  .hero-velo .hero-foto {
+    object-position: 68% 10%;
+  }
+
+  .hero-velo .acciones {
+    grid-template-columns: max-content max-content;
+  }
+}
+
 @media (min-width: 1280px) {
   .hero-velo {
     display: grid;
@@ -3355,6 +3563,20 @@ CSS_HERO_VELO = """
     justify-content: center;
     min-height: 0;
     padding: 48px var(--margen-pagina);
+
+    /* 🔴 DEVUELVE EL ANCHO QUE LE PUSO EL CORTE DE 768, y hay que escribirlo
+       aunque no se vea: las dos @media se aplican las dos, y la de acá no
+       pisaba `max-width`. Sin esta línea el texto de 1280 se achicaba de 731
+       a 520 y el titular pasaba de 4 líneas a 6. Acá el ancho lo da la
+       COLUMNA del grid, que es lo aprobado el 13-sep. */
+    max-width: none;
+  }
+
+  /* Lo mismo con los botones: en fila es la decisión de 768. A 1280 el hero
+     está partido y la columna de texto es angosta, así que vuelven a
+     apilarse, que es como se aprobó. */
+  .hero-velo .acciones {
+    grid-template-columns: max-content;
   }
 
   /* El texto vuelve al grafito: sobre marfil mide 12,00, que es el par más
@@ -3536,7 +3758,7 @@ escritorio—. Acá está pasada a móvil, con los <b>textos definitivos de la
 
 <p class="marca-muestra" style="padding: 0 var(--margen-pagina)">El hero,
 a 1:1, con su encabezado</p>
-{barra(logo, "wordmark", ancho, "boton" if chico else "fila", not chico)}
+{barra(logo, "wordmark", ancho, menu_del_ancho(ancho), not chico)}
 {hero_velo(foto, ancho)}
 
 <div class="prosa">
@@ -4924,6 +5146,16 @@ CSS_NOSOTROS = """
   padding-left: 0;
 }
 
+/* EL RENGLÓN HUÉRFANO. En columna angosta una señal terminaba con una sola
+   palabra colgando (38 px de línea contra 321 de la anterior). `pretty` le
+   pide al navegador que reparta las últimas líneas para que eso no pase.
+   Medido: esa línea pasó de 38 a 59 px. Es una mejora chica y gratis — el
+   rag del párrafo ya era sano (36 px sobre 324, o sea 11 %). */
+.presentacion,
+.nosotros-senales li {
+  text-wrap: pretty;
+}
+
 /* ⚠️ ACÁ ESTUVIERON EN TARJETA BLANCA Y FUE UN ERROR — lo cazó Juan: «agregaste
    tarjetas en texto que ni siquiera es el principal». Tenía razón, y la
    literatura lo nombra: para destacar lo principal se DES-destaca lo demás
@@ -4975,10 +5207,26 @@ CSS_NOSOTROS = """
    ⚠️ Y el selector de la foto repite `.nosotros-dentro` a propósito: una
    `@media` NO suma prioridad, así que `.nosotros-retrato` a secas perdería
    contra la regla de dos clases de más arriba y no pasaría nada. */
-@media (min-width: 1280px) {
+
+/* 🔴 LAS DOS COLUMNAS ARRANCAN EN 768 — 13-sep-2026, y el motivo es que la
+   SECCIÓN ENTRE EN LA PANTALLA, que es lo que pidió Juan.
+
+   Apilada medía 964 px de alto y había que scrollear para verla completa; en
+   dos columnas mide 533 y entra entera. Se probó apilada con la foto a 440 y
+   no alcanzó: la foto sola ya se come media pantalla.
+
+   ⚠️ LO QUE ESTE REPARTO CUESTA, y se escribe porque es una decisión y no un
+   descuido: la columna de texto queda más alta que la foto (452 contra 405),
+   así que la foto NO domina por tamaño. Que entre en el cuadro y que la foto
+   mande no se pueden las dos cosas a 768: los 688 de ancho no dan. Se eligió
+   que entre.
+
+   6 y 6, no 5 y 7: parte el ancho por la mitad y deja la foto en 324 en vez
+   de 270 — el máximo que se le puede dar sin ahogar el texto. */
+@media (min-width: 768px) {
   .nosotros {
     display: grid;
-    grid-template-columns: 5fr 7fr;
+    grid-template-columns: 6fr 6fr;
     column-gap: 40px;
     padding-left: var(--margen-pagina);
     padding-right: var(--margen-pagina);
@@ -5010,8 +5258,22 @@ CSS_NOSOTROS = """
      de la foto ESTIRANDO el texto. El texto mide lo que mide. Centrarlo
      reparte el sobrante AFUERA del bloque —arriba y abajo, donde no hay nada
      que leer— en vez de adentro, donde se lee como algo roto. */
+  /* 🔴 LA FOTO Y EL TEXTO MIDEN EXACTAMENTE LO MISMO — lo pidió Juan el
+     13-sep-2026. Antes la foto era 324 × 405 y el texto 324 × 452: mismo
+     ancho, distinto alto, y las dos columnas terminaban desparejas.
+
+     `stretch` hace que las dos ocupen el alto entero de la fila, y a la foto
+     hay que soltarle la proporción fija para que pueda estirarse: con
+     `object-fit: cover` ya puesto, lo único que cambia es cuánto recorta, no
+     cómo se deforma. El alto lo manda el texto, que es el que no se puede
+     recortar. */
   .nosotros {
-    align-items: center;
+    align-items: stretch;
+  }
+
+  .nosotros-dentro .nosotros-retrato {
+    height: 100%;
+    aspect-ratio: auto;
   }
 
   /* El título cruza las dos columnas: encabeza la sección entera. */
@@ -5041,6 +5303,22 @@ CSS_NOSOTROS = """
   font-size: var(--tipo-chico);
   line-height: var(--alto-chico);
   color: var(--texto-segundo);
+}
+
+/* 1280 conserva SU reparto: allá el ancho sobra y la foto puede ser más
+   angosta sin apretar el texto. El 6/6 es la decisión de 768. */
+@media (min-width: 1280px) {
+  .nosotros {
+    grid-template-columns: 5fr 7fr;
+    /* Acá el texto se CENTRA contra la foto, que es lo aprobado: allá la foto
+       es más alta y estirar el texto dejaría un agujero en el medio. */
+    align-items: center;
+  }
+
+  .nosotros-dentro .nosotros-retrato {
+    height: auto;
+    aspect-ratio: 4 / 5;
+  }
 }
 """
 
@@ -5081,8 +5359,13 @@ def nosotros_del_sitio(ancho, jerarquia="titulo", dentro=True):
 
     marco = " nosotros-dentro" if dentro else ""
 
+    # EL ANCLA, y faltaba: el menú escribe href="#nosotros" desde que existe,
+    # y en la página no había ningún id="nosotros" — o sea que el enlace no
+    # llevaba a ningún lado. Los otros dos destinos (tratamientos y contacto)
+    # sí lo tenían. Encontrado el 13-sep-2026 al medir el menú, y no fallaba
+    # con error: el navegador se queda quieto y ya.
     return f"""
-  <section class="nosotros{marco}">{cabeza}
+  <section class="nosotros{marco}" id="nosotros">{cabeza}
     {hueco}
     <div class="nosotros-texto">
       {nombre}
@@ -6279,7 +6562,22 @@ def pagina_del_sitio(ancho, bandas=""):
     foto = leer_foto()
     chico = ancho < 1280
 
-    menu = "boton" if chico else "fila"
+    # 🔴 EL MENÚ EN FILA ARRANCA EN 768 — 13-sep-2026, decidido por Juan con
+    # los números delante. A 390 sigue el sándwich; a 768 y 1280 van los tres
+    # enlaces a la vista.
+    #
+    # LA CUENTA que lo decidió, medida con Chrome sobre la página real, no
+    # estimada. A 768 la barra tiene 688 px útiles (768 menos los 40 de margen
+    # de cada lado) y adentro entran:
+    #     logo 260 + hueco 12 + menú 344 = 616  →  sobran 72   ✅
+    # Con el botón «Reservar» no entra:
+    #     616 + hueco 12 + botón 117,5 = 745,5  →  faltan 57,5 ❌
+    # Por eso el botón NO sube a la barra a 768: se queda en el hero, que es la
+    # misma decisión que ya se había tomado a 390 y por la misma razón.
+    #
+    # Lo que había antes era el sándwich, y dejaba 384 px de barra vacía en un
+    # ancho donde los tres destinos entran enteros.
+    menu = menu_del_ancho(ancho)
 
     return f"""
 <div class="pagina{bandas}">

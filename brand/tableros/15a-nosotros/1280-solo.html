@@ -479,8 +479,26 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* 🔴 EL TABLERO TIENE QUE TERMINAR DONDE TERMINA EL DIBUJO — 13-sep-2026.
+
+   `body` ya venía con el ancho clavado, pero el fondo se DERRAMABA a toda la
+   ventana: cuando <html> no declara fondo, el navegador propaga el del <body>
+   al lienzo entero. Efecto: el tablero de 768 abierto en una ventana de 1360
+   pintaba marfil de lado a lado, y como el hero es oscuro parecía un bloque
+   suelto en medio de una página más ancha. Juan lo leyó como una rotura del
+   hero —«parte no queda en el cuadro»— y no lo era: era el tablero mintiendo
+   sobre dónde termina la pantalla.
+
+   El gris de acá es ANDAMIAJE, no entra al sistema del sitio: es neutro justo
+   para no teñir el marfil que está al lado. */
+html {
+  background: #8C8C8C;
+}
+
 body {
   width: 1280px;
+  /* Centrado para poder mirarlo sin arrimar la ventana al borde. */
+  margin: 0 auto;
   background: var(--marfil);
   color: var(--grafito);
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
@@ -704,9 +722,20 @@ body { padding: 0; }
    con las versalitas y el espaciado que ya tiene lo deja legible sin dejar de
    ser discreto, que es lo que la barra pide.
 
-   Va sólo en escritorio porque a 390 y 768 el menú no es esta fila: es el
-   sándwich, que abre un panel con el texto a --tipo-cuerpo. */
+   A 390 el menú no es esta fila: es el sándwich, que abre un panel con el
+   texto a --tipo-cuerpo. De 768 para arriba sí es la fila. */
 .menu-fila a {
+  /* EL ÁREA TÁCTIL, y por eso el enlace es una caja y no texto suelto. A 768
+     lo más probable es una tablet, o sea un dedo. El texto mide 18 px de alto
+     y el piso táctil del sistema son 44: sin esto, los tres destinos quedan a
+     la vista pero apenas se pueden tocar.
+
+     No agranda la barra, y eso está medido: por dentro mide 45 px a 768 y 52
+     a 1280, así que los 44 entran en los dos. */
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+
   color: var(--grafito);
   text-decoration: none;
   font-size: var(--tipo-rotulo);
@@ -886,6 +915,16 @@ body { padding: 0; }
   padding-left: 0;
 }
 
+/* EL RENGLÓN HUÉRFANO. En columna angosta una señal terminaba con una sola
+   palabra colgando (38 px de línea contra 321 de la anterior). `pretty` le
+   pide al navegador que reparta las últimas líneas para que eso no pase.
+   Medido: esa línea pasó de 38 a 59 px. Es una mejora chica y gratis — el
+   rag del párrafo ya era sano (36 px sobre 324, o sea 11 %). */
+.presentacion,
+.nosotros-senales li {
+  text-wrap: pretty;
+}
+
 /* ⚠️ ACÁ ESTUVIERON EN TARJETA BLANCA Y FUE UN ERROR — lo cazó Juan: «agregaste
    tarjetas en texto que ni siquiera es el principal». Tenía razón, y la
    literatura lo nombra: para destacar lo principal se DES-destaca lo demás
@@ -938,9 +977,25 @@ body { padding: 0; }
    `@media` NO suma prioridad, así que `.nosotros-retrato` a secas perdería
    contra la regla de dos clases de más arriba y no pasaría nada. */
 
+/* 🔴 LAS DOS COLUMNAS ARRANCAN EN 768 — 13-sep-2026, y el motivo es que la
+   SECCIÓN ENTRE EN LA PANTALLA, que es lo que pidió Juan.
+
+   Apilada medía 964 px de alto y había que scrollear para verla completa; en
+   dos columnas mide 533 y entra entera. Se probó apilada con la foto a 440 y
+   no alcanzó: la foto sola ya se come media pantalla.
+
+   ⚠️ LO QUE ESTE REPARTO CUESTA, y se escribe porque es una decisión y no un
+   descuido: la columna de texto queda más alta que la foto (452 contra 405),
+   así que la foto NO domina por tamaño. Que entre en el cuadro y que la foto
+   mande no se pueden las dos cosas a 768: los 688 de ancho no dan. Se eligió
+   que entre.
+
+   6 y 6, no 5 y 7: parte el ancho por la mitad y deja la foto en 324 en vez
+   de 270 — el máximo que se le puede dar sin ahogar el texto. */
+
   .nosotros {
     display: grid;
-    grid-template-columns: 5fr 7fr;
+    grid-template-columns: 6fr 6fr;
     column-gap: 40px;
     padding-left: var(--margen-pagina);
     padding-right: var(--margen-pagina);
@@ -972,8 +1027,22 @@ body { padding: 0; }
      de la foto ESTIRANDO el texto. El texto mide lo que mide. Centrarlo
      reparte el sobrante AFUERA del bloque —arriba y abajo, donde no hay nada
      que leer— en vez de adentro, donde se lee como algo roto. */
+  /* 🔴 LA FOTO Y EL TEXTO MIDEN EXACTAMENTE LO MISMO — lo pidió Juan el
+     13-sep-2026. Antes la foto era 324 × 405 y el texto 324 × 452: mismo
+     ancho, distinto alto, y las dos columnas terminaban desparejas.
+
+     `stretch` hace que las dos ocupen el alto entero de la fila, y a la foto
+     hay que soltarle la proporción fija para que pueda estirarse: con
+     `object-fit: cover` ya puesto, lo único que cambia es cuánto recorta, no
+     cómo se deforma. El alto lo manda el texto, que es el que no se puede
+     recortar. */
   .nosotros {
-    align-items: center;
+    align-items: stretch;
+  }
+
+  .nosotros-dentro .nosotros-retrato {
+    height: 100%;
+    aspect-ratio: auto;
   }
 
   /* El título cruza las dos columnas: encabeza la sección entera. */
@@ -1005,13 +1074,29 @@ body { padding: 0; }
   color: var(--texto-segundo);
 }
 
+/* 1280 conserva SU reparto: allá el ancho sobra y la foto puede ser más
+   angosta sin apretar el texto. El 6/6 es la decisión de 768. */
+
+  .nosotros {
+    grid-template-columns: 5fr 7fr;
+    /* Acá el texto se CENTRA contra la foto, que es lo aprobado: allá la foto
+       es más alta y estirar el texto dejaría un agujero en el medio. */
+    align-items: center;
+  }
+
+  .nosotros-dentro .nosotros-retrato {
+    height: auto;
+    aspect-ratio: 4 / 5;
+  }
+
+
 </style>
 
 <p class="provisorio" style="margin: 0 var(--margen-pagina) 20px">🔴 <b>MAQUETA.
 Todo el texto es PROVISORIO y lo aprueba Cecilia</b> — el punteado marca cada
 afirmación por confirmar. <b>La foto es de banco</b>, no es ella.</p>
 
-  <section class="nosotros nosotros-dentro">
+  <section class="nosotros nosotros-dentro" id="nosotros">
     <h2 class="nosotros-titulo">Nosotros</h2>
     <img class="nosotros-retrato" alt="" src="../../fotos/nosotros-ejemplo.jpg">
     <div class="nosotros-texto">

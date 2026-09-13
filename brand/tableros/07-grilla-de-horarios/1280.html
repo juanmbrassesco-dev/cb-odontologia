@@ -479,8 +479,26 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* 🔴 EL TABLERO TIENE QUE TERMINAR DONDE TERMINA EL DIBUJO — 13-sep-2026.
+
+   `body` ya venía con el ancho clavado, pero el fondo se DERRAMABA a toda la
+   ventana: cuando <html> no declara fondo, el navegador propaga el del <body>
+   al lienzo entero. Efecto: el tablero de 768 abierto en una ventana de 1360
+   pintaba marfil de lado a lado, y como el hero es oscuro parecía un bloque
+   suelto en medio de una página más ancha. Juan lo leyó como una rotura del
+   hero —«parte no queda en el cuadro»— y no lo era: era el tablero mintiendo
+   sobre dónde termina la pantalla.
+
+   El gris de acá es ANDAMIAJE, no entra al sistema del sitio: es neutro justo
+   para no teñir el marfil que está al lado. */
+html {
+  background: #8C8C8C;
+}
+
 body {
   width: 1280px;
+  /* Centrado para poder mirarlo sin arrimar la ventana al borde. */
+  margin: 0 auto;
   background: var(--marfil);
   color: var(--grafito);
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
