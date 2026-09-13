@@ -1096,6 +1096,24 @@ body { padding: 0; }
     min-height: calc(100vh - 97px);
   }
 
+  /* 🔴 Y EL TITULAR SUBE CON EL HERO — 13-sep-2026. Juan dijo «se achicaron
+     las letras», y medido NO se achicó ninguna: el h1 sigue en 52 px, igual
+     que antes. Lo que cambió es el HUECO donde vive.
+
+     🔑 El hero pasó de un alto fijo de 620 px a ocupar la pantalla entera
+     —unos 850 en una ventana normal—, o sea creció cerca de un 37 %, y el
+     texto se quedó donde estaba. Un tamaño no se lee en píxeles: se lee
+     contra lo que tiene alrededor. La letra no encogió; el espacio creció.
+
+     64 px no estrena un peldaño arbitrario: es --tipo-h1 (52) llevado a la
+     misma proporción en que creció su caja. El titular del hero es el ÚNICO
+     que vive a pantalla completa, así que sube él solo y no el token — los
+     títulos de sección siguen en 52. */
+  .hero-velo h1 {
+    font-size: 64px;
+    line-height: 1.12;
+  }
+
   /* La foto deja de ser un fondo absoluto y pasa a ser la columna derecha. */
   .hero-velo .hero-foto {
     position: static;
