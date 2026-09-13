@@ -3975,6 +3975,26 @@ CSS_CONTACTO = """
     text-align: center;
   }
 
+  /* 🔴 EL QR RECUPERA SU FONDO BLANCO — y no es una vuelta atrás del cambio
+     anterior: lo que Juan rechazó fue la CAJA AL COSTADO, que competía con la
+     tarjeta de datos. Suelto sobre el marfil quedaba «muy descolgado», y
+     tenía razón por dos motivos distintos.
+
+     🔑 EL SEGUNDO NO ES ESTÉTICO Y ES EL QUE MANDA: un QR necesita una ZONA
+     DE SILENCIO clara alrededor para que la cámara distinga dónde empieza el
+     código (ISO/IEC 18004 pide cuatro módulos). Se generó con `-m 0` porque
+     el aire lo ponía el recuadro; al sacar el recuadro, el código quedó sobre
+     marfil y sin margen propio. El fondo blanco con relleno ES esa zona.
+
+     Va SIN borde, que es lo que lo separa de la tarjeta: no es otro bloque de
+     datos, es el soporte del código. */
+  .contacto-qr .qr {
+    box-sizing: content-box;
+    background: var(--blanco);
+    padding: 16px;
+    border-radius: var(--radio);
+  }
+
   /* 180 px de lado. El piso real no es estético: un QR de este contenido
      necesita módulos de al menos 2 px en pantalla para que la cámara los
      separe, y por debajo de ~150 px empieza a costar. */
@@ -4395,7 +4415,11 @@ CSS_PIE = """
    pegada al final del navegador». Es el cierre de la página, no del pie: por
    eso el número sale de --aire-seccion y no de un valor propio. */
 .pie-sitio {
-  padding-bottom: var(--aire-seccion);
+  /* El 65 % del aire entre secciones, no el 100 %. Con el aire completo el
+     cierre de la página quedaba demasiado suelto —lo midió Juan a ojo y pidió
+     cortar «entre un 30 y un 40 %»—. Sale del mismo token para que siga
+     escalando con el ancho: 36 · 47 · 62 en vez de 56 · 72 · 96. */
+  padding-bottom: calc(var(--aire-seccion) * 0.65);
 }
 
 /* 🔑 EL AIRE AGRUPA, y lo dictó Juan mirando el pie: los cuatro renglones de

@@ -764,7 +764,11 @@ th.n { text-align: right; }
    pegada al final del navegador». Es el cierre de la página, no del pie: por
    eso el número sale de --aire-seccion y no de un valor propio. */
 .pie-sitio {
-  padding-bottom: var(--aire-seccion);
+  /* El 65 % del aire entre secciones, no el 100 %. Con el aire completo el
+     cierre de la página quedaba demasiado suelto —lo midió Juan a ojo y pidió
+     cortar «entre un 30 y un 40 %»—. Sale del mismo token para que siga
+     escalando con el ancho: 36 · 47 · 62 en vez de 56 · 72 · 96. */
+  padding-bottom: calc(var(--aire-seccion) * 0.65);
 }
 
 /* 🔑 EL AIRE AGRUPA, y lo dictó Juan mirando el pie: los cuatro renglones de
