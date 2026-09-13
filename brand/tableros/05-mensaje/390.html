@@ -286,6 +286,27 @@
      `auto` directo, porque ahí `auto` ya vale cero en los anchos chicos. */
   --margen-seccion: var(--margen-pagina);
 
+  /* EL AIRE DE LA BARRA DEL ENCABEZADO — arriba y abajo del logo.
+
+     Sube a token el 13-sep-2026 porque el número tenía que dejar de ser uno
+     solo, y lo levantó Juan mirando 1280: «¿el header no tiene muy poco
+     espacio arriba y abajo del wordmark?». Medido, tenía razón y por bastante:
+     de 390 a 1280 el logo crece un 63 % (32 → 52 px) y el aire BAJABA un 40 %
+     (14 → 8). La proporción iba al revés.
+
+     🔑 POR QUÉ PASABA, y no fue un descuido: la pieza 9 cerró «8 px y no 14»
+     mirando 390, donde el alto de la barra lo fija el BOTÓN DE MENÚ de 44 px
+     — el logo de 32 flota adentro de esa altura, y con 14 arriba y abajo la
+     barra se leía como una franja blanca. En escritorio no hay botón de menú,
+     así que nada estira la barra y el logo se queda con los 8 pelados. La
+     decisión era correcta en SU ancho y no transfería al otro.
+
+     ⚠️ Y no se agranda a ojo: NN/g avisa que en escritorio no conviene
+     regodearse en píxeles vacíos para lucir el logo — se arranca del tamaño
+     legible y se minimiza la altura desde ahí. Por eso el aire acompaña al
+     logo en proporción en vez de duplicarse. */
+  --aire-barra: 8px;
+
   /* EL AIRE ENTRE SECCIONES — un valor por ancho, y lo decidió Juan el
      3-sep-2026 contra la propuesta de un número único para los tres.
 

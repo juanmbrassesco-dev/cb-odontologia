@@ -13,6 +13,7 @@ Escribe brand/tableros/<pieza>/<ancho>.html y no toca nada más.
 import importlib.util
 import pathlib
 import re
+import subprocess
 import sys
 
 
@@ -2722,7 +2723,7 @@ body { padding: 0; }
      de 44 px por ser el piso táctil. Con 14 arriba y abajo la barra medía 72 y
      el logo —de 32— quedaba flotando en marfil, que se leía como un espacio
      blanco entre el encabezado y el hero. El botón conserva sus 44. */
-  padding: 8px var(--margen-pagina);
+  padding: var(--aire-barra) var(--margen-pagina);
   background: var(--marfil);
   border-bottom: 1px solid var(--dorado);
 }
@@ -3149,6 +3150,35 @@ CSS_HERO = """
   aspect-ratio: 4 / 3;
   object-fit: cover;
   object-position: 50% 52%;
+}
+
+/* 🔴 EN ESCRITORIO EL RECORTE SUBE — 13-sep-2026, lo levantó Juan: «el texto
+   del hero tapa la foto». Medido mirando: a 1280 el titular caía sobre la
+   boca y el mentón, y los botones sobre el cuello.
+
+   NN/g lo llama COPY SPACE: la zona menos cargada de una foto, la única donde
+   se puede escribir sin tapar lo que importa. Y avisa justo nuestro caso — el
+   texto sobre una imagen casi siempre necesita ubicarse distinto en pantalla
+   grande que en chica, porque al cambiar el recorte lo que estaba despejado
+   deja de estarlo. A 390 el hueco es 4:3 sobre 390 px y la cara entra entera;
+   a 1280 el mismo 4:3 sobre 1280 px recorta muchísimo más alto.
+
+   Se mueve el ENCUADRE y no el texto: el titular, el velo y el contraste ya
+   medido (7,7) quedan intactos.
+
+   ⚠️ ESTO NO REEMPLAZA AL BRIEF DE FOTOS QUE ESCRIBIÓ ESTA MISMA PIEZA: la
+   foto definitiva se pide VERTICAL, con la cara en el TERCIO DE ARRIBA y aire
+   abajo para que el velo tenga dónde caer. Acá se acomoda la foto de EJEMPLO,
+   que es un primer plano apaisado y no cumple ese brief. */
+@media (min-width: 1280px) {
+  .hero-foto {
+    /* Sólo se mueve el eje VERTICAL, y no es una preferencia: el hueco es 4:3
+       y la foto llena el ancho, así que `cover` recorta arriba y abajo y NADA
+       a los costados. Probado: mover el eje horizontal a 64 % no cambió un
+       solo píxel. Correrla de lado, si algún día hace falta, exige otra
+       proporción de hueco, no otro `object-position`. */
+    object-position: 50% 28%;
+  }
 }
 
 .hero-hueco {
@@ -3792,16 +3822,68 @@ CSS_CONTACTO = """
 /* La tarjeta es blanca sobre marfil, y ese par mide 1,03: la forma la marca
    el BORDE, nunca el relleno. Es la misma regla del campo, del botón apagado
    y de la tarjeta de tratamiento — la cuarta vez que aparece. */
-/* El margen lateral es de la sección, no del tablero — mismo motivo que la
-   grilla de la pieza 11. */
-.contacto {
-  background: var(--blanco);
-  border: 1px solid var(--dorado-claro);
-  border-radius: var(--radio);
+/* EL BLOQUE DE CONTACTO — la tarjeta de datos y, en escritorio, el QR.
+
+   El margen y el techo los lleva ÉL y no la tarjeta, porque a partir de 1280
+   son dos piezas una al lado de la otra y el margen es de la sección entera.
+   Es el mismo criterio que ya se aplicó al resto: el margen pertenece a la
+   sección, no a lo que la muestra ni a uno de sus pedazos. */
+.bloque-contacto {
   max-width: var(--ancho-pagina);
   margin-top: 20px;
   margin-left: var(--margen-seccion);
   margin-right: var(--margen-seccion);
+}
+
+.contacto {
+  background: var(--blanco);
+  border: 1px solid var(--dorado-claro);
+  border-radius: var(--radio);
+}
+
+/* 🔴 EL QR NO EXISTE EN MÓVIL NI EN TABLET, y no es que se esconda: nadie
+   escanea su propia pantalla. Se DIBUJA recién en escritorio, que es donde el
+   paciente no puede tocar un enlace de WhatsApp y necesita el teléfono en la
+   mano. Decidido en la § 4 y pedido por Cecilia. */
+.contacto-qr {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  /* Dos columnas: los datos toman el ancho que sobre y el QR ocupa lo suyo,
+     que es un cuadrado de lado fijo. Por eso la segunda columna es `auto` y
+     no una fracción — un QR estirado deja de ser legible por la cámara. */
+  .bloque-contacto {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 40px;
+    align-items: start;
+  }
+
+  .contacto-qr {
+    display: block;
+    background: var(--blanco);
+    border: 1px solid var(--dorado-claro);
+    border-radius: var(--radio);
+    padding: 20px;
+    text-align: center;
+  }
+
+  /* 180 px de lado. El piso real no es estético: un QR de este contenido
+     necesita módulos de al menos 2 px en pantalla para que la cámara los
+     separe, y por debajo de ~150 px empieza a costar. */
+  .qr {
+    display: block;
+    width: 180px;
+    height: 180px;
+  }
+
+  .qr-pie {
+    margin-top: 12px;
+    font-size: var(--tipo-chico);
+    line-height: var(--alto-chico);
+    color: var(--texto-segundo);
+  }
 }
 
 /* Cada dato es una fila. La línea de arriba las separa; la primera no lleva,
@@ -3914,6 +3996,50 @@ def fila_direccion():
     </div>"""
 
 
+def qr_whatsapp():
+    """El QR del WhatsApp, vectorial. Mismo mecanismo que la cartelería.
+
+    Va SÓLO en escritorio, y el motivo no es que sobre lugar —Baymard avisa
+    justamente que no se agrega contenido porque haya espacio—: es que en una
+    pantalla grande el paciente NO PUEDE TOCAR un enlace de WhatsApp, así que
+    necesita escanear con el teléfono. En móvil el QR no existe: nadie escanea
+    su propia pantalla. Decidido en la § 4 y pedido por Cecilia.
+
+    `-m 0` deja el SVG sin zona de silencio propia: acá el aire lo pone el
+    recuadro blanco del CSS, que ya tiene relleno. En la cartelería va con
+    `-m 4` porque ahí el QR se imprime sobre la placa y no hay caja alrededor.
+    `-l M` es corrección de errores media: aguanta que la cámara lo lea torcido
+    o con reflejo, que en una pantalla no es hipotético.
+    """
+    salida = subprocess.run(
+        [
+            "qrencode",
+            "-t", "SVG",
+            "-o", "-",
+            "-m", "0",
+            "-l", "M",
+            "https://wa.me/" + WHATSAPP,
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    svg = salida.stdout
+    lado = re.search(r'viewBox="0 0 (\d+)', svg).group(1)
+    adentro = re.sub(r"^.*?<svg[^>]*>", "", svg, flags=re.DOTALL)
+    adentro = adentro.replace("</svg>", "")
+
+    # El relleno se fuerza al grafito del sistema: qrencode lo escribe negro,
+    # y el negro puro no está en la paleta.
+    adentro = adentro.replace('fill="#000000"', 'fill="var(--grafito)"')
+
+    return f"""<svg class="qr" viewBox="0 0 {lado} {lado}"
+       role="img" aria-label="Código QR que abre la conversación de WhatsApp">
+    {adentro}
+  </svg>"""
+
+
 def tarjeta_contacto():
     telefono = fila_enlace(
         "telefono",
@@ -3930,11 +4056,17 @@ def tarjeta_contacto():
     correo = fila_texto("sobre", CORREO)
 
     return f"""
-  <div class="contacto">
+  <div class="bloque-contacto">
+    <div class="contacto">
     {fila_direccion()}
     {telefono}
     {whatsapp}
     {correo}
+    </div>
+    <div class="contacto-qr">
+      {qr_whatsapp()}
+      <p class="qr-pie">Escaneá y escribinos<br>por WhatsApp</p>
+    </div>
   </div>"""
 
 
@@ -4118,6 +4250,30 @@ CSS_PIE = """
   margin-right: var(--margen-seccion);
   max-width: var(--ancho-pagina);
   text-align: center;
+}
+
+/* 🔴 EL PIE DECÍA QUE ESTABA CENTRADO Y NO LO ESTABA — 13-sep-2026, lo cazó
+   Juan mirando la captura de 1280 y se confirmó midiendo renglón por renglón.
+
+   Qué pasaba: el logo caía en el centro exacto (640) y los tres renglones de
+   texto tenían su centro en 410, o sea 230 px corridos a la izquierda.
+
+   Por qué, y es la parte que importa: todo `<p>` del sistema lleva
+   `max-width: var(--columna)` para que una línea no se pase de largo. En
+   escritorio eso son 640 px dentro de un pie de 1100. `text-align: center`
+   centra el texto ADENTRO de esa caja de 640 — pero la caja de 640 estaba
+   pegada a la izquierda del pie, porque un `max-width` acota y NO centra.
+
+   ⚠️ No se veía a 390 ni a 768 porque ahí `--columna` vale 100% y la caja
+   ocupa todo: apareció recién al ensanchar el contenedor a 1100. Es la clase
+   de rotura que un ancho nuevo destapa en algo que ya estaba aprobado.
+
+   El arreglo centra la CAJA, que es lo que faltaba. El `max-width` se queda:
+   sigue haciendo falta para que la línea no se estire. */
+.pie-sitio p,
+.pie-sitio ul {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* 🔑 EL AIRE AGRUPA, y lo dictó Juan mirando el pie: los cuatro renglones de
@@ -4451,9 +4607,32 @@ CSS_NOSOTROS = """
     display: grid;
     grid-template-columns: 5fr 7fr;
     column-gap: 40px;
-    align-items: start;
     padding-left: var(--margen-pagina);
     padding-right: var(--margen-pagina);
+  }
+
+  /* LAS TRES SEÑALES BAJAN AL PIE DE LA FOTO. Con todo el texto pegado
+     arriba quedaba un hueco grande abajo a la derecha y las dos columnas
+     terminaban en alturas muy distintas.
+
+     🔴 SE PROBÓ ANTES CON `space-between` Y SE VOLVIÓ ATRÁS, porque repartía
+     el aire ENTRE TODOS los renglones y despegaba la matrícula del nombre —
+     que es justo lo que la pieza 15.a decidió que no puede pasar: la
+     matrícula es la credencial de esa persona y separada de ella deja de
+     leerse como suya. Un empuje sobre las señales mueve UNA cosa y deja el
+     resto en su orden natural.
+
+     ⚠️ PROVISORIO, y lo decidió así Juan el 13-sep-2026: es para VER cómo
+     queda. El reparto depende de cuánto texto haya, y el de Cecilia todavía
+     no existe — con el texto y la foto definitivos se vuelve a mirar.
+     Tampoco está cerrado si las tres señales se quedan. */
+  .nosotros-texto {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nosotros-senales {
+    margin-top: auto;
   }
 
   /* El título cruza las dos columnas: encabeza la sección entera. */

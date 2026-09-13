@@ -286,6 +286,27 @@
      `auto` directo, porque ahí `auto` ya vale cero en los anchos chicos. */
   --margen-seccion: var(--margen-pagina);
 
+  /* EL AIRE DE LA BARRA DEL ENCABEZADO — arriba y abajo del logo.
+
+     Sube a token el 13-sep-2026 porque el número tenía que dejar de ser uno
+     solo, y lo levantó Juan mirando 1280: «¿el header no tiene muy poco
+     espacio arriba y abajo del wordmark?». Medido, tenía razón y por bastante:
+     de 390 a 1280 el logo crece un 63 % (32 → 52 px) y el aire BAJABA un 40 %
+     (14 → 8). La proporción iba al revés.
+
+     🔑 POR QUÉ PASABA, y no fue un descuido: la pieza 9 cerró «8 px y no 14»
+     mirando 390, donde el alto de la barra lo fija el BOTÓN DE MENÚ de 44 px
+     — el logo de 32 flota adentro de esa altura, y con 14 arriba y abajo la
+     barra se leía como una franja blanca. En escritorio no hay botón de menú,
+     así que nada estira la barra y el logo se queda con los 8 pelados. La
+     decisión era correcta en SU ancho y no transfería al otro.
+
+     ⚠️ Y no se agranda a ojo: NN/g avisa que en escritorio no conviene
+     regodearse en píxeles vacíos para lucir el logo — se arranca del tamaño
+     legible y se minimiza la altura desde ahí. Por eso el aire acompaña al
+     logo en proporción en vez de duplicarse. */
+  --aire-barra: 8px;
+
   /* EL AIRE ENTRE SECCIONES — un valor por ancho, y lo decidió Juan el
      3-sep-2026 contra la propuesta de un número único para los tres.
 
@@ -683,7 +704,7 @@ body { padding: 0; }
      de 44 px por ser el piso táctil. Con 14 arriba y abajo la barra medía 72 y
      el logo —de 32— quedaba flotando en marfil, que se leía como un espacio
      blanco entre el encabezado y el hero. El botón conserva sus 44. */
-  padding: 8px var(--margen-pagina);
+  padding: var(--aire-barra) var(--margen-pagina);
   background: var(--marfil);
   border-bottom: 1px solid var(--dorado);
 }
@@ -809,6 +830,26 @@ body { padding: 0; }
   object-fit: cover;
   object-position: 50% 52%;
 }
+
+/* 🔴 EN ESCRITORIO EL RECORTE SUBE — 13-sep-2026, lo levantó Juan: «el texto
+   del hero tapa la foto». Medido mirando: a 1280 el titular caía sobre la
+   boca y el mentón, y los botones sobre el cuello.
+
+   NN/g lo llama COPY SPACE: la zona menos cargada de una foto, la única donde
+   se puede escribir sin tapar lo que importa. Y avisa justo nuestro caso — el
+   texto sobre una imagen casi siempre necesita ubicarse distinto en pantalla
+   grande que en chica, porque al cambiar el recorte lo que estaba despejado
+   deja de estarlo. A 390 el hueco es 4:3 sobre 390 px y la cara entra entera;
+   a 1280 el mismo 4:3 sobre 1280 px recorta muchísimo más alto.
+
+   Se mueve el ENCUADRE y no el texto: el titular, el velo y el contraste ya
+   medido (7,7) quedan intactos.
+
+   ⚠️ ESTO NO REEMPLAZA AL BRIEF DE FOTOS QUE ESCRIBIÓ ESTA MISMA PIEZA: la
+   foto definitiva se pide VERTICAL, con la cara en el TERCIO DE ARRIBA y aire
+   abajo para que el velo tenga dónde caer. Acá se acomoda la foto de EJEMPLO,
+   que es un primer plano apaisado y no cumple ese brief. */
+
 
 .hero-hueco {
   width: 100%;

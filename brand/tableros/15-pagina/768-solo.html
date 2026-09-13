@@ -286,6 +286,27 @@
      `auto` directo, porque ahí `auto` ya vale cero en los anchos chicos. */
   --margen-seccion: var(--margen-pagina);
 
+  /* EL AIRE DE LA BARRA DEL ENCABEZADO — arriba y abajo del logo.
+
+     Sube a token el 13-sep-2026 porque el número tenía que dejar de ser uno
+     solo, y lo levantó Juan mirando 1280: «¿el header no tiene muy poco
+     espacio arriba y abajo del wordmark?». Medido, tenía razón y por bastante:
+     de 390 a 1280 el logo crece un 63 % (32 → 52 px) y el aire BAJABA un 40 %
+     (14 → 8). La proporción iba al revés.
+
+     🔑 POR QUÉ PASABA, y no fue un descuido: la pieza 9 cerró «8 px y no 14»
+     mirando 390, donde el alto de la barra lo fija el BOTÓN DE MENÚ de 44 px
+     — el logo de 32 flota adentro de esa altura, y con 14 arriba y abajo la
+     barra se leía como una franja blanca. En escritorio no hay botón de menú,
+     así que nada estira la barra y el logo se queda con los 8 pelados. La
+     decisión era correcta en SU ancho y no transfería al otro.
+
+     ⚠️ Y no se agranda a ojo: NN/g avisa que en escritorio no conviene
+     regodearse en píxeles vacíos para lucir el logo — se arranca del tamaño
+     legible y se minimiza la altura desde ahí. Por eso el aire acompaña al
+     logo en proporción en vez de duplicarse. */
+  --aire-barra: 8px;
+
   /* EL AIRE ENTRE SECCIONES — un valor por ancho, y lo decidió Juan el
      3-sep-2026 contra la propuesta de un número único para los tres.
 
@@ -358,6 +379,7 @@
   :root {
     --margen-pagina: 40px;
     --aire-seccion: 72px;
+    --aire-barra: 14px;
 
     --tipo-h1: 42px;
     --tipo-h2: 32px;
@@ -694,7 +716,7 @@ body { padding: 0; }
      de 44 px por ser el piso táctil. Con 14 arriba y abajo la barra medía 72 y
      el logo —de 32— quedaba flotando en marfil, que se leía como un espacio
      blanco entre el encabezado y el hero. El botón conserva sus 44. */
-  padding: 8px var(--margen-pagina);
+  padding: var(--aire-barra) var(--margen-pagina);
   background: var(--marfil);
   border-bottom: 1px solid var(--dorado);
 }
@@ -820,6 +842,26 @@ body { padding: 0; }
   object-fit: cover;
   object-position: 50% 52%;
 }
+
+/* 🔴 EN ESCRITORIO EL RECORTE SUBE — 13-sep-2026, lo levantó Juan: «el texto
+   del hero tapa la foto». Medido mirando: a 1280 el titular caía sobre la
+   boca y el mentón, y los botones sobre el cuello.
+
+   NN/g lo llama COPY SPACE: la zona menos cargada de una foto, la única donde
+   se puede escribir sin tapar lo que importa. Y avisa justo nuestro caso — el
+   texto sobre una imagen casi siempre necesita ubicarse distinto en pantalla
+   grande que en chica, porque al cambiar el recorte lo que estaba despejado
+   deja de estarlo. A 390 el hueco es 4:3 sobre 390 px y la cara entra entera;
+   a 1280 el mismo 4:3 sobre 1280 px recorta muchísimo más alto.
+
+   Se mueve el ENCUADRE y no el texto: el titular, el velo y el contraste ya
+   medido (7,7) quedan intactos.
+
+   ⚠️ ESTO NO REEMPLAZA AL BRIEF DE FOTOS QUE ESCRIBIÓ ESTA MISMA PIEZA: la
+   foto definitiva se pide VERTICAL, con la cara en el TERCIO DE ARRIBA y aire
+   abajo para que el velo tenga dónde caer. Acá se acomoda la foto de EJEMPLO,
+   que es un primer plano apaisado y no cumple ese brief. */
+
 
 .hero-hueco {
   width: 100%;
@@ -1452,17 +1494,34 @@ body { padding: 0; }
 /* La tarjeta es blanca sobre marfil, y ese par mide 1,03: la forma la marca
    el BORDE, nunca el relleno. Es la misma regla del campo, del botón apagado
    y de la tarjeta de tratamiento — la cuarta vez que aparece. */
-/* El margen lateral es de la sección, no del tablero — mismo motivo que la
-   grilla de la pieza 11. */
-.contacto {
-  background: var(--blanco);
-  border: 1px solid var(--dorado-claro);
-  border-radius: var(--radio);
+/* EL BLOQUE DE CONTACTO — la tarjeta de datos y, en escritorio, el QR.
+
+   El margen y el techo los lleva ÉL y no la tarjeta, porque a partir de 1280
+   son dos piezas una al lado de la otra y el margen es de la sección entera.
+   Es el mismo criterio que ya se aplicó al resto: el margen pertenece a la
+   sección, no a lo que la muestra ni a uno de sus pedazos. */
+.bloque-contacto {
   max-width: var(--ancho-pagina);
   margin-top: 20px;
   margin-left: var(--margen-seccion);
   margin-right: var(--margen-seccion);
 }
+
+.contacto {
+  background: var(--blanco);
+  border: 1px solid var(--dorado-claro);
+  border-radius: var(--radio);
+}
+
+/* 🔴 EL QR NO EXISTE EN MÓVIL NI EN TABLET, y no es que se esconda: nadie
+   escanea su propia pantalla. Se DIBUJA recién en escritorio, que es donde el
+   paciente no puede tocar un enlace de WhatsApp y necesita el teléfono en la
+   mano. Decidido en la § 4 y pedido por Cecilia. */
+.contacto-qr {
+  display: none;
+}
+
+
 
 /* Cada dato es una fila. La línea de arriba las separa; la primera no lleva,
    porque ahí ya está el borde de la tarjeta. */
@@ -1537,6 +1596,30 @@ body { padding: 0; }
   margin-right: var(--margen-seccion);
   max-width: var(--ancho-pagina);
   text-align: center;
+}
+
+/* 🔴 EL PIE DECÍA QUE ESTABA CENTRADO Y NO LO ESTABA — 13-sep-2026, lo cazó
+   Juan mirando la captura de 1280 y se confirmó midiendo renglón por renglón.
+
+   Qué pasaba: el logo caía en el centro exacto (640) y los tres renglones de
+   texto tenían su centro en 410, o sea 230 px corridos a la izquierda.
+
+   Por qué, y es la parte que importa: todo `<p>` del sistema lleva
+   `max-width: var(--columna)` para que una línea no se pase de largo. En
+   escritorio eso son 640 px dentro de un pie de 1100. `text-align: center`
+   centra el texto ADENTRO de esa caja de 640 — pero la caja de 640 estaba
+   pegada a la izquierda del pie, porque un `max-width` acota y NO centra.
+
+   ⚠️ No se veía a 390 ni a 768 porque ahí `--columna` vale 100% y la caja
+   ocupa todo: apareció recién al ensanchar el contenedor a 1100. Es la clase
+   de rotura que un ancho nuevo destapa en algo que ya estaba aprobado.
+
+   El arreglo centra la CAJA, que es lo que faltaba. El `max-width` se queda:
+   sigue haciendo falta para que la línea no se estire. */
+.pie-sitio p,
+.pie-sitio ul {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* 🔑 EL AIRE AGRUPA, y lo dictó Juan mirando el pie: los cuatro renglones de
@@ -1868,7 +1951,8 @@ body { padding: 0; }
   <section id="contacto">
     <h2 class="titulo-seccion">Contacto</h2>
 
-  <div class="contacto">
+  <div class="bloque-contacto">
+    <div class="contacto">
     
     <div class="dato-contacto">
       <svg class="ico-contacto" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.5s7-6.4 7-11.5a7 7 0 1 0-14 0c0 5.1 7 11.5 7 11.5z"/><circle cx="12" cy="10" r="2.6"/></svg>
@@ -1892,6 +1976,357 @@ body { padding: 0; }
     <div class="dato-contacto">
       <svg class="ico-contacto" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.4" width="17.6" height="13.2" rx="2.4"/><path d="M3.9 7 l8.1 5.9 l8.1-5.9"/></svg>
       <span>cecilia@example.com</span>
+    </div>
+    </div>
+    <div class="contacto-qr">
+      <svg class="qr" viewBox="0 0 25 25"
+       role="img" aria-label="Código QR que abre la conversación de WhatsApp">
+    
+	<g id="QRcode">
+		<rect x="0" y="0" width="25" height="25" fill="#ffffff"/>
+		<g id="Pattern" transform="translate(0,0)">
+			<rect x="0" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="1" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="5" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="11" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="13" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="14" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="15" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="19" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="0" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="1" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="1" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="1" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="1" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="11" y="1" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="13" y="1" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="15" y="1" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="1" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="1" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="2" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="13" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="14" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="3" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="13" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="14" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="15" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="4" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="5" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="5" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="5" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="5" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="11" y="5" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="5" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="13" y="5" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="5" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="5" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="5" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="1" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="5" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="14" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="19" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="6" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="7" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="14" y="7" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="15" y="7" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="5" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="7" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="15" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="17" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="8" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="1" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="15" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="19" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="9" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="5" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="7" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="15" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="17" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="19" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="10" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="7" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="11" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="13" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="19" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="11" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="1" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="7" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="11" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="17" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="12" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="13" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="13" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="13" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="13" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="13" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="14" y="13" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="13" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="13" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="1" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="5" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="7" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="11" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="15" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="17" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="14" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="7" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="11" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="13" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="14" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="19" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="15" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="15" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="17" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="19" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="16" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="17" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="17" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="11" y="17" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="17" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="17" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="17" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="17" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="17" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="1" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="5" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="11" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="13" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="18" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="19" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="19" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="19" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="19" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="19" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="13" y="19" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="14" y="19" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="19" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="19" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="19" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="19" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="13" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="15" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="17" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="19" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="20" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="14" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="15" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="17" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="21" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="10" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="14" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="17" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="22" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="23" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="23" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="23" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="19" y="23" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="20" y="23" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="22" y="23" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="23" y="23" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="23" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="0" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="1" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="2" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="3" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="4" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="5" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="6" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="8" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="9" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="12" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="13" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="14" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="16" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="18" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="21" y="24" width="1" height="1" fill="var(--grafito)"/>
+			<rect x="24" y="24" width="1" height="1" fill="var(--grafito)"/>
+		</g>
+	</g>
+
+
+  </svg>
+      <p class="qr-pie">Escaneá y escribinos<br>por WhatsApp</p>
     </div>
   </div>
   </section>
