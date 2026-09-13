@@ -709,13 +709,35 @@ h1, h2, h3 {{
   font-family: Marcellus, Georgia, serif;
   font-weight: 400;
   max-width: var(--columna);
+  /* 🔴 EL EFECTO SIERRA — el borde derecho de un bloque de texto subiendo y
+     bajando en dientes. Lo levantó Juan el 13-sep-2026 y está medido: en el
+     titular del hero las cinco líneas medían 341, 418, 362, 480 y 188 px, o
+     sea que el borde derecho BAILABA 292 px.
+
+     `balance` reparte las palabras para que todas las líneas queden de un
+     largo parecido. Es para títulos: el navegador lo calcula sobre pocas
+     líneas y en bloques largos deja de aplicarlo solo. */
+  text-wrap: balance;
 }}
 
 h1 {{ font-size: var(--tipo-h1); line-height: var(--alto-h1); }}
 h2 {{ font-size: var(--tipo-h2); line-height: var(--alto-h2); }}
 h3 {{ font-size: var(--tipo-h3); line-height: var(--alto-h3); }}
 
-p {{ max-width: var(--columna); }}
+p {{
+  max-width: var(--columna);
+  /* 🔴 EN LOS PÁRRAFOS TAMBIÉN VA `balance`, Y SE PROBÓ AL REVÉS PRIMERO.
+     `pretty` se puso creyendo que era el indicado para texto corrido, y
+     medido NO movió un píxel: en el primer párrafo de «Nosotros» el borde
+     derecho siguió bailando 222 px. `pretty` arregla la línea final huérfana,
+     no el conjunto del bloque.
+
+     `balance` sí reparte las palabras entre todas las líneas. El navegador lo
+     apaga solo cuando el bloque pasa de unas seis líneas —ahí el costo de
+     calcularlo no vale—, así que ponerlo en todos los párrafos no rompe los
+     textos largos: simplemente no se aplica. */
+  text-wrap: balance;
+}}
 
 code {{
   font-family: Jost, sans-serif;
@@ -3975,13 +3997,50 @@ CSS_CONTACTO = """
     margin-right: auto;
   }
 
-  .qr-pie {
-    margin-top: 12px;
-    margin-left: auto;
-    margin-right: auto;
-    font-size: var(--tipo-chico);
-    line-height: var(--alto-chico);
-    color: var(--texto-segundo);
+}
+
+/* 🔴 EL ACCESO FIJO A WHATSAPP — SÓLO DE ESCRITORIO.
+
+   En móvil NO EXISTE, y eso ya estaba decidido en la § 4 con evidencia:
+   Baymard testeó las burbujas fijas y en el teléfono obstruyen el contenido,
+   que el usuario además no puede correr. La misma fuente recomienda lo
+   contrario para escritorio —que el elemento fijo viva ahí, donde sobra
+   pantalla—, y es lo que se construye acá.
+
+   Reemplaza al QR, que se probó en tres formas y en ninguna funcionó. El QR
+   sobrevive en la cartelería impresa, que es el único soporte donde nadie
+   puede tocar un enlace. */
+.wa-flotante {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .wa-flotante {
+    display: flex;
+    position: fixed;
+    right: 32px;
+    bottom: 32px;
+    /* 56 px es el tamaño que Baymard mide en los casos que testeó, y queda
+       por encima del piso táctil de 44 del sistema. */
+    width: 56px;
+    height: 56px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--grafito);
+    color: var(--marfil);
+    box-shadow: var(--sombra-boton-foco);
+    z-index: 10;
+  }
+
+  /* En GRAFITO y no en el verde de WhatsApp: el isotipo ajeno ya se repinta
+     en todo el sitio —decisión de Juan del 4-sep con su costo escrito en
+     brand/marcas-ajenas/PROCEDENCIA.md— y un botón verde sería el único color
+     del sistema que no sale de la paleta. */
+  .wa-flotante .iso-wa {
+    width: 28px;
+    height: 28px;
+    fill: currentColor;
   }
 }
 
@@ -4161,10 +4220,6 @@ def tarjeta_contacto():
     {telefono}
     {whatsapp}
     {correo}
-    <div class="contacto-qr">
-      {qr_whatsapp()}
-      <p class="qr-pie">Escaneá y escribinos por WhatsApp</p>
-    </div>
     </div>
   </div>"""
 
@@ -5974,6 +6029,32 @@ CSS_PAGINA = """
 """
 
 
+def boton_flotante_whatsapp():
+    """El acceso fijo a WhatsApp — SÓLO de escritorio.
+
+    🔴 REEMPLAZA AL QR, y es la tercera decisión sobre la misma necesidad:
+    que alguien en una pantalla grande pueda llegar al chat. El QR se probó en
+    tres formas —tarjeta al costado, cuadrado suelto, fila de la tarjeta— y
+    ninguna funcionó visualmente; lo cortó Juan el 13-sep-2026: «o se elimina
+    y se usa el botón flotante o se busca otra solución».
+
+    🔑 Y la evidencia lo respalda, que es lo que lo vuelve una decisión y no un
+    cambio de gusto: Baymard testeó las burbujas fijas con usuarios y lo que
+    encontró es que en MÓVIL obstruyen el contenido —por eso la § 4 ya había
+    decidido que en el teléfono no va— y recomienda exactamente lo contrario
+    para escritorio: que el elemento fijo viva ahí, donde sobra pantalla y no
+    tapa nada. Es la misma fuente que sacó el botón de móvil, leída entera.
+
+    El QR sigue existiendo donde sí funciona: en la CARTELERÍA impresa, que es
+    el único lugar donde alguien no puede tocar un enlace.
+    """
+    return f"""
+  <a class="wa-flotante" href="https://wa.me/{WHATSAPP}"
+     aria-label="Escribinos por WhatsApp">
+    {isotipo("whatsapp", "iso-wa")}
+  </a>"""
+
+
 def pagina_del_sitio(ancho, bandas=""):
     """La landing entera, en el orden del mapa del sitio (§ 4 del doc).
 
@@ -6008,6 +6089,7 @@ def pagina_del_sitio(ancho, bandas=""):
 {tarjeta_contacto()}
   </section>
 {pie_del_sitio(apilado, ancho)}
+{boton_flotante_whatsapp()}
 </div>"""
 
 

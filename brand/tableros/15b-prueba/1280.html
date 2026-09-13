@@ -476,13 +476,35 @@ h1, h2, h3 {
   font-family: Marcellus, Georgia, serif;
   font-weight: 400;
   max-width: var(--columna);
+  /* 🔴 EL EFECTO SIERRA — el borde derecho de un bloque de texto subiendo y
+     bajando en dientes. Lo levantó Juan el 13-sep-2026 y está medido: en el
+     titular del hero las cinco líneas medían 341, 418, 362, 480 y 188 px, o
+     sea que el borde derecho BAILABA 292 px.
+
+     `balance` reparte las palabras para que todas las líneas queden de un
+     largo parecido. Es para títulos: el navegador lo calcula sobre pocas
+     líneas y en bloques largos deja de aplicarlo solo. */
+  text-wrap: balance;
 }
 
 h1 { font-size: var(--tipo-h1); line-height: var(--alto-h1); }
 h2 { font-size: var(--tipo-h2); line-height: var(--alto-h2); }
 h3 { font-size: var(--tipo-h3); line-height: var(--alto-h3); }
 
-p { max-width: var(--columna); }
+p {
+  max-width: var(--columna);
+  /* 🔴 EN LOS PÁRRAFOS TAMBIÉN VA `balance`, Y SE PROBÓ AL REVÉS PRIMERO.
+     `pretty` se puso creyendo que era el indicado para texto corrido, y
+     medido NO movió un píxel: en el primer párrafo de «Nosotros» el borde
+     derecho siguió bailando 222 px. `pretty` arregla la línea final huérfana,
+     no el conjunto del bloque.
+
+     `balance` sí reparte las palabras entre todas las líneas. El navegador lo
+     apaga solo cuando el bloque pasa de unas seis líneas —ahí el costo de
+     calcularlo no vale—, así que ponerlo en todos los párrafos no rompe los
+     textos largos: simplemente no se aplica. */
+  text-wrap: balance;
+}
 
 code {
   font-family: Jost, sans-serif;
