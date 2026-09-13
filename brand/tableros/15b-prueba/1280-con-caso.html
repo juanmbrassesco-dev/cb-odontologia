@@ -901,13 +901,19 @@ body { padding: 0; }
      queda. El reparto depende de cuánto texto haya, y el de Cecilia todavía
      no existe — con el texto y la foto definitivos se vuelve a mirar.
      Tampoco está cerrado si las tres señales se quedan. */
-  .nosotros-texto {
-    display: flex;
-    flex-direction: column;
-  }
+  /* 🔴 EL TEXTO SE CENTRA CONTRA LA FOTO, y esto REEMPLAZA a dos intentos
+     anteriores que quedaron peor. El primero repartió el texto con
+     `space-between` y despegó la matrícula del nombre. El segundo empujó sólo
+     las tres señales al pie con `margin-top: auto`, y dejó un AGUJERO en el
+     medio de la columna: el párrafo arriba, las señales abajo y un hueco
+     vacío entre los dos. Lo cazó Juan en una palabra: «un desastre».
 
-  .nosotros-senales {
-    margin-top: auto;
+     🔑 Lo que los dos tenían mal es el mismo error: intentaban llenar el alto
+     de la foto ESTIRANDO el texto. El texto mide lo que mide. Centrarlo
+     reparte el sobrante AFUERA del bloque —arriba y abajo, donde no hay nada
+     que leer— en vez de adentro, donde se lee como algo roto. */
+  .nosotros {
+    align-items: center;
   }
 
   /* El título cruza las dos columnas: encabeza la sección entera. */

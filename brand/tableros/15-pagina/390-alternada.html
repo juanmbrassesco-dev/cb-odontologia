@@ -850,7 +850,6 @@ body { padding: 0; }
    abajo para que el velo tenga dónde caer. Acá se acomoda la foto de EJEMPLO,
    que es un primer plano apaisado y no cumple ese brief. */
 
-
 .hero-hueco {
   width: 100%;
   aspect-ratio: 4 / 3;
@@ -968,6 +967,28 @@ body { padding: 0; }
   box-shadow: none;
   border: 2px solid var(--blanco);
 }
+/* 🔴 ACÁ HUBO UN ARREGLO QUE NO ARREGLÓ NADA — DOS VECES, y las dos por lo
+   mismo. Queda escrito entero porque el modo de falla es el peor que hay: no
+   da error, no se ve, y se reporta hecho.
+
+   INTENTO 1. Se escribió la regla con `.hero-foto`, UNA clase. En la página
+   la foto la gobierna `.hero-velo .hero-foto`, que son DOS. Perdió.
+   🔑 Y UNA `@media` NO SUMA PRIORIDAD: parece más específica porque está más
+   adentro, y no lo es.
+
+   INTENTO 2. Se corrigió el selector a dos clases… y siguió sin aplicar,
+   porque con la MISMA prioridad gana la que va ÚLTIMA en el archivo — y el
+   bloque vivía en `CSS_HERO`, que se pega ANTES que `CSS_HERO_VELO`. Por eso
+   ahora está acá abajo, pegado a la regla que pisa.
+
+   Las dos veces se confirmó midiendo el valor COMPUTADO en el navegador, no
+   mirando la captura. Lo levantó Juan las dos veces: «el texto del hero sigue
+   tapando la cara».
+
+   ⚠️ La lección operativa, y va en serio: un cambio de CSS no se da por hecho
+   porque la captura parezca distinta. Se pide el valor computado. */
+
+
 
 
 /* EL MARGEN ES DE LA SECCIÓN, no del tablero que la muestra. Antes se lo
@@ -1608,6 +1629,14 @@ body { padding: 0; }
 .pie-sitio ul {
   margin-left: auto;
   margin-right: auto;
+}
+
+/* EL AIRE DE ABAJO DE TODO. Sin esto el copyright termina pegado al filo de
+   la ventana — lo levantó Juan el 13-sep-2026: «la última letra termina
+   pegada al final del navegador». Es el cierre de la página, no del pie: por
+   eso el número sale de --aire-seccion y no de un valor propio. */
+.pie-sitio {
+  padding-bottom: var(--aire-seccion);
 }
 
 /* 🔑 EL AIRE AGRUPA, y lo dictó Juan mirando el pie: los cuatro renglones de

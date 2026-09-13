@@ -782,22 +782,25 @@ th.n { text-align: right; }
 }
 
 
-  /* Dos columnas: los datos toman el ancho que sobre y el QR ocupa lo suyo,
-     que es un cuadrado de lado fijo. Por eso la segunda columna es `auto` y
-     no una fracción — un QR estirado deja de ser legible por la cámara. */
-  .bloque-contacto {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    column-gap: 40px;
-    align-items: start;
-  }
+  /* 🔴 EL QR VA DEBAJO Y CENTRADO, NO AL COSTADO — corregido el 13-sep-2026.
 
+     El primer intento lo puso en una segunda columna, en su propia tarjeta
+     blanca con su propio borde. Juan lo bajó mirando: «no me gusta como queda
+     el qr ahí al costado, como si fuera un compartimiento distinto», y pidió
+     probar la estrategia del pie — centrado y sin caja.
+
+     🔑 Y tenía razón por una razón de sistema: la tarjeta blanca con filo es
+     el recurso más fuerte que tiene esta página, y estaba puesto sobre algo
+     que NO es un dato de contacto más: es un atajo para el que no puede tocar
+     un enlace. Con su propia caja al lado de la tarjeta, las dos cosas se
+     leían como dos bloques del mismo rango. Debajo y sin caja, el QR se lee
+     como lo que es: el remate de la sección.
+
+     Es la misma regla que ya corrigió las tres señales de la 15.a — para
+     destacar lo principal se DES-destaca lo demás. */
   .contacto-qr {
     display: block;
-    background: var(--blanco);
-    border: 1px solid var(--dorado-claro);
-    border-radius: var(--radio);
-    padding: 20px;
+    margin-top: 24px;
     text-align: center;
   }
 
@@ -808,10 +811,18 @@ th.n { text-align: right; }
     display: block;
     width: 180px;
     height: 180px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
+  /* ⚠️ EL MISMO ERROR DEL PIE, REPETIDO Y CORREGIDO EL MISMO DÍA: `max-width`
+     acota pero NO centra, así que este párrafo se centraba adentro de una caja
+     de 640 pegada a la izquierda del bloque de 1100, y quedaba a 200 px del
+     QR que debía rotular. Se centra la CAJA. */
   .qr-pie {
     margin-top: 12px;
+    margin-left: auto;
+    margin-right: auto;
     font-size: var(--tipo-chico);
     line-height: var(--alto-chico);
     color: var(--texto-segundo);

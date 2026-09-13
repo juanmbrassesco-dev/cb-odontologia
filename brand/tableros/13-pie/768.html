@@ -771,6 +771,14 @@ th.n { text-align: right; }
   margin-right: auto;
 }
 
+/* EL AIRE DE ABAJO DE TODO. Sin esto el copyright termina pegado al filo de
+   la ventana — lo levantó Juan el 13-sep-2026: «la última letra termina
+   pegada al final del navegador». Es el cierre de la página, no del pie: por
+   eso el número sale de --aire-seccion y no de un valor propio. */
+.pie-sitio {
+  padding-bottom: var(--aire-seccion);
+}
+
 /* 🔑 EL AIRE AGRUPA, y lo dictó Juan mirando el pie: los cuatro renglones de
    abajo —nombre, matrícula, redes, copyright— son UN grupo, y el logo es otra
    cosa. Así que el hueco grande va entre el logo y el bloque, y los de adentro

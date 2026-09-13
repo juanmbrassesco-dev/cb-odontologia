@@ -3123,6 +3123,36 @@ CSS_HERO_VELO = """
   box-shadow: none;
   border: 2px solid var(--blanco);
 }
+/* 🔴 ACÁ HUBO UN ARREGLO QUE NO ARREGLÓ NADA — DOS VECES, y las dos por lo
+   mismo. Queda escrito entero porque el modo de falla es el peor que hay: no
+   da error, no se ve, y se reporta hecho.
+
+   INTENTO 1. Se escribió la regla con `.hero-foto`, UNA clase. En la página
+   la foto la gobierna `.hero-velo .hero-foto`, que son DOS. Perdió.
+   🔑 Y UNA `@media` NO SUMA PRIORIDAD: parece más específica porque está más
+   adentro, y no lo es.
+
+   INTENTO 2. Se corrigió el selector a dos clases… y siguió sin aplicar,
+   porque con la MISMA prioridad gana la que va ÚLTIMA en el archivo — y el
+   bloque vivía en `CSS_HERO`, que se pega ANTES que `CSS_HERO_VELO`. Por eso
+   ahora está acá abajo, pegado a la regla que pisa.
+
+   Las dos veces se confirmó midiendo el valor COMPUTADO en el navegador, no
+   mirando la captura. Lo levantó Juan las dos veces: «el texto del hero sigue
+   tapando la cara».
+
+   ⚠️ La lección operativa, y va en serio: un cambio de CSS no se da por hecho
+   porque la captura parezca distinta. Se pide el valor computado. */
+@media (min-width: 1280px) {
+  .hero-velo {
+    min-height: 780px;
+  }
+
+  .hero-velo .hero-foto {
+    object-position: 50% 4%;
+  }
+}
+
 """
 
 
@@ -3170,16 +3200,6 @@ CSS_HERO = """
    foto definitiva se pide VERTICAL, con la cara en el TERCIO DE ARRIBA y aire
    abajo para que el velo tenga dónde caer. Acá se acomoda la foto de EJEMPLO,
    que es un primer plano apaisado y no cumple ese brief. */
-@media (min-width: 1280px) {
-  .hero-foto {
-    /* Sólo se mueve el eje VERTICAL, y no es una preferencia: el hueco es 4:3
-       y la foto llena el ancho, así que `cover` recorta arriba y abajo y NADA
-       a los costados. Probado: mover el eje horizontal a 64 % no cambió un
-       solo píxel. Correrla de lado, si algún día hace falta, exige otra
-       proporción de hueco, no otro `object-position`. */
-    object-position: 50% 28%;
-  }
-}
 
 .hero-hueco {
   width: 100%;
@@ -3850,22 +3870,25 @@ CSS_CONTACTO = """
 }
 
 @media (min-width: 1280px) {
-  /* Dos columnas: los datos toman el ancho que sobre y el QR ocupa lo suyo,
-     que es un cuadrado de lado fijo. Por eso la segunda columna es `auto` y
-     no una fracción — un QR estirado deja de ser legible por la cámara. */
-  .bloque-contacto {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    column-gap: 40px;
-    align-items: start;
-  }
+  /* 🔴 EL QR VA DEBAJO Y CENTRADO, NO AL COSTADO — corregido el 13-sep-2026.
 
+     El primer intento lo puso en una segunda columna, en su propia tarjeta
+     blanca con su propio borde. Juan lo bajó mirando: «no me gusta como queda
+     el qr ahí al costado, como si fuera un compartimiento distinto», y pidió
+     probar la estrategia del pie — centrado y sin caja.
+
+     🔑 Y tenía razón por una razón de sistema: la tarjeta blanca con filo es
+     el recurso más fuerte que tiene esta página, y estaba puesto sobre algo
+     que NO es un dato de contacto más: es un atajo para el que no puede tocar
+     un enlace. Con su propia caja al lado de la tarjeta, las dos cosas se
+     leían como dos bloques del mismo rango. Debajo y sin caja, el QR se lee
+     como lo que es: el remate de la sección.
+
+     Es la misma regla que ya corrigió las tres señales de la 15.a — para
+     destacar lo principal se DES-destaca lo demás. */
   .contacto-qr {
     display: block;
-    background: var(--blanco);
-    border: 1px solid var(--dorado-claro);
-    border-radius: var(--radio);
-    padding: 20px;
+    margin-top: 24px;
     text-align: center;
   }
 
@@ -3876,10 +3899,18 @@ CSS_CONTACTO = """
     display: block;
     width: 180px;
     height: 180px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
+  /* ⚠️ EL MISMO ERROR DEL PIE, REPETIDO Y CORREGIDO EL MISMO DÍA: `max-width`
+     acota pero NO centra, así que este párrafo se centraba adentro de una caja
+     de 640 pegada a la izquierda del bloque de 1100, y quedaba a 200 px del
+     QR que debía rotular. Se centra la CAJA. */
   .qr-pie {
     margin-top: 12px;
+    margin-left: auto;
+    margin-right: auto;
     font-size: var(--tipo-chico);
     line-height: var(--alto-chico);
     color: var(--texto-segundo);
@@ -4276,6 +4307,14 @@ CSS_PIE = """
   margin-right: auto;
 }
 
+/* EL AIRE DE ABAJO DE TODO. Sin esto el copyright termina pegado al filo de
+   la ventana — lo levantó Juan el 13-sep-2026: «la última letra termina
+   pegada al final del navegador». Es el cierre de la página, no del pie: por
+   eso el número sale de --aire-seccion y no de un valor propio. */
+.pie-sitio {
+  padding-bottom: var(--aire-seccion);
+}
+
 /* 🔑 EL AIRE AGRUPA, y lo dictó Juan mirando el pie: los cuatro renglones de
    abajo —nombre, matrícula, redes, copyright— son UN grupo, y el logo es otra
    cosa. Así que el hueco grande va entre el logo y el bloque, y los de adentro
@@ -4626,13 +4665,19 @@ CSS_NOSOTROS = """
      queda. El reparto depende de cuánto texto haya, y el de Cecilia todavía
      no existe — con el texto y la foto definitivos se vuelve a mirar.
      Tampoco está cerrado si las tres señales se quedan. */
-  .nosotros-texto {
-    display: flex;
-    flex-direction: column;
-  }
+  /* 🔴 EL TEXTO SE CENTRA CONTRA LA FOTO, y esto REEMPLAZA a dos intentos
+     anteriores que quedaron peor. El primero repartió el texto con
+     `space-between` y despegó la matrícula del nombre. El segundo empujó sólo
+     las tres señales al pie con `margin-top: auto`, y dejó un AGUJERO en el
+     medio de la columna: el párrafo arriba, las señales abajo y un hueco
+     vacío entre los dos. Lo cazó Juan en una palabra: «un desastre».
 
-  .nosotros-senales {
-    margin-top: auto;
+     🔑 Lo que los dos tenían mal es el mismo error: intentaban llenar el alto
+     de la foto ESTIRANDO el texto. El texto mide lo que mide. Centrarlo
+     reparte el sobrante AFUERA del bloque —arriba y abajo, donde no hay nada
+     que leer— en vez de adentro, donde se lee como algo roto. */
+  .nosotros {
+    align-items: center;
   }
 
   /* El título cruza las dos columnas: encabeza la sección entera. */
