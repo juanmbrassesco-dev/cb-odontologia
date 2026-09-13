@@ -867,6 +867,23 @@ th.n { text-align: right; }
   padding-bottom: calc(var(--aire-seccion) * 0.4);
 }
 
+/* 🔴 EL PIE LLEVA MENOS AIRE ARRIBA QUE UNA SECCIÓN — lo pidió Juan el
+   13-sep-2026 midiendo con DevTools: «sacale arriba para que el título de
+   contacto entre en el cuadro».
+
+   El aire entre secciones existe para separar dos bloques que compiten por la
+   atención. El pie no compite con nada: es el cierre, y además ya trae su
+   propia línea dorada, que es un separador más fuerte que cualquier hueco.
+   Con el aire completo empujaba la sección de Contacto fuera de la pantalla.
+
+   ⚠️ El selector lleva `.pagina` adelante A PROPÓSITO: el aire lo pone
+   `.pagina > * + *`, que pesa lo mismo que `.pie-sitio` a secas y vive más
+   abajo en el archivo. Con una sola clase esta regla no haría nada, sin
+   avisar — es la misma trampa que ya mordió tres veces hoy. */
+.pagina > .pie-sitio {
+  margin-top: calc(var(--aire-seccion) * 0.5);
+}
+
 /* 🔑 EL AIRE AGRUPA, y lo dictó Juan mirando el pie: los cuatro renglones de
    abajo —nombre, matrícula, redes, copyright— son UN grupo, y el logo es otra
    cosa. Así que el hueco grande va entre el logo y el bloque, y los de adentro
