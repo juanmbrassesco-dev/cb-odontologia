@@ -1388,8 +1388,13 @@ body { padding: 0; }
 
    El hueco también sube: a 390 son 10 px porque no sobra ancho; con pantalla
    el mismo 10 pega las tarjetas entre sí y la grilla se lee como una sola
-   mancha. Es la misma regla del aire entre secciones — un valor por ancho. */
-@media (min-width: 1280px) {
+   mancha. Es la misma regla del aire entre secciones — un valor por ancho.
+
+   🔴 EL CORTE BAJA A 768 — 13-sep-2026. El argumento de arriba no dependía de
+   tener 1280 de ancho: dependía de que las tarjetas sean NUEVE. A 768 estaban
+   en dos columnas, o sea cinco filas con una tarjeta colgando sola al final,
+   y la sección medía 981 px. Con tres columnas mide 694 y entra en pantalla. */
+@media (min-width: 768px) {
   .grilla-tratamientos {
     grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
@@ -2021,7 +2026,11 @@ body { padding: 0; }
   display: none;
 }
 
-@media (min-width: 1280px) {
+/* 🔴 EL CORTE BAJA A 768 — 13-sep-2026. La tarjeta se sacó en escritorio y a
+   768 seguía puesta, así que la misma sección tenía dos formas según el ancho
+   y la de acá era la descartada. Mismo caso que «Nosotros»: lo decidido en un
+   ancho no baja solo al de al lado. */
+@media (min-width: 768px) {
   /* 🔴 LA TARJETA NO USA TODO EL ANCHO, y esto lo levantó Juan: «esas
      tarjetas de contacto son enormes con el texto a la izquierda».
 

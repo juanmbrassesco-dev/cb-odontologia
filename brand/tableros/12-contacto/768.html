@@ -814,6 +814,99 @@ th.n { text-align: right; }
   display: none;
 }
 
+/* 🔴 EL CORTE BAJA A 768 — 13-sep-2026. La tarjeta se sacó en escritorio y a
+   768 seguía puesta, así que la misma sección tenía dos formas según el ancho
+   y la de acá era la descartada. Mismo caso que «Nosotros»: lo decidido en un
+   ancho no baja solo al de al lado. */
+
+  /* 🔴 LA TARJETA NO USA TODO EL ANCHO, y esto lo levantó Juan: «esas
+     tarjetas de contacto son enormes con el texto a la izquierda».
+
+     Baymard nombra el defecto para pantallas grandes: demasiado aire
+     alrededor de un par de contenidos deja el sitio «demasiado abierto, con
+     espacios grandes y desparejos». Acá eran cuatro renglones cortos dentro
+     de una caja de 1100 px, con unos 800 de blanco al costado de cada dato.
+
+     🔑 EL TECHO VA EN EL COMPONENTE, NO EN LA PÁGINA: la sección sigue
+     midiendo 1100 —por eso el título no se mueve y la alineación del sitio no
+     cambia— y lo que se acota es la tarjeta. */
+  /* 🔴 EN ESCRITORIO NO HAY TARJETA — 13-sep-2026, lo pidió Juan: «hay que
+     sacar las tarjetas, hacer que se entienda que es otra sección a través
+     de los márgenes, jerarquía de elementos, colores y tamaño de letra».
+
+     🔑 ES SU PROPIA MANIJA, la que entró al método esta misma madrugada:
+     antes de separar dos bloques con una SUPERFICIE, probá el marcador de
+     arranque. La tarjeta era la superficie; el título de sección con su filo
+     dorado ya es el marcador, y alcanza. Suelta sobre los 1100 px la caja
+     además quedaba descolgada, que es lo que él vio.
+
+     Lo que separa ahora los cuatro datos es AIRE y JERARQUÍA: la dirección
+     manda —es a dónde hay que ir—, el resto baja un escalón, y el ícono
+     dorado hace de viñeta. Ningún borde, ningún fondo, ningún color nuevo. */
+  .contacto {
+    max-width: var(--columna);
+    margin-right: auto;
+    background: none;
+    border: 0;
+    border-radius: 0;
+  }
+
+  /* ⚠️ LOS TRES SELECTORES DE ABAJO REPITEN `.contacto` A PROPÓSITO, y es la
+     tercera vez en el día que hace falta aprender lo mismo: con la MISMA
+     prioridad gana la regla que va última en el archivo, y las originales de
+     `.dato-contacto` viven MÁS ABAJO que esta `@media`. Escritas con una sola
+     clase, estas reglas no se aplicaban — y no daban ningún error.
+
+     Subir la prioridad en vez de mover el bloque es lo que lo vuelve estable:
+     así deja de importar en qué orden se peguen los bloques de CSS. */
+  .contacto .dato-contacto {
+    border-top: 0;
+    padding: 0 0 22px;
+    align-items: baseline;
+  }
+
+  .contacto .dato-contacto:last-child {
+    padding-bottom: 0;
+  }
+
+  /* La dirección es el dato principal de la sección: es a dónde hay que ir.
+     Sube al escalón de arriba de la escala, que ya existe. */
+  .contacto .dato-contacto h3 {
+    font-size: var(--tipo-h2);
+    line-height: var(--alto-h2);
+  }
+
+  /* 🔴 EL QR ES UNA FILA MÁS DE LA TARJETA — tercera forma, y es la que pidió
+     Juan: «metele blanco alrededor de todo y que se una desde el blanco de
+     arriba».
+
+     Las dos anteriores fallaron por lo mismo aunque se vieran distintas: las
+     dos lo trataban como una PIEZA APARTE. Primero una tarjeta con borde al
+     costado, que competía con los datos; después un cuadrado blanco suelto
+     sobre el marfil, que quedaba flotando. Acá no hay pieza aparte — el QR
+     vive DENTRO de la tarjeta, sobre el mismo blanco, separado de la fila de
+     arriba por la misma línea que separa a todas las demás.
+
+     Y el blanco de la tarjeta ES la zona de silencio que la norma pide
+     alrededor del código (ISO/IEC 18004, cuatro módulos): no hace falta
+     pintar ningún recuadro propio. */
+  .contacto-qr {
+    display: block;
+    padding: 28px 14px 24px;
+    border-top: 1px solid var(--dorado-claro);
+    text-align: center;
+  }
+
+  /* 180 px de lado. El piso no es estético: los módulos de este código
+     necesitan al menos 2 px en pantalla para que la cámara los separe. */
+  .qr {
+    display: block;
+    width: 180px;
+    height: 180px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
 
 
 /* 🔴 EL ACCESO FIJO A WHATSAPP — SÓLO DE ESCRITORIO.
