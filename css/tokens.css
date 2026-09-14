@@ -384,13 +384,26 @@
 
 @media (min-width: 1280px) {
   :root {
-    --margen-pagina: 64px;
+    /* 🔴 90, NO 64 — 14-sep-2026, y lo pidió Juan: «todos los márgenes deben
+       estar unificados». El sistema tiene una regla que los tres anchos
+       cumplen: margen + útil + margen = el ancho de la pantalla.
+
+           390:  20 + 350 + 20  = 390
+           768:  40 + 688 + 40  = 768
+          1280:  90 + 1100 + 90 = 1280
+
+       Con 64 la cuenta cerraba en 1152, pero el contenido usa 1100, así que
+       la barra y el hero arrancaban 26 px más afuera que las secciones: dos
+       bordes izquierdos en la misma página. Se elige mover el 64 y no el
+       1100 porque el 1100 ya lo usan seis piezas aprobadas y el 64, dos. */
+    --margen-pagina: 90px;
     --aire-seccion: 96px;
 
     /* Acá es donde el margen deja de ser una posición y pasa a ser un mínimo:
        sobra pantalla, así que la sección se centra en vez de quedar pegada a
-       la izquierda. El 64 de arriba sigue existiendo para el hero y el
-       encabezado, que cruzan de lado a lado. */
+       la izquierda. El margen de arriba sigue existiendo para el hero y el
+       encabezado, que cruzan de lado a lado — y desde el 14-sep vale lo mismo
+       que da el centrado, así que las dos reglas caen en la misma línea. */
     --margen-seccion: auto;
     --aire-barra: 22px;
 

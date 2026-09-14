@@ -20,3 +20,7 @@ brand/tableros/15-pagina/artefacto.html
 # saque del caché. Se generan con un nombre distinto cada vez y se borran; no
 # tienen por qué viajar al repo. (Una se coló el 13-sep-2026.)
 brand/tableros/15-pagina/ver-*.html
+
+# Capturas para mirar, de un solo uso. No son entregables: se rehacen
+# con un comando y pesan. (Puestas el 14-sep-2026.)
+revisiones/

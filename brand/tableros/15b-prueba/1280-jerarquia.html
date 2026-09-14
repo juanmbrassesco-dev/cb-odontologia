@@ -391,13 +391,26 @@
 
 
   :root {
-    --margen-pagina: 64px;
+    /* 🔴 90, NO 64 — 14-sep-2026, y lo pidió Juan: «todos los márgenes deben
+       estar unificados». El sistema tiene una regla que los tres anchos
+       cumplen: margen + útil + margen = el ancho de la pantalla.
+
+           390:  20 + 350 + 20  = 390
+           768:  40 + 688 + 40  = 768
+          1280:  90 + 1100 + 90 = 1280
+
+       Con 64 la cuenta cerraba en 1152, pero el contenido usa 1100, así que
+       la barra y el hero arrancaban 26 px más afuera que las secciones: dos
+       bordes izquierdos en la misma página. Se elige mover el 64 y no el
+       1100 porque el 1100 ya lo usan seis piezas aprobadas y el 64, dos. */
+    --margen-pagina: 90px;
     --aire-seccion: 96px;
 
     /* Acá es donde el margen deja de ser una posición y pasa a ser un mínimo:
        sobra pantalla, así que la sección se centra en vez de quedar pegada a
-       la izquierda. El 64 de arriba sigue existiendo para el hero y el
-       encabezado, que cruzan de lado a lado. */
+       la izquierda. El margen de arriba sigue existiendo para el hero y el
+       encabezado, que cruzan de lado a lado — y desde el 14-sep vale lo mismo
+       que da el centrado, así que las dos reglas caen en la misma línea. */
     --margen-seccion: auto;
     --aire-barra: 22px;
 
@@ -504,7 +517,7 @@ body {
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
   font-size: var(--tipo-cuerpo);
   line-height: var(--alto-cuerpo);
-  padding: 64px 64px 128px;
+  padding: 90px 90px 180px;
 }
 
 h1, h2, h3 {
@@ -779,6 +792,14 @@ body { padding: 0; }
    proporción del hero (4/3) es de escena, no de cara. Va a sangre como la del
    hero, por la misma razón — el radio del sistema es de controles, no de
    fotos. */
+/* EL MARCO ES TRANSPARENTE POR DEFECTO. `display: contents` lo borra del
+   árbol de cajas: la foto que tiene adentro sigue siendo hija directa de la
+   grilla, con la misma celda y el mismo tamaño que antes de que el marco
+   existiera. Se enciende solo a 1280, donde sí hace falta. */
+.nosotros-marco {
+  display: contents;
+}
+
 .nosotros-retrato {
   display: block;
   width: 100%;
@@ -1077,16 +1098,43 @@ body { padding: 0; }
 /* 1280 conserva SU reparto: allá el ancho sobra y la foto puede ser más
    angosta sin apretar el texto. El 6/6 es la decisión de 768. */
 
+  /* 🔴 LAS DOS COLUMNAS MIDEN LO MISMO — 14-sep-2026, lo pidió Juan:
+     «los contenedores tienen que ser iguales». Es la MISMA decisión que él ya
+     había tomado a 768, donde las dos miden 324 × 452; 1280 hacía lo contrario
+     y el comentario que lo justificaba decía «que es lo aprobado» sin que
+     hubiera ninguna aprobación detrás. Lo cazó él mirando la página.
+
+     Qué cambia, y son las dos mitades de «iguales»:
+       · el ANCHO — 1fr 1fr en vez de 5fr 7fr, como a 768.
+       · el ALTO  — sin `align-items: center` la fila estira las dos columnas,
+                    así que la foto deja de mandar por su proporción y toma el
+                    alto del texto. Medido antes del cambio: foto 440 × 549
+                    contra texto 617 × 372, o sea 177 px de diferencia. */
   .nosotros {
-    grid-template-columns: 5fr 7fr;
-    /* Acá el texto se CENTRA contra la foto, que es lo aprobado: allá la foto
-       es más alta y estirar el texto dejaría un agujero en el medio. */
-    align-items: center;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ACÁ SE ENCIENDE EL MARCO. Pasa a ser una caja de verdad y la foto se
+     apoya en sus cuatro bordes: al estar fuera del flujo, la foto ya no le
+     impone ningún alto a la fila. El alto lo manda el TEXTO, que es el que no
+     se puede recortar — la misma regla que se escribió a 768.
+
+     El filo se muda de la foto al marco por el mismo motivo: el borde tiene
+     que dibujar la caja, no la imagen que va adentro. */
+  .nosotros-dentro .nosotros-marco {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--dorado-claro);
   }
 
   .nosotros-dentro .nosotros-retrato {
-    height: auto;
-    aspect-ratio: 4 / 5;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border: 0;
   }
 
 

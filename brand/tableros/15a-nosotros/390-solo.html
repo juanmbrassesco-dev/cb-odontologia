@@ -721,6 +721,14 @@ body { padding: 0; }
    proporción del hero (4/3) es de escena, no de cara. Va a sangre como la del
    hero, por la misma razón — el radio del sistema es de controles, no de
    fotos. */
+/* EL MARCO ES TRANSPARENTE POR DEFECTO. `display: contents` lo borra del
+   árbol de cajas: la foto que tiene adentro sigue siendo hija directa de la
+   grilla, con la misma celda y el mismo tamaño que antes de que el marco
+   existiera. Se enciende solo a 1280, donde sí hace falta. */
+.nosotros-marco {
+  display: contents;
+}
+
 .nosotros-retrato {
   display: block;
   width: 100%;
@@ -959,7 +967,7 @@ afirmación por confirmar. <b>La foto es de banco</b>, no es ella.</p>
 
   <section class="nosotros nosotros-dentro" id="nosotros">
     <h2 class="nosotros-titulo">Nosotros</h2>
-    <img class="nosotros-retrato" alt="" src="../../fotos/nosotros-ejemplo.jpg">
+    <div class="nosotros-marco"><img class="nosotros-retrato" alt="" src="../../fotos/nosotros-ejemplo.jpg"></div>
     <div class="nosotros-texto">
       <h3 class="nosotros-nombre">Cecilia Brassesco</h3>
       <p class="nosotros-matricula">Matrícula 3636/01</p>

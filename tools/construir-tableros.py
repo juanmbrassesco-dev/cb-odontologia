@@ -2948,7 +2948,11 @@ BARRA_MEDIDA = {
         "sandwich": 44,
     },
     1280: {
-        "util": 1152,
+        # 1100, no 1152: el margen de 1280 se unificó en 90 el 14-sep-2026
+        # (ver el porqué en css/tokens.css). Si este número no acompaña, los
+        # tableros argumentan con el ancho de otro ancho — que es el error
+        # que ya se cometió una vez con el tablero 09.
+        "util": 1100,
         "logo": 320,
         "menu": 400.3,
         "boton": 153.8,
@@ -3457,12 +3461,27 @@ CSS_HERO_VELO = """
        Los 97 px que se restan son el alto REAL de la barra en escritorio y
        están medidos, no estimados: logo 52 + aire 22 arriba + 22 abajo +
        1 del filo dorado. Si el aire de la barra cambia, este número cambia. */
-    /* El `max()` pone un PISO al alto: en una ventana baja, `100vh - 97` daba
-       un hero tan chato que la foto vertical no tenía dónde entrar y se
-       recortaba el doble. Con el piso, en esas ventanas el hero se pasa un
-       poco de la pantalla —hay que hacer scroll— y a cambio la foto se ve
-       entera, que es lo que importa en la portada. */
-    min-height: max(680px, calc(100vh - 97px));
+    /* 🔴 `height`, NO `min-height` — 14-sep-2026, y lo pidió Juan:
+       «independientemente de la pantalla usada siempre tenga el tamaño de la
+       pantalla, ni más ni menos».
+
+       `min-height` es un PISO: el hero podía crecer por encima de él si el
+       contenido pedía más, y eso es exactamente lo que pasaba en una ventana
+       de 800 — el mínimo daba 703 y el texto pedía 745, así que el hero se
+       iba a 845 y LA FOTO NO LO ACOMPAÑABA: quedaba una franja de marfil de
+       ~40 px debajo de ella. `height` fija el alto, así que no hay hueco
+       posible entre el hero y su foto.
+
+       ⚠️ LO QUE SE RESIGNA, y es una decisión, no un descuido: el piso de
+       680 existía porque en una ventana baja la foto vertical se recorta más.
+       Ese recorte vuelve. A cambio el hero mide la pantalla siempre, que es
+       lo que se pidió.
+
+       ⚠️ Y EL LÍMITE MEDIDO: con los botones en fila el contenido del hero
+       pide unos 420 px. Por debajo de una ventana de ~520 el texto se sale
+       del hero. No hay pantalla de escritorio así de baja, pero si alguna vez
+       se agrega una línea al titular, este número baja. */
+    height: calc(100vh - 97px);
 
     /* 🔴 Y LA FILA TIENE QUE PODER ENCOGER, si no el hero no entra en la
        pantalla. Medido: sin esto el hero daba 960 px FIJOS con ventanas de
@@ -3562,7 +3581,17 @@ CSS_HERO_VELO = """
     grid-row: 1;
     justify-content: center;
     min-height: 0;
-    padding: 48px var(--margen-pagina);
+    /* 🔴 EL PADDING NO ES SIMÉTRICO, y es a propósito — 14-sep-2026.
+       El de la IZQUIERDA es el margen de la página: tiene que valer lo mismo
+       que el de las secciones o el hero rompe el borde unificado. El de la
+       DERECHA no es un margen de página: es el aire contra la foto, y por eso
+       vale 40, el mismo hueco que separa las dos columnas de «Nosotros».
+
+       Qué lo trajo: al unificar el margen en 90, el titular perdió 52 px de
+       ancho y pasó de 4 líneas a 5, más cortas. Con 90 a la izquierda y 40 a
+       la derecha el texto vuelve a ~600 px y el titular a 4 líneas, sin tocar
+       el borde. */
+    padding: 48px 40px 48px var(--margen-pagina);
 
     /* 🔴 DEVUELVE EL ANCHO QUE LE PUSO EL CORTE DE 768, y hay que escribirlo
        aunque no se vea: las dos @media se aplican las dos, y la de acá no
@@ -3572,12 +3601,10 @@ CSS_HERO_VELO = """
     max-width: none;
   }
 
-  /* Lo mismo con los botones: en fila es la decisión de 768. A 1280 el hero
-     está partido y la columna de texto es angosta, así que vuelven a
-     apilarse, que es como se aprobó. */
-  .hero-velo .acciones {
-    grid-template-columns: max-content;
-  }
+  /* 🔴 LOS BOTONES VAN EN FILA TAMBIÉN ACÁ — 14-sep-2026, lo decidió Juan:
+     «los desapilamos y aprovechamos el espacio». Hasta hoy 1280 los volvía a
+     apilar con una regla propia; ahora hereda la de 768 y no hay regla que
+     escribir. Un bloque menos que mantener. */
 
   /* El texto vuelve al grafito: sobre marfil mide 12,00, que es el par más
      alto del sistema. La letra blanca sólo existía por el velo. */
@@ -5019,6 +5046,14 @@ CSS_NOSOTROS = """
    proporción del hero (4/3) es de escena, no de cara. Va a sangre como la del
    hero, por la misma razón — el radio del sistema es de controles, no de
    fotos. */
+/* EL MARCO ES TRANSPARENTE POR DEFECTO. `display: contents` lo borra del
+   árbol de cajas: la foto que tiene adentro sigue siendo hija directa de la
+   grilla, con la misma celda y el mismo tamaño que antes de que el marco
+   existiera. Se enciende solo a 1280, donde sí hace falta. */
+.nosotros-marco {
+  display: contents;
+}
+
 .nosotros-retrato {
   display: block;
   width: 100%;
@@ -5317,16 +5352,43 @@ CSS_NOSOTROS = """
 /* 1280 conserva SU reparto: allá el ancho sobra y la foto puede ser más
    angosta sin apretar el texto. El 6/6 es la decisión de 768. */
 @media (min-width: 1280px) {
+  /* 🔴 LAS DOS COLUMNAS MIDEN LO MISMO — 14-sep-2026, lo pidió Juan:
+     «los contenedores tienen que ser iguales». Es la MISMA decisión que él ya
+     había tomado a 768, donde las dos miden 324 × 452; 1280 hacía lo contrario
+     y el comentario que lo justificaba decía «que es lo aprobado» sin que
+     hubiera ninguna aprobación detrás. Lo cazó él mirando la página.
+
+     Qué cambia, y son las dos mitades de «iguales»:
+       · el ANCHO — 1fr 1fr en vez de 5fr 7fr, como a 768.
+       · el ALTO  — sin `align-items: center` la fila estira las dos columnas,
+                    así que la foto deja de mandar por su proporción y toma el
+                    alto del texto. Medido antes del cambio: foto 440 × 549
+                    contra texto 617 × 372, o sea 177 px de diferencia. */
   .nosotros {
-    grid-template-columns: 5fr 7fr;
-    /* Acá el texto se CENTRA contra la foto, que es lo aprobado: allá la foto
-       es más alta y estirar el texto dejaría un agujero en el medio. */
-    align-items: center;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ACÁ SE ENCIENDE EL MARCO. Pasa a ser una caja de verdad y la foto se
+     apoya en sus cuatro bordes: al estar fuera del flujo, la foto ya no le
+     impone ningún alto a la fila. El alto lo manda el TEXTO, que es el que no
+     se puede recortar — la misma regla que se escribió a 768.
+
+     El filo se muda de la foto al marco por el mismo motivo: el borde tiene
+     que dibujar la caja, no la imagen que va adentro. */
+  .nosotros-dentro .nosotros-marco {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--dorado-claro);
   }
 
   .nosotros-dentro .nosotros-retrato {
-    height: auto;
-    aspect-ratio: 4 / 5;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    border: 0;
   }
 }
 """
@@ -5358,13 +5420,28 @@ def nosotros_del_sitio(ancho, jerarquia="titulo", dentro=True):
     # SU PROPIA FOTO, NO LA DEL HERO — corregido el 11-sep-2026. Es 900 × 1125,
     # o sea 4:5 exacto: el mismo número que pide el hueco, así que `cover` no
     # recorta nada y lo que se aprueba en el tablero es lo que se ve.
+    # 🔴 LA FOTO VA ADENTRO DE UN MARCO — 14-sep-2026. El marco NO se ve y
+    # en 390 y 768 ni siquiera existe: lleva `display: contents`, así que la
+    # foto sigue siendo hija directa de la grilla y la geometría no se mueve
+    # ni un píxel. Recién a 1280 el marco se enciende.
+    #
+    # POR QUÉ HACE FALTA, y es el motivo por el que no alcanzaba con CSS:
+    # una <img> le impone a su fila su ALTO NATURAL. A 768 eso no molestaba
+    # —la foto pedía 405 y el texto 452, así que mandaba el texto— pero a 1280
+    # la columna es más ancha y la foto pide 661 contra los 405 del texto:
+    # manda la foto y las dos columnas vuelven a quedar desparejas. Sacando la
+    # foto del flujo (dentro del marco) deja de tener alto propio que imponer.
     if foto:
-        hueco = (f'<img class="nosotros-retrato" alt="" src="{foto}">')
+        hueco = (
+            '<div class="nosotros-marco">'
+            f'<img class="nosotros-retrato" alt="" src="{foto}">'
+            '</div>'
+        )
     else:
-        hueco = ("""<div class="nosotros-hueco">
+        hueco = ("""<div class="nosotros-marco"><div class="nosotros-hueco">
       Retrato de Cecilia en el consultorio.<br>
       Vertical, 4:5. No existe todavía.
-    </div>""")
+    </div></div>""")
 
     marco = " nosotros-dentro" if dentro else ""
 

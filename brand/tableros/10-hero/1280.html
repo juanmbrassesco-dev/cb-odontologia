@@ -391,13 +391,26 @@
 
 
   :root {
-    --margen-pagina: 64px;
+    /* 🔴 90, NO 64 — 14-sep-2026, y lo pidió Juan: «todos los márgenes deben
+       estar unificados». El sistema tiene una regla que los tres anchos
+       cumplen: margen + útil + margen = el ancho de la pantalla.
+
+           390:  20 + 350 + 20  = 390
+           768:  40 + 688 + 40  = 768
+          1280:  90 + 1100 + 90 = 1280
+
+       Con 64 la cuenta cerraba en 1152, pero el contenido usa 1100, así que
+       la barra y el hero arrancaban 26 px más afuera que las secciones: dos
+       bordes izquierdos en la misma página. Se elige mover el 64 y no el
+       1100 porque el 1100 ya lo usan seis piezas aprobadas y el 64, dos. */
+    --margen-pagina: 90px;
     --aire-seccion: 96px;
 
     /* Acá es donde el margen deja de ser una posición y pasa a ser un mínimo:
        sobra pantalla, así que la sección se centra en vez de quedar pegada a
-       la izquierda. El 64 de arriba sigue existiendo para el hero y el
-       encabezado, que cruzan de lado a lado. */
+       la izquierda. El margen de arriba sigue existiendo para el hero y el
+       encabezado, que cruzan de lado a lado — y desde el 14-sep vale lo mismo
+       que da el centrado, así que las dos reglas caen en la misma línea. */
     --margen-seccion: auto;
     --aire-barra: 22px;
 
@@ -504,7 +517,7 @@ body {
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
   font-size: var(--tipo-cuerpo);
   line-height: var(--alto-cuerpo);
-  padding: 64px 64px 128px;
+  padding: 90px 90px 180px;
 }
 
 h1, h2, h3 {
@@ -1226,12 +1239,27 @@ body { padding: 0; }
        Los 97 px que se restan son el alto REAL de la barra en escritorio y
        están medidos, no estimados: logo 52 + aire 22 arriba + 22 abajo +
        1 del filo dorado. Si el aire de la barra cambia, este número cambia. */
-    /* El `max()` pone un PISO al alto: en una ventana baja, `100vh - 97` daba
-       un hero tan chato que la foto vertical no tenía dónde entrar y se
-       recortaba el doble. Con el piso, en esas ventanas el hero se pasa un
-       poco de la pantalla —hay que hacer scroll— y a cambio la foto se ve
-       entera, que es lo que importa en la portada. */
-    min-height: max(680px, calc(100vh - 97px));
+    /* 🔴 `height`, NO `min-height` — 14-sep-2026, y lo pidió Juan:
+       «independientemente de la pantalla usada siempre tenga el tamaño de la
+       pantalla, ni más ni menos».
+
+       `min-height` es un PISO: el hero podía crecer por encima de él si el
+       contenido pedía más, y eso es exactamente lo que pasaba en una ventana
+       de 800 — el mínimo daba 703 y el texto pedía 745, así que el hero se
+       iba a 845 y LA FOTO NO LO ACOMPAÑABA: quedaba una franja de marfil de
+       ~40 px debajo de ella. `height` fija el alto, así que no hay hueco
+       posible entre el hero y su foto.
+
+       ⚠️ LO QUE SE RESIGNA, y es una decisión, no un descuido: el piso de
+       680 existía porque en una ventana baja la foto vertical se recorta más.
+       Ese recorte vuelve. A cambio el hero mide la pantalla siempre, que es
+       lo que se pidió.
+
+       ⚠️ Y EL LÍMITE MEDIDO: con los botones en fila el contenido del hero
+       pide unos 420 px. Por debajo de una ventana de ~520 el texto se sale
+       del hero. No hay pantalla de escritorio así de baja, pero si alguna vez
+       se agrega una línea al titular, este número baja. */
+    height: calc(100vh - 97px);
 
     /* 🔴 Y LA FILA TIENE QUE PODER ENCOGER, si no el hero no entra en la
        pantalla. Medido: sin esto el hero daba 960 px FIJOS con ventanas de
@@ -1331,7 +1359,17 @@ body { padding: 0; }
     grid-row: 1;
     justify-content: center;
     min-height: 0;
-    padding: 48px var(--margen-pagina);
+    /* 🔴 EL PADDING NO ES SIMÉTRICO, y es a propósito — 14-sep-2026.
+       El de la IZQUIERDA es el margen de la página: tiene que valer lo mismo
+       que el de las secciones o el hero rompe el borde unificado. El de la
+       DERECHA no es un margen de página: es el aire contra la foto, y por eso
+       vale 40, el mismo hueco que separa las dos columnas de «Nosotros».
+
+       Qué lo trajo: al unificar el margen en 90, el titular perdió 52 px de
+       ancho y pasó de 4 líneas a 5, más cortas. Con 90 a la izquierda y 40 a
+       la derecha el texto vuelve a ~600 px y el titular a 4 líneas, sin tocar
+       el borde. */
+    padding: 48px 40px 48px var(--margen-pagina);
 
     /* 🔴 DEVUELVE EL ANCHO QUE LE PUSO EL CORTE DE 768, y hay que escribirlo
        aunque no se vea: las dos @media se aplican las dos, y la de acá no
@@ -1341,12 +1379,10 @@ body { padding: 0; }
     max-width: none;
   }
 
-  /* Lo mismo con los botones: en fila es la decisión de 768. A 1280 el hero
-     está partido y la columna de texto es angosta, así que vuelven a
-     apilarse, que es como se aprobó. */
-  .hero-velo .acciones {
-    grid-template-columns: max-content;
-  }
+  /* 🔴 LOS BOTONES VAN EN FILA TAMBIÉN ACÁ — 14-sep-2026, lo decidió Juan:
+     «los desapilamos y aprovechamos el espacio». Hasta hoy 1280 los volvía a
+     apilar con una regla propia; ahora hereda la de 768 y no hay regla que
+     escribir. Un bloque menos que mantener. */
 
   /* El texto vuelve al grafito: sobre marfil mide 12,00, que es el par más
      alto del sistema. La letra blanca sólo existía por el velo. */
