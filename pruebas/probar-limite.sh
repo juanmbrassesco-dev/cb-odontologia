@@ -3,8 +3,13 @@
 # LA BATERÍA DEL LÍMITE DE TURNOS (fase 4, B2)
 #
 # Verifica lo único que promete el trigger `turnos_limite_por_paciente`: que un
-# paciente no puede tener más de DOS turnos web abiertos con el mismo profesional,
-# y que los turnos que carga el consultorio NO cuentan para ese tope.
+# paciente no puede tener más de UN turno web abierto con el mismo profesional,
+# que ese cupo SE LIBERA cuando pasa la hora de inicio del turno que ya tenía, y
+# que los turnos que carga el consultorio NO cuentan para el tope.
+#
+# 🔴 EL TOPE BAJÓ DE DOS A UNO el 17-sep-2026 (migración `limitar_a_un_turno`).
+# El motivo es de agenda: un paciente que todavía no fue al turno que ya tiene no
+# debería ocupar un segundo lugar con ese mismo profesional.
 #
 # 🔴 EL CASO 4 ES EL QUE MÁS IMPORTA Y ES EL MENOS OBVIO. Los tres primeros
 # prueban que el límite existe; el cuarto prueba que NO se pasó de la raya. Un
@@ -111,12 +116,37 @@ PACIENTE=$( consultar "select id from pacientes order by id desc limit 1;" | jq 
 echo "  (el paciente de prueba quedó con id $PACIENTE)"
 echo
 
-probar "2. Segundo turno web" \
-  "201 — dos es el tope, todavía entra" \
+TURNO_1=$( consultar "select id from turnos order by id desc limit 1;" | jq -r '.[0].id' )
+
+probar "2. Segundo turno web, con el primero todavía por venir" \
+  "409 — 'Ya tenés un turno con este profesional'" \
   "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_2\", \"paciente_id\": $PACIENTE }"
 
-probar "3. Tercer turno web" \
-  "409 — 'Ya tenés dos turnos con este profesional'" \
+
+# ── El caso que prueba CUÁNDO se libera el cupo ───────────────────────────────
+#
+# La regla no es "un turno activo y nada más": es que el cupo se libera cuando
+# PASA LA HORA DE INICIO del turno que ya tenía —no cuando el turno termina, y no
+# sólo si el paciente lo cancela—. Eso lo hace el `inicio > now()` del conteo.
+#
+# Para probarlo sin esperar a que pase una hora real, el turno 1 se corre al
+# pasado ESCRIBIENDO DIRECTO EN LA BASE. Es lo único que ocurre por fuera del
+# portero, igual que el turno manual de la prueba 4, y va dicho acá para que
+# nadie lo lea como un camino que la web habilita: la web no deja reservar en el
+# pasado ni mover un turno.
+
+echo "───────────────────────────────────────────────────────────────"
+echo "▶ (preparación) El turno 1 pasa a estar en el pasado"
+
+consultar "update turnos
+              set inicio = now() - interval '1 hour'
+            where id = $TURNO_1
+        returning id, inicio;"
+
+echo
+
+probar "3. Otro turno web, con la hora del primero YA PASADA" \
+  "201 — el cupo se liberó al pasar la hora de inicio, sin cancelar nada" \
   "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_3\", \"paciente_id\": $PACIENTE }"
 
 

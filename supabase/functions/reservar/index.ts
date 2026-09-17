@@ -66,7 +66,7 @@ import { enviarAvisos } from '../_shared/avisos.ts'
 const CHOQUE_DE_TURNOS = '23P01'
 
 // El error que levanta el trigger `turnos_limite_por_paciente` cuando el
-// paciente ya tiene dos turnos web abiertos con ese profesional. No es un código
+// paciente ya tiene un turno web abierto con ese profesional. No es un código
 // de Postgres: lo elegimos nosotros en la migración, y por eso no se parece a
 // ninguno de los estándar. Cualquier cadena de cinco caracteres vale mientras no
 // termine en tres ceros, que son códigos de categoría.
@@ -131,7 +131,7 @@ function horaTomada(): Response {
   )
 }
 
-// El tope: ya tiene dos turnos abiertos con ese profesional. Comparte el 409 con
+// El tope: ya tiene un turno abierto con ese profesional. Comparte el 409 con
 // el choque de horarios porque es la misma familia —el pedido estaba bien armado
 // y el estado del sistema lo rechaza—, pero el texto tiene que ser distinto: al
 // que llegó segundo se le dice que elija otra hora, y acá elegir otra hora no
@@ -144,8 +144,8 @@ function limiteAlcanzado(): Response {
 
   return Response.json(
     {
-      error: 'Ya tenés dos turnos con este profesional. '
-        + 'Cancelá uno o escribinos.',
+      error: 'Ya tenés un turno con este profesional. '
+        + 'Podés cancelarlo desde «mis turnos», o escribinos si necesitás otro.',
     },
     { status: 409 },
   )

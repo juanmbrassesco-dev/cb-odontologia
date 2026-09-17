@@ -237,19 +237,37 @@ reservar () {
   | jq -r '.id'
 }
 
-TURNO_FELIZ=$( reservar "$HORA_FELIZ" )
+# 🔴 EL ORDEN DE ESTAS DOS RESERVAS IMPORTA DESDE EL 17-sep-2026, y antes no.
+#
+# El tope bajó a UN turno web abierto por profesional (migración
+# `limitar_a_un_turno`), así que los dos ya no pueden convivir: si se reservan
+# los dos seguidos, el segundo rebota con 409 y la batería no arranca.
+#
+# Por eso primero se saca el que se va a cancelar, se lo cancela —y ahí el cupo
+# queda libre— y recién después se saca el feliz. De paso, esta secuencia prueba
+# gratis algo que ninguna batería probaba: que CANCELAR libera el cupo.
+
 TURNO_CANCELADO=$( reservar "$HORA_CANCELADO" )
 
-if [ "$TURNO_FELIZ" = "null" ] || [ "$TURNO_CANCELADO" = "null" ]; then
-  echo "❌ No se pudieron reservar los dos turnos de prueba. Corré probar-reservar.sh primero."
+if [ "$TURNO_CANCELADO" = "null" ]; then
+  echo "❌ No se pudo reservar el turno a cancelar. Corré probar-reservar.sh primero."
   exit 1
 fi
 
-# Y éste se cancela YA, para que el caso 7 tenga qué encontrar apagado.
+# Se cancela YA, para que el caso 7 tenga qué encontrar apagado — y para que el
+# turno feliz de abajo tenga lugar.
 curl -s -o /dev/null -X POST "$FUNCIONES/cancelar" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d "{ \"turno_id\": $TURNO_CANCELADO }"
+
+TURNO_FELIZ=$( reservar "$HORA_FELIZ" )
+
+if [ "$TURNO_FELIZ" = "null" ]; then
+  echo "❌ El turno feliz no entró aun con el cupo liberado por la cancelación."
+  echo "   Eso ya no es escenario: es la regla del tope funcionando mal."
+  exit 1
+fi
 
 echo "  turnos: feliz=$TURNO_FELIZ · ya cancelado=$TURNO_CANCELADO · ajeno=$TURNO_AJENO · pasado=$TURNO_PASADO"
 echo
