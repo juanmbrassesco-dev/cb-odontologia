@@ -176,11 +176,25 @@ for FECHA in $DIAS_QUE_TRABAJA; do
   SEMANA_QUE_TRABAJA="$SEMANA_QUE_TRABAJA $( dia_de_semana "$FECHA" )"
 done
 
+# 🔴 Y TIENE QUE ESTAR A MÁS DE 12 HORAS. Se descubrió el 17-sep-2026 por un
+# FALSO VERDE: el día tapado elegido fue el mismo día de la corrida, la regla de
+# las 12 horas de anticipación cortó ANTES de que se mirara si el día estaba
+# tapado, y el caso 10 devolvió 400 —el código que esperaba— con el error del
+# caso 9. La batería se leía en verde probando otra cosa.
+#
+# Se exige que la fecha sea POSTERIOR a mañana, que deja las 12 horas cubiertas
+# con margen en cualquier hora del día en que se corra. La comparación es de
+# texto y funciona porque el formato es YYYY-MM-DD: ordena igual que la fecha.
+
+MANANA=$( date -u -v+1d '+%F' )
+
 DIA_TAPADO=""
 
 for FECHA in $( echo "$GRILLA_CONSULTA" | jq -r '.dias[] | select( .bloques | length == 0 ) | .fecha' ); do
 
-  if [ -z "$DIA_TAPADO" ] && [[ " $SEMANA_QUE_TRABAJA " == *" $( dia_de_semana "$FECHA" ) "* ]]; then
+  if [ -z "$DIA_TAPADO" ] \
+     && [[ " $SEMANA_QUE_TRABAJA " == *" $( dia_de_semana "$FECHA" ) "* ]] \
+     && [[ "$FECHA" > "$MANANA" ]]; then
     DIA_TAPADO="$FECHA"
   fi
 done
