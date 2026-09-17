@@ -188,6 +188,195 @@ def qr_svg(lado_mm):
 
 
 # ============================================================
+# TEXTO A CURVAS — para el archivo que va al PLÓTER DE CORTE
+#
+# 🔴 POR QUÉ HACE FALTA. Un plóter de corte no lee tipografías: sigue
+# TRAZOS. Y el PDF normal de la pieza embebe la Jost como fuente Type 3,
+# que Corel e Illustrator a veces importan mal. Con los textos convertidos
+# a contornos, el archivo no depende de ninguna fuente instalada.
+#
+# 🔴 Y POR QUÉ SE HACE ACÁ Y NO POST-PROCESANDO EL PDF. Ya se probó
+# (`pdftocairo -svg` → `rsvg-convert -f pdf`) el 14-sep-2026 y ROMPIÓ EL QR:
+# el archivo convertido no decodificaba y se veía idéntico en pantalla. El
+# QR de esta pieza ya no viaja adentro del archivo de corte —va impreso
+# aparte—, pero el camino sigue siendo éste: convertir desde el generador
+# es lo único que deja verificar glifo por glifo con la métrica real.
+# ============================================================
+
+_PESOS = {}
+
+
+def kerning_de(fuente):
+    """El KERNING de la fuente: cuánto se acercan ciertos PARES de letras.
+
+    🔴 POR QUÉ HACE FALTA, y se descubrió midiendo. La primera versión de
+    esta conversión colocaba cada letra usando sólo su avance, y el texto
+    salió 1,2 % MÁS ANCHO que el archivo aprobado. El motivo es que el
+    navegador sí aplica el kerning: los pares como "Tr" o "Av" se dibujan
+    más juntos que la suma de sus avances, porque la forma de las dos letras
+    deja un hueco que el ojo lee como un espacio de más.
+
+    En Jost ese ajuste vive en la tabla GPOS, en un único lookup de tipo 2
+    ("pair adjustment"), y se lee de la fuente YA INSTANCIADA en su peso:
+    el ajuste también cambia con el eje.
+    """
+    pares = {}
+
+    if "GPOS" not in fuente:
+        return pares
+
+    todos = fuente.getGlyphOrder()
+
+    for lookup in fuente["GPOS"].table.LookupList.Lookup:
+        if lookup.LookupType != 2:
+            continue
+
+        for tabla in lookup.SubTable:
+            if tabla.Format == 1:
+                for i, izquierda in enumerate(tabla.Coverage.glyphs):
+                    for registro in tabla.PairSet[i].PairValueRecord:
+                        ajuste = getattr(registro.Value1, "XAdvance", 0)
+
+                        if ajuste:
+                            pares[(izquierda, registro.SecondGlyph)] = ajuste
+
+            elif tabla.Format == 2:
+                clases_izq = tabla.ClassDef1.classDefs
+                clases_der = tabla.ClassDef2.classDefs
+
+                for izquierda in tabla.Coverage.glyphs:
+                    fila = tabla.Class1Record[clases_izq.get(izquierda, 0)]
+
+                    for derecha in todos:
+                        celda = fila.Class2Record[clases_der.get(derecha, 0)]
+                        ajuste = getattr(celda.Value1, "XAdvance", 0)
+
+                        if ajuste:
+                            pares[(izquierda, derecha)] = ajuste
+
+    return pares
+
+
+def fuente_en_peso(peso):
+    """La Jost VARIABLE congelada en un peso, lista para sacarle contornos.
+
+    Jost-var.ttf tiene un eje `wght` de 100 a 900: el archivo no contiene
+    un dibujo por peso, contiene las reglas para interpolarlos. Para sacar
+    el contorno de una letra en Medium hay que INSTANCIARLA primero —
+    congelar el eje en 500— o el contorno sale en el peso por defecto (400)
+    y el texto se ve más fino de lo aprobado.
+    """
+    global _PESOS
+
+    if peso not in _PESOS:
+        ancho_de("", 1)  # deja fontTools en sys.path, con su comodín
+
+        from fontTools.ttLib import TTFont
+        from fontTools.varLib import instancer
+
+        fuente = TTFont(RAIZ / "brand" / "fonts" / "Jost-var.ttf")
+        fuente = instancer.instantiateVariableFont(
+            fuente,
+            {"wght": peso},
+        )
+
+        _PESOS[peso] = (
+            fuente.getGlyphSet(),
+            fuente.getBestCmap(),
+            fuente["hmtx"].metrics,
+            fuente["head"].unitsPerEm,
+            kerning_de(fuente),
+        )
+
+    return _PESOS[peso]
+
+
+def ancho_en_peso(texto, tamano, peso, tracking=0.0):
+    """El ancho del texto en mm, con el tracking de CSS incluido.
+
+    ⚠ EL TRACKING SE CUENTA TAMBIÉN DESPUÉS DE LA ÚLTIMA LETRA, y no es un
+    error: `letter-spacing` de CSS agrega el espacio después de CADA
+    carácter, el último incluido, y el navegador usa ese ancho para
+    centrar. Si acá se contara distinto, el texto en curvas quedaría medio
+    tracking corrido respecto del archivo que ya se aprobó.
+    """
+    glifos, cmap, avances, upm, kerning = fuente_en_peso(peso)
+    total = 0.0
+    anterior = None
+
+    for letra in texto:
+        nombre = cmap.get(ord(letra), cmap.get(ord(" ")))
+
+        if anterior is not None:
+            total += kerning.get((anterior, nombre), 0) / upm * tamano
+
+        total += avances[nombre][0] / upm * tamano
+        total += tracking
+        anterior = nombre
+
+    return total
+
+
+def texto_a_curvas(texto, tamano, peso, x, y, ancla="middle", tracking=0.0):
+    """Un <path> con el texto ya dibujado, en milímetros y sin fuente.
+
+    Las coordenadas de una fuente crecen HACIA ARRIBA y las de un SVG hacia
+    abajo, así que la transformación lleva la Y en negativo. Se aplica a
+    cada punto con TransformPen en vez de envolver todo en un <g
+    transform>: un archivo de corte que alguien puede escalar por accidente
+    es un archivo que se fabrica mal.
+    """
+    # El import va DESPUÉS de fuente_en_peso() y no arriba, porque es esa
+    # función la que mete fontTools en sys.path — vive en el Python de
+    # Homebrew, no en el suelto. Importar primero rompe con
+    # ModuleNotFoundError aunque la biblioteca esté instalada.
+    glifos, cmap, avances, upm, kerning = fuente_en_peso(peso)
+
+    from fontTools.pens.svgPathPen import SVGPathPen
+    from fontTools.pens.transformPen import TransformPen
+
+    escala = tamano / upm
+
+    ancho = ancho_en_peso(texto, tamano, peso, tracking)
+
+    if ancla == "middle":
+        cursor = x - ancho / 2
+    elif ancla == "end":
+        cursor = x - ancho
+    else:
+        cursor = x
+
+    trazos = []
+
+    anterior = None
+
+    for letra in texto:
+        nombre = cmap.get(ord(letra), cmap.get(ord(" ")))
+
+        if anterior is not None:
+            cursor += kerning.get((anterior, nombre), 0) * escala
+
+        lapiz = SVGPathPen(glifos)
+
+        glifos[nombre].draw(
+            TransformPen(
+                lapiz,
+                (escala, 0, 0, -escala, cursor, y),
+            )
+        )
+
+        trazo = lapiz.getCommands()
+
+        if trazo:
+            trazos.append(trazo)
+
+        cursor += avances[nombre][0] * escala + tracking
+        anterior = nombre
+
+    return " ".join(trazos)
+
+
+# ============================================================
 # EL CARTEL — 500 × 320 mm, apaisado. Lo pidió Cecilia el 10-sep-2026.
 #
 # ⚠️ CAMBIA DE CATEGORÍA respecto de la placa, y queda escrito: 1600 cm² es
@@ -208,6 +397,14 @@ CARTEL_ANCHO = 500
 CARTEL_ALTO = 320
 CARTEL_MARGEN = 50
 
+# EL FILETE PASÓ DE 1,2 A 3 mm EL 15-sep-2026, y el motivo es de FABRICACIÓN,
+# no de diseño: el cartelero resolvió la pieza en VINILO DE CORTE, y una tira
+# de 1,2 × 400 mm se estira y se ondula al aplicarla. A 3 mm se corta, se
+# transporta con la cinta y se pega derecha. El 1,2 original nunca tuvo un
+# porqué medido —lo medido es por qué el dorado va DE FILETE (contraste), no
+# cuánto mide—, así que no se está pisando ninguna decisión.
+FILETE_ALTO = 3
+
 # Tal como los escribió Cecilia, en SU orden: el orden es la decisión. Lo
 # primero que se lee es lo que quiere destacar.
 GRUPOS = [
@@ -219,8 +416,54 @@ GRUPOS = [
 ]
 
 
-def cartel():
+# La hoja de estilos de la versión NORMAL. La de corte no lleva ninguna: sin
+# <text> adentro, embeber 100 KB de tipografía en base64 sería cargar el
+# archivo con algo que nadie va a leer.
+ESTILOS_DEL_CARTEL = """  <style>
+    @font-face {{
+      font-family: Jost;
+      src: url(data:font/ttf;base64,{fuente}) format("truetype");
+      font-weight: 100 900;
+    }}
+
+    text {{
+      font-family: Jost, sans-serif;
+      fill: {grafito};
+    }}
+    .grupo {{
+      font-size: {grupo_tam}px;
+      font-weight: 400;
+      text-anchor: middle;
+    }}
+    .direccion {{
+      font-size: 13px;
+      font-weight: 500;
+      text-anchor: middle;
+    }}
+    .telefono {{
+      font-size: 17px;
+      font-weight: 500;
+      text-anchor: middle;
+    }}
+    .rotulo {{
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-anchor: middle;
+    }}
+  </style>
+"""
+
+
+def cartel(para_corte=False):
     """El SVG del cartel apaisado, con 1 unidad = 1 milímetro.
+
+    CON para_corte=True SALE LA VERSIÓN PARA EL PLÓTER: los textos van
+    convertidos a contornos —el plóter no lee tipografías— y el QR NO VIAJA
+    ADENTRO, porque un QR no se puede cortar en vinilo: sus módulos miden
+    1,2 mm. Va impreso y laminado aparte, y se pega en la posición que el
+    archivo de referencia muestra.
 
     LA DISPOSICIÓN, y por qué no es la de la placa. En apaisado sobra ancho,
     así que el contacto y el QR van uno al lado del otro en vez de apilados.
@@ -258,11 +501,25 @@ def cartel():
     interlinea = 23
     grupos_y = filete_y + 32
 
-    renglones = "\n".join(
-        f'    <text x="{CARTEL_ANCHO / 2}" y="{grupos_y + interlinea * i}" '
-        f'class="grupo">{grupo}</text>'
-        for i, grupo in enumerate(GRUPOS)
-    )
+    if para_corte:
+        renglones = "\n".join(
+            f'  <path fill="{GRAFITO}" d="'
+            + texto_a_curvas(
+                grupo,
+                grupo_tam,
+                400,
+                CARTEL_ANCHO / 2,
+                grupos_y + interlinea * i,
+            )
+            + '"/>'
+            for i, grupo in enumerate(GRUPOS)
+        )
+    else:
+        renglones = "\n".join(
+            f'    <text x="{CARTEL_ANCHO / 2}" y="{grupos_y + interlinea * i}" '
+            f'class="grupo">{grupo}</text>'
+            for i, grupo in enumerate(GRUPOS)
+        )
 
     # EL PIE, EN UNA COLUMNA CENTRADA: rótulo · dirección · QR · teléfono.
     # El teléfono cierra abajo de todo y el QR queda en el medio del bloque.
@@ -289,67 +546,116 @@ def cartel():
             "Se pisan. Achicá la interlínea, el QR o el logo."
         )
 
+    # EL PIE, PIEZA POR PIEZA. En la versión normal son <text> con su clase;
+    # en la de corte son contornos, y el tracking y las mayúsculas del rótulo
+    # —que en CSS los pone la hoja de estilos— hay que aplicarlos a mano.
+    if para_corte:
+        estilos = ""
+
+        rotulo_svg = (
+            f'  <path fill="{GRAFITO}" d="'
+            + texto_a_curvas(
+                "Turnos y consultas".upper(),
+                9,
+                500,
+                eje_texto,
+                rotulo_base,
+                tracking=0.14 * 9,
+            )
+            + '"/>'
+        )
+
+        telefono_svg = (
+            f'  <path fill="{GRAFITO}" d="'
+            + texto_a_curvas(TELEFONO, 17, 500, eje_texto, telefono_y)
+            + '"/>'
+        )
+
+        direccion_svg = (
+            f'  <path fill="{GRAFITO}" d="'
+            + texto_a_curvas(DIRECCION, 13, 500, eje_texto, pie_y)
+            + '"/>'
+        )
+
+        bloque_qr = (
+            f"  <!-- EL QR NO VA ACÁ: se imprime y lamina aparte, "
+            f"{qr_lado} × {qr_lado} mm, y se pega a {qr_izq:.0f} mm del borde "
+            f"izquierdo y {qr_arriba:.0f} mm del de arriba. -->"
+        )
+    else:
+        estilos = ESTILOS_DEL_CARTEL.format(
+            fuente=leer_fuente(),
+            grafito=GRAFITO,
+            grupo_tam=grupo_tam,
+        )
+
+        rotulo_svg = (
+            f'  <text x="{eje_texto}" y="{rotulo_base}"\n'
+            f'        class="rotulo">Turnos y consultas</text>'
+        )
+
+        telefono_svg = (
+            f'  <text x="{eje_texto}" y="{telefono_y}" '
+            f'class="telefono">{TELEFONO}</text>'
+        )
+
+        direccion_svg = (
+            f'  <text x="{eje_texto}" y="{pie_y}" '
+            f'class="direccion">{DIRECCION}</text>'
+        )
+
+        bloque_qr = (
+            f'  <g transform="translate({qr_izq} {qr_arriba}) '
+            f'scale({qr_escala})">\n{qr}\n  </g>'
+        )
+
     return f"""<svg xmlns="http://www.w3.org/2000/svg"
      width="{CARTEL_ANCHO}mm" height="{CARTEL_ALTO}mm"
      viewBox="0 0 {CARTEL_ANCHO} {CARTEL_ALTO}">
-  <style>
-    @font-face {{
-      font-family: Jost;
-      src: url(data:font/ttf;base64,{leer_fuente()}) format("truetype");
-      font-weight: 100 900;
-    }}
-
-    text {{
-      font-family: Jost, sans-serif;
-      fill: {GRAFITO};
-    }}
-    .grupo {{
-      font-size: {grupo_tam}px;
-      font-weight: 400;
-      text-anchor: middle;
-    }}
-    .direccion {{
-      font-size: 13px;
-      font-weight: 500;
-      text-anchor: middle;
-    }}
-    .telefono {{
-      font-size: 17px;
-      font-weight: 500;
-      text-anchor: middle;
-    }}
-    .rotulo {{
-      font-size: 9px;
-      font-weight: 500;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      text-anchor: middle;
-    }}
-  </style>
-
+{estilos}
   <rect x="0" y="0" width="{CARTEL_ANCHO}" height="{CARTEL_ALTO}" fill="{BLANCO}"/>
 
   <g transform="translate({logo_izq} {logo_arriba}) scale({escala}) translate({-float(logo_x)} {-float(logo_y)})">
 {logo}
   </g>
 
-  <rect x="{CARTEL_MARGEN}" y="{filete_y}" width="{util}" height="1.2" fill="{DORADO}"/>
+  <rect x="{CARTEL_MARGEN}" y="{filete_y}" width="{util}" height="{FILETE_ALTO}" fill="{DORADO}"/>
 
 {renglones}
 
-  <text x="{eje_texto}" y="{rotulo_base}"
-        class="rotulo">Turnos y consultas</text>
+{rotulo_svg}
 
-  <g transform="translate({qr_izq} {qr_arriba}) scale({qr_escala})">
-{qr}
-  </g>
+{bloque_qr}
 
-  <text x="{eje_texto}" y="{telefono_y}" class="telefono">{TELEFONO}</text>
+{telefono_svg}
 
-  <text x="{eje_texto}" y="{pie_y}" class="direccion">{DIRECCION}</text>
+{direccion_svg}
 </svg>
 """
 
+
+
+def qr_suelto(lado_mm=40):
+    """El QR solo, a tamaño real, para IMPRIMIR y laminar aparte.
+
+    🔴 LOS 40 mm YA INCLUYEN LA ZONA DE SILENCIO — los cuatro módulos de
+    borde blanco que pide la ISO/IEC 18004 y que qrencode agrega con -m 4.
+    Por eso el archivo no se recorta al ras del negro: sin ese margen, el
+    lector no separa el código del fondo y el QR deja de escanearse aunque
+    se vea perfecto.
+    """
+    qr, modulos = qr_svg(0)
+    escala = lado_mm / modulos
+
+    return f"""<svg xmlns="http://www.w3.org/2000/svg"
+     width="{lado_mm}mm" height="{lado_mm}mm"
+     viewBox="0 0 {lado_mm} {lado_mm}">
+  <rect x="0" y="0" width="{lado_mm}" height="{lado_mm}" fill="{BLANCO}"/>
+  <g transform="scale({escala})">
+{qr}
+  </g>
+</svg>
+"""
 
 
 def tablero(nombre_svg, medidas):
@@ -678,6 +984,27 @@ def envoltorio(nombre_svg, alto, ancho):
 """
 
 
+def a_pdf(html, pdf):
+    """Chrome imprime el HTML envoltorio a un PDF de medida exacta.
+
+    Se usa Chrome y no rsvg porque es el camino ya verificado con pdfinfo:
+    respeta @page al milímetro.
+    """
+    subprocess.run(
+        [
+            CHROME,
+            "--headless",
+            "--disable-gpu",
+            "--no-pdf-header-footer",
+            f"--print-to-pdf={pdf}",
+            f"file://{html}",
+        ],
+        capture_output=True,
+        check=True,
+    )
+    print(f"✓ {pdf.relative_to(RAIZ)}")
+
+
 def main():
     SALIDA.mkdir(parents=True, exist_ok=True)
 
@@ -720,9 +1047,12 @@ def main():
         ("El QR, verificado", "decodificado",
          "No se dio por bueno: se rasterizó el PDF a 300 dpi y se leyó con "
          "zbar. Devuelve wa.me/5493426293920."),
-        ("El filete dorado", "1,2 mm",
+        ("El filete dorado", f"{FILETE_ALTO} mm",
          "Es el único dorado de la pieza y no lleva texto encima: ahí el "
-         "dorado sí cumple, porque su trabajo es separar, no ser leído."),
+         "dorado sí cumple, porque su trabajo es separar, no ser leído. "
+         "Medía 1,2 mm hasta el 15-sep-2026: se engrosó porque la pieza se "
+         "fabrica en VINILO DE CORTE y una tira de 1,2 × 400 mm se ondula al "
+         "aplicarla."),
     ]
 
     tab = SALIDA / "carteleria-tablero.html"
@@ -735,20 +1065,32 @@ def main():
     )
     print(f"✓ {html.relative_to(RAIZ)}")
 
-    pdf = SALIDA / f"{nombre}.pdf"
-    subprocess.run(
-        [
-            CHROME,
-            "--headless",
-            "--disable-gpu",
-            "--no-pdf-header-footer",
-            f"--print-to-pdf={pdf}",
-            f"file://{html}",
-        ],
-        capture_output=True,
-        check=True,
+    a_pdf(html, SALIDA / f"{nombre}.pdf")
+
+    # ── LAS DOS PIEZAS PARA EL CARTELERO (15-sep-2026) ──────────────────
+    # La fabricación es VINILO DE CORTE, así que el archivo de arriba no le
+    # sirve: lleva la tipografía como fuente y el QR adentro. Van estas dos,
+    # y el de arriba queda de REFERENCIA para que vea dónde pega el QR.
+    corte = SALIDA / f"{nombre}-curvas.svg"
+    corte.write_text(cartel(para_corte=True), encoding="utf-8")
+    print(f"✓ {corte.relative_to(RAIZ)}")
+
+    corte_html = SALIDA / f"{nombre}-curvas-imprimir.html"
+    corte_html.write_text(
+        envoltorio(corte.name, CARTEL_ALTO, CARTEL_ANCHO), encoding="utf-8"
     )
-    print(f"✓ {pdf.relative_to(RAIZ)}")
+    a_pdf(corte_html, SALIDA / f"{nombre}-curvas.pdf")
+
+    qr_lado = 40
+    qr = SALIDA / f"qr-{qr_lado}mm.svg"
+    qr.write_text(qr_suelto(qr_lado), encoding="utf-8")
+    print(f"✓ {qr.relative_to(RAIZ)}")
+
+    qr_html = SALIDA / f"qr-{qr_lado}mm-imprimir.html"
+    qr_html.write_text(
+        envoltorio(qr.name, qr_lado, qr_lado), encoding="utf-8"
+    )
+    a_pdf(qr_html, SALIDA / f"qr-{qr_lado}mm.pdf")
 
     return 0
 
