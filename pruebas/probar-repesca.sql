@@ -402,20 +402,27 @@ begin
   end;
   insert into resultados values ( 60, 'E1 · el check del canal rechaza Web con mayuscula', r, 'rebota 23514' );
 
-  -- E2 · el límite de dos turnos web por profesional
+  -- E2 · el límite de UN turno web abierto por profesional
+  --
+  -- ⚠ ESTE CASO ESTUVO ROTO desde el 17-sep-2026 y se descubrió el 18: pedía
+  -- DOS turnos web de preparación porque ésa era la regla vieja. El ① de la
+  -- fase C la cambió a UNO, así que el segundo insert de la preparación
+  -- rebotaba con CB001 y hacía fallar la corrida entera antes de evaluar nada.
+  -- La batería figuraba como 37/37 en el documento de estado y nadie la había
+  -- vuelto a correr: el efecto de un cambio no aparece en la batería del
+  -- cambio.
   insert into public.turnos ( paciente_id, profesional_id, inicio, duracion_min, canal )
-    values ( p, 1, now() + interval '81 hours', 30, 'web' ),
-           ( p, 1, now() + interval '82 hours', 30, 'web' );
+    values ( p, 1, now() + interval '81 hours', 30, 'web' );
 
   begin
     insert into public.turnos ( paciente_id, profesional_id, inicio, duracion_min, canal )
-      values ( p, 1, now() + interval '83 hours', 30, 'web' );
+      values ( p, 1, now() + interval '82 hours', 30, 'web' );
     r := 'pasa';
   exception when others then r := 'rebota ' || sqlstate;
   end;
-  insert into resultados values ( 61, 'E2 · el tercer turno web con el mismo profesional rebota', r, 'rebota CB001' );
+  insert into resultados values ( 61, 'E2 · el segundo turno web con el mismo profesional rebota', r, 'rebota CB001' );
 
-  -- E3 · el mismo tercer turno, pero cargado a mano, SÍ entra
+  -- E3 · el mismo turno rechazado, pero cargado a mano, SÍ entra
   begin
     insert into public.turnos ( paciente_id, profesional_id, inicio, duracion_min, canal )
       values ( p, 1, now() + interval '84 hours', 30, 'manual' );
