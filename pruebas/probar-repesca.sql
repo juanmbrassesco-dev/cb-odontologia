@@ -38,7 +38,7 @@ insert into public.pacientes ( nombre, apellido, email )
   values ( 'Ana', 'Bateria', 'bateria-repesca@ejemplo.test' );
 
 insert into public.turnos (
-    paciente_id, profesional_id, tratamiento_id, motivo_consulta_id,
+    paciente_id, profesional_id, tratamiento_id, motivo_consulta_id, obra_social_id,
     inicio, duracion_min, canal, activo, aviso_estado, observaciones_paciente
   )
   values (
@@ -46,6 +46,7 @@ insert into public.turnos (
     1,
     ( select id from public.tratamientos where nombre = 'consulta' ),
     ( select id from public.tratamientos where nombre = 'limpieza' ),
+    ( select id from public.obras_sociales where nombre = 'Particular' ),
     now() + interval '50 hours', 30, 'manual', true, null,
     'me duele una muela'
   );
@@ -247,9 +248,10 @@ create temporary table casos ( caso text, esperado text, turno bigint ) on commi
 insert into public.pacientes ( nombre, apellido, email )
   values ( 'Sin', 'Correo', null );
 
-insert into public.turnos ( paciente_id, profesional_id, inicio, duracion_min, canal, activo, aviso_estado, aviso_at )
+insert into public.turnos ( paciente_id, profesional_id, obra_social_id, inicio, duracion_min, canal, activo, aviso_estado, aviso_at )
 select ( select paciente from ids ),
        1,
+       ( select id from public.obras_sociales where nombre = 'Particular' ),
        now() + ( c.hora || ' hours' )::interval,
        30, 'manual', c.activo, c.marca,
        case when c.viejo then now() - interval '20 minutes' else now() end
@@ -265,9 +267,9 @@ select ( select paciente from ids ),
       (  69, false, 'cancelado'  , false )
     ) as c ( hora, activo, marca, viejo );
 
-insert into public.turnos ( paciente_id, profesional_id, inicio, duracion_min, canal, activo, aviso_estado )
+insert into public.turnos ( paciente_id, profesional_id, obra_social_id, inicio, duracion_min, canal, activo, aviso_estado )
   values ( ( select id from public.pacientes where apellido = 'Correo' and email is null ),
-           1, now() + interval '70 hours', 30, 'manual', true, null );
+           1, ( select id from public.obras_sociales where nombre = 'Particular' ), now() + interval '70 hours', 30, 'manual', true, null );
 
 insert into casos ( caso, esperado, turno )
 select x.caso, x.esperado, t.id
@@ -395,8 +397,8 @@ begin
 
   -- E1 · el check del canal
   begin
-    insert into public.turnos ( paciente_id, profesional_id, inicio, duracion_min, canal )
-      values ( p, 1, now() + interval '80 hours', 30, 'Web' );
+    insert into public.turnos ( paciente_id, profesional_id, obra_social_id, inicio, duracion_min, canal )
+      values ( p, 1, ( select id from public.obras_sociales where nombre = 'Particular' ), now() + interval '80 hours', 30, 'Web' );
     r := 'pasa';
   exception when check_violation then r := 'rebota 23514';
   end;
@@ -411,12 +413,12 @@ begin
   -- La batería figuraba como 37/37 en el documento de estado y nadie la había
   -- vuelto a correr: el efecto de un cambio no aparece en la batería del
   -- cambio.
-  insert into public.turnos ( paciente_id, profesional_id, inicio, duracion_min, canal )
-    values ( p, 1, now() + interval '81 hours', 30, 'web' );
+  insert into public.turnos ( paciente_id, profesional_id, obra_social_id, inicio, duracion_min, canal )
+    values ( p, 1, ( select id from public.obras_sociales where nombre = 'Particular' ), now() + interval '81 hours', 30, 'web' );
 
   begin
-    insert into public.turnos ( paciente_id, profesional_id, inicio, duracion_min, canal )
-      values ( p, 1, now() + interval '82 hours', 30, 'web' );
+    insert into public.turnos ( paciente_id, profesional_id, obra_social_id, inicio, duracion_min, canal )
+      values ( p, 1, ( select id from public.obras_sociales where nombre = 'Particular' ), now() + interval '82 hours', 30, 'web' );
     r := 'pasa';
   exception when others then r := 'rebota ' || sqlstate;
   end;
@@ -424,8 +426,8 @@ begin
 
   -- E3 · el mismo turno rechazado, pero cargado a mano, SÍ entra
   begin
-    insert into public.turnos ( paciente_id, profesional_id, inicio, duracion_min, canal )
-      values ( p, 1, now() + interval '84 hours', 30, 'manual' );
+    insert into public.turnos ( paciente_id, profesional_id, obra_social_id, inicio, duracion_min, canal )
+      values ( p, 1, ( select id from public.obras_sociales where nombre = 'Particular' ), now() + interval '84 hours', 30, 'manual' );
     r := 'pasa';
   exception when others then r := 'rebota ' || sqlstate;
   end;

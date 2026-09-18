@@ -124,6 +124,7 @@ export type Database = {
           entidad: string
           id: number
           nombre: string
+          orden: number
         }
         Insert: {
           activa?: boolean
@@ -131,6 +132,7 @@ export type Database = {
           entidad: string
           id?: number
           nombre: string
+          orden?: number
         }
         Update: {
           activa?: boolean
@@ -138,6 +140,7 @@ export type Database = {
           entidad?: string
           id?: number
           nombre?: string
+          orden?: number
         }
         Relationships: []
       }
@@ -277,7 +280,7 @@ export type Database = {
           inicio_avisado: string | null
           motivo_consulta_id: number | null
           nota: string | null
-          obra_social_id: number | null
+          obra_social_id: number
           observaciones_paciente: string | null
           paciente_id: number
           profesional_id: number
@@ -295,7 +298,7 @@ export type Database = {
           inicio_avisado?: string | null
           motivo_consulta_id?: number | null
           nota?: string | null
-          obra_social_id?: number | null
+          obra_social_id: number
           observaciones_paciente?: string | null
           paciente_id: number
           profesional_id: number
@@ -313,7 +316,7 @@ export type Database = {
           inicio_avisado?: string | null
           motivo_consulta_id?: number | null
           nota?: string | null
-          obra_social_id?: number | null
+          obra_social_id?: number
           observaciones_paciente?: string | null
           paciente_id?: number
           profesional_id?: number

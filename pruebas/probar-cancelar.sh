@@ -209,13 +209,13 @@ echo "  paciente propio = id $MIO · paciente ajeno = id $AJENO"
 # valor el que se corrige, no la migración — 'panel' y 'manual' nombraban lo
 # mismo, y ahora hay un solo nombre.
 TURNO_PASADO=$( id_de_insert \
-  "insert into turnos ( paciente_id, profesional_id, tratamiento_id, inicio, duracion_min, canal )
-   values ( $MIO, $PROFESIONAL, $CONSULTA, '$AYER', 30, 'manual' ) returning id;" \
+  "insert into turnos ( paciente_id, profesional_id, tratamiento_id, obra_social_id, inicio, duracion_min, canal )
+   values ( $MIO, $PROFESIONAL, $CONSULTA, ( select id from obras_sociales where nombre = 'Particular' ), '$AYER', 30, 'manual' ) returning id;" \
   "el turno ya pasado" )
 
 TURNO_AJENO=$( id_de_insert \
-  "insert into turnos ( paciente_id, profesional_id, tratamiento_id, inicio, duracion_min, canal )
-   values ( $AJENO, $PROFESIONAL, $CONSULTA, '$HORA_AJENO', 30, 'manual' ) returning id;" \
+  "insert into turnos ( paciente_id, profesional_id, tratamiento_id, obra_social_id, inicio, duracion_min, canal )
+   values ( $AJENO, $PROFESIONAL, $CONSULTA, ( select id from obras_sociales where nombre = 'Particular' ), '$HORA_AJENO', 30, 'manual' ) returning id;" \
   "el turno ajeno" )
 
 # 🔴 LA RED QUE FALTABA — puesta el 28-ago-2026, después de que la batería

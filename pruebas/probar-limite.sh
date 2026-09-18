@@ -165,8 +165,8 @@ echo "▶ 4. El consultorio carga un turno a mano para ese mismo paciente"
 echo "  esperado: entra. El tope es del formulario, no del consultorio."
 
 SALIDA_MANUAL=$(
-  consultar "insert into turnos ( paciente_id, profesional_id, inicio, canal, duracion_min )
-             values ( $PACIENTE, $PROFESIONAL, now() + interval '35 days', 'manual', 30 )
+  consultar "insert into turnos ( paciente_id, profesional_id, obra_social_id, inicio, canal, duracion_min )
+             values ( $PACIENTE, $PROFESIONAL, ( select id from obras_sociales where nombre = 'Particular' ), now() + interval '35 days', 'manual', 30 )
              returning id, canal;" 2>&1
 )
 
