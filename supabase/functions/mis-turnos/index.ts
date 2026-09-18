@@ -84,7 +84,8 @@ export default {
           paciente:pacientes!inner ( id, nombre, apellido ),
           profesional:profesionales ( nombre, apellido ),
           tratamiento:tratamientos!turnos_tratamiento_id_fkey ( nombre ),
-          motivo:tratamientos!turnos_motivo_consulta_id_fkey ( nombre )
+          motivo:tratamientos!turnos_motivo_consulta_id_fkey ( nombre ),
+          obra_social:obras_sociales ( nombre )
         ` )
         .eq( 'pacientes.email', correo )
         .eq( 'activo', true )

@@ -241,6 +241,15 @@ export type DatosDelAviso = {
   // Opcional porque quien no lo sepa no tiene que inventarlo: sin este dato el
   // aviso usa un texto neutro, que es cierto en los dos casos.
   canal?: string | null
+  // Bajo qué cobertura se sacó el turno. Es el dato que el consultorio necesita
+  // ANTES de atender, y por eso viaja en el correo y no sólo en la base: si
+  // Cecilia tuviera que ir a buscarlo a una pantalla, el campo no estaría
+  // cumpliendo para lo que se creó.
+  //
+  // Opcional porque la cancelación no lo manda —ahí lo que importa es el hueco
+  // que se libera— y porque un turno cargado a mano puede no tenerlo mientras
+  // la columna siga siendo anulable.
+  obraSocial?: string | null
   pacienteNombre: string
   pacienteApellido: string
   pacienteCorreo: string
@@ -548,6 +557,27 @@ function avisoOperativo(
     motivoAnotado.push( `  Vino por: ${ datos.motivoConsulta }` )
   }
 
+  // 🔴 LA COBERTURA VA ACÁ POR EL MISMO MOTIVO QUE EL RENGLÓN DE ARRIBA, y hay
+  // un argumento propio que lo hace todavía más claro: en la lista del
+  // consultorio hay filas como `IAPOS CAPACIDADES DIFERENTES` e `IAPOS
+  // EMBARAZADAS`. El nombre de la cobertura puede DECIR UNA CONDICIÓN DE SALUD,
+  // así que es INFORMATION DISCLOSURE (divulgación de información) mandarlo a
+  // un buzón que se reenvía, incluso al del propio paciente — que además ya
+  // sabe con qué reservó.
+  //
+  // Cecilia y el profesional sí lo necesitan, y antes del turno: es el dato con
+  // el que saben bajo qué concepto viene la persona. El paciente lo ve en su
+  // pantalla, con la sesión iniciada, que es otro canal.
+  //
+  // El `if` no es cosmético: un turno sin cobertura existe hoy —la columna es
+  // anulable hasta que el formulario esté en la calle— y un renglón que dijera
+  // «Cobertura: null» sería peor que no estar.
+  const coberturaAnotada: string[] = []
+
+  if ( datos.obraSocial ) {
+    coberturaAnotada.push( `  Cobertura: ${ datos.obraSocial }` )
+  }
+
   const renglones = [
     titular,
     '',
@@ -558,6 +588,7 @@ function avisoOperativo(
     // agenda, y no viaja al correo del paciente.
     `  Duración: ${ datos.duracionMin } minutos`,
     ...motivoAnotado,
+    ...coberturaAnotada,
     `  Turno número: ${ datos.turnoId }`,
   ]
 

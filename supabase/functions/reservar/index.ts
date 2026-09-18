@@ -681,6 +681,10 @@ export default {
         profesionalNombre: profesional.data.nombre,
         profesionalApellido: profesional.data.apellido,
         profesionalCorreo: profesional.data.email,
+        // Sale de la fila que se validó más arriba, no del cuerpo del pedido: lo
+        // que viaja en el correo es el nombre que tiene la tabla, no un texto
+        // que haya mandado el navegador.
+        obraSocial: obraSocial.data.nombre,
         tieneObservaciones: observaciones !== null,
       },
       'reserva' )
