@@ -46,6 +46,14 @@ FUNCIONES="$SUPABASE_URL/functions/v1"
 CONSULTA=1
 PROFESIONAL=1
 
+# La cobertura es obligatoria en `POST /reservar` desde el 18-sep-2026, así que
+# todos los cuerpos de acá abajo la llevan. No se clava el número: se le
+# pregunta al endpoint, que devuelve `Particular` primera.
+OBRA_SOCIAL=$(
+  curl -s "$FUNCIONES/obras-sociales" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" | jq '.[0].id'
+)
+
 # La casilla del paciente ajeno. Va en un dominio reservado a propósito, para no
 # meter el correo de nadie en un repo público.
 CASILLA_AJENA='otra-casilla@example.com'
@@ -233,7 +241,7 @@ reservar () {
   curl -s -X POST "$FUNCIONES/reservar" \
     -H "Authorization: Bearer $TOKEN" \
     -H "Content-Type: application/json" \
-    -d "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$1\", \"paciente_id\": $MIO }" \
+    -d "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$1\", \"paciente_id\": $MIO }" \
   | jq -r '.id'
 }
 

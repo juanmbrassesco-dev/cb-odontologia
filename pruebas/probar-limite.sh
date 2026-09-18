@@ -39,6 +39,14 @@ FUNCIONES="$SUPABASE_URL/functions/v1"
 CONSULTA=1
 PROFESIONAL=1
 
+# La cobertura es obligatoria en `POST /reservar` desde el 18-sep-2026, así que
+# todos los cuerpos de acá abajo la llevan. No se clava el número: se le
+# pregunta al endpoint, que devuelve `Particular` primera.
+OBRA_SOCIAL=$(
+  curl -s "$FUNCIONES/obras-sociales" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" | jq '.[0].id'
+)
+
 consultar () {
   supabase db query --linked --output-format json --agent no "$1" \
   | jq 'if type == "array" then . else .rows end'
@@ -110,7 +118,7 @@ echo
 
 probar "1. Primer turno web" \
   "201 — el primero entra" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_1\", \"paciente_nuevo\": { \"nombre\": \"Tope\", \"apellido\": \"DePrueba\" } }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_1\", \"paciente_nuevo\": { \"nombre\": \"Tope\", \"apellido\": \"DePrueba\" } }"
 
 PACIENTE=$( consultar "select id from pacientes order by id desc limit 1;" | jq -r '.[0].id' )
 echo "  (el paciente de prueba quedó con id $PACIENTE)"
@@ -120,7 +128,7 @@ TURNO_1=$( consultar "select id from turnos order by id desc limit 1;" | jq -r '
 
 probar "2. Segundo turno web, con el primero todavía por venir" \
   "409 — 'Ya tenés un turno con este profesional'" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_2\", \"paciente_id\": $PACIENTE }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_2\", \"paciente_id\": $PACIENTE }"
 
 
 # ── El caso que prueba CUÁNDO se libera el cupo ───────────────────────────────
@@ -147,7 +155,7 @@ echo
 
 probar "3. Otro turno web, con la hora del primero YA PASADA" \
   "201 — el cupo se liberó al pasar la hora de inicio, sin cancelar nada" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_3\", \"paciente_id\": $PACIENTE }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_3\", \"paciente_id\": $PACIENTE }"
 
 
 # ── El caso que prueba que el límite NO se pasó de la raya ───────────────────

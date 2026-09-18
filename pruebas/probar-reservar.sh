@@ -59,6 +59,22 @@ LIMPIEZA=11
 
 PROFESIONAL=1
 
+# La cobertura con la que reservan los casos felices. No se clava el número: se
+# le pregunta al endpoint, que devuelve `Particular` primera por la columna
+# `orden` de la base. Si mañana se recarga la tabla y los id cambian, esto sigue
+# andando.
+OBRA_SOCIAL=$(
+  curl -s "$FUNCIONES/obras-sociales" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" | jq '.[0].id'
+)
+
+# Un id que no existe en `obras_sociales`. Se calcula como el mayor más uno para
+# que no dependa de cuántas filas tenga la tabla.
+OBRA_SOCIAL_FANTASMA=$(
+  curl -s "$FUNCIONES/obras-sociales" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" | jq '[ .[].id ] | max + 1'
+)
+
 
 # ── Un par de ayudantes ──────────────────────────────────────────────────────
 
@@ -244,19 +260,19 @@ probar "2. Cuerpo que no es JSON" \
 
 probar "3. Falta el paciente" \
   "400 — mandá paciente_id o paciente_nuevo" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_LIBRE\" }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_LIBRE\" }"
 
 probar "4. Vienen los DOS pacientes" \
   "400 — uno de los dos, no los dos" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_LIBRE\", \"paciente_id\": 1, \"paciente_nuevo\": { \"nombre\": \"A\", \"apellido\": \"B\" } }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_LIBRE\", \"paciente_id\": 1, \"paciente_nuevo\": { \"nombre\": \"A\", \"apellido\": \"B\" } }"
 
 probar "5. inicio SIN desfase horario" \
   "400 — inicio va con fecha, hora y desfase" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"${DIA_LIBRE}T15:00:00\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"${DIA_LIBRE}T15:00:00\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
 
 probar "6. Profesional que no existe" \
   "400 — ese profesional no está disponible" \
-  "{ \"profesional\": 99, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_LIBRE\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+  "{ \"profesional\": 99, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_LIBRE\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
 
 # 🔴 ESTA PRUEBA CAMBIÓ DE SIGNIFICADO EL 27-ago-2026, Y NO SE BORRÓ.
 #
@@ -268,9 +284,21 @@ probar "6. Profesional que no existe" \
 # Se conserva porque sigue cubriendo el mismo riesgo, del otro lado: antes
 # vigilaba que no entrara, ahora vigila que entre BIEN — con la duración del
 # envase, no la del elegido.
+# Los dos casos de la cobertura van acá, con las otras validaciones del cuerpo,
+# y se numeran 6b y 6c para no correr los doce números que siguen. La batería
+# pasa de 18 casos a 20.
+
+probar "6b. SIN obra social — el campo es obligatorio" \
+  "400 — obra_social es obligatorio y tiene que ser un número" \
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_LIBRE\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+
+probar "6c. Obra social que no existe ($OBRA_SOCIAL_FANTASMA)" \
+  "400 — esa obra social no está disponible" \
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL_FANTASMA, \"inicio\": \"$HORA_LIBRE\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+
 probar "7. Tratamiento que NO se reserva solo — AHORA SE CONVIERTE" \
   "201 — se agenda una consulta de 30, no el tratamiento elegido" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": 2, \"inicio\": \"$HORA_DERIVADA\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": 2, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_DERIVADA\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
 
 # Y la respuesta sola no alcanza: dice lo que el endpoint contestó, no lo que
 # la base guardó. Las dos columnas se leen de la fila recién escrita.
@@ -283,27 +311,27 @@ echo
 
 probar "8. Más allá de los 2 meses" \
   "400 — todavía no se puede reservar tan lejos" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_LEJANA\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_LEJANA\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
 
 probar "9. Ayer" \
   "400 — hay que sacarlo con 12 horas de anticipación" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_PASADA\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_PASADA\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
 
 probar "10. Día tapado por una excepción ($DIA_TAPADO)" \
   "400 — ese día el consultorio no atiende" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"${DIA_TAPADO}T09:00:00-03:00\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"${DIA_TAPADO}T09:00:00-03:00\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
 
 probar "11. Una hora que no está en la agenda de ese día" \
   "400 — ese horario no está en la agenda de ese día" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_SIN_AGENDA\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_SIN_AGENDA\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
 
 probar "12. Limpieza en un bloque donde no entra antes del cierre" \
   "400 — ese tratamiento no entra en ese horario" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $LIMPIEZA, \"inicio\": \"$HORA_NO_ENTRA\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $LIMPIEZA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_NO_ENTRA\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
 
 probar "13. paciente_id que NO existe" \
   "403 — ese paciente no está disponible" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_LIBRE\", \"paciente_id\": 999999 }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_LIBRE\", \"paciente_id\": 999999 }"
 
 
 # ── 3. El paciente ajeno, que es el corazón de la regla de enumeración ───────
@@ -339,18 +367,18 @@ echo
 
 probar "14. paciente_id AJENO — existe, pero es de otro correo" \
   "403 y EL MISMO TEXTO del caso 13. Si difiere, hay enumeración" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_LIBRE\", \"paciente_id\": $AJENO }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_LIBRE\", \"paciente_id\": $AJENO }"
 
 
 # ── 4. La reserva, y el choque ───────────────────────────────────────────────
 
 probar "15. LA RESERVA FELIZ" \
   "201 con id, inicio y duracion_min 30" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_LIBRE\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\", \"telefono\": \"342-1234567\" }, \"observaciones\": \"prueba automatizada\" }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_LIBRE\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\", \"telefono\": \"342-1234567\" }, \"observaciones\": \"prueba automatizada\" }"
 
 probar "16. EL MISMO BLOQUE OTRA VEZ" \
   "409 — esa hora se acaba de ocupar" \
-  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"inicio\": \"$HORA_LIBRE\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
+  "{ \"profesional\": $PROFESIONAL, \"tratamiento\": $CONSULTA, \"obra_social\": $OBRA_SOCIAL, \"inicio\": \"$HORA_LIBRE\", \"paciente_nuevo\": { \"nombre\": \"Ana\", \"apellido\": \"Zabala\" } }"
 
 
 # ── 5. La regresión: ② y ③ tienen que hablar del mismo estado ────────────────
@@ -368,12 +396,16 @@ echo "▶ 18. Lo que quedó en la base"
 # Va por `consultar` igual que el caso 14, por el mismo motivo explicado allá.
 # Acá NO se corta la corrida: es el resumen del final, no una prueba.
 SALIDA_CUENTAS=$(
-  consultar "select ( select count(*) from turnos ) as turnos, ( select count(*) from pacientes ) as pacientes;"
+  consultar "select ( select count(*) from turnos ) as turnos, ( select count(*) from pacientes ) as pacientes, ( select o.nombre from turnos t join obras_sociales o on o.id = t.obra_social_id order by t.id desc limit 1 ) as cobertura_del_ultimo;"
 )
 
 echo "$SALIDA_CUENTAS" | jq -c '.' 2>/dev/null \
   || { echo "  ⚠ La CLI no contestó JSON. Crudo:"; echo "$SALIDA_CUENTAS"; }
 
+echo
+echo "✅ cobertura_del_ultimo tiene que decir 'Particular': es la prueba de que"
+echo "   el turno NO sólo se guardó, sino que guardó BAJO QUÉ COBERTURA. Si dice"
+echo "   null, el portero aceptó el pedido y perdió el dato por el camino."
 echo
 echo "⚠ Los pacientes van a ser MÁS que los turnos, y no es un bug: el caso 16"
 echo "  da de alta al paciente y recién después choca con el 409. Es el costo"

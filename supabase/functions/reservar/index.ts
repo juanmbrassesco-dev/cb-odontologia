@@ -236,6 +236,21 @@ export default {
         return pedidoInvalido( 'profesional y tratamiento tienen que ser números' )
       }
 
+      // La cobertura con la que se saca el turno. Es OBLIGATORIA, y el pedido
+      // que no la trae se rechaza acá: sin ella, el consultorio no sabe bajo qué
+      // concepto viene el paciente, que es justo para lo que existe el campo.
+      //
+      // `Particular` es una fila más de la tabla, así que el que paga de su
+      // bolsillo manda un número igual que todos. "Obligatorio" no deja a nadie
+      // afuera.
+      const obraSocialId = Number( cuerpo.obra_social )
+
+      if ( !Number.isInteger( obraSocialId ) ) {
+        return pedidoInvalido(
+          'obra_social es obligatorio y tiene que ser un número',
+        )
+      }
+
       const inicio = cuerpo.inicio
 
       if ( typeof inicio !== 'string' || !esInstanteValido( inicio ) ) {
@@ -306,6 +321,26 @@ export default {
 
       if ( !tratamiento.data ) {
         return pedidoInvalido( 'Ese tratamiento no existe' )
+      }
+
+      // El id tiene que ser de una fila que exista y que siga vigente. No
+      // alcanza con que sea un número: el cuerpo del pedido lo arma el
+      // navegador, y el navegador corre en la máquina del paciente.
+      const obraSocial = await ctx.supabaseAdmin
+        .from( 'obras_sociales' )
+        .select( 'id, nombre, activa' )
+        .eq( 'id', obraSocialId )
+        .maybeSingle()
+
+      if ( obraSocial.error ) {
+        return falloDeBase()
+      }
+
+      // Apagada se contesta igual que inexistente, por lo mismo de siempre: que
+      // el consultorio haya dejado de trabajar un convenio es información suya,
+      // y responder distinto la reparte a cualquiera que pruebe números.
+      if ( !obraSocial.data || !obraSocial.data.activa ) {
+        return pedidoInvalido( 'Esa obra social no está disponible' )
       }
 
       // 🔴 LA DURACIÓN LA PONE LA BASE, NO EL CUERPO DEL PEDIDO. Si la mandara
@@ -587,6 +622,7 @@ export default {
           motivo_consulta_id: tratamientoId,
           inicio: inicio,
           duracion_min: duracion,
+          obra_social_id: obraSocialId,
           canal: 'web',
           activo: true,
           observaciones_paciente: observaciones,
