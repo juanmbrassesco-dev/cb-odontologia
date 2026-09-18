@@ -420,6 +420,12 @@ verify_jwt = false
 [functions.horarios-disponibles]
 verify_jwt = false
 
+# `obras-sociales` es público por lo mismo: el desplegable de cobertura se
+# tiene que poder dibujar antes de que el paciente inicie sesión. Devuelve
+# nombre y entidad de los convenios activos — ni un dato de paciente.
+[functions.obras-sociales]
+verify_jwt = false
+
 # `profesionales` es público por la MISMA razón, y es el paso previo a la
 # grilla: el paciente elige a qué viene, ve quién lo hace y recién después
 # mira horarios. Devuelve id, nombre y apellido — ni un correo.
