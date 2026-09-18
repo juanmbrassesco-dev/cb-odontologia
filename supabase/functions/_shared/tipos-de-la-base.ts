@@ -1,6 +1,6 @@
 // LOS TIPOS DE LA BASE — ARCHIVO GENERADO. NO SE EDITA A MANO.
 //
-// Qué es: la forma de las 7 tablas escrita en el idioma de TypeScript, para
+// Qué es: la forma de las 8 tablas escrita en el idioma de TypeScript, para
 // que el editor sepa qué columnas existen, de qué tipo es cada una y cuáles
 // pueden venir vacías. Sin esto, TypeScript no tiene de dónde sacarlo y trata
 // a cada columna como imposible: por eso `horarios-disponibles` y `reservar`
@@ -11,7 +11,7 @@
 // deja un poco más vieja, y una foto vencida es peor que no tenerla porque se
 // lee como un hecho verificado.
 //
-// GENERADA EL 29-ago-2026, contra la base real, con:
+// GENERADA EL 18-sep-2026, contra la base real, con:
 //
 //   supabase gen types typescript --linked --schema public
 //
@@ -116,6 +116,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      obras_sociales: {
+        Row: {
+          activa: boolean
+          created_at: string
+          entidad: string
+          id: number
+          nombre: string
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          entidad: string
+          id?: number
+          nombre: string
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          entidad?: string
+          id?: number
+          nombre?: string
+        }
+        Relationships: []
       }
       pacientes: {
         Row: {
@@ -253,6 +277,7 @@ export type Database = {
           inicio_avisado: string | null
           motivo_consulta_id: number | null
           nota: string | null
+          obra_social_id: number | null
           observaciones_paciente: string | null
           paciente_id: number
           profesional_id: number
@@ -270,6 +295,7 @@ export type Database = {
           inicio_avisado?: string | null
           motivo_consulta_id?: number | null
           nota?: string | null
+          obra_social_id?: number | null
           observaciones_paciente?: string | null
           paciente_id: number
           profesional_id: number
@@ -287,6 +313,7 @@ export type Database = {
           inicio_avisado?: string | null
           motivo_consulta_id?: number | null
           nota?: string | null
+          obra_social_id?: number | null
           observaciones_paciente?: string | null
           paciente_id?: number
           profesional_id?: number
@@ -298,6 +325,13 @@ export type Database = {
             columns: ["motivo_consulta_id"]
             isOneToOne: false
             referencedRelation: "tratamientos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turnos_obra_social_id_fkey"
+            columns: ["obra_social_id"]
+            isOneToOne: false
+            referencedRelation: "obras_sociales"
             referencedColumns: ["id"]
           },
           {
@@ -370,12 +404,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -399,11 +433,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -424,11 +458,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -449,11 +483,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -466,11 +500,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
