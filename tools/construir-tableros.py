@@ -6680,6 +6680,7 @@ def solo_entrar(tokens, css, ancho):
 {CSS_GOOGLE}
 {CSS_ENCABEZADO}
 {css_de_entrar(ancho)}
+{CSS_FOCO}
 </style>
 {entrar_del_sitio(ancho)}
 """
@@ -6700,6 +6701,7 @@ def tablero_entrar(tokens, css, ancho):
 {CSS_GOOGLE}
 {CSS_ENCABEZADO}
 {css_de_entrar(ancho)}
+{CSS_FOCO}
 {css_margen_en_la_prosa()}
 </style>
 
@@ -6847,6 +6849,49 @@ paciente aterrizaría en una pantalla distinta de la que dejó.</p>
 #   1 fila   → NO SE MUESTRA NADA, se sigue de largo → `paciente_id`
 #   2 o más  → se elige de la lista                → `paciente_id` o nuevo
 # ============================================================
+
+# ============================================================
+# EL ANILLO DE FOCO REAL — escrito el 24-sep-2026, y lo destapó Juan mirando
+# la pantalla: «lo único que me hace ruido es el focus en azul, no sé si está
+# respetando nuestras reglas».
+#
+# 🔴 NO LAS RESPETABA, Y EL AGUJERO ES MÁS VIEJO QUE ESTAS PIEZAS. El sistema
+# YA tenía el anillo decidido y medido —`--foco: #33322F`, grafito macizo de
+# 2 px, y `--foco-separacion: -4px` para que vaya ADENTRO del control, con su
+# porqué escrito en `tokens.css` y su medidor propio en `tools/medir-foco.py`—
+# pero la regla CSS que lo aplica NUNCA SE ESCRIBIÓ. Los tableros lo simulaban
+# con clases puestas a mano (`.btn-foco`, `.campo-foco`), así que en el tablero
+# se veía nuestro anillo y en el navegador seguía saliendo el azul del sistema
+# operativo.
+#
+# 🔑 La lección, que es más grande que este color: UN TOKEN QUE NADIE CONSUME
+# ES UNA DECISIÓN QUE NUNCA LLEGÓ A LA PANTALLA. El token existía, el porqué
+# existía, la medición existía — y el usuario veía otra cosa.
+#
+# `:focus-visible` y no `:focus`: el navegador lo muestra cuando se navega por
+# TECLADO y lo calla en un clic con el mouse, que es exactamente lo que se
+# quiere — el anillo es una ayuda para quien no ve dónde está parado, no una
+# marca en cada toque.
+CSS_FOCO = """
+:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: var(--foco-separacion);
+}
+
+/* El radio es la excepción: mide 20 px y con la separación negativa el anillo
+   le quedaría ADENTRO del círculo, invisible. Acá va por afuera. */
+.opcion input:focus-visible {
+  outline-offset: 2px;
+}
+
+/* Y en una fila entera tocable, el foco del radio se lee mejor marcando la
+   caja que lo contiene: es lo que el ojo busca. */
+.opcion:has( input:focus-visible ) {
+  outline: 2px solid var(--foco);
+  outline-offset: -4px;
+}
+"""
+
 
 CSS_QUIEN = """
 .quien {
@@ -7101,6 +7146,7 @@ def solo_quien(tokens, css, ancho):
 {CSS_CAMPO}
 {CSS_ENCABEZADO}
 {CSS_QUIEN}
+{CSS_FOCO}
 </style>
 {quien_del_sitio(ancho)}
 """
@@ -7120,6 +7166,7 @@ def tablero_quien(tokens, css, ancho):
 {CSS_CAMPO}
 {CSS_ENCABEZADO}
 {CSS_QUIEN}
+{CSS_FOCO}
 {css_margen_en_la_prosa()}
 </style>
 
@@ -7360,6 +7407,7 @@ def solo_motivo(tokens, css, ancho):
 {CSS_CAMPO}
 {CSS_ENCABEZADO}
 {CSS_MOTIVO}
+{CSS_FOCO}
 </style>
 {motivo_del_sitio(ancho, elegido="endodoncia")}
 """
@@ -7379,6 +7427,7 @@ def tablero_motivo(tokens, css, ancho):
 {CSS_CAMPO}
 {CSS_ENCABEZADO}
 {CSS_MOTIVO}
+{CSS_FOCO}
 {css_margen_en_la_prosa()}
 </style>
 
