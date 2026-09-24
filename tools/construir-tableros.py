@@ -7415,12 +7415,19 @@ del endpoint</b>. <b>El orden también viene resuelto de la base</b> —columna
   <p><b>Lo que NO estaba decidido es si la pantalla se lo dice.</b> Si no lo
   dice, el paciente que eligió «endodoncia» <b>llega esperando que le hagan la
   endodoncia ese día</b>.</p>
-  <p>🔴 <b>Claude propuso un aviso acá y JUAN LO SACÓ</b> <i>(«el que viene con
-  el aviso no»)</i>. <b>Queda escrito que sacarlo no cierra el hueco: lo
-  muda.</b> Los doce tratamientos sin duración propia se siguen agendando como
-  consulta y el paciente lo sigue sin saber. <b>Dónde se lo dice —la pantalla
-  de confirmar, el correo de reserva, o en ningún lado a propósito— es una
-  decisión abierta</b>, anotada en la § 14 con su disparador.</p>
+  <p>🏁 <b>CERRADO POR JUAN el 24-sep-2026, y no en la forma que Claude
+  proponía: NO SE LE DICE, EN NINGÚN LADO.</b> Su argumento, textual: <i>«el
+  paciente no tiene por qué saber que el tratamiento arranca con una consulta,
+  es una realidad y listo»</i>.</p>
+  <p><b>Y se sostiene solo:</b> que la primera visita sea una evaluación es
+  <b>cómo funciona la odontología</b>, no una particularidad de este sistema.
+  Nadie espera que le hagan una endodoncia sin que antes le miren la boca.
+  <b>Avisarlo sería explicarle al paciente algo que ya sabe</b>, y encima en el
+  paso donde lo único que tiene que hacer es elegir.</p>
+  <p>⚠️ <b>Lo que sí queda como consecuencia, dicho una vez:</b> el turno
+  aparece en la agenda como <code>consulta</code> con el motivo guardado al
+  lado. <b>Eso es exactamente lo que el portero ya hace</b> — la decisión no
+  cambia nada del código, cierra una pregunta de producto.</p>
 </section>
 
 <section>
@@ -7438,29 +7445,17 @@ del endpoint</b>. <b>El orden también viene resuelto de la base</b> —columna
 </section>
 
 <section>
-  <p class="rotulo">Los dos estados, a 1:1</p>
-  <h2>Y son DOS, no tres</h2>
-  <p>🔴 <b>Acá había tres y Juan los cortó a dos:</b> <i>«no entiendo la
-  diferencia entre el primero y el segundo»</i>. <b>No la había</b> — sin el
-  aviso, «con limpieza» y «con endodoncia» son la misma pantalla con otra
-  palabra adentro del desplegable. <b>Mostrar dos estados que no se distinguen
-  no enseña nada: hace dudar de si uno se está perdiendo algo.</b></p>
-  <p>⚠️ <b>Y el rótulo de cada estado ahora va PEGADO a su muestra</b>, como en
-  las otras piezas. Antes vivía en un párrafo acá arriba, lejos de lo que
-  nombraba.</p>
-  <p>El segundo vive además <b>solo</b>: <code>{ancho}-solo.html</code>.</p>
-</section>
-</div>
-<div class="prosa">
-<section>
-  <p class="dato">① Al abrir — sin nada elegido</p>
-</section>
-</div>
-{motivo_del_sitio(ancho)}
-<div class="prosa">
-<section>
-  <p class="dato">② Con un motivo elegido — la única diferencia es el
-  desplegable</p>
+  <p class="rotulo">La pantalla, a 1:1</p>
+  <h2>Y es UNA, no tres</h2>
+  <p>🔴 <b>Acá hubo tres, después dos, y Juan las cortó a una:</b> primero
+  <i>«no entiendo la diferencia entre el primero y el segundo»</i>, y al
+  quedar dos, <i>«son iguales»</i>. <b>Tenía razón las dos veces.</b></p>
+  <p>🔑 <b>La regla que deja, y vale para cualquier tablero de acá en
+  adelante: un estado merece su propia muestra sólo si cambia el DIBUJO, no si
+  cambia el CONTENIDO de un control.</b> Un desplegable con su texto de
+  arranque y el mismo desplegable con una opción elegida <b>son el mismo
+  dibujo</b>; apilarlos no enseña nada y hace dudar de si uno se está perdiendo
+  algo.</p>
 </section>
 </div>
 {motivo_del_sitio(ancho, elegido="endodoncia")}
