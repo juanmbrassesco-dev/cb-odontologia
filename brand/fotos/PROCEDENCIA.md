@@ -10,6 +10,7 @@ gris. **Se reemplazan por fotos propias antes de publicar.**
 | `nosotros-ejemplo.jpg` | Jonathan Borba (@jonathanborba) | Unsplash, `ctrQhye5SWs` | Unsplash License |
 | `antes-ejemplo.jpg` | Ozkan Guner (@dentistozkanguner) | Unsplash, `Uyv7g3kroJM` | Unsplash License |
 | `despues-ejemplo.jpg` | Tony Litvyak (@justatony) | Unsplash, `glPVwPr1FKo` | Unsplash License |
+| `entrar-ejemplo.jpg` | Amy Vosters (@amyvosters) | Unsplash, `pxOQ-P97sA8` | Unsplash License |
 
 ⚠️ **Unsplash tiene DOS licencias y la diferencia no se ve en la foto.** Las que
 publica **Getty Images** —y cualquiera marcada `plus`— son **Unsplash+**, de
@@ -86,3 +87,44 @@ local.
 **Fuente:** Código Argentino de Ética y Deontología Dental, arts. 49 a 53 —
 `legisalud.gov.ar/pdf/aoa.pdf` *(bajado y leído el 8-sep-2026; el sitio tiene
 el certificado vencido y hay que forzarlo con `curl -k`)*.
+
+
+---
+
+## 🪑 `entrar-ejemplo.jpg` — POR QUÉ ES UN LUGAR Y NO UNA PERSONA *(24-sep-2026)*
+
+Es la foto de la **pantalla ① de `reservar.html`**, y la pidió Juan: *«buscá
+alguna de archivo más descriptiva, tipo una recepción, una recepcionista o algo
+por el estilo»*.
+
+**Se eligió una SALA DE ESPERA y no una recepcionista, y el motivo no es
+estético:** una persona en un rol promete **personal que este consultorio puede
+no tener**. Si el ejemplo muestra una recepcionista y Cecilia atiende sola, la
+foto propia no puede ocupar el lugar del ejemplo y hay que rediseñar la pieza.
+**Un ejemplo sirve si la definitiva puede reemplazarlo sin tocar nada.**
+
+**Y lo que la evidencia agrega, que empuja en la misma dirección:** lo que
+genera confianza en un sitio de salud son **fotos reales del lugar y del
+equipo**; el banco genérico es justamente lo que se recomienda reemplazar. Eso
+no invalida usarlo como ejemplo — invalida publicarlo.
+
+**Viene RECORTADA a 16/9 en el archivo** (1200 × 675), igual que
+`nosotros-ejemplo.jpg` y por el mismo motivo: el encuadre es una decisión, no
+lo que le toque al navegador. El original de Unsplash es vertical (2400 × 2808)
+y el recorte toma la franja de abajo — el olivo, la fila de sillas y la pared.
+
+⚠️ **DOS LIMITACIONES DECLARADAS, para que nadie las descubra tarde:**
+1. **El cartel de la pared está en INGLÉS** *(«SMILE LIKE YOU MEAN IT — THE
+   KILLERS»)*. A 390 px queda ilegible y no molesta; **en pantalla grande se
+   lee**, y un cartel en inglés de una banda de rock no es lo que diría la sala
+   de espera de un consultorio en Santa Fe. **Es una razón más para que la foto
+   propia exista, no un detalle a maquillar.**
+2. **El borde de ARRIBA de la foto es pared casi blanca contra el marfil de la
+   barra.** Hoy no se disuelve porque **el encabezado tiene su línea dorada de
+   1 px**, que es la que las separa. *Si esa línea se saca, este borde hay que
+   volver a mirarlo.*
+
+**Qué tiene que mostrar la foto DEFINITIVA:** la sala de espera o la entrada
+reales, con luz cálida y sin equipamiento clínico a la vista — el paciente que
+llega a esta pantalla ya decidió, y lo que necesita ver es **dónde va a ir**,
+no el sillón. *Entra al brief de fotos junto con las otras.*

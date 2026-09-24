@@ -6481,13 +6481,13 @@ CSS_ENTRAR = """
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
+  /* El archivo YA viene recortado a 16/9, así que `cover` no recorta nada:
+     está para que una foto futura de otra proporción no deforme el hueco.
+     ⚠ Sin `object-position` porque no hace falta acá — y cuando una foto lo
+     necesita, no es decoración: el primer intento de esta pieza usó la foto
+     VERTICAL del hero y el recorte por el centro geométrico dejó la cara
+     afuera, se veía la boca y el mentón. */
   object-fit: cover;
-  /* 🔴 EL ENCUADRE NO ES DECORACIÓN. Sin esta línea el recorte agarra el
-     centro geométrico de una foto VERTICAL y deja afuera la cara: se veía la
-     boca y el mentón. Con 30% el corte sube y entra la mirada.
-     ⚠ Es un número atado a ESTA foto de ejemplo. La definitiva se encuadra
-     al tomarla —eso va al brief de fotos— y entonces esta línea se revisa. */
-  object-position: 50% 30%;
 }
 
 .entrar {
@@ -6530,9 +6530,18 @@ CSS_ENTRAR = """
 /* La salida para el que NO entra. Va abajo, sin botón y sin ícono: es una
    puerta que existe, no un segundo camino que se promueve — la regla de la
    § 4 sobre WhatsApp sigue rigiendo acá adentro. */
+/* 🔴 ACÁ HABÍA UN ERROR DE ESCALA Y LO CAZÓ JUAN — 24-sep-2026.
+   Estaba en `--aire-seccion`, que es el aire ENTRE SECCIONES de la página:
+   56 px a 390. Pero acá no se separan dos secciones, se separa la acción
+   principal de una nota al pie DENTRO de la misma. Con 56 arriba más 20 de
+   relleno el texto quedaba a 76 px del botón, flotando.
+
+   La mitad del aire de sección, y se escribe como CUENTA y no como número
+   suelto: así los tres anchos se mueven solos si el aire de sección cambia
+   —28 · 36 · 48— y no queda una constante nueva que mantener aparte. */
 .entrar .salida {
-  margin-top: var(--aire-seccion);
-  padding-top: 20px;
+  margin-top: calc(var(--aire-seccion) / 2);
+  padding-top: 16px;
   border-top: 1px solid var(--dorado-claro);
   color: var(--texto-segundo);
   font-size: var(--tipo-chico);
@@ -6545,18 +6554,32 @@ CSS_ENTRAR = """
 """
 
 
-def foto_de_entrar():
-    """La foto de la pantalla ①, o el hueco marcado si falta el archivo.
+# LA FOTO DE LA PANTALLA ① ES PROPIA DE ESTA PIEZA, no la del hero.
+#
+# La pidió Juan el 24-sep-2026 —«buscá alguna de archivo más descriptiva, tipo
+# una recepción»— y el motivo de fondo es más fuerte que el estético: esta
+# pantalla NO es una portada. El paciente ya decidió reservar; lo que necesita
+# ver acá es DÓNDE va a ir.
+#
+# 🔴 Y hay una razón para que muestre el LUGAR y no a una persona en un rol:
+# una recepcionista de banco promete personal que este consultorio puede no
+# tener, y entonces el ejemplo no se podría reemplazar por una foto propia sin
+# rediseñar. Un ejemplo sirve si la definitiva puede ocupar su lugar.
+#
+# Viene RECORTADA a 16/9 en el archivo, igual que `nosotros-ejemplo.jpg`: el
+# encuadre es una decisión, no lo que le toque al navegador.
+FOTO_ENTRAR = RAIZ / "brand" / "fotos" / "entrar-ejemplo.jpg"
 
-    Hoy es la MISMA de ejemplo que usa el hero, y eso es deliberado: sirve
-    para decidir la FORMA. La definitiva es otra y todavía no existe — entra
-    al brief de fotos, que es un entregable de esta etapa (§ 4).
-    """
-    if not FOTO.exists():
+FOTO_ENTRAR_RELATIVA = "../../fotos/entrar-ejemplo.jpg"
+
+
+def foto_de_entrar():
+    """La foto de la pantalla ①, o el hueco marcado si falta el archivo."""
+    if not FOTO_ENTRAR.exists():
         return '\n  <div class="entrar-foto" style="background: var(--dorado-claro)"></div>'
 
-    return (f'\n  <img class="entrar-foto" src="{FOTO_RELATIVA}"'
-            f'\n       alt="Consultorio de CB Odontología y Estética">')
+    return (f'\n  <img class="entrar-foto" src="{FOTO_ENTRAR_RELATIVA}"'
+            f'\n       alt="Sala de espera de CB Odontología y Estética">')
 
 
 def entrar_del_sitio(ancho):
@@ -6671,13 +6694,36 @@ paciente aterrizaría en una pantalla distinta de la que dejó.</p>
   <p><b>16/9 y no el 4/3 del hero, y el motivo es medible:</b> ésta no es una
   portada y el botón tiene que quedar arriba del pliegue. A 390 de ancho, un
   4/3 se come <b>292 px</b> contra los <b>219</b> de un 16/9.</p>
-  <p>🔴 <b>Y el encuadre no es decoración.</b> Sin <code>object-position</code>
-  el recorte agarra el centro de una foto vertical y <b>deja la cara afuera</b>
-  —se veía la boca y el mentón—. Está en 50% 30%, atado a ESTA foto.</p>
-  <p>⏱ <b>La foto es de EJEMPLO y la definitiva no existe todavía.</b> Hoy es
-  la misma del hero, que sirve para decidir la forma. <b>La real es otra y
-  entra al brief de fotos</b>, que es un entregable de esta etapa: hace falta
-  una imagen que hable de <i>sacar un turno</i>, no de la portada.</p>
+  <p>🔴 <b>Muestra el LUGAR, no a una persona en un rol, y el motivo no es
+  estético:</b> una recepcionista de banco promete <b>personal que este
+  consultorio puede no tener</b>. Si el ejemplo la muestra y Cecilia atiende
+  sola, la foto propia no puede ocupar su lugar y hay que rehacer la pieza.
+  <b>Un ejemplo sirve si la definitiva lo reemplaza sin tocar nada.</b></p>
+  <p><b>Viene recortada a 16/9 en el archivo</b> (1200 × 675), igual que la de
+  «Nosotros»: el encuadre es una decisión, no lo que le toque al navegador. El
+  original es vertical y el recorte toma la franja de abajo.</p>
+  <p>⚠️ <b>Dos limitaciones declaradas:</b> el cartel de la pared está en
+  <b>inglés</b> —ilegible a 390, legible en pantalla grande—, y el <b>borde de
+  arriba</b> es pared casi blanca contra el marfil de la barra: hoy las separa
+  la línea dorada de 1 px del encabezado, así que <b>si esa línea se saca hay
+  que volver a mirar este borde</b>.</p>
+  <p>⏱ <b>Es de EJEMPLO.</b> La definitiva es la sala de espera o la entrada
+  REALES, con luz cálida y sin equipamiento clínico a la vista. <b>Entra al
+  brief de fotos</b>, que es un entregable de esta etapa.</p>
+</section>
+
+<section>
+  <p class="rotulo">También lo cazó Juan — 24-sep-2026</p>
+  <h2>Había un error de escala en el aire del pie</h2>
+  <p>Su pregunta: <i>«¿no te parece que hay mucho aire entre que termina el
+  botón y el separador?»</i> <b>Había, y la causa tiene nombre:</b> el hueco
+  estaba puesto en <code>--aire-seccion</code>, que es el aire <b>ENTRE
+  SECCIONES</b> de la página. Acá no se separan dos secciones: se separa la
+  acción principal de una nota al pie <b>dentro de la misma</b>.</p>
+  <p><b>Era 56 + 20 = 76 px. Ahora es 28 + 16 = 44.</b> Y se escribe como
+  <code>calc(var(--aire-seccion) / 2)</code>, no como número suelto: así los
+  tres anchos se mueven solos —<b>28 · 36 · 48</b>— y no queda una constante
+  nueva que mantener aparte.</p>
 </section>
 
 <section>

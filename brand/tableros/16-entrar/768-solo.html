@@ -939,13 +939,13 @@ body { padding: 0; }
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
+  /* El archivo YA viene recortado a 16/9, así que `cover` no recorta nada:
+     está para que una foto futura de otra proporción no deforme el hueco.
+     ⚠ Sin `object-position` porque no hace falta acá — y cuando una foto lo
+     necesita, no es decoración: el primer intento de esta pieza usó la foto
+     VERTICAL del hero y el recorte por el centro geométrico dejó la cara
+     afuera, se veía la boca y el mentón. */
   object-fit: cover;
-  /* 🔴 EL ENCUADRE NO ES DECORACIÓN. Sin esta línea el recorte agarra el
-     centro geométrico de una foto VERTICAL y deja afuera la cara: se veía la
-     boca y el mentón. Con 30% el corte sube y entra la mirada.
-     ⚠ Es un número atado a ESTA foto de ejemplo. La definitiva se encuadra
-     al tomarla —eso va al brief de fotos— y entonces esta línea se revisa. */
-  object-position: 50% 30%;
 }
 
 .entrar {
@@ -988,9 +988,18 @@ body { padding: 0; }
 /* La salida para el que NO entra. Va abajo, sin botón y sin ícono: es una
    puerta que existe, no un segundo camino que se promueve — la regla de la
    § 4 sobre WhatsApp sigue rigiendo acá adentro. */
+/* 🔴 ACÁ HABÍA UN ERROR DE ESCALA Y LO CAZÓ JUAN — 24-sep-2026.
+   Estaba en `--aire-seccion`, que es el aire ENTRE SECCIONES de la página:
+   56 px a 390. Pero acá no se separan dos secciones, se separa la acción
+   principal de una nota al pie DENTRO de la misma. Con 56 arriba más 20 de
+   relleno el texto quedaba a 76 px del botón, flotando.
+
+   La mitad del aire de sección, y se escribe como CUENTA y no como número
+   suelto: así los tres anchos se mueven solos si el aire de sección cambia
+   —28 · 36 · 48— y no queda una constante nueva que mantener aparte. */
 .entrar .salida {
-  margin-top: var(--aire-seccion);
-  padding-top: 20px;
+  margin-top: calc(var(--aire-seccion) / 2);
+  padding-top: 16px;
   border-top: 1px solid var(--dorado-claro);
   color: var(--texto-segundo);
   font-size: var(--tipo-chico);
@@ -1012,8 +1021,8 @@ body { padding: 0; }
     </div>
   </header>
 
-  <img class="entrar-foto" src="../../fotos/hero-ejemplo.jpg"
-       alt="Consultorio de CB Odontología y Estética">
+  <img class="entrar-foto" src="../../fotos/entrar-ejemplo.jpg"
+       alt="Sala de espera de CB Odontología y Estética">
   <div class="entrar">
     <h1>Reservá tu turno</h1>
 
