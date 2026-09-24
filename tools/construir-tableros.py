@@ -7208,6 +7208,267 @@ en el sillón</b>.</p>
 """
 
 
+# ============================================================
+# PIEZA 18 — LA PANTALLA ③ : ¿A QUÉ VENÍS?
+#
+# Los 14 tratamientos NO se escriben acá: salen de `GET /tratamientos`, y esta
+# lista se copió de una corrida real del endpoint el 24-sep-2026. El ORDEN
+# también viene resuelto de la base (columna `orden`), igual que en obras
+# sociales: no se reordena en el front.
+#
+# 🔴 Y ACÁ VIVE UN HUECO DE PRODUCTO QUE EL DOCUMENTO NO TENÍA ESCRITO.
+# Sólo DOS de los catorce tienen duración propia para la web —`consulta` y
+# `limpieza`—. Los otros doce se agendan COMO CONSULTA y el profesional
+# reasigna después. O sea: el paciente elige «endodoncia» y lo que queda
+# agendado es una consulta de evaluación. Si la pantalla no lo dice, llega
+# esperando que le hagan la endodoncia ese día.
+#
+# ⚠️ LA DURACIÓN EN MINUTOS NO SE MUESTRA —es regla del proyecto desde la pieza
+# 6 y el generador la vigila—, así que el aviso habla de QUÉ PASA, no de cuánto
+# dura.
+# ============================================================
+
+TRATAMIENTOS = [
+    ("consulta", True),
+    ("limpieza", True),
+    ("blanqueamiento", False),
+    ("restauración", False),
+    ("extracción", False),
+    ("endodoncia", False),
+    ("carillas", False),
+    ("strass dentales", False),
+    ("ortodoncia", False),
+    ("ortopedia", False),
+    ("cirugía", False),
+    ("prótesis", False),
+    ("ATM y bruxismo", False),
+    ("otros", False),
+]
+
+
+CSS_MOTIVO = """
+.motivo {
+  margin: 0 var(--margen-pagina);
+  padding: 32px 0 40px;
+}
+
+.motivo h1 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+  text-wrap: balance;
+}
+
+.motivo .ayuda-pantalla {
+  margin-top: 12px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  text-wrap: balance;
+}
+
+/* EL DESPLEGABLE USA LA CAJA DEL SISTEMA —la misma de la pieza 4— y le suma
+   lo único que un <select> necesita y un <input> no: la flecha. Va dibujada
+   en el fondo y no como carácter, porque un carácter se puede seleccionar y
+   se ve distinto en cada sistema. */
+.motivo select.caja {
+  appearance: none;
+  padding-right: 40px;
+  background-image:
+    linear-gradient( 45deg, transparent 50%, var(--grafito) 50% ),
+    linear-gradient( 135deg, var(--grafito) 50%, transparent 50% );
+  background-position:
+    calc( 100% - 20px ) calc( 50% + 2px ),
+    calc( 100% - 14px ) calc( 50% + 2px );
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+/* EL AVISO DE QUE LA PRIMERA VISITA ES UNA CONSULTA. No es un error ni una
+   advertencia: es información, así que NO usa el color de error. Lleva el
+   filete dorado claro de las cajas del sistema. */
+.aviso-consulta {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--blanco);
+  border-left: 3px solid var(--dorado);
+  border-radius: var(--radio);
+  color: var(--texto-segundo);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+.motivo .btn {
+  margin-top: 28px;
+  margin-left: 0;
+}
+"""
+
+
+def opciones_de_motivo(elegido):
+    salida = ""
+
+    for nombre, propia in TRATAMIENTOS:
+        marca = " selected" if nombre == elegido else ""
+        salida += f'\n        <option{marca}>{nombre}</option>'
+
+    return salida
+
+
+def motivo_del_sitio(ancho, elegido=None):
+    """La pantalla ③. `elegido` es None (sin elegir), o el nombre de un
+    tratamiento — y de eso depende que aparezca el aviso de la consulta."""
+    logo = leer_png("cb-wordmark-600")
+
+    sin_elegir = ' selected' if elegido is None else ''
+
+    # El aviso sale sólo cuando lo elegido NO tiene duración propia: con
+    # `limpieza` el turno ES la limpieza y decir lo contrario sería mentir.
+    tiene_propia = any(
+        nombre == elegido and propia for nombre, propia in TRATAMIENTOS
+    )
+
+    aviso = ""
+
+    if elegido is not None and not tiene_propia:
+        aviso = """
+      <p class="aviso-consulta">La primera visita es una <b>consulta</b>:
+      Cecilia revisa, te dice cómo sigue el tratamiento y agendan juntos lo que
+      haga falta.</p>"""
+
+    return f"""
+<div class="pagina">
+  <header class="encabezado">
+    <div class="barra">
+      <img src="data:image/png;base64,{logo}"
+           alt="CB Odontología y Estética"
+           width="{ENCABEZADO_LOGO[ancho]}">
+    </div>
+  </header>
+
+  <div class="motivo">
+    <h1>¿A qué venís?</h1>
+
+    <p class="ayuda-pantalla">Elegí el motivo de la consulta. Si no estás
+    seguro, poné <b>consulta</b> y lo vemos ahí.</p>
+
+    <div class="campo">
+      <label class="etiqueta" for="motivo">Motivo</label>
+      <select class="caja" id="motivo">
+        <option value=""{sin_elegir}>Elegí una opción</option>{opciones_de_motivo(elegido)}
+      </select>
+    </div>{aviso}
+
+    <button class="btn btn-1">Continuar</button>
+  </div>
+</div>"""
+
+
+def solo_motivo(tokens, css, ancho):
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · ¿A qué venís? · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_CAMPO}
+{CSS_ENCABEZADO}
+{CSS_MOTIVO}
+</style>
+{motivo_del_sitio(ancho, elegido="endodoncia")}
+"""
+
+
+def tablero_motivo(tokens, css, ancho):
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 18 ¿A qué venís? · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_CAMPO}
+{CSS_ENCABEZADO}
+{CSS_MOTIVO}
+{css_margen_en_la_prosa()}
+</style>
+
+<div class="prosa">
+<p class="rotulo">Fase ⑧ · Pieza 18 · {ancho} px</p>
+<h1>¿A qué venís?</h1>
+<div class="regla"></div>
+<p><b>Los catorce tratamientos no están escritos en esta pieza:</b> salen de
+<code>GET /tratamientos</code>, y esta lista se copió de una <b>corrida real
+del endpoint</b>. <b>El orden también viene resuelto de la base</b> —columna
+<code>orden</code>—, igual que en obras sociales: no se reordena en el front.</p>
+
+<section>
+  <p class="rotulo">La decisión de forma</p>
+  <h2>Desplegable, y acá sí</h2>
+  <p>La pieza 17 usa <b>lista tocable</b> y ésta usa <b>desplegable</b>, y no
+  es una incoherencia: <b>lo que decide es cuántas opciones hay</b>. Dos a
+  cuatro personas entran todas a la vista y esconderlas cuesta un toque de
+  más; <b>catorce tratamientos en tarjetas serían más de 900 px de scroll</b>
+  antes de llegar al botón.</p>
+  <p>El control es <b>la caja del sistema</b>, la misma de la pieza 4. Lo único
+  que se le suma es la flecha, <b>dibujada en el fondo y no puesta como
+  carácter</b>: un carácter se puede seleccionar y se dibuja distinto en cada
+  sistema.</p>
+</section>
+
+<section>
+  <p class="rotulo">🔴 El hueco de producto que apareció armando esta pieza</p>
+  <h2>El paciente elige endodoncia y lo que queda agendado es una consulta</h2>
+  <p><b>Sólo DOS de los catorce tienen duración propia para la web:</b>
+  <code>consulta</code> y <code>limpieza</code>. <b>Los otros doce se agendan
+  como consulta</b> y el profesional reasigna después — eso ya está construido
+  y decidido en el portero.</p>
+  <p><b>Lo que NO estaba decidido es si la pantalla se lo dice.</b> Si no lo
+  dice, el paciente que eligió «endodoncia» <b>llega esperando que le hagan la
+  endodoncia ese día</b>. El aviso de abajo es la propuesta de Claude, y hay
+  que aprobarlo o cambiarlo.</p>
+  <p>⚠️ <b>Sale SÓLO cuando corresponde:</b> con <code>limpieza</code> el turno
+  <b>es</b> la limpieza, y mostrar el mismo aviso ahí sería mentir.</p>
+  <p>⚠️ <b>Y no dice minutos, a propósito:</b> la duración no se le muestra al
+  paciente —regla del proyecto desde la pieza 6, y el generador la vigila—, así
+  que el aviso habla de <b>qué pasa</b>, no de cuánto dura.</p>
+</section>
+
+<section>
+  <p class="rotulo">Lo que queda abierto</p>
+  <h2>Dos cosas</h2>
+  <ul class="reglas">
+    <li>⬜ <b>Si los catorce se agrupan.</b> Podrían partirse en «lo más
+    pedido» y «otros tratamientos» con <code>&lt;optgroup&gt;</code>, como el
+    desplegable de obras sociales agrupa por entidad. <b>Hoy van planos, en el
+    orden de la base.</b></li>
+    <li>⬜ <b>Qué pasa con «otros».</b> Es uno de los catorce y no dice nada
+    por sí mismo: <b>probablemente necesite un campo de texto al lado</b>, y
+    eso hoy no existe.</li>
+  </ul>
+</section>
+
+<section>
+  <p class="rotulo">Los tres estados, a 1:1</p>
+  <h2>Sin elegir · con limpieza · con endodoncia</h2>
+  <p>El tercero —el que trae el aviso— vive además <b>solo</b>:
+  <code>{ancho}-solo.html</code>.</p>
+</section>
+</div>
+{motivo_del_sitio(ancho)}
+{motivo_del_sitio(ancho, elegido="limpieza")}
+{motivo_del_sitio(ancho, elegido="endodoncia")}
+"""
+
+
 def revisar_duracion(pagina, donde):
     """Avisos de duración que quedaron adentro de algo que simula la pantalla."""
     avisos = []
@@ -7762,6 +8023,21 @@ def main():
         destino = SALIDA / "17-para-quien" / f"{ancho}-solo.html"
         destino.write_text(
             fijar_al_ancho(solo_quien(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+        destino = SALIDA / "18-a-que-venis" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_motivo(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+        destino = SALIDA / "18-a-que-venis" / f"{ancho}-solo.html"
+        destino.write_text(
+            fijar_al_ancho(solo_motivo(tokens, css, ancho), ancho),
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")
