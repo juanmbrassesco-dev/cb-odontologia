@@ -1076,6 +1076,44 @@ body { padding: 0; }
   color: var(--dorado-texto);
 }
 
+/* El alto lo fija la columna del texto, y la foto se estira a lo que salga:
+   `align-items: stretch` es el default del grid y acá es justo lo que se
+   quiere — una foto que mide lo mismo que su vecina, sin escribir un alto. */
+.entrar-dos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 460px;
+}
+
+/* La foto va a la DERECHA: el que lee arranca por el texto, que es donde
+   está la acción. Invertirlo pondría la decoración primero. */
+.entrar-dos .entrar-foto {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+}
+
+/* El texto se centra en su mitad: en una columna alta y angosta, pegarlo
+   arriba deja un pozo debajo del botón. */
+.entrar-dos .entrar {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+  padding: 48px var(--margen-pagina);
+}
+
+/* Sin foto arriba, la salida ya no necesita empujarse: el aire de la columna
+   la separa sola. */
+.entrar-dos .salida {
+  margin-top: 32px;
+}
+
 </style>
 
 <div class="pagina">
@@ -1087,6 +1125,7 @@ body { padding: 0; }
     </div>
   </header>
 
+  <div class="entrar-dos">
   <img class="entrar-foto" src="../../fotos/entrar-ejemplo.jpg"
        alt="Sala de espera de CB Odontología y Estética">
   <div class="entrar">
@@ -1100,5 +1139,6 @@ body { padding: 0; }
 
     <p class="salida">¿Tenés una consulta antes de reservar?
     <a href="#whatsapp">Escribinos por WhatsApp</a>.</p>
+  </div>
   </div>
 </div>
