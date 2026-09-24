@@ -414,11 +414,26 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 [functions.tratamientos]
 verify_jwt = false
 
-# `horarios-disponibles` también es público, y por el mismo motivo de fondo: el
-# paciente tiene que poder ver si hay turno ANTES de registrarse. Devuelve horas
-# y un estado — nada de `turnos`, ni quién reservó qué.
-[functions.horarios-disponibles]
-verify_jwt = false
+# `horarios-disponibles` DEJÓ DE SER PÚBLICO el 24-sep-2026, y la ausencia de
+# bloque es la decisión —igual que en `mis-pacientes`—: sin `verify_jwt = false`
+# la plataforma vuelve a exigir credencial, que es el default.
+#
+# Acá decía que el paciente tenía que poder ver si hay turno ANTES de
+# registrarse. Lo revirtió Juan, y el motivo es más fuerte que el que reemplaza:
+# la grilla de dos meses, servida sin sesión, deja que cualquiera reconstruya
+# QUÉ DÍAS Y HORAS trabaja cada profesional y cuánto hueco libre tiene — dato
+# comercial, y en un consultorio con la dirección en la cartelería también dice
+# cuándo el lugar está vacío. Eso es divulgación de información
+# (information disclosure) sin autenticar.
+#
+# ⚠ Lo que el login NO hace, escrito para que nadie lo lea de más: no impide el
+# raspado (scraping). Una cuenta de Google se crea en dos minutos. Lo que da es
+# ATRIBUCIÓN —el pedido tiene nombre— y la posibilidad de cortarle a uno solo.
+# Pasa de anónimo a identificado; no es una puerta cerrada.
+#
+# ⚠ Y el bloque solo no alcanzaba: la cerradura de verdad está adentro de la
+# función, que pasó de `auth: 'none'` a `auth: 'user'`. Son las dos, como en
+# `reservar`.
 
 # `obras-sociales` es público por lo mismo: el desplegable de cobertura se
 # tiene que poder dibujar antes de que el paciente inicie sesión. Devuelve

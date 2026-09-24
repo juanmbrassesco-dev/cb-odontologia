@@ -157,7 +157,8 @@ HASTA=$( sumar_dias +40 )
 
 grilla () {
   curl -s "$FUNCIONES/horarios-disponibles?profesional=$PROFESIONAL&tratamiento=$1&desde=$HOY&hasta=$HASTA" \
-    -H "apikey: $SUPABASE_PUBLISHABLE_KEY"
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN"
 }
 
 GRILLA_CONSULTA=$( grilla $CONSULTA )
@@ -388,6 +389,34 @@ echo "▶ 17. REGRESIÓN — el bloque recién reservado, visto por /horarios-di
 echo "  esperado: $HORA_LIBRE en 'ocupado'"
 
 grilla $CONSULTA | jq -c --arg h "$HORA_LIBRE" '.dias[].bloques[] | select( .inicio == $h )'
+
+echo
+echo "───────────────────────────────────────────────────────────────"
+echo "▶ 17.b LA AGENDA SIN SESIÓN — /horarios-disponibles tiene que rebotar"
+echo "  esperado: 401. Si contesta 200, la agenda de dos meses es pública"
+
+# 🔒 Este caso existe porque el 24-sep-2026 el endpoint pasó de público a pedir
+# sesión, y el resto de la batería NO puede vigilarlo: desde ese día la función
+# `grilla` manda el token en TODAS sus llamadas, así que pasaría en verde con el
+# endpoint abierto o cerrado. Una batería que no distingue los dos casos no está
+# probando nada — es el mismo falso verde del caso 10, por otra vía.
+#
+# Por eso acá se llama a mano y SIN `Authorization`, que es justo lo que `grilla`
+# ya no hace.
+
+CODIGO_SIN_SESION=$(
+  curl -s -o /dev/null -w "%{http_code}" \
+    "$FUNCIONES/horarios-disponibles?profesional=$PROFESIONAL&tratamiento=$CONSULTA&desde=$HOY&hasta=$HASTA" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY"
+)
+
+echo "  obtenido: $CODIGO_SIN_SESION"
+
+if [ "$CODIGO_SIN_SESION" != "401" ]
+then
+  echo "❌ La agenda se sirve sin sesión. Revisá el auth de la función y config.toml."
+  exit 1
+fi
 
 echo
 echo "───────────────────────────────────────────────────────────────"

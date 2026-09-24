@@ -1,8 +1,22 @@
-// Portero de CB Odontología — endpoint público GET /horarios-disponibles
+// Portero de CB Odontología — endpoint GET /horarios-disponibles, PIDE SESIÓN
 //
 // Contesta una sola pregunta: qué bloques de media hora tiene ese profesional
-// en ese rango de fechas. Público a conciencia, igual que /tratamientos: el
-// paciente tiene que poder ver si hay turno ANTES de registrarse.
+// en ese rango de fechas.
+//
+// 🔒 ERA PÚBLICO Y DEJÓ DE SERLO el 24-sep-2026, por decisión de Juan. El
+// encabezado decía "el paciente tiene que poder ver si hay turno ANTES de
+// registrarse", y eso es lo que se cayó: la agenda de dos meses, servida sin
+// sesión, deja reconstruir qué días y horas trabaja cada profesional y cuánto
+// hueco libre tiene. Es divulgación de información (information disclosure)
+// sin autenticar, y encima anónima.
+//
+// ⚠ No confundir con lo que el login SÍ da: atribución, no impedimento. Una
+// cuenta de Google se crea en dos minutos. Lo que cambia es que el pedido
+// tiene nombre y se le puede cortar a uno solo.
+//
+// ⚠ Son DOS cerraduras y hacen falta las dos: `auth: 'user'` acá abajo, y la
+// ausencia de `verify_jwt = false` en `config.toml`. La segunda frena en la
+// plataforma; la primera es la que se lee al abrir este archivo.
 //
 // PASO E de la etapa ②, el último: la grilla descuenta los días que tapan las
 // `excepciones` (feriados, cierres, ausencias), marca `ocupado` lo que ya tiene
@@ -75,7 +89,7 @@ function falloDeBase(): Response {
 export default {
 
   fetch: withSupabase< Database >(
-    { auth: 'none' },
+    { auth: 'user' },
     async ( req, ctx ) => {
 
       const url = new URL( req.url )

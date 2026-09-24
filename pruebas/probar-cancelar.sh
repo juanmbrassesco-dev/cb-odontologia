@@ -164,7 +164,8 @@ HASTA=$( sumar_dias +40 )
 
 grilla () {
   curl -s "$FUNCIONES/horarios-disponibles?profesional=$PROFESIONAL&tratamiento=$CONSULTA&desde=$HOY&hasta=$HASTA" \
-    -H "apikey: $SUPABASE_PUBLISHABLE_KEY"
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN"
 }
 
 LIBRES=$( grilla | jq -r '[ .dias[].bloques[] | select( .estado == "libre" ) | .inicio ]' )

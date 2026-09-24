@@ -96,7 +96,8 @@ HASTA=$( date -u -v+40d '+%F' )
 
 GRILLA=$(
   curl -s "$FUNCIONES/horarios-disponibles?profesional=$PROFESIONAL&tratamiento=$CONSULTA&desde=$HOY&hasta=$HASTA" \
-    -H "apikey: $SUPABASE_PUBLISHABLE_KEY"
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN"
 )
 
 LIBRES=$( echo "$GRILLA" | jq -r '[ .dias[].bloques[] | select( .estado == "libre" ) ][0:3] | .[].inicio' )
