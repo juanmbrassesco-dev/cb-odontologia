@@ -6468,6 +6468,35 @@ reseña falsa con estrellas y nombre completo es prueba social fabricada.
 # que venía a sacar turno.
 # ============================================================
 
+# 🔴 EL TOPE DE ALTURA DE LA FOTO, y lo destapó una pregunta de Juan el
+# 24-sep-2026: «¿y los otros anchos?».
+#
+# La foto es 16/9 a todo el ancho. En móvil eso da 219 px y está bien; a 1280
+# da **720 px** —un cartelón que empuja el título y el botón abajo del pliegue—.
+# En una pantalla de ACCIÓN eso es una rotura, no un gusto: el paciente abre la
+# página y no ve qué tiene que hacer.
+#
+# ⚠️ ESTO ARREGLA LA ROTURA, NO DECIDE EL DISEÑO DE ESCRITORIO. Lo que
+# corresponde en pantalla grande es probablemente otra cosa —la foto al costado,
+# en dos columnas, que es el patrón de las pantallas de entrar— y eso se decide
+# en el SEGUNDO TIEMPO de la ⑧, con los tres anchos delante. Acá sólo se le pone
+# techo para que no esté rota mientras tanto.
+#
+# Los tableros llevan las media queries aplanadas, así que el valor entra por
+# Python y no por CSS.
+FOTO_ALTO_MAXIMO = {390: None, 768: 360, 1280: 360}
+
+
+def css_de_entrar(ancho):
+    """CSS_ENTRAR con el tope de la foto ya puesto para ese ancho."""
+    tope = FOTO_ALTO_MAXIMO[ancho]
+
+    if tope is None:
+        return CSS_ENTRAR.replace("/*TOPE*/", "")
+
+    return CSS_ENTRAR.replace("/*TOPE*/", f"max-height: {tope}px;")
+
+
 CSS_ENTRAR = """
 /* LA FOTO VA A SANGRE Y ARRIBA DE TODO, que es la regla ya cerrada de la § 4:
    la foto que ABRE una pantalla cruza de borde a borde. Esquinas rectas —el
@@ -6488,6 +6517,7 @@ CSS_ENTRAR = """
      VERTICAL del hero y el recorte por el centro geométrico dejó la cara
      afuera, se veía la boca y el mentón. */
   object-fit: cover;
+  /*TOPE*/
 }
 
 .entrar {
@@ -6626,7 +6656,7 @@ def solo_entrar(tokens, css, ancho):
 {CSS_BOTON}
 {CSS_GOOGLE}
 {CSS_ENCABEZADO}
-{CSS_ENTRAR}
+{css_de_entrar(ancho)}
 </style>
 {entrar_del_sitio(ancho)}
 """
@@ -6646,7 +6676,7 @@ def tablero_entrar(tokens, css, ancho):
 {CSS_BOTON}
 {CSS_GOOGLE}
 {CSS_ENCABEZADO}
-{CSS_ENTRAR}
+{css_de_entrar(ancho)}
 {css_margen_en_la_prosa()}
 </style>
 
