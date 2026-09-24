@@ -6484,13 +6484,28 @@ reseña falsa con estrellas y nombre completo es prueba social fabricada.
 #
 # Los tableros llevan las media queries aplanadas, así que el valor entra por
 # Python y no por CSS.
-FOTO_ALTO_MAXIMO = {390: None, 768: 320, 1280: 280}
+# ⚠️ EL TOPE DE 1280 ESTÁ ATADO AL BOTÓN, y conviene saberlo antes de tocarlo:
+# sacar aire de ABAJO del botón acorta la página, pero NO sube el botón —
+# agrandar la foto sí lo baja, píxel por píxel. Con 340 el botón volvía a
+# caerse fuera de los 620 de un portátil de 13 pulgadas; con 320 entra y la
+# foto igual gana 40 sobre los 280 que tenía.
+FOTO_ALTO_MAXIMO = {390: None, 768: 360, 1280: 320}
 
 # 🔴 EL AIRE DE ARRIBA DEL TEXTO TAMBIÉN BAJA EN ESCRITORIO, y por la misma
 # razón medida: a 1280 con la foto en 360 y 32 px de aire, el botón de Google
 # caía en el píxel 625 — o sea FUERA de un portátil de 13 pulgadas, que deja
 # unos 620 de alto útil. La única acción de la pantalla no se ve.
 AIRE_ARRIBA_DEL_TEXTO = {390: 32, 768: 28, 1280: 24}
+
+# 🔴 EL AIRE DE ABAJO DE TODO, y lo señaló Juan: «te queda algo por sacar
+# abajo del botón». Tenía razón y era el más grande de la pantalla — el
+# `padding-bottom` salía de `--aire-seccion`, que a 1280 son 96 px de marfil
+# vacío bajo el último renglón. Ese aire existe para separar SECCIONES de una
+# página larga; acá abajo no hay nada que separar, es el fin de la pantalla.
+#
+# Lo que se recorta no se pierde: se lo queda la FOTO, que es lo que él quería
+# agrandar.
+AIRE_ABAJO_DE_TODO = {390: 40, 768: 40, 1280: 40}
 
 
 def css_de_entrar(ancho):
@@ -6530,7 +6545,7 @@ CSS_ENTRAR = """
 
 .entrar {
   margin: 0 var(--margen-pagina);
-  padding: /*AIRE*/ 0 var(--aire-seccion);
+  padding: /*AIRE*/ 0 /*AIRE-ABAJO*/;
 }
 
 /* El texto NO va centrado y es a propósito: esta pantalla se lee, no se
