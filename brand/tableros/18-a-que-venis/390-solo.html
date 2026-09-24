@@ -1069,6 +1069,15 @@ body { padding: 0; }
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
   cursor: pointer;
+  /* 🔴 ESTO PROBABLEMENTE NO HAGA NADA, y se deja UNA versión con el motivo
+     escrito para que nadie lo vuelva a intentar a ciegas.
+     `accent-color` rige checkbox, radio, range y progress — no el resaltado de
+     un <option>. Ese resaltado lo pinta el SISTEMA OPERATIVO con su color de
+     acento, y Safari incluso lo dibuja ENCIMA del fondo que declare el autor.
+     ⇒ El azul del desplegable abierto no se cambia por CSS.
+     Se deja la línea porque no rompe nada y porque el día que el navegador lo
+     soporte, el color ya está puesto y es el nuestro. */
+  accent-color: var(--dorado);
 }
 
 .motivo .btn {

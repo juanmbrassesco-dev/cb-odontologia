@@ -7330,6 +7330,15 @@ CSS_MOTIVO = """
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
   cursor: pointer;
+  /* 🔴 ESTO PROBABLEMENTE NO HAGA NADA, y se deja UNA versión con el motivo
+     escrito para que nadie lo vuelva a intentar a ciegas.
+     `accent-color` rige checkbox, radio, range y progress — no el resaltado de
+     un <option>. Ese resaltado lo pinta el SISTEMA OPERATIVO con su color de
+     acento, y Safari incluso lo dibuja ENCIMA del fondo que declare el autor.
+     ⇒ El azul del desplegable abierto no se cambia por CSS.
+     Se deja la línea porque no rompe nada y porque el día que el navegador lo
+     soporte, el color ya está puesto y es el nuestro. */
+  accent-color: var(--dorado);
 }
 
 .motivo .btn {
@@ -7452,6 +7461,21 @@ del endpoint</b>. <b>El orden también viene resuelto de la base</b> —columna
   que se le suma es la flecha, <b>dibujada en el fondo y no puesta como
   carácter</b>: un carácter se puede seleccionar y se dibuja distinto en cada
   sistema.</p>
+  <p>🔴 <b>EL AZUL DEL DESPLEGABLE ABIERTO NO SE PUEDE CAMBIAR, y conviene que
+  quede escrito para no volver a intentarlo.</b> El resaltado de la opción lo
+  pinta el <b>sistema operativo</b> con su color de acento — Safari incluso lo
+  dibuja <b>encima</b> del fondo que declare el autor. <code>accent-color</code>
+  rige checkbox, radio, range y progress, <b>no el <code>&lt;option&gt;</code></b>.</p>
+  <p>🔑 <b>Y el argumento que cierra el tema no es técnico, es de dónde se
+  mira:</b> ese azul es el de <b>macOS</b>. En un teléfono —que es donde va a
+  estar el paciente— el mismo <code>&lt;select&gt;</code> se abre como la
+  <b>hoja o rueda nativa de iOS o Android</b>, que no se parece en nada a esto.
+  <b>Que el control se vea como el sistema de quien lo usa es una virtud del
+  control nativo, no un defecto a tapar.</b></p>
+  <p>⚠️ <b>La alternativa existe y es cara:</b> reemplazarlo por un desplegable
+  propio hecho con <code>div</code>. Se estila entero, y hay que reimplementar
+  teclado, lector de pantalla y comportamiento táctil — y en móvil se pierde la
+  rueda nativa, que es mejor que cualquier imitación.</p>
 </section>
 
 <section>
