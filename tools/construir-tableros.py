@@ -6806,6 +6806,306 @@ paciente aterrizaría en una pantalla distinta de la que dejó.</p>
 """
 
 
+# ============================================================
+# PIEZA 17 — LA PANTALLA ② : ¿PARA QUIÉN ES EL TURNO?
+#
+# Existe por una propiedad del modelo de datos, no por gusto: UN CORREO PUEDE
+# DEVOLVER VARIAS FILAS DE `pacientes` (§ 9.8) —la madre que anota a sus hijos
+# con su casilla—, así que después del login el sistema sabe QUÉ CORREO entró y
+# no sabe QUIÉN se va a sentar en el sillón.
+#
+# Su endpoint ya existe y está desplegado: `GET /mis-pacientes` devuelve id,
+# nombre y apellido, y nada más. Y `POST /reservar` exige `paciente_id` O
+# `paciente_nuevo`, uno de los dos y nunca los dos — o sea que esta elección no
+# es opcional: sin ella no hay forma de reservar.
+#
+# 🔴 SON TRES CASOS Y UNO NO TIENE PANTALLA:
+#   0 filas  → se piden nombre y apellido          → `paciente_nuevo`
+#   1 fila   → NO SE MUESTRA NADA, se sigue de largo → `paciente_id`
+#   2 o más  → se elige de la lista                → `paciente_id` o nuevo
+# ============================================================
+
+CSS_QUIEN = """
+.quien {
+  margin: 0 var(--margen-pagina);
+  padding: 32px 0 var(--aire-seccion);
+}
+
+.quien h1 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+  text-wrap: balance;
+}
+
+.quien .ayuda-pantalla {
+  margin-top: 12px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  text-wrap: balance;
+}
+
+.opciones {
+  margin-top: 28px;
+  max-width: var(--columna);
+}
+
+/* CADA OPCIÓN ES UN <label> QUE ENVUELVE A SU RADIO, y eso no es un detalle
+   de marcado: envolviéndolo, toda la caja queda tocable sin escribir un solo
+   `for`/`id`, y el área táctil pasa de los 20 px del círculo a los 56 de la
+   fila entera. En un teléfono eso es la diferencia entre elegir y errarle. */
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 14px;
+  background: var(--campo-fondo);
+  border: 1px solid var(--campo-borde);
+  border-radius: var(--radio);
+  cursor: pointer;
+}
+
+.opcion + .opcion {
+  margin-top: 10px;
+}
+
+/* 🔴 EL RADIO NO SE ESCONDE. Es la tentación obvia —queda más prolijo— y
+   rompe el teclado: un `display: none` lo saca del recorrido de tabulación y
+   la lista deja de poder recorrerse sin mouse. Se lo deja real y visible, con
+   el tamaño subido para que se vea a la distancia de un teléfono. */
+.opcion input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--grafito);
+}
+
+.opcion .nombre {
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+}
+
+/* La última opción es de otra clase de cosa —no es una persona, es una
+   salida— y por eso se separa con aire y no con un color: el color ya tiene
+   trabajo asignado en este sistema. */
+.opcion.otra {
+  margin-top: 18px;
+}
+
+.quien .btn {
+  margin-top: 28px;
+  margin-left: 0;
+}
+
+.quien .campo:first-of-type {
+  margin-top: 28px;
+}
+"""
+
+
+PACIENTES_DE_EJEMPLO = [
+    ("Laura Giménez", True),
+    ("Sofía Giménez", False),
+    ("Tomás Giménez", False),
+]
+
+
+def opcion_de_persona(nombre, elegida, indice):
+    marcada = " checked" if elegida else ""
+
+    return f"""
+    <label class="opcion">
+      <input type="radio" name="paciente" value="{indice}"{marcada}>
+      <span class="nombre">{nombre}</span>
+    </label>"""
+
+
+def quien_del_sitio(ancho, caso="varios"):
+    """La pantalla ②. `caso` es "varios" o "nuevo"; el de una sola fila no
+    tiene pantalla, y por eso no es un valor posible acá."""
+    logo = leer_png("cb-wordmark-600")
+
+    encabezado = f"""
+<div class="pagina">
+  <header class="encabezado">
+    <div class="barra">
+      <img src="data:image/png;base64,{logo}"
+           alt="CB Odontología y Estética"
+           width="{ENCABEZADO_LOGO[ancho]}">
+    </div>
+  </header>
+"""
+
+    if caso == "nuevo":
+        return encabezado + """
+  <div class="quien">
+    <h1>¿Cómo te llamás?</h1>
+
+    <p class="ayuda-pantalla">Es la primera vez que reservás con este correo.
+    Con esto queda tu turno a tu nombre.</p>
+
+    <div class="campo">
+      <label class="etiqueta" for="nombre">Nombre</label>
+      <input class="caja" id="nombre" type="text" autocomplete="given-name">
+    </div>
+
+    <div class="campo">
+      <label class="etiqueta" for="apellido">Apellido</label>
+      <input class="caja" id="apellido" type="text" autocomplete="family-name">
+    </div>
+
+    <button class="btn btn-1">Continuar</button>
+  </div>
+</div>"""
+
+    opciones = "".join(
+        opcion_de_persona(nombre, elegida, i)
+        for i, (nombre, elegida) in enumerate(PACIENTES_DE_EJEMPLO)
+    )
+
+    return encabezado + f"""
+  <div class="quien">
+    <h1>¿Para quién es el turno?</h1>
+
+    <p class="ayuda-pantalla">Con tu correo figura más de una persona. Elegí
+    quién se va a atender.</p>
+
+    <div class="opciones">{opciones}
+      <label class="opcion otra">
+        <input type="radio" name="paciente" value="nueva">
+        <span class="nombre">Es para otra persona</span>
+      </label>
+    </div>
+
+    <button class="btn btn-1">Continuar</button>
+  </div>
+</div>"""
+
+
+def solo_quien(tokens, css, ancho):
+    """La pantalla sola, a 1:1. Va el caso de VARIOS, que es el que tiene
+    decisiones adentro; el de alta va en el tablero."""
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · ¿Para quién es el turno? · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_CAMPO}
+{CSS_ENCABEZADO}
+{CSS_QUIEN}
+</style>
+{quien_del_sitio(ancho)}
+"""
+
+
+def tablero_quien(tokens, css, ancho):
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 17 ¿Para quién? · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_CAMPO}
+{CSS_ENCABEZADO}
+{CSS_QUIEN}
+{css_margen_en_la_prosa()}
+</style>
+
+<div class="prosa">
+<p class="rotulo">Fase ⑧ · Pieza 17 · {ancho} px</p>
+<h1>¿Para quién es el turno?</h1>
+<div class="regla"></div>
+<p><b>Esta pantalla existe por una propiedad del modelo de datos, no por
+gusto.</b> Un correo puede devolver <b>varias filas</b> de <code>pacientes</code>
+—la madre que anota a sus hijos con su casilla, § 9.8—, así que después del
+login el sistema sabe <b>qué correo entró</b> y no sabe <b>quién se va a sentar
+en el sillón</b>.</p>
+
+<section>
+  <p class="rotulo">Lo que ya existe</p>
+  <h2>El backend no hay que tocarlo</h2>
+  <p><code>GET /mis-pacientes</code> está desplegado y devuelve <b>id, nombre y
+  apellido, y nada más</b> — ni DNI, ni teléfono, ni fecha de nacimiento.
+  <b>Un dato que no sale no se puede filtrar por accidente mañana</b>, cuando
+  alguien arme otra pantalla con esta misma respuesta.</p>
+  <p>Y <code>POST /reservar</code> <b>exige</b> <code>paciente_id</code> O
+  <code>paciente_nuevo</code>, uno de los dos y nunca los dos: <b>sin esta
+  elección no hay forma de reservar</b>.</p>
+</section>
+
+<section>
+  <p class="rotulo">Los tres casos</p>
+  <h2>Y uno de los tres NO tiene pantalla</h2>
+  <ul class="reglas">
+    <li><b>0 filas</b> — primera vez con ese correo → se piden <b>nombre y
+    apellido</b> → <code>paciente_nuevo</code>. <i>Es la segunda pantalla de
+    abajo.</i></li>
+    <li>🔴 <b>1 fila — NO SE MUESTRA NADA.</b> Se sigue de largo con ese
+    <code>paciente_id</code>. <b>Preguntarle a alguien que se identifique
+    cuando hay una sola respuesta posible es un paso que sólo agrega un
+    toque</b>, y esta pantalla ya nace en medio de un flujo de seis.</li>
+    <li><b>2 o más</b> — se elige de la lista, más «es para otra persona» →
+    <code>paciente_id</code> o <code>paciente_nuevo</code>. <i>Es la primera
+    pantalla de abajo, y es la que vive sola en su archivo.</i></li>
+  </ul>
+</section>
+
+<section>
+  <p class="rotulo">Las dos decisiones de forma</p>
+  <h2>Por qué una lista y no un desplegable</h2>
+  <ul class="reglas">
+    <li><b>Lista tocable, no <code>&lt;select&gt;</code>.</b> Son dos, tres o
+    cuatro personas: <b>entran todas a la vista</b>. Un desplegable las esconde
+    detrás de un toque y obliga a recordar qué había adentro.</li>
+    <li><b>Cada opción es un <code>&lt;label&gt;</code> que ENVUELVE a su
+    radio.</b> Así toda la caja queda tocable sin escribir un solo
+    <code>for</code>, y el área táctil pasa de los 20 px del círculo a los
+    <b>56 de la fila entera</b>. En un teléfono ésa es la diferencia entre
+    elegir y errarle.</li>
+    <li>🔴 <b>El radio NO se esconde.</b> Es la tentación obvia —queda más
+    prolijo— y <b>rompe el teclado</b>: un <code>display: none</code> lo saca
+    del recorrido de tabulación y la lista deja de poder recorrerse sin mouse.
+    <i>Misma familia que el ancla de la opción D: acá la forma vieja es la
+    accesible.</i></li>
+  </ul>
+</section>
+
+<section>
+  <p class="rotulo">Lo que falta decidir</p>
+  <h2>Dos cosas, y las dos son de Juan</h2>
+  <p>⬜ <b>Si la primera opción viene marcada.</b> Hoy sí — la de arriba, que
+  es quien inició sesión. <b>A favor:</b> el caso más común es que el turno sea
+  para uno mismo, y así el botón está a un toque. <b>En contra:</b> una
+  elección marcada de antemano <b>se acepta sin leerla</b>, y acá el precio de
+  equivocarse es un turno a nombre de otra persona de la familia.</p>
+  <p>⬜ <b>Qué dice «Es para otra persona» al tocarla.</b> Lleva a los dos
+  campos de la segunda pantalla, pero <b>no está decidido si se abren ahí mismo
+  o en un paso aparte</b>.</p>
+</section>
+
+<section>
+  <p class="rotulo">Las dos pantallas, a 1:1</p>
+  <h2>Primero la de varios, después la de alta</h2>
+  <p>La de varios vive además <b>sola, en su propio archivo</b>:
+  <code>{ancho}-solo.html</code>.</p>
+</section>
+</div>
+{quien_del_sitio(ancho)}
+{quien_del_sitio(ancho, caso="nuevo")}
+"""
+
+
 def revisar_duracion(pagina, donde):
     """Avisos de duración que quedaron adentro de algo que simula la pantalla."""
     avisos = []
@@ -7345,6 +7645,21 @@ def main():
         destino = SALIDA / "16-entrar" / f"{ancho}-solo.html"
         destino.write_text(
             fijar_al_ancho(solo_entrar(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+        destino = SALIDA / "17-para-quien" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_quien(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+        destino = SALIDA / "17-para-quien" / f"{ancho}-solo.html"
+        destino.write_text(
+            fijar_al_ancho(solo_quien(tokens, css, ancho), ancho),
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")
