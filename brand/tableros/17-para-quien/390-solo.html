@@ -1101,6 +1101,24 @@ body { padding: 0; }
   margin-top: 18px;
 }
 
+/* LA CAJA QUE SE ABRE AL ELEGIR «otra persona». Va PEGADA a su opción y
+   metida hacia adentro: lo que aparece tiene que leerse como consecuencia de
+   lo que se tocó, no como una sección nueva que cayó del cielo.
+   ⚠ El proyecto tiene escrito, en la opción D del almanaque, que hacer
+   aparecer contenido nuevo debajo del dedo es menos suave que bajar a algo que
+   ya existe. Acá pesa menos y por eso se hace igual: son DOS campos, no una
+   grilla de mes, y aparecen inmediatamente debajo de lo que se acaba de tocar
+   — no en otro lado de la página. */
+.alta-abierta {
+  margin: 10px 0 0 14px;
+  padding-left: 14px;
+  border-left: 2px solid var(--dorado-claro);
+}
+
+.alta-abierta .campo:first-of-type {
+  margin-top: 12px;
+}
+
 .quien .btn {
   margin-top: 28px;
   margin-left: 0;
@@ -1129,19 +1147,19 @@ body { padding: 0; }
 
     <div class="opciones">
     <label class="opcion">
-      <input type="radio" name="paciente" value="0" checked>
+      <input type="radio" name="paciente-varios" value="0" checked>
       <span class="nombre">Laura Giménez</span>
     </label>
     <label class="opcion">
-      <input type="radio" name="paciente" value="1">
+      <input type="radio" name="paciente-varios" value="1">
       <span class="nombre">Sofía Giménez</span>
     </label>
     <label class="opcion">
-      <input type="radio" name="paciente" value="2">
+      <input type="radio" name="paciente-varios" value="2">
       <span class="nombre">Tomás Giménez</span>
     </label>
       <label class="opcion otra">
-        <input type="radio" name="paciente" value="nueva">
+        <input type="radio" name="paciente-varios" value="nueva">
         <span class="nombre">Es para otra persona</span>
       </label>
     </div>

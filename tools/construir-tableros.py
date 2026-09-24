@@ -6894,6 +6894,24 @@ CSS_QUIEN = """
   margin-top: 18px;
 }
 
+/* LA CAJA QUE SE ABRE AL ELEGIR «otra persona». Va PEGADA a su opción y
+   metida hacia adentro: lo que aparece tiene que leerse como consecuencia de
+   lo que se tocó, no como una sección nueva que cayó del cielo.
+   ⚠ El proyecto tiene escrito, en la opción D del almanaque, que hacer
+   aparecer contenido nuevo debajo del dedo es menos suave que bajar a algo que
+   ya existe. Acá pesa menos y por eso se hace igual: son DOS campos, no una
+   grilla de mes, y aparecen inmediatamente debajo de lo que se acaba de tocar
+   — no en otro lado de la página. */
+.alta-abierta {
+  margin: 10px 0 0 14px;
+  padding-left: 14px;
+  border-left: 2px solid var(--dorado-claro);
+}
+
+.alta-abierta .campo:first-of-type {
+  margin-top: 12px;
+}
+
 .quien .btn {
   margin-top: 28px;
   margin-left: 0;
@@ -6912,19 +6930,77 @@ PACIENTES_DE_EJEMPLO = [
 ]
 
 
-def opcion_de_persona(nombre, elegida, indice):
+def opcion_de_persona(nombre, elegida, indice, grupo):
+    """Una opción de la lista.
+
+    `grupo` es el `name` del radio, y NO es decorativo: los tres estados de
+    esta pieza conviven en la misma página del tablero, y los radios que
+    comparten `name` forman UN grupo — marcar el de un bloque DESMARCA el del
+    otro. Con un nombre por estado, cada pantalla muestra lo suyo.
+    """
     marcada = " checked" if elegida else ""
 
     return f"""
     <label class="opcion">
-      <input type="radio" name="paciente" value="{indice}"{marcada}>
+      <input type="radio" name="{grupo}" value="{indice}"{marcada}>
       <span class="nombre">{nombre}</span>
     </label>"""
 
 
+# 🔴 A LA MISMA CAJA DE NOMBRE Y APELLIDO SE LLEGA POR DOS CAMINOS, Y NO DICEN
+# LO MISMO — lo cazó Juan el 24-sep-2026 leyendo el texto:
+#
+#   · 0 filas               → sí es la primera vez con ese correo
+#   · «es para otra persona» → NO es la primera vez: es alguien que ya reservó
+#                              antes y ahora anota a otro
+#
+# El texto original decía «es la primera vez que reservás con este correo» en
+# los dos casos, y en el segundo eso es FALSO. Una pantalla a la que se llega
+# por dos caminos no puede afirmar cuál fue el camino.
+CAJA_DE_ALTA = {
+    "nuevo": (
+        "¿Cómo te llamás?",
+        "Es la primera vez que reservás con este correo. Con esto queda tu "
+        "turno a tu nombre.",
+    ),
+    "otra": (
+        "¿Para quién reservás?",
+        "Poné el nombre de la persona que se va a atender. Queda guardada "
+        "para la próxima vez.",
+    ),
+}
+
+
+def campos_de_alta(caso):
+    titulo, ayuda = CAJA_DE_ALTA[caso]
+
+    # En el alta suelta el título es el de la pantalla; abierta adentro de la
+    # lista es un subtítulo, porque el H1 ya lo puso la pregunta de arriba.
+    encabezado = f"""
+    <h1>{titulo}</h1>
+
+    <p class="ayuda-pantalla">{ayuda}</p>"""
+
+    if caso == "otra":
+        encabezado = f"""
+      <p class="ayuda-pantalla">{ayuda}</p>"""
+
+    return encabezado + """
+    <div class="campo">
+      <label class="etiqueta" for="nombre">Nombre</label>
+      <input class="caja" id="nombre" type="text" autocomplete="given-name">
+    </div>
+
+    <div class="campo">
+      <label class="etiqueta" for="apellido">Apellido</label>
+      <input class="caja" id="apellido" type="text" autocomplete="family-name">
+    </div>"""
+
+
 def quien_del_sitio(ancho, caso="varios"):
-    """La pantalla ②. `caso` es "varios" o "nuevo"; el de una sola fila no
-    tiene pantalla, y por eso no es un valor posible acá."""
+    """La pantalla ②. `caso` es "varios", "otra" —la lista con los campos ya
+    abiertos— o "nuevo". El de una sola fila no tiene pantalla, y por eso no es
+    un valor posible acá."""
     logo = leer_png("cb-wordmark-600")
 
     encabezado = f"""
@@ -6939,31 +7015,33 @@ def quien_del_sitio(ancho, caso="varios"):
 """
 
     if caso == "nuevo":
-        return encabezado + """
-  <div class="quien">
-    <h1>¿Cómo te llamás?</h1>
-
-    <p class="ayuda-pantalla">Es la primera vez que reservás con este correo.
-    Con esto queda tu turno a tu nombre.</p>
-
-    <div class="campo">
-      <label class="etiqueta" for="nombre">Nombre</label>
-      <input class="caja" id="nombre" type="text" autocomplete="given-name">
-    </div>
-
-    <div class="campo">
-      <label class="etiqueta" for="apellido">Apellido</label>
-      <input class="caja" id="apellido" type="text" autocomplete="family-name">
-    </div>
+        return encabezado + f"""
+  <div class="quien">{campos_de_alta("nuevo")}
 
     <button class="btn btn-1">Continuar</button>
   </div>
 </div>"""
 
+    # Con los campos abiertos, la persona elegida ES «otra»: ninguna de la
+    # lista puede quedar marcada al mismo tiempo.
+    eligiendo_otra = caso == "otra"
+
+    grupo = f"paciente-{caso}"
+
     opciones = "".join(
-        opcion_de_persona(nombre, elegida, i)
+        opcion_de_persona(nombre, elegida and not eligiendo_otra, i, grupo)
         for i, (nombre, elegida) in enumerate(PACIENTES_DE_EJEMPLO)
     )
+
+    marca_otra = " checked" if eligiendo_otra else ""
+
+    # 🔴 LOS CAMPOS SE ABREN ACÁ MISMO, DEBAJO DE LA OPCIÓN, y no en una
+    # pantalla aparte: es la MISMA decisión —para quién es el turno—, así que
+    # partirla en dos pasos convierte una elección en dos. El flujo ya tiene
+    # seis pantallas.
+    caja = f"""
+      <div class="alta-abierta">{campos_de_alta("otra")}
+      </div>""" if eligiendo_otra else ""
 
     return encabezado + f"""
   <div class="quien">
@@ -6974,9 +7052,9 @@ def quien_del_sitio(ancho, caso="varios"):
 
     <div class="opciones">{opciones}
       <label class="opcion otra">
-        <input type="radio" name="paciente" value="nueva">
+        <input type="radio" name="{grupo}" value="nueva"{marca_otra}>
         <span class="nombre">Es para otra persona</span>
-      </label>
+      </label>{caja}
     </div>
 
     <button class="btn btn-1">Continuar</button>
@@ -7102,6 +7180,7 @@ en el sillón</b>.</p>
 </section>
 </div>
 {quien_del_sitio(ancho)}
+{quien_del_sitio(ancho, caso="otra")}
 {quien_del_sitio(ancho, caso="nuevo")}
 """
 
