@@ -6453,6 +6453,204 @@ reseña falsa con estrellas y nombre completo es prueba social fabricada.
 """
 
 
+# ============================================================
+# PIEZA 16 — LA PANTALLA ① DE `reservar.html`: ENTRAR
+#
+# Es el PRIMER ESTADO de la página de reserva, no una página aparte: si el
+# login viviera en su propia URL, al volver de Google el paciente aterrizaría
+# en una pantalla distinta de la que dejó.
+#
+# 🔴 POR QUÉ ESTA PANTALLA EXISTE, que es una decisión de Juan del 24-sep-2026
+# y no una convención: el endpoint de la agenda dejó de ser público, así que
+# NADA se ve sin sesión. La pantalla es la consecuencia visible de esa
+# decisión — y por eso su párrafo tiene que decir POR QUÉ se pide entrar. Un
+# login sin motivo delante de una agenda es la forma más barata de perder al
+# que venía a sacar turno.
+# ============================================================
+
+CSS_ENTRAR = """
+.entrar {
+  margin: 0 var(--margen-pagina);
+  padding: var(--aire-seccion) 0;
+}
+
+/* El texto NO va centrado y es a propósito: esta pantalla se lee, no se
+   contempla. El centrado es del hero, que es una portada. */
+.entrar h1 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+  text-wrap: balance;
+}
+
+.entrar .porque {
+  margin-top: 14px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+}
+
+/* El botón de Google ocupa el ancho de la columna en móvil: es la única
+   acción de la pantalla, y una acción única no se pone chica. */
+.entrar .btn-google {
+  margin-top: 28px;
+  /* El ancho sale de --boton-ancho, que es el del sistema. Pisarlo con
+     100% lo sacaba del margen de página: el botón se dibuja dentro de
+     `.entrar`, que ya está corrido por `--margen-pagina`. */
+  margin-left: 0;
+}
+
+/* La salida para el que NO entra. Va abajo, sin botón y sin ícono: es una
+   puerta que existe, no un segundo camino que se promueve — la regla de la
+   § 4 sobre WhatsApp sigue rigiendo acá adentro. */
+.entrar .salida {
+  margin-top: var(--aire-seccion);
+  padding-top: 20px;
+  border-top: 1px solid var(--dorado-claro);
+  color: var(--texto-segundo);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+.entrar .salida a {
+  color: var(--dorado-texto);
+}
+"""
+
+
+def entrar_del_sitio(ancho):
+    """La pantalla ① tal como la va a ver el paciente. Sin prosa alrededor."""
+    logo = leer_png("cb-wordmark-600")
+    google = leer_logo_google()
+
+    return f"""
+<div class="pagina">
+  <header class="encabezado">
+    <div class="barra">
+      <img src="data:image/png;base64,{logo}"
+           alt="CB Odontología y Estética"
+           width="{ENCABEZADO_LOGO[ancho]}">
+    </div>
+  </header>
+
+  <div class="entrar">
+    <h1>Reservá tu turno</h1>
+
+    <p class="porque">Entrá con tu cuenta de Google para ver los horarios
+    disponibles y elegir el tuyo. Te identificamos una sola vez: después
+    podés ver y cancelar tus turnos cuando quieras, sin llamar ni esperar
+    respuesta.</p>
+
+    <button class="btn-google">
+      <img src="data:image/png;base64,{google}" alt="">Continuar con Google
+    </button>
+
+    <p class="salida">¿Tenés una consulta antes de reservar?
+    <a href="#whatsapp">Escribinos por WhatsApp</a>.</p>
+  </div>
+</div>"""
+
+
+def solo_entrar(tokens, css, ancho):
+    """La pantalla sola, a 1:1, sin una línea de explicación alrededor."""
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · Entrar · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&family=Roboto:wght@500&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_GOOGLE}
+{CSS_ENCABEZADO}
+{CSS_ENTRAR}
+</style>
+{entrar_del_sitio(ancho)}
+"""
+
+
+def tablero_entrar(tokens, css, ancho):
+    """El tablero que explica la pieza. La pantalla sola vive en otro archivo."""
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 16 Entrar · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&family=Roboto:wght@500&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_GOOGLE}
+{CSS_ENCABEZADO}
+{CSS_ENTRAR}
+{css_margen_en_la_prosa()}
+</style>
+
+<div class="prosa">
+<p class="rotulo">Fase ⑧ · Pieza 16 · {ancho} px</p>
+<h1>Entrar — la pantalla ① de reservar</h1>
+<div class="regla"></div>
+<p><b>Es el primer estado de <code>reservar.html</code>, no una página
+aparte.</b> Si el login viviera en su propia dirección, al volver de Google el
+paciente aterrizaría en una pantalla distinta de la que dejó.</p>
+
+<section>
+  <p class="rotulo">Por qué existe</p>
+  <h2>La consecuencia visible de una decisión de seguridad</h2>
+  <p>El 24-sep-2026 <code>GET /horarios-disponibles</code> dejó de ser público:
+  la agenda de dos meses servida sin sesión dejaba reconstruir cuándo trabaja
+  cada profesional. <b>Desde ese día no se ve NADA sin entrar</b>, y esta
+  pantalla es lo primero que el paciente encuentra.</p>
+  <p><b>Por eso el párrafo dice POR QUÉ se pide entrar, y no es relleno.</b> Un
+  login puesto delante de una agenda sin explicar para qué es la forma más
+  barata de perder al que venía a sacar turno. Dice dos cosas y las dos son
+  ciertas: <b>qué desbloquea</b> (ver los horarios) y <b>qué gana</b> (ver y
+  cancelar solo, sin llamar).</p>
+</section>
+
+<section>
+  <p class="rotulo">Las tres decisiones de esta pieza</p>
+  <h2>Qué se decidió y contra qué</h2>
+  <ul class="reglas">
+    <li><b>El botón de Google es el único camino</b>, y su forma no se
+    discute: viene de la pieza 3, donde ya está resuelto que el logo no se
+    recolorea, que nunca va la G sola y que el texto dice «continuar», no
+    «registrate».</li>
+    <li><b>Ocupa el ancho entero.</b> Es la única acción de la pantalla, y una
+    acción única no se pone chica.</li>
+    <li><b>El texto NO va centrado.</b> Esta pantalla se lee; el centrado es
+    del hero, que es una portada.</li>
+  </ul>
+</section>
+
+<section>
+  <p class="rotulo">Lo que falta decidir</p>
+  <h2>La salida por WhatsApp, y la propone Claude</h2>
+  <p>🔴 <b>El renglón de abajo no lo pidió nadie: lo agregó Claude y hay que
+  aprobarlo o sacarlo.</b> El motivo: con la agenda cerrada, <b>el que no entra
+  con Google se queda sin ninguna puerta</b>, y el doc ya declara que ése se va
+  a ir a WhatsApp igual. Darle el enlace lo manda a un canal que atendemos, en
+  vez de dejarlo rebotar.</p>
+  <p><b>El costo, que es real:</b> WhatsApp está declarado <b>secundario y no
+  promovido</b> (§ 4), y este renglón lo pone en la pantalla de conversión. Va
+  sin botón, sin ícono y abajo de todo justamente por eso — pero sigue siendo
+  una puerta que antes no estaba.</p>
+</section>
+
+<section>
+  <p class="rotulo">La pieza, a 1:1</p>
+  <h2>Abajo va la pantalla como la ve el paciente</h2>
+  <p>Y vive además <b>sola, en su propio archivo</b>:
+  <code>{ancho}-solo.html</code>.</p>
+</section>
+</div>
+{entrar_del_sitio(ancho)}
+"""
+
+
 def revisar_duracion(pagina, donde):
     """Avisos de duración que quedaron adentro de algo que simula la pantalla."""
     avisos = []
@@ -6972,6 +7170,26 @@ def main():
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(
             fijar_al_ancho(tablero_contacto(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+    # LA PIEZA 16 va antes de la página entera y NO se apila en ella: la
+    # pantalla de entrar no es una sección de la landing, es el primer estado
+    # de `reservar.html`. Se genera el tablero que explica y, aparte, la
+    # pantalla SOLA a 1:1 — que es como Juan aprueba.
+    for ancho in ANCHOS:
+        destino = SALIDA / "16-entrar" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_entrar(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+        destino = SALIDA / "16-entrar" / f"{ancho}-solo.html"
+        destino.write_text(
+            fijar_al_ancho(solo_entrar(tokens, css, ancho), ancho),
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")
