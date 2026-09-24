@@ -6469,9 +6469,30 @@ reseña falsa con estrellas y nombre completo es prueba social fabricada.
 # ============================================================
 
 CSS_ENTRAR = """
+/* LA FOTO VA A SANGRE Y ARRIBA DE TODO, que es la regla ya cerrada de la § 4:
+   la foto que ABRE una pantalla cruza de borde a borde. Esquinas rectas —el
+   radio de 3 px es de controles, no de fotos— y sin filo, porque a sangre no
+   hay fondo contra el que perderse.
+
+   16/9 y no la proporción del hero (4/3): ésta NO es una portada. Tiene que
+   dejar el botón arriba del pliegue en un teléfono de 844 de alto, y a 390 de
+   ancho un 4/3 se come 292 px contra los 219 de un 16/9. */
+.entrar-foto {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  /* 🔴 EL ENCUADRE NO ES DECORACIÓN. Sin esta línea el recorte agarra el
+     centro geométrico de una foto VERTICAL y deja afuera la cara: se veía la
+     boca y el mentón. Con 30% el corte sube y entra la mirada.
+     ⚠ Es un número atado a ESTA foto de ejemplo. La definitiva se encuadra
+     al tomarla —eso va al brief de fotos— y entonces esta línea se revisa. */
+  object-position: 50% 30%;
+}
+
 .entrar {
   margin: 0 var(--margen-pagina);
-  padding: var(--aire-seccion) 0;
+  padding: 32px 0 var(--aire-seccion);
 }
 
 /* El texto NO va centrado y es a propósito: esta pantalla se lee, no se
@@ -6483,11 +6504,17 @@ CSS_ENTRAR = """
   text-wrap: balance;
 }
 
+/* UNA SOLA LÍNEA, y el recorte lo pidió Juan el 24-sep-2026: «le estás
+   haciendo leer demasiado a la persona». Tenía razón — pero no se borra
+   entera: lo que queda es el MOTIVO por el que se pide entrar, que es lo único
+   que esta pantalla tiene que justificar. Lo que se fue («después podés ver y
+   cancelar…») es información de DESPUÉS de reservar, y ahí es donde va. */
 .entrar .porque {
-  margin-top: 14px;
+  margin-top: 12px;
   color: var(--texto-segundo);
   font-size: var(--tipo-cuerpo);
   line-height: var(--alto-cuerpo);
+  text-wrap: balance;
 }
 
 /* El botón de Google ocupa el ancho de la columna en móvil: es la única
@@ -6518,6 +6545,20 @@ CSS_ENTRAR = """
 """
 
 
+def foto_de_entrar():
+    """La foto de la pantalla ①, o el hueco marcado si falta el archivo.
+
+    Hoy es la MISMA de ejemplo que usa el hero, y eso es deliberado: sirve
+    para decidir la FORMA. La definitiva es otra y todavía no existe — entra
+    al brief de fotos, que es un entregable de esta etapa (§ 4).
+    """
+    if not FOTO.exists():
+        return '\n  <div class="entrar-foto" style="background: var(--dorado-claro)"></div>'
+
+    return (f'\n  <img class="entrar-foto" src="{FOTO_RELATIVA}"'
+            f'\n       alt="Consultorio de CB Odontología y Estética">')
+
+
 def entrar_del_sitio(ancho):
     """La pantalla ① tal como la va a ver el paciente. Sin prosa alrededor."""
     logo = leer_png("cb-wordmark-600")
@@ -6532,14 +6573,11 @@ def entrar_del_sitio(ancho):
            width="{ENCABEZADO_LOGO[ancho]}">
     </div>
   </header>
-
+{foto_de_entrar()}
   <div class="entrar">
     <h1>Reservá tu turno</h1>
 
-    <p class="porque">Entrá con tu cuenta de Google para ver los horarios
-    disponibles y elegir el tuyo. Te identificamos una sola vez: después
-    podés ver y cancelar tus turnos cuando quieras, sin llamar ni esperar
-    respuesta.</p>
+    <p class="porque">Entrá con Google para ver los horarios disponibles.</p>
 
     <button class="btn-google">
       <img src="data:image/png;base64,{google}" alt="">Continuar con Google
@@ -6604,11 +6642,42 @@ paciente aterrizaría en una pantalla distinta de la que dejó.</p>
   la agenda de dos meses servida sin sesión dejaba reconstruir cuándo trabaja
   cada profesional. <b>Desde ese día no se ve NADA sin entrar</b>, y esta
   pantalla es lo primero que el paciente encuentra.</p>
-  <p><b>Por eso el párrafo dice POR QUÉ se pide entrar, y no es relleno.</b> Un
-  login puesto delante de una agenda sin explicar para qué es la forma más
-  barata de perder al que venía a sacar turno. Dice dos cosas y las dos son
-  ciertas: <b>qué desbloquea</b> (ver los horarios) y <b>qué gana</b> (ver y
-  cancelar solo, sin llamar).</p>
+  <p><b>Por eso queda UNA línea que dice por qué se pide entrar</b>, y no
+  cero: un login delante de una agenda sin explicar para qué es la forma más
+  barata de perder al que venía a sacar turno. Lo que sobrevive es lo que
+  desbloquea — <i>ver los horarios</i>.</p>
+</section>
+
+<section>
+  <p class="rotulo">Corregido el 24-sep-2026 — lo pidió Juan</p>
+  <h2>Había cuatro líneas de texto y ahora hay una</h2>
+  <p><b>Su objeción, textual: «le estás haciendo leer demasiado a la
+  persona».</b> Tenía razón: nadie lee un párrafo parado frente a un botón.
+  <b>Lo que se fue</b> —«después podés ver y cancelar tus turnos cuando
+  quieras»— <b>no se perdió: es información de DESPUÉS de reservar</b>, y ahí
+  es donde tiene que aparecer.</p>
+  <p>⚠️ <b>Lo que NO se hizo, y se declara:</b> borrarlo entero. «Ingresá y
+  listo» deja el login sin motivo delante de una agenda cerrada, que es
+  exactamente el caso que esta pantalla tiene que resolver. <b>Una línea, no
+  cero.</b></p>
+</section>
+
+<section>
+  <p class="rotulo">La foto — también la pidió Juan</p>
+  <h2>«Lo veo muy pelado»</h2>
+  <p><b>Va a sangre y arriba de todo</b>, que es la regla ya cerrada de la
+  § 4: la foto que ABRE una pantalla cruza de borde a borde. Esquinas rectas y
+  sin filo — a sangre no hay fondo contra el que perderse.</p>
+  <p><b>16/9 y no el 4/3 del hero, y el motivo es medible:</b> ésta no es una
+  portada y el botón tiene que quedar arriba del pliegue. A 390 de ancho, un
+  4/3 se come <b>292 px</b> contra los <b>219</b> de un 16/9.</p>
+  <p>🔴 <b>Y el encuadre no es decoración.</b> Sin <code>object-position</code>
+  el recorte agarra el centro de una foto vertical y <b>deja la cara afuera</b>
+  —se veía la boca y el mentón—. Está en 50% 30%, atado a ESTA foto.</p>
+  <p>⏱ <b>La foto es de EJEMPLO y la definitiva no existe todavía.</b> Hoy es
+  la misma del hero, que sirve para decidir la forma. <b>La real es otra y
+  entra al brief de fotos</b>, que es un entregable de esta etapa: hace falta
+  una imagen que hable de <i>sacar un turno</i>, no de la portada.</p>
 </section>
 
 <section>
