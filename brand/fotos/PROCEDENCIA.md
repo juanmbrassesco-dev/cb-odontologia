@@ -10,7 +10,7 @@ gris. **Se reemplazan por fotos propias antes de publicar.**
 | `nosotros-ejemplo.jpg` | Jonathan Borba (@jonathanborba) | Unsplash, `ctrQhye5SWs` | Unsplash License |
 | `antes-ejemplo.jpg` | Ozkan Guner (@dentistozkanguner) | Unsplash, `Uyv7g3kroJM` | Unsplash License |
 | `despues-ejemplo.jpg` | Tony Litvyak (@justatony) | Unsplash, `glPVwPr1FKo` | Unsplash License |
-| `entrar-ejemplo.jpg` | Amy Vosters (@amyvosters) | Unsplash, `pxOQ-P97sA8` | Unsplash License |
+| `entrar-ejemplo.jpg` | Enio Pereira da Silva (@eniopereira) | Unsplash, `HDzusPWNtds` | Unsplash License |
 
 ⚠️ **Unsplash tiene DOS licencias y la diferencia no se ve en la foto.** Las que
 publica **Getty Images** —y cualquiera marcada `plus`— son **Unsplash+**, de
@@ -111,18 +111,37 @@ no invalida usarlo como ejemplo — invalida publicarlo.
 **Viene RECORTADA a 16/9 en el archivo** (1200 × 675), igual que
 `nosotros-ejemplo.jpg` y por el mismo motivo: el encuadre es una decisión, no
 lo que le toque al navegador. El original de Unsplash es vertical (2400 × 2808)
-y el recorte toma la franja de abajo — el olivo, la fila de sillas y la pared.
+y el recorte toma la franja media: los tres cuadros en tonos dorados —que son la paleta de CB sin buscarlo—, la lámpara cálida y la persona esperando.
 
-⚠️ **DOS LIMITACIONES DECLARADAS, para que nadie las descubra tarde:**
-1. **El cartel de la pared está en INGLÉS** *(«SMILE LIKE YOU MEAN IT — THE
-   KILLERS»)*. A 390 px queda ilegible y no molesta; **en pantalla grande se
-   lee**, y un cartel en inglés de una banda de rock no es lo que diría la sala
-   de espera de un consultorio en Santa Fe. **Es una razón más para que la foto
-   propia exista, no un detalle a maquillar.**
-2. **El borde de ARRIBA de la foto es pared casi blanca contra el marfil de la
-   barra.** Hoy no se disuelve porque **el encabezado tiene su línea dorada de
-   1 px**, que es la que las separa. *Si esa línea se saca, este borde hay que
-   volver a mirarlo.*
+🔴 **LA PRIMERA CANDIDATA SE CAYÓ Y LA CAZÓ JUAN: TENÍA UN CARTEL EN INGLÉS.**
+*(Era `pxOQ-P97sA8`, de Amy Vosters: una sala de espera con un cartel que decía
+«SMILE LIKE YOU MEAN IT — THE KILLERS».)* Se había declarado como limitación
+—ilegible a 390, legible en pantalla grande— y **declararla no la arregla**:
+un cartel en inglés de una banda de rock no es lo que dice la sala de espera de
+un consultorio en Santa Fe. **Su reemplazo se eligió con esa condición
+adelante, no como un empate a desempatar.**
+
+🔑 **Y buscando el reemplazo apareció un criterio más duro que el idioma, que
+vale para CUALQUIER foto de ejemplo de este proyecto: NINGUNA puede mostrar la
+MARCA DE OTRO NEGOCIO.** De cuatro candidatas revisadas, **dos tenían logo
+ajeno a la vista** —«CareMe®» en letras de 40 cm sobre la pared, y «KELLY
+ORIENTAL AESTHETIC CLINIC» con un cartel de promoción de «$399»—. **Una maqueta
+con el logo de otro consultorio adentro no es una maqueta con relleno: es la
+marca de un competidor puesta en la pantalla de reserva de Cecilia.** Se
+descartan sin discutir la imagen. *Dos más se cayeron por turquesa, que choca
+de frente con la paleta.*
+
+⚠️ **LO QUE ESTA FOTO SÍ ARRASTRA, declarado:**
+1. **El borde de ARRIBA es pared casi blanca contra el marfil de la barra.**
+   Hoy no se disuelve porque **el encabezado tiene su línea dorada de 1 px**,
+   que es la que las separa. *Si esa línea se saca, este borde hay que volver a
+   mirarlo.*
+2. **Hay una persona identificable**, así que le corre entero el aviso de
+   arriba sobre autorización de imagen: para maqueta alcanza, para el sitio en
+   el aire no.
+3. **La remera es fucsia**, el único color saturado de la escena y no está en
+   la paleta. Es ropa, no diseño, y por eso no la descarta — pero si el día de
+   mañana choca con algo, el motivo ya está escrito.
 
 **Qué tiene que mostrar la foto DEFINITIVA:** la sala de espera o la entrada
 reales, con luz cálida y sin equipamiento clínico a la vista — el paciente que
