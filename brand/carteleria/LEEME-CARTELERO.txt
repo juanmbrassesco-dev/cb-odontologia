@@ -1,0 +1,54 @@
+LETRERO CB ODONTOLOGÍA Y ESTÉTICA — 500 × 320 mm
+Hoja de datos de la pieza. Cualquier duda, preguntame antes de resolverla.
+
+
+QUÉ ARCHIVO ES CUÁL
+
+  1-PARA-CORTAR-letrero-en-curvas.pdf   Este es el que se corta.
+  1-PARA-CORTAR-letrero-en-curvas.svg   El mismo dibujo, por si te abre mejor.
+  2-PARA-IMPRIMIR-qr-40mm.pdf           El QR, va aparte (abajo te digo).
+  3-REFERENCIA-como-queda-armado.pdf    Cómo se ve la pieza terminada.
+  0-VISTA-PREVIA-las-tres-piezas.png    Vista rápida, no sirve para producir.
+
+
+LAS LETRAS YA SON DIBUJOS: NO HAY QUE TIPEAR NADA
+
+  En los archivos 1- el texto está convertido a curvas. No necesitás la
+  tipografía ni escribir una sola letra: se corta tal cual viene.
+
+  Si alguno no te abre bien, decímelo y te lo mando en otro formato.
+  Es más rápido que rehacerlo.
+
+
+LOS DOS COLORES
+
+  Texto y logo    grafito   #33322F
+  Filete          dorado    #B08D57   (la línea horizontal bajo el logo)
+
+  El filete mide 3 mm de alto y cruza la pieza de lado a lado, a 50 mm de
+  cada borde. Va en dorado: es el único elemento dorado de la pieza.
+
+  Si el grafito no existe en tu catálogo de vinilo, avisame qué opciones
+  tenés cerca y lo elegimos juntos. Hay un segundo cartel en camino para
+  la misma fachada y los dos tienen que ir del mismo color.
+
+
+EL QR VA PEGADO APARTE
+
+  El archivo 1- tiene un hueco en blanco entre "TURNOS Y CONSULTAS" y el
+  teléfono: ahí va el QR, de 40 × 40 mm, centrado.
+
+  Va aparte porque no se puede cortar en vinilo (sus cuadraditos miden
+  1,2 mm). Se imprime y se pega. Tiene que quedar NEGRO sobre BLANCO, sin
+  nada alrededor en 5 mm, o los teléfonos dejan de leerlo.
+
+  En 3-REFERENCIA-como-queda-armado.pdf se ve la posición exacta.
+
+
+MATERIAL Y MONTAJE
+
+  Acabado MATE, siempre. El brillo a la intemperie tapa el texto con el
+  reflejo del sol.
+
+  Separadores: entre 30 y 45 mm hacia adentro desde cada borde. Desde los
+  50 mm ya arranca el filete dorado y lo perforarías.
