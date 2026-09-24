@@ -6492,62 +6492,6 @@ FOTO_ALTO_MAXIMO = {390: None, 768: 320, 1280: 280}
 # unos 620 de alto útil. La única acción de la pantalla no se ve.
 AIRE_ARRIBA_DEL_TEXTO = {390: 32, 768: 28, 1280: 24}
 
-# ============================================================
-# LAS DOS COLUMNAS DE ESCRITORIO — probadas el 24-sep-2026
-#
-# El problema que resuelven es de ALTO, no de ancho: con la foto arriba, a
-# 1280 se come 280 px de alto y empuja el pie fuera de la ventana de un
-# portátil. Puesta AL COSTADO deja de competir por el alto — ocupa el que
-# sobra a la derecha, que hoy está vacío.
-#
-# Resuelve dos cosas de una: el pie entra sin scrollear, y desaparece el vacío
-# de la derecha que quedó declarado como pendiente.
-#
-# ⚠ Sólo a 1280. A 768 la columna de texto quedaría angosta y la foto
-# apretada: dos columnas en una tablet es peor que una.
-DOS_COLUMNAS = {390: False, 768: False, 1280: True}
-
-
-CSS_ENTRAR_DOS_COLUMNAS = """
-/* El alto lo fija la columna del texto, y la foto se estira a lo que salga:
-   `align-items: stretch` es el default del grid y acá es justo lo que se
-   quiere — una foto que mide lo mismo que su vecina, sin escribir un alto. */
-.entrar-dos {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  min-height: 460px;
-}
-
-/* La foto va a la DERECHA: el que lee arranca por el texto, que es donde
-   está la acción. Invertirlo pondría la decoración primero. */
-.entrar-dos .entrar-foto {
-  grid-column: 2;
-  grid-row: 1;
-  width: 100%;
-  height: 100%;
-  max-height: none;
-  object-fit: cover;
-}
-
-/* El texto se centra en su mitad: en una columna alta y angosta, pegarlo
-   arriba deja un pozo debajo del botón. */
-.entrar-dos .entrar {
-  grid-column: 1;
-  grid-row: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin: 0;
-  padding: 48px var(--margen-pagina);
-}
-
-/* Sin foto arriba, la salida ya no necesita empujarse: el aire de la columna
-   la separa sola. */
-.entrar-dos .salida {
-  margin-top: 32px;
-}
-"""
-
 
 def css_de_entrar(ancho):
     """CSS_ENTRAR con el tope de la foto y el aire de arriba para ese ancho."""
@@ -6558,12 +6502,7 @@ def css_de_entrar(ancho):
     else:
         css = CSS_ENTRAR.replace("/*TOPE*/", f"max-height: {tope}px;")
 
-    css = css.replace("/*AIRE*/", f"{AIRE_ARRIBA_DEL_TEXTO[ancho]}px")
-
-    if DOS_COLUMNAS[ancho]:
-        css += CSS_ENTRAR_DOS_COLUMNAS
-
-    return css
+    return css.replace("/*AIRE*/", f"{AIRE_ARRIBA_DEL_TEXTO[ancho]}px")
 
 
 CSS_ENTRAR = """
@@ -6681,20 +6620,6 @@ def foto_de_entrar():
             f'\n       alt="Sala de espera de CB Odontología y Estética">')
 
 
-def abre_las_dos_columnas(ancho):
-    if not DOS_COLUMNAS[ancho]:
-        return ""
-
-    return '\n  <div class="entrar-dos">'
-
-
-def cierra_las_dos_columnas(ancho):
-    if not DOS_COLUMNAS[ancho]:
-        return ""
-
-    return "\n  </div>"
-
-
 def entrar_del_sitio(ancho):
     """La pantalla ① tal como la va a ver el paciente. Sin prosa alrededor."""
     logo = leer_png("cb-wordmark-600")
@@ -6709,7 +6634,7 @@ def entrar_del_sitio(ancho):
            width="{ENCABEZADO_LOGO[ancho]}">
     </div>
   </header>
-{abre_las_dos_columnas(ancho)}{foto_de_entrar()}
+{foto_de_entrar()}
   <div class="entrar">
     <h1>Reservá tu turno</h1>
 
@@ -6721,7 +6646,7 @@ def entrar_del_sitio(ancho):
 
     <p class="salida">¿Tenés una consulta antes de reservar?
     <a href="#whatsapp">Escribinos por WhatsApp</a>.</p>
-  </div>{cierra_las_dos_columnas(ancho)}
+  </div>
 </div>"""
 
 
