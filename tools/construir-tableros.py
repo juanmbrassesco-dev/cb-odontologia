@@ -7285,20 +7285,6 @@ CSS_MOTIVO = """
   cursor: pointer;
 }
 
-/* EL AVISO DE QUE LA PRIMERA VISITA ES UNA CONSULTA. No es un error ni una
-   advertencia: es información, así que NO usa el color de error. Lleva el
-   filete dorado claro de las cajas del sistema. */
-.aviso-consulta {
-  margin-top: 16px;
-  padding: 12px 14px;
-  background: var(--blanco);
-  border-left: 3px solid var(--dorado);
-  border-radius: var(--radio);
-  color: var(--texto-segundo);
-  font-size: var(--tipo-chico);
-  line-height: var(--alto-chico);
-}
-
 .motivo .btn {
   margin-top: 28px;
   margin-left: 0;
@@ -7323,19 +7309,14 @@ def motivo_del_sitio(ancho, elegido=None):
 
     sin_elegir = ' selected' if elegido is None else ''
 
-    # El aviso sale sólo cuando lo elegido NO tiene duración propia: con
-    # `limpieza` el turno ES la limpieza y decir lo contrario sería mentir.
-    tiene_propia = any(
-        nombre == elegido and propia for nombre, propia in TRATAMIENTOS
-    )
-
-    aviso = ""
-
-    if elegido is not None and not tiene_propia:
-        aviso = """
-      <p class="aviso-consulta">La primera visita es una <b>consulta</b>:
-      Cecilia revisa, te dice cómo sigue el tratamiento y agendan juntos lo que
-      haga falta.</p>"""
+    # 🔴 ACÁ HABÍA UN AVISO Y JUAN LO SACÓ el 24-sep-2026: «el que viene con el
+    # aviso no». Decía que la primera visita es una consulta, y salía sólo
+    # cuando lo elegido no tenía duración propia.
+    #
+    # ⚠️ SACARLO NO CIERRA EL HUECO, LO MUDA: los doce tratamientos sin duración
+    # propia se siguen agendando como consulta, y el paciente lo sigue sin
+    # saber. Dónde se lo dice —la pantalla de confirmar, el correo, o en ningún
+    # lado a propósito— queda ABIERTO y anotado en la § 14.
 
     return f"""
 <div class="pagina">
@@ -7358,7 +7339,7 @@ def motivo_del_sitio(ancho, elegido=None):
       <select class="caja" id="motivo">
         <option value=""{sin_elegir}>Elegí una opción</option>{opciones_de_motivo(elegido)}
       </select>
-    </div>{aviso}
+    </div>
 
     <button class="btn btn-1">Continuar</button>
   </div>
@@ -7433,13 +7414,13 @@ del endpoint</b>. <b>El orden también viene resuelto de la base</b> —columna
   y decidido en el portero.</p>
   <p><b>Lo que NO estaba decidido es si la pantalla se lo dice.</b> Si no lo
   dice, el paciente que eligió «endodoncia» <b>llega esperando que le hagan la
-  endodoncia ese día</b>. El aviso de abajo es la propuesta de Claude, y hay
-  que aprobarlo o cambiarlo.</p>
-  <p>⚠️ <b>Sale SÓLO cuando corresponde:</b> con <code>limpieza</code> el turno
-  <b>es</b> la limpieza, y mostrar el mismo aviso ahí sería mentir.</p>
-  <p>⚠️ <b>Y no dice minutos, a propósito:</b> la duración no se le muestra al
-  paciente —regla del proyecto desde la pieza 6, y el generador la vigila—, así
-  que el aviso habla de <b>qué pasa</b>, no de cuánto dura.</p>
+  endodoncia ese día</b>.</p>
+  <p>🔴 <b>Claude propuso un aviso acá y JUAN LO SACÓ</b> <i>(«el que viene con
+  el aviso no»)</i>. <b>Queda escrito que sacarlo no cierra el hueco: lo
+  muda.</b> Los doce tratamientos sin duración propia se siguen agendando como
+  consulta y el paciente lo sigue sin saber. <b>Dónde se lo dice —la pantalla
+  de confirmar, el correo de reserva, o en ningún lado a propósito— es una
+  decisión abierta</b>, anotada en la § 14 con su disparador.</p>
 </section>
 
 <section>
@@ -7457,14 +7438,31 @@ del endpoint</b>. <b>El orden también viene resuelto de la base</b> —columna
 </section>
 
 <section>
-  <p class="rotulo">Los tres estados, a 1:1</p>
-  <h2>Sin elegir · con limpieza · con endodoncia</h2>
-  <p>El tercero —el que trae el aviso— vive además <b>solo</b>:
-  <code>{ancho}-solo.html</code>.</p>
+  <p class="rotulo">Los dos estados, a 1:1</p>
+  <h2>Y son DOS, no tres</h2>
+  <p>🔴 <b>Acá había tres y Juan los cortó a dos:</b> <i>«no entiendo la
+  diferencia entre el primero y el segundo»</i>. <b>No la había</b> — sin el
+  aviso, «con limpieza» y «con endodoncia» son la misma pantalla con otra
+  palabra adentro del desplegable. <b>Mostrar dos estados que no se distinguen
+  no enseña nada: hace dudar de si uno se está perdiendo algo.</b></p>
+  <p>⚠️ <b>Y el rótulo de cada estado ahora va PEGADO a su muestra</b>, como en
+  las otras piezas. Antes vivía en un párrafo acá arriba, lejos de lo que
+  nombraba.</p>
+  <p>El segundo vive además <b>solo</b>: <code>{ancho}-solo.html</code>.</p>
+</section>
+</div>
+<div class="prosa">
+<section>
+  <p class="dato">① Al abrir — sin nada elegido</p>
 </section>
 </div>
 {motivo_del_sitio(ancho)}
-{motivo_del_sitio(ancho, elegido="limpieza")}
+<div class="prosa">
+<section>
+  <p class="dato">② Con un motivo elegido — la única diferencia es el
+  desplegable</p>
+</section>
+</div>
 {motivo_del_sitio(ancho, elegido="endodoncia")}
 """
 
