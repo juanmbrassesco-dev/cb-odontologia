@@ -6484,17 +6484,25 @@ reseña falsa con estrellas y nombre completo es prueba social fabricada.
 #
 # Los tableros llevan las media queries aplanadas, así que el valor entra por
 # Python y no por CSS.
-FOTO_ALTO_MAXIMO = {390: None, 768: 360, 1280: 360}
+FOTO_ALTO_MAXIMO = {390: None, 768: 320, 1280: 280}
+
+# 🔴 EL AIRE DE ARRIBA DEL TEXTO TAMBIÉN BAJA EN ESCRITORIO, y por la misma
+# razón medida: a 1280 con la foto en 360 y 32 px de aire, el botón de Google
+# caía en el píxel 625 — o sea FUERA de un portátil de 13 pulgadas, que deja
+# unos 620 de alto útil. La única acción de la pantalla no se ve.
+AIRE_ARRIBA_DEL_TEXTO = {390: 32, 768: 28, 1280: 24}
 
 
 def css_de_entrar(ancho):
-    """CSS_ENTRAR con el tope de la foto ya puesto para ese ancho."""
+    """CSS_ENTRAR con el tope de la foto y el aire de arriba para ese ancho."""
     tope = FOTO_ALTO_MAXIMO[ancho]
 
     if tope is None:
-        return CSS_ENTRAR.replace("/*TOPE*/", "")
+        css = CSS_ENTRAR.replace("/*TOPE*/", "")
+    else:
+        css = CSS_ENTRAR.replace("/*TOPE*/", f"max-height: {tope}px;")
 
-    return CSS_ENTRAR.replace("/*TOPE*/", f"max-height: {tope}px;")
+    return css.replace("/*AIRE*/", f"{AIRE_ARRIBA_DEL_TEXTO[ancho]}px")
 
 
 CSS_ENTRAR = """
@@ -6522,7 +6530,7 @@ CSS_ENTRAR = """
 
 .entrar {
   margin: 0 var(--margen-pagina);
-  padding: 32px 0 var(--aire-seccion);
+  padding: /*AIRE*/ 0 var(--aire-seccion);
 }
 
 /* El texto NO va centrado y es a propósito: esta pantalla se lee, no se
