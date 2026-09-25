@@ -965,6 +965,36 @@ select.caja {
 
 .lista { margin-top: 4px; }
 
+/* 🔴 DE TABLET PARA ARRIBA LA TARJETA MIDE LO QUE MIDE SU CONTENIDO — lo pidió
+   Juan el 25-sep-2026: «no tiene sentido que ocupe todo el cuadro en sentido
+   horizontal». Una tarjeta de 860 px con el texto centrado adentro es una caja
+   casi vacía. En el teléfono NO cambia: ahí el ancho disponible ya es el del
+   contenido.
+
+   🔑 Y ARREGLA UN SEGUNDO PROBLEMA QUE ÉL TAMBIÉN CAZÓ —«alineá en columna el
+   texto con el botón»—, que tenía una causa medible: `h3` y `p` traen
+   `max-width: var(--columna)` (640) de la base, así que dentro de una tarjeta
+   de 860 el texto se centraba respecto a 640 y el botón respecto a 860. Dos
+   ejes distintos a 92 px uno del otro. Con la tarjeta del ancho de su
+   contenido, los dos centros son el mismo. */
+/* LA LISTA SEPARA CON `gap`, EN LOS TRES ANCHOS — una sola forma de separar
+   dos tarjetas. El aire de arriba lo pidió Juan el 25-sep: sin la línea de
+   ayuda que había antes, el título quedaba pegado a la primera tarjeta. Son
+   los mismos 28 px que la pieza 17 pone entre el texto y sus opciones. */
+.lista-turnos {
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.lista-turnos .turno {
+  margin-top: 0;
+}
+
+
+
+
+
 /* La acción va SIEMPRE debajo de los datos y adentro del cuadro. En el
    teléfono el botón ocupa el ancho de la tarjeta —lo pide el dedo—; de tablet
    para arriba se ajusta a su texto, porque un "Cancelar turno" de 800 px de

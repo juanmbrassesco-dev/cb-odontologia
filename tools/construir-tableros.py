@@ -1937,6 +1937,59 @@ CSS_TARJETA = """
 
 .lista { margin-top: 4px; }
 
+/* 🔴 DE TABLET PARA ARRIBA LA TARJETA MIDE LO QUE MIDE SU CONTENIDO — lo pidió
+   Juan el 25-sep-2026: «no tiene sentido que ocupe todo el cuadro en sentido
+   horizontal». Una tarjeta de 860 px con el texto centrado adentro es una caja
+   casi vacía. En el teléfono NO cambia: ahí el ancho disponible ya es el del
+   contenido.
+
+   🔑 Y ARREGLA UN SEGUNDO PROBLEMA QUE ÉL TAMBIÉN CAZÓ —«alineá en columna el
+   texto con el botón»—, que tenía una causa medible: `h3` y `p` traen
+   `max-width: var(--columna)` (640) de la base, así que dentro de una tarjeta
+   de 860 el texto se centraba respecto a 640 y el botón respecto a 860. Dos
+   ejes distintos a 92 px uno del otro. Con la tarjeta del ancho de su
+   contenido, los dos centros son el mismo. */
+/* LA LISTA SEPARA CON `gap`, EN LOS TRES ANCHOS — una sola forma de separar
+   dos tarjetas. El aire de arriba lo pidió Juan el 25-sep: sin la línea de
+   ayuda que había antes, el título quedaba pegado a la primera tarjeta. Son
+   los mismos 28 px que la pieza 17 pone entre el texto y sus opciones. */
+.lista-turnos {
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.lista-turnos .turno {
+  margin-top: 0;
+}
+
+@media (min-width: 768px) {
+
+  /* TODAS LAS TARJETAS MIDEN LO MISMO: el ancho de la más ancha.
+     `width: fit-content` puesto en CADA tarjeta las dejaba de anchos
+     distintos —cada una medía su propio texto— y la lista quedaba dentada por
+     la derecha. La rejilla de una columna resuelve las dos cosas a la vez: la
+     columna mide lo que la fila más ancha, y todas la llenan. */
+  /* EL AIRE CRECE CON EL TÍTULO. A 390 los 28 px quedan —lo miró Juan— pero
+     el mismo valor debajo de un título de escritorio se ve apretado: el h1
+     pasa de 32 px a 52, y el aire que lo acompaña tiene que seguirlo. */
+  .lista-turnos {
+    width: fit-content;
+    margin-top: 40px;
+  }
+
+  .lista-turnos .turno {
+    padding: 24px 40px 26px;
+  }
+}
+
+@media (min-width: 1280px) {
+
+  .lista-turnos {
+    margin-top: 48px;
+  }
+}
+
 /* La acción va SIEMPRE debajo de los datos y adentro del cuadro. En el
    teléfono el botón ocupa el ancho de la tarjeta —lo pide el dedo—; de tablet
    para arriba se ajusta a su texto, porque un "Cancelar turno" de 800 px de
@@ -1953,7 +2006,8 @@ TURNOS = [
 ]
 
 
-def tarjeta_turno(cuando, tratamiento, profesional, quien, accion=True):
+def tarjeta_turno(cuando, tratamiento, profesional, quien, accion=True,
+                  cobertura=None):
     """La tarjeta de un turno.
 
     `accion` es lo único que cambia entre los dos lugares donde vive. En «mis
@@ -1966,12 +2020,18 @@ def tarjeta_turno(cuando, tratamiento, profesional, quien, accion=True):
         if accion else ''
     )
 
+    linea_cobertura = (
+        f'\n        <p class="cobertura">Cobertura: {cobertura}</p>'
+        if cobertura else ''
+    )
+
     return (
         '\n    <div class="turno">'
         '\n      <div class="datos">'
         f'\n        <h3>{cuando}</h3>'
         f'\n        <p class="que">{tratamiento} {profesional}</p>'
         f'\n        <p class="quien">{quien}</p>'
+        f'{linea_cobertura}'
         '\n      </div>'
         f'{boton}'
         '\n    </div>'
@@ -8173,6 +8233,177 @@ de la 18</b>, el campo largo es esa misma caja, y el botón es el de la 3.</p>
 """
 
 
+# ============================================================
+# PIEZA 21 — MIS TURNOS
+#
+# 🔴 ESTA PANTALLA DESTAPA UN PENDIENTE VIEJO Y NO LO PUEDE ESQUIVAR: el botón
+# SECUNDARIO pesa más que el principal —grafito 12,0 contra la página, dorado
+# 2,89— y acá el secundario es «Cancelar turno», una vez por tarjeta, SIN
+# ninguna acción principal que le compita. Lo más pesado de la pantalla termina
+# siendo la acción destructiva, repetida.
+#
+# Y hay una SEGUNDA: el 24-sep quedó escrito que ésta es la pantalla donde el
+# paciente ve su cobertura, y la tarjeta aprobada (pieza 6) no la tiene.
+#
+# Por eso esta pieza se entrega primero como DOS COMPARACIONES a 1:1 —una por
+# decisión, una sola variable por archivo— y no como una pantalla cerrada.
+# ============================================================
+
+CSS_MIS_TURNOS = """
+.mis-turnos {
+  margin: 0 var(--margen-pagina);
+  padding: 32px 0 var(--aire-seccion);
+}
+
+.mis-turnos h1 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+  text-wrap: balance;
+}
+
+.mis-turnos .ayuda-pantalla {
+  margin-top: 12px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  text-wrap: balance;
+}
+
+/* La cobertura es el renglón MÁS callado de la tarjeta: es un dato de control,
+   no lo que el paciente vino a mirar. Mismo tamaño que «Paciente: …». */
+.turno .cobertura {
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+"""
+
+
+COBERTURAS_DE_LA_MUESTRA = ("IAPOS", "Particular")
+
+
+def mis_turnos_del_sitio(ancho, vacio=False):
+    """La pantalla de «mis turnos», con sus dos estados.
+
+    Las dos decisiones que traía quedaron cerradas por Juan el 25-sep-2026:
+    el botón se queda GRAFITO MACIZO, y la cobertura SÍ entra en la tarjeta
+    —y esto último lo cambió él mismo al enterarse de que el correo del
+    paciente no la trae, que es de donde salía su primera respuesta—.
+    """
+    logo = leer_png("cb-wordmark-600")
+
+    if vacio:
+        cuerpo = """
+    <p class="ayuda-pantalla">No tenés ningún turno reservado.</p>
+
+    <button class="btn btn-1">Pedir un turno</button>"""
+    else:
+        tarjetas = "".join(
+            tarjeta_turno(*turno, cobertura=COBERTURAS_DE_LA_MUESTRA[i])
+            for i, turno in enumerate(TURNOS)
+        )
+        # SIN LÍNEA DE AYUDA — lo sacó Juan el 25-sep-2026: «ya se avisa en el
+        # correo». Verificado en `avisos.ts`: el correo del paciente cierra con
+        # «Si no vas a poder venir, podés cancelarlo vos desde: …». Repetirlo
+        # acá es decirle dos veces lo mismo a quien ya llegó a la pantalla.
+        cuerpo = f"""
+    <div class="lista-turnos">{tarjetas}
+    </div>"""
+
+    return f"""
+<div class="pagina">
+  <header class="encabezado">
+    <div class="barra">
+      <img src="data:image/png;base64,{logo}"
+           alt="CB Odontología y Estética"
+           width="{ENCABEZADO_LOGO[ancho]}">
+    </div>
+  </header>
+
+  <div class="mis-turnos">
+    <h1>Mis turnos</h1>
+{cuerpo}
+  </div>
+</div>"""
+
+
+def solo_mis_turnos(tokens, css, ancho):
+    """La pantalla sola, a 1:1, sin una línea de explicación alrededor."""
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · Mis turnos · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_TARJETA}
+{CSS_ENCABEZADO}
+{CSS_MIS_TURNOS}
+{CSS_FOCO}
+</style>
+{mis_turnos_del_sitio(ancho)}
+"""
+
+
+def tablero_mis_turnos(tokens, css, ancho):
+    """El tablero que explica la pieza. La pantalla sola vive en otro archivo."""
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 21 Mis turnos · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_TARJETA}
+{CSS_ENCABEZADO}
+{CSS_MIS_TURNOS}
+{CSS_FOCO}
+{css_margen_en_la_prosa()}
+</style>
+
+<div class="prosa">
+<p class="rotulo">Fase ⑧ · Pieza 21 · {ancho} px</p>
+<h1>Mis turnos</h1>
+<div class="regla"></div>
+<p><b>Ver el turno que tenés y poder cancelarlo.</b> Nada más: la tarjeta es la
+pieza 6, y acá es donde vive con su botón.</p>
+
+<section>
+  <p class="rotulo">Las dos decisiones, cerradas por Juan el 25-sep</p>
+  <h2>Y una la cambió él mismo</h2>
+  <ul class="reglas">
+    <li><b>El botón se queda grafito macizo.</b> Se evaluó con filo y sin
+    relleno; <b>no entró</b>.</li>
+    <li><b>La cobertura SÍ va en la tarjeta.</b> Primero dijo que no —<i>«le
+    llega en el correo»</i>— y <b>la cambió al saber que el correo del paciente
+    NO la trae</b>: la trae el operativo, que es el de Cecilia. <b>Sin este
+    renglón, el paciente no la vería en ningún lado.</b></li>
+  </ul>
+</section>
+
+<section>
+  <p class="rotulo">El otro estado</p>
+  <h2>Cuando no hay ningún turno</h2>
+  <p>Una línea y la salida. <b>No hay dibujo nuevo</b>: el botón es el
+  principal de la pieza 3.</p>
+</section>
+</div>
+{mis_turnos_del_sitio(ancho, vacio=True)}
+
+<div class="prosa"><p class="rotulo">Con turnos</p></div>
+{mis_turnos_del_sitio(ancho)}
+"""
+
+
 def revisar_duracion(pagina, donde):
     """Avisos de duración que quedaron adentro de algo que simula la pantalla."""
     avisos = []
@@ -8772,6 +9003,21 @@ def main():
         destino = SALIDA / "20-confirmar" / f"{ancho}-solo.html"
         destino.write_text(
             fijar_al_ancho(solo_confirmar(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+        destino = SALIDA / "21-mis-turnos" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_mis_turnos(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+        destino = SALIDA / "21-mis-turnos" / f"{ancho}-solo.html"
+        destino.write_text(
+            fijar_al_ancho(solo_mis_turnos(tokens, css, ancho), ancho),
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")
