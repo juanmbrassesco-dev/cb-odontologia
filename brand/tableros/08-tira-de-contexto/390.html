@@ -1003,6 +1003,23 @@ section > h2 + p { margin-top: 8px; }
 
 .lista { margin-top: 4px; }
 
+/* 🔴 DE TABLET PARA ARRIBA LA TARJETA MIDE SU CONTENIDO, VIVA DONDE VIVA — lo
+   pidió Juan el 25-sep-2026: «no tiene sentido que ocupe todo el cuadro en
+   sentido horizontal». Una tarjeta de 860 px con el texto centrado adentro es
+   una caja casi vacía. En el teléfono no cambia nada: ahí el ancho disponible
+   ya es el del contenido.
+
+   ⚠️ SE APLICÓ PRIMERO SÓLO EN LA LISTA DE «MIS TURNOS» y la de la pantalla de
+   confirmar siguió cruzando la página —«volviste a devolver las tarjetas
+   enormes»—. Es LA MISMA TARJETA: la regla va en ella, no en uno de los dos
+   lugares donde aparece.
+
+   🔑 Y ARREGLA UN DESFASE QUE JUAN TAMBIÉN CAZÓ —«alineá en columna el texto
+   con el botón»—, con causa medible: `h3` y `p` traen `max-width: var(--columna)`
+   (640) de la base, así que dentro de una tarjeta de 860 el texto se centraba
+   respecto a 640 y el botón respecto a 860. Dos ejes a 92 px uno del otro. */
+
+
 /* 🔴 DE TABLET PARA ARRIBA LA TARJETA MIDE LO QUE MIDE SU CONTENIDO — lo pidió
    Juan el 25-sep-2026: «no tiene sentido que ocupe todo el cuadro en sentido
    horizontal». Una tarjeta de 860 px con el texto centrado adentro es una caja

@@ -1015,6 +1015,44 @@ section > h2 + p { margin-top: 8px; }
 
 .lista { margin-top: 4px; }
 
+/* 🔴 DE TABLET PARA ARRIBA LA TARJETA MIDE SU CONTENIDO, VIVA DONDE VIVA — lo
+   pidió Juan el 25-sep-2026: «no tiene sentido que ocupe todo el cuadro en
+   sentido horizontal». Una tarjeta de 860 px con el texto centrado adentro es
+   una caja casi vacía. En el teléfono no cambia nada: ahí el ancho disponible
+   ya es el del contenido.
+
+   ⚠️ SE APLICÓ PRIMERO SÓLO EN LA LISTA DE «MIS TURNOS» y la de la pantalla de
+   confirmar siguió cruzando la página —«volviste a devolver las tarjetas
+   enormes»—. Es LA MISMA TARJETA: la regla va en ella, no en uno de los dos
+   lugares donde aparece.
+
+   🔑 Y ARREGLA UN DESFASE QUE JUAN TAMBIÉN CAZÓ —«alineá en columna el texto
+   con el botón»—, con causa medible: `h3` y `p` traen `max-width: var(--columna)`
+   (640) de la base, así que dentro de una tarjeta de 860 el texto se centraba
+   respecto a 640 y el botón respecto a 860. Dos ejes a 92 px uno del otro. */
+
+
+  .turno {
+    width: fit-content;
+    padding: 24px 40px 26px;
+  }
+
+  /* TODAS LAS DE UNA LISTA MIDEN LO MISMO: el ancho de la más ancha.
+     `fit-content` en cada tarjeta las dejaba de anchos distintos —cada una
+     medía su propio texto— y la lista quedaba dentada por la derecha. La
+     rejilla de una columna resuelve las dos: la columna mide lo que la fila
+     más ancha, y las tarjetas la llenan. */
+  .lista,
+  .lista-turnos {
+    width: fit-content;
+  }
+
+  .lista .turno,
+  .lista-turnos .turno {
+    width: auto;
+  }
+
+
 /* 🔴 DE TABLET PARA ARRIBA LA TARJETA MIDE LO QUE MIDE SU CONTENIDO — lo pidió
    Juan el 25-sep-2026: «no tiene sentido que ocupe todo el cuadro en sentido
    horizontal». Una tarjeta de 860 px con el texto centrado adentro es una caja
@@ -1043,21 +1081,11 @@ section > h2 + p { margin-top: 8px; }
 
 
 
-  /* TODAS LAS TARJETAS MIDEN LO MISMO: el ancho de la más ancha.
-     `width: fit-content` puesto en CADA tarjeta las dejaba de anchos
-     distintos —cada una medía su propio texto— y la lista quedaba dentada por
-     la derecha. La rejilla de una columna resuelve las dos cosas a la vez: la
-     columna mide lo que la fila más ancha, y todas la llenan. */
   /* EL AIRE CRECE CON EL TÍTULO. A 390 los 28 px quedan —lo miró Juan— pero
      el mismo valor debajo de un título de escritorio se ve apretado: el h1
      pasa de 32 px a 52, y el aire que lo acompaña tiene que seguirlo. */
   .lista-turnos {
-    width: fit-content;
     margin-top: 40px;
-  }
-
-  .lista-turnos .turno {
-    padding: 24px 40px 26px;
   }
 
 
