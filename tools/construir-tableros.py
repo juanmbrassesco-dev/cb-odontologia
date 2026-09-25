@@ -2135,7 +2135,20 @@ CSS_GRILLA = """
 /* El día es un control táctil: no baja de 44 px de lado. Con siete columnas,
    eso es lo que fija el ancho mínimo del almanaque entero. */
 .dia {
+  /* `display: block` y `text-decoration: none` están acá porque en la pantalla
+     real el día NO es un botón: es un <a> —o un <span> si está cerrado—, y un
+     enlace en línea no toma el alto ni suelta el subrayado. El botón del
+     tablero de la pieza 7 no se entera: ya era bloque y nunca tuvo subrayado. */
+  display: block;
+  text-decoration: none;
   min-height: 48px;
+  /* 🔴 EL PISO TÁCTIL TAMBIÉN VA A LO ANCHO, y faltaba. La pieza 7 lo declaró
+     —«el día no baja de 44 px de lado, y con siete columnas eso fija el ancho
+     mínimo del almanaque»— pero sólo estaba escrito el ALTO. A 1280, donde el
+     almanaque va al costado con `flex: none`, las siete columnas se encogían
+     al contenido y el día quedaba en 36 px: la regla existía y la pantalla
+     decía otra cosa. Medido el 25-sep-2026. */
+  min-width: 44px;
   padding: 6px 2px 8px;
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
   font-size: 17px;
@@ -2284,21 +2297,52 @@ BLOQUES_60 = [
 ]
 
 
-def celda_dia(numero, clase, con_lugar):
+def celda_dia(numero, clase, con_lugar, ancla=False):
+    """Una casilla del mes.
+
+    `ancla` cambia de qué ESTÁ HECHO el día, no cómo se ve. En el tablero de la
+    pieza 7 el día es un <button>, porque ahí no hay pantalla adonde ir. En la
+    pantalla real es un ENLACE al cajón de horarios —la «opción D», decidida por
+    Juan— y eso obliga a que sea un <a href="#horarios">: un <button> no puede
+    llevar un ancla, y hacerlo con `scrollIntoView()` mueve la pantalla pero
+    DEJA EL FOCO ARRIBA, así que el que navega con teclado o con lector de
+    pantalla no se entera de que el contenido cambió.
+    """
     if clase == "vacío":
         return '\n        <span></span>'
 
     marca = '<span class="marca"></span>' if con_lugar else ''
+
+    if ancla:
+        # EL DÍA QUE NO SE PUEDE TOCAR DEJA DE SER UN CONTROL. Un <span> no
+        # recibe foco ni clic, que es exactamente lo que se quiere; `disabled`
+        # no existe fuera de los controles, así que lo que se lo dice al lector
+        # de pantalla es `aria-disabled`.
+        if clase == "dia-apagado":
+            return (
+                f'\n        <span class="dia {clase}" aria-disabled="true">'
+                f'{numero}{marca}</span>'
+            )
+
+        # `aria-current` es cómo se anuncia «éste es el día que está elegido»:
+        # el dorado lo dice en la pantalla y esto lo dice en voz alta.
+        actual = ' aria-current="date"' if clase == "dia-elegido" else ''
+
+        return (
+            f'\n        <a class="dia {clase}" href="#horarios"{actual}>'
+            f'{numero}{marca}</a>'
+        )
+
     apagado = " disabled" if clase == "dia-apagado" else ""
     return f'\n        <button class="dia {clase}"{apagado}>{numero}{marca}</button>'
 
 
-def almanaque():
+def almanaque(ancla=False):
     letras = "".join(
         f'\n        <span class="letra">{l}</span>'
         for l in ("L", "M", "M", "J", "V", "S", "D")
     )
-    celdas = "".join(celda_dia(*d) for d in DIAS)
+    celdas = "".join(celda_dia(*d, ancla=ancla) for d in DIAS)
 
     return f"""
     <div class="almanaque">
@@ -2719,7 +2763,10 @@ PANTALLA = [
     re.compile(r'<(?:input|textarea)\b[^>]*value="([^"]*)"'),
     re.compile(r'<div class="turno">.*?</div>\s*</div>', re.DOTALL),
     re.compile(r'<label class="etiqueta">.*?</label>', re.DOTALL),
-    re.compile(r'<p class="(?:ayuda|muestra-texto)">.*?</p>', re.DOTALL),
+    re.compile(r'<p class="(?:ayuda|ayuda-pantalla|muestra-texto)">.*?</p>', re.DOTALL),
+    # La etiqueta del día en la pantalla ⑤: es el lugar donde la duración se
+    # colaría copiando el rótulo del tablero de la pieza 7.
+    re.compile(r'<p class="cuando">.*?</p>', re.DOTALL),
 ]
 
 
@@ -7535,6 +7582,275 @@ del endpoint</b>. <b>El orden también viene resuelto de la base</b> —columna
 """
 
 
+# ============================================================
+# PIEZA 19 — DÍA Y HORA (el paso ⑤ de la pantalla del paciente)
+#
+# NO DISEÑA NADA NUEVO: el almanaque, la grilla, los estados y sus colores se
+# cerraron en la PIEZA 7 (fase ⑦, 3-sep-2026) y acá se REUSAN las mismas
+# funciones —`almanaque()` y `grilla()`— con los mismos datos. Lo que esta pieza
+# agrega es la PANTALLA alrededor: encabezado, título, la etiqueta del día, el
+# botón, y el ANCLA que une las dos mitades.
+#
+# 🔴 EL ANCLA ES LA «OPCIÓN D», y la decidió Juan sobre una medición: en el
+# teléfono el mes ocupa ~400 px y las horas ~372 —772 contra 745 de pantalla—,
+# así que NO ENTRAN, y no es cuestión de apretar. Se evaluaron dos pantallas,
+# una tira de días horizontal y un mes plegable; ganó el ancla.
+#
+# ⏱ QUEDA ABIERTA A REVISIÓN, y lo pidió él al aprobarla: se decidió sobre una
+# medición, no sobre algo usado. Disparador: el primer paciente que elige un
+# turno desde un teléfono real.
+# ============================================================
+
+CSS_DIA_HORA = """
+.dia-hora {
+  margin: 0 var(--margen-pagina);
+  padding: 32px 0 var(--aire-seccion);
+}
+
+.dia-hora h1 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+  text-wrap: balance;
+}
+
+.dia-hora .ayuda-pantalla {
+  margin-top: 12px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  text-wrap: balance;
+}
+
+.reserva {
+  margin-top: 24px;
+}
+
+/* EL DESTINO DEL ANCLA. Al saltar, el navegador pega el destino contra el
+   borde de arriba: `scroll-margin-top` le reserva aire para que la etiqueta
+   del día —lo único que dice QUÉ día se está mirando— no quede al filo. */
+.horarios {
+  scroll-margin-top: 16px;
+}
+
+/* 🔴 EL DESTINO DEL ANCLA NO LLEVA ANILLO DE FOCO, y es la SEGUNDA excepción
+   declarada del sistema —la primera es el radio de la pieza 17—.
+
+   MEDIDO el 25-sep-2026, no supuesto: al tocar un día, `#horarios` recibe el
+   foco (que es TODO EL PUNTO del ancla) y `:focus-visible` se dibujaba, o sea
+   un contorno grafito de 2 px alrededor de media pantalla en cada toque.
+
+   El anillo existe para decir QUÉ SE VA A OPERAR al teclear. Un cajón de
+   aterrizaje no se opera: se lee. Y la confirmación de que el salto ocurrió ya
+   la da la página moviéndose. Los controles de adentro —cada hora, el botón—
+   conservan su anillo intacto. */
+.horarios:focus-visible {
+  outline: none;
+}
+
+/* QUÉ DÍA SE ESTÁ MIRANDO. Sin esto, el ancla baja a una grilla de horas que
+   no dice de cuándo son — y el almanaque, que lo diría, quedó arriba. */
+.horarios .cuando {
+  margin-top: 22px;
+  font-weight: 500;
+}
+
+.dia-hora .btn {
+  margin-top: 28px;
+  margin-left: 0;
+}
+"""
+
+
+def dia_hora_del_sitio(ancho):
+    """La pantalla ⑤. El día y la hora, con el ancla que las une."""
+    logo = leer_png("cb-wordmark-600")
+
+    # ⚠️ LA ETIQUETA DEL DÍA NO LLEVA LA DURACIÓN, y no es un olvido: el tablero
+    # de la pieza 7 dice «Consulta, 30 minutos» porque eso es PROSA DE TABLERO,
+    # explicándose a sí mismo. En la pantalla real esa línea sería decirle al
+    # paciente que su tratamiento se agenda como consulta, y eso está CERRADO
+    # por Juan el 24-sep-2026: no se le dice en ningún lado.
+    return f"""
+<div class="pagina">
+  <header class="encabezado">
+    <div class="barra">
+      <img src="data:image/png;base64,{logo}"
+           alt="CB Odontología y Estética"
+           width="{ENCABEZADO_LOGO[ancho]}">
+    </div>
+  </header>
+
+  <div class="dia-hora">
+    <h1>¿Qué día y a qué hora?</h1>
+
+    <p class="ayuda-pantalla">Los días en gris no tienen lugar. Tocá uno con
+    punto dorado y elegí el horario.</p>
+
+    <div class="reserva juntas">{almanaque(ancla=True)}
+      <section class="lado horarios" id="horarios" tabindex="-1">
+        <p class="cuando">Jueves 11 de septiembre</p>
+        {grilla(BLOQUES)}
+        <button class="btn btn-1">Continuar</button>
+      </section>
+    </div>
+  </div>
+</div>"""
+
+
+def solo_dia_hora(tokens, css, ancho):
+    """La pantalla sola, a 1:1, sin una línea de explicación alrededor."""
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · Día y hora · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_GRILLA}
+{CSS_ENCABEZADO}
+{CSS_DIA_HORA}
+{CSS_FOCO}
+</style>
+{dia_hora_del_sitio(ancho)}
+"""
+
+
+def tablero_dia_hora(tokens, css, ancho):
+    """El tablero que explica la pieza. La pantalla sola vive en otro archivo."""
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 19 Día y hora · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_GRILLA}
+{CSS_ENCABEZADO}
+{CSS_DIA_HORA}
+{CSS_FOCO}
+{css_margen_en_la_prosa()}
+</style>
+
+<div class="prosa">
+<p class="rotulo">Fase ⑧ · Pieza 19 · {ancho} px</p>
+<h1>Día y hora</h1>
+<div class="regla"></div>
+<p><b>Esta pieza no diseñó nada.</b> El almanaque, la grilla, los cuatro
+estados y sus colores se cerraron en la <b>pieza 7</b> el 3-sep-2026, y acá se
+reusan <b>las mismas funciones con los mismos datos</b> —si mañana cambia el
+alto de un día, cambia en las dos—. Lo que se agregó es la <b>pantalla</b>:
+encabezado, título, la etiqueta del día, el botón, y <b>el ancla que une las
+dos mitades</b>.</p>
+
+<section>
+  <p class="rotulo">La decisión que gobierna esta pantalla</p>
+  <h2>El ancla, y el número que la obligó</h2>
+  <p><b>En el teléfono el mes y las horas no entran juntos.</b> El mes ocupa
+  ~<b>400 px</b> y las horas ~<b>372</b>: <b>772 contra 745</b> de pantalla. No
+  es cuestión de apretar.</p>
+  <p>Se evaluaron cuatro caminos —dos pantallas · una tira de días horizontal ·
+  un mes que se pliega— y <b>ganó el que propuso Juan: un ancla</b>. Se toca el
+  día y la página baja sola a los horarios.</p>
+  <p>🔴 <b>Y lleva dos condiciones, las dos aplicadas acá:</b></p>
+  <ul class="reglas">
+    <li><b>Ancla de verdad</b> —<code>&lt;a href="#horarios"&gt;</code>— <b>y no
+    <code>scrollIntoView()</code></b>. El JavaScript mueve la pantalla pero
+    <b>no mueve el foco</b>: el que navega con teclado o con lector de pantalla
+    se queda arriba sin enterarse de que abajo cambió algo. El destino lleva
+    <code>tabindex="-1"</code> para poder recibirlo.
+    <i>Contraintuitivo y por eso escrito: acá la forma vieja es la accesible.</i></li>
+    <li><b>Al abrir viene elegido el primer día con lugar</b> —decisión de la
+    pieza 7—, así que <b>el ancla nunca baja a un cajón vacío</b>: baja a algo
+    que ya existe, que es más suave que hacer aparecer contenido nuevo debajo
+    del dedo.</li>
+  </ul>
+  <p>⏱ <b>La decisión queda ABIERTA A REVISIÓN y lo pidió Juan al aprobarla:</b>
+  se decidió sobre una medición, no sobre algo usado. <b>Disparador: el primer
+  paciente que elige un turno desde un teléfono real.</b> Si no funciona, se
+  cambia sin volver a discutir el marco — las tres alternativas siguen escritas
+  arriba.</p>
+</section>
+
+<section>
+  <p class="rotulo">Lo que el ancla cambió en el marcado</p>
+  <h2>El día dejó de ser un botón</h2>
+  <p><b>Un <code>&lt;button&gt;</code> no puede llevar un ancla</b>, así que en
+  la pantalla real cada día con lugar es un <b>enlace</b>
+  <code>&lt;a href="#horarios"&gt;</code>. <b>En el tablero de la pieza 7 sigue
+  siendo un botón</b>, y está bien: ahí no hay pantalla adonde bajar.</p>
+  <p>🔑 <b>Y el día cerrado dejó de ser un control.</b> Antes era un
+  <code>&lt;button disabled&gt;</code>; ahora es un <code>&lt;span&gt;</code>,
+  que <b>no recibe foco ni clic</b> — que es exactamente lo que se quiere de un
+  día que no se puede tocar. Lo que se lo dice al lector de pantalla es
+  <code>aria-disabled</code>, porque <code>disabled</code> no existe fuera de
+  los controles.</p>
+  <p><b>Y una cosa más que no se ve:</b> el día elegido lleva
+  <code>aria-current="date"</code>. El dorado lo dice en la pantalla; esto lo
+  dice en voz alta.</p>
+</section>
+
+<section>
+  <p class="rotulo">Lo que NO dice esta pantalla</p>
+  <h2>La etiqueta del día va sin la duración</h2>
+  <p>El tablero de la pieza 7 rotula el día como <i>«Jueves 11 de septiembre ·
+  Consulta, 30 minutos»</i>. <b>Acá dice sólo el día</b>, y el recorte es
+  deliberado: esa línea es <b>prosa de tablero</b> explicándose a sí misma, y en
+  la pantalla real sería <b>decirle al paciente que su tratamiento se agenda
+  como consulta</b>. Eso está <b>cerrado por Juan el 24-sep-2026: no se le dice
+  en ningún lado</b>.</p>
+  <p>⚠️ <b>Pero la etiqueta no se puede borrar del todo</b>, y por eso quedó el
+  día: <b>el ancla baja y el almanaque queda fuera de la vista</b>. Sin esa
+  línea, la grilla no dice de cuándo son esas horas.</p>
+</section>
+
+<section>
+  <p class="rotulo">Lo que se rompió al medirlo</p>
+  <h2>Dos cosas que ya estaban rotas y nadie había mirado</h2>
+  <p>🔴 <b>A 1280 el día del mes medía 36 px de lado, y la regla de la pieza 7
+  dice 44.</b> Con el almanaque al costado, las siete columnas se encogían al
+  contenido: <b>la regla estaba escrita y la pantalla decía otra cosa</b>. El
+  piso táctil estaba declarado sólo a lo <b>alto</b>. <b>No es un bug de esta
+  pieza —el tablero de la 7 medía lo mismo— y por eso se arregló en el único
+  lugar donde vive el día: las dos pantallas se enderezaron juntas.</b></p>
+  <p>🔴 <b>Y el ancla dibujaba un contorno grafito alrededor de media
+  pantalla.</b> Al tocar un día, el cajón de horarios recibe el foco —que es
+  <b>todo el punto</b> del ancla— y el anillo del sistema se pintaba encima.
+  <b>Queda como la segunda excepción declarada</b>, junto al radio de la pieza
+  17: <b>el anillo dice qué se va a operar al teclear, y un cajón de aterrizaje
+  no se opera, se lee</b>. La confirmación de que el salto ocurrió ya la da la
+  página moviéndose. <b>Cada hora y el botón conservan el suyo intacto.</b></p>
+  <p class="dato" style="margin-top: 12px">🔑 <b>Las dos aparecieron
+  MIDIENDO, no mirando</b> — un contorno de 2 px y ocho píxeles de ancho no se
+  ven en una captura, y las dos cambian cómo se usa la pantalla con el dedo o
+  con el teclado.</p>
+</section>
+
+<section>
+  <p class="rotulo">Lo que queda abierto</p>
+  <h2>Dos cosas, y ninguna bloquea</h2>
+  <ul class="reglas">
+    <li>⬜ <b>Escritorio no se rediseñó.</b> A 1280 el mes va a la izquierda y
+    las horas a la derecha, <b>que es el layout que ya traía la pieza 7</b> — no
+    se estrenó nada. Con las dos mitades a la vista <b>el ancla no tiene adónde
+    bajar, y no molesta</b>: el salto a algo que ya está en pantalla no mueve
+    nada.</li>
+    <li>⬜ <b>El botón secundario sigue pesando más que el principal</b>
+    —grafito 12,0 contra la página, dorado 2,89—. Esta pantalla tiene un solo
+    botón, así que <b>no lo destapa ni lo resuelve</b>.</li>
+  </ul>
+</section>
+</div>
+{dia_hora_del_sitio(ancho)}
+"""
+
+
 def revisar_duracion(pagina, donde):
     """Avisos de duración que quedaron adentro de algo que simula la pantalla."""
     avisos = []
@@ -8104,6 +8420,21 @@ def main():
         destino = SALIDA / "18-a-que-venis" / f"{ancho}-solo.html"
         destino.write_text(
             fijar_al_ancho(solo_motivo(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+        destino = SALIDA / "19-dia-y-hora" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_dia_hora(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+        destino = SALIDA / "19-dia-y-hora" / f"{ancho}-solo.html"
+        destino.write_text(
+            fijar_al_ancho(solo_dia_hora(tokens, css, ancho), ancho),
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")

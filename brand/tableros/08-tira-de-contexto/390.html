@@ -1062,7 +1062,20 @@ section > h2 + p { margin-top: 8px; }
 /* El día es un control táctil: no baja de 44 px de lado. Con siete columnas,
    eso es lo que fija el ancho mínimo del almanaque entero. */
 .dia {
+  /* `display: block` y `text-decoration: none` están acá porque en la pantalla
+     real el día NO es un botón: es un <a> —o un <span> si está cerrado—, y un
+     enlace en línea no toma el alto ni suelta el subrayado. El botón del
+     tablero de la pieza 7 no se entera: ya era bloque y nunca tuvo subrayado. */
+  display: block;
+  text-decoration: none;
   min-height: 48px;
+  /* 🔴 EL PISO TÁCTIL TAMBIÉN VA A LO ANCHO, y faltaba. La pieza 7 lo declaró
+     —«el día no baja de 44 px de lado, y con siete columnas eso fija el ancho
+     mínimo del almanaque»— pero sólo estaba escrito el ALTO. A 1280, donde el
+     almanaque va al costado con `flex: none`, las siete columnas se encogían
+     al contenido y el día quedaba en 36 px: la regla existía y la pantalla
+     decía otra cosa. Medido el 25-sep-2026. */
+  min-width: 44px;
   padding: 6px 2px 8px;
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
   font-size: 17px;
