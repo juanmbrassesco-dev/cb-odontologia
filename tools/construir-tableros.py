@@ -1885,6 +1885,16 @@ lugar donde puede seguir</b>. Todo a escala 1:1 en {ancho} px.</p>
 # ============================================================
 
 CSS_TARJETA = """
+/* EL ANCHO DE LA TARJETA DE TABLET PARA ARRIBA. Vive acá y no en `tokens.css`
+   porque todavía es de esta pieza: si el front lo confirma, sube al sistema. */
+@media (min-width: 768px) {
+  :root { --tarjeta-ancho: 400px; }
+}
+
+@media (min-width: 1280px) {
+  :root { --tarjeta-ancho: 424px; }
+}
+
 /* TODO CENTRADO ADENTRO DE LA CAJA — decidido por Juan el 3-sep-2026, viendo
    las tres alineaciones a 390 y a tamaño real. Es la variante C: se centra el
    texto Y el botón deja de ocupar el ancho de la tarjeta.
@@ -1954,8 +1964,18 @@ CSS_TARJETA = """
    respecto a 640 y el botón respecto a 860. Dos ejes a 92 px uno del otro. */
 @media (min-width: 768px) {
 
+  /* ⚠️ ANCHO DECLARADO Y NO `fit-content`, y el motivo es que la tarjeta NO
+     vive sola: en la pantalla de confirmar tiene debajo un desplegable y un
+     campo largo, y con `fit-content` quedaban de anchos distintos —«tienen que
+     tener el mismo para que no se note», 25-sep-2026—.
+
+     Un `<select>` con 71 obras sociales adentro tiene un ancho intrínseco
+     enorme, así que no se lo puede dejar seguir a una caja que mide su propio
+     contenido: el que manda tiene que ser un NÚMERO, y los tres se cuelgan de
+     él. Sale de medir la tarjeta con `fit-content` —395 a 768 y 423 a 1280— y
+     redondear para arriba. */
   .turno {
-    width: fit-content;
+    width: var(--tarjeta-ancho);
     padding: 24px 40px 26px;
   }
 
@@ -1964,9 +1984,12 @@ CSS_TARJETA = """
      medía su propio texto— y la lista quedaba dentada por la derecha. La
      rejilla de una columna resuelve las dos: la columna mide lo que la fila
      más ancha, y las tarjetas la llenan. */
+  /* La lista se cuelga del MISMO número que la tarjeta suelta: así una tarjeta
+     mide lo mismo en «mis turnos» que en confirmar. Con `fit-content` medían
+     395 y 400, que es distinto sin ningún motivo. */
   .lista,
   .lista-turnos {
-    width: fit-content;
+    width: var(--tarjeta-ancho);
   }
 
   .lista .turno,
@@ -8071,6 +8094,15 @@ CSS_CONFIRMAR = """
 .confirmar textarea.caja {
   min-height: 96px;
   resize: vertical;
+}
+
+/* EL DESPLEGABLE Y EL CAMPO LARGO MIDEN LO MISMO QUE LA TARJETA. Sin esto,
+   la tarjeta medía 406 y los campos 640 en la misma columna. */
+@media (min-width: 768px) {
+
+  .confirmar .campo {
+    max-width: var(--tarjeta-ancho);
+  }
 }
 
 .confirmar .btn {

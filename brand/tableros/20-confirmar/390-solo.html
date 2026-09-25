@@ -913,6 +913,12 @@ select.caja {
 }
 
 
+/* EL ANCHO DE LA TARJETA DE TABLET PARA ARRIBA. Vive acá y no en `tokens.css`
+   porque todavía es de esta pieza: si el front lo confirma, sube al sistema. */
+
+
+
+
 /* TODO CENTRADO ADENTRO DE LA CAJA — decidido por Juan el 3-sep-2026, viendo
    las tres alineaciones a 390 y a tamaño real. Es la variante C: se centra el
    texto Y el botón deja de ocupar el ancho de la tarjeta.
@@ -1201,6 +1207,10 @@ body { padding: 0; }
   min-height: 96px;
   resize: vertical;
 }
+
+/* EL DESPLEGABLE Y EL CAMPO LARGO MIDEN LO MISMO QUE LA TARJETA. Sin esto,
+   la tarjeta medía 406 y los campos 640 en la misma columna. */
+
 
 .confirmar .btn {
   margin-top: 28px;
