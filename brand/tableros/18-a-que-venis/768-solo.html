@@ -897,6 +897,34 @@ section > h2 + p { margin-top: 8px; }
 }
 
 
+/* EL DESPLEGABLE USA LA CAJA DEL SISTEMA —la misma de la pieza 4— y le suma
+   lo único que un <select> necesita y un <input> no: la flecha. Va dibujada
+   en el fondo y no como carácter, porque un carácter se puede seleccionar y
+   se ve distinto en cada sistema. */
+select.caja {
+  appearance: none;
+  padding-right: 40px;
+  background-image:
+    linear-gradient( 45deg, transparent 50%, var(--grafito) 50% ),
+    linear-gradient( 135deg, var(--grafito) 50%, transparent 50% );
+  background-position:
+    calc( 100% - 20px ) calc( 50% + 2px ),
+    calc( 100% - 14px ) calc( 50% + 2px );
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  /* 🔴 ESTO PROBABLEMENTE NO HAGA NADA, y se deja UNA versión con el motivo
+     escrito para que nadie lo vuelva a intentar a ciegas.
+     `accent-color` rige checkbox, radio, range y progress — no el resaltado de
+     un <option>. Ese resaltado lo pinta el SISTEMA OPERATIVO con su color de
+     acento, y Safari incluso lo dibuja ENCIMA del fondo que declare el autor.
+     ⇒ El azul del desplegable abierto no se cambia por CSS.
+     Se deja la línea porque no rompe nada y porque el día que el navegador lo
+     soporte, el color ya está puesto y es el nuestro. */
+  accent-color: var(--dorado);
+}
+
+
 /* El encabezado cruza la pantalla de lado a lado, así que el margen de página
    lo lleva él y no el <body>. Mismo mecanismo que la tira de la pieza 8. */
 body { padding: 0; }
@@ -1063,33 +1091,6 @@ body { padding: 0; }
   font-size: var(--tipo-cuerpo);
   line-height: var(--alto-cuerpo);
   text-wrap: balance;
-}
-
-/* EL DESPLEGABLE USA LA CAJA DEL SISTEMA —la misma de la pieza 4— y le suma
-   lo único que un <select> necesita y un <input> no: la flecha. Va dibujada
-   en el fondo y no como carácter, porque un carácter se puede seleccionar y
-   se ve distinto en cada sistema. */
-.motivo select.caja {
-  appearance: none;
-  padding-right: 40px;
-  background-image:
-    linear-gradient( 45deg, transparent 50%, var(--grafito) 50% ),
-    linear-gradient( 135deg, var(--grafito) 50%, transparent 50% );
-  background-position:
-    calc( 100% - 20px ) calc( 50% + 2px ),
-    calc( 100% - 14px ) calc( 50% + 2px );
-  background-size: 6px 6px, 6px 6px;
-  background-repeat: no-repeat;
-  cursor: pointer;
-  /* 🔴 ESTO PROBABLEMENTE NO HAGA NADA, y se deja UNA versión con el motivo
-     escrito para que nadie lo vuelva a intentar a ciegas.
-     `accent-color` rige checkbox, radio, range y progress — no el resaltado de
-     un <option>. Ese resaltado lo pinta el SISTEMA OPERATIVO con su color de
-     acento, y Safari incluso lo dibuja ENCIMA del fondo que declare el autor.
-     ⇒ El azul del desplegable abierto no se cambia por CSS.
-     Se deja la línea porque no rompe nada y porque el día que el navegador lo
-     soporte, el color ya está puesto y es el nuestro. */
-  accent-color: var(--dorado);
 }
 
 .motivo .btn {

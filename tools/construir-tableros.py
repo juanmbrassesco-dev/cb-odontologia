@@ -1953,7 +1953,19 @@ TURNOS = [
 ]
 
 
-def tarjeta_turno(cuando, tratamiento, profesional, quien):
+def tarjeta_turno(cuando, tratamiento, profesional, quien, accion=True):
+    """La tarjeta de un turno.
+
+    `accion` es lo único que cambia entre los dos lugares donde vive. En «mis
+    turnos» el turno EXISTE y se puede cancelar; en la pantalla de confirmar
+    todavía no existe, así que no hay nada que cancelar y la tarjeta va sin
+    botón. El dibujo es el mismo: una tarjeta, no dos.
+    """
+    boton = (
+        '\n      <button class="btn btn-2">Cancelar turno</button>'
+        if accion else ''
+    )
+
     return (
         '\n    <div class="turno">'
         '\n      <div class="datos">'
@@ -1961,7 +1973,7 @@ def tarjeta_turno(cuando, tratamiento, profesional, quien):
         f'\n        <p class="que">{tratamiento} {profesional}</p>'
         f'\n        <p class="quien">{quien}</p>'
         '\n      </div>'
-        '\n      <button class="btn btn-2">Cancelar turno</button>'
+        f'{boton}'
         '\n    </div>'
     )
 
@@ -7340,32 +7352,12 @@ TRATAMIENTOS = [
 ]
 
 
-CSS_MOTIVO = """
-.motivo {
-  margin: 0 var(--margen-pagina);
-  padding: 32px 0 40px;
-}
-
-.motivo h1 {
-  font-family: Marcellus, Georgia, serif;
-  font-size: var(--tipo-h1);
-  line-height: var(--alto-h1);
-  text-wrap: balance;
-}
-
-.motivo .ayuda-pantalla {
-  margin-top: 12px;
-  color: var(--texto-segundo);
-  font-size: var(--tipo-cuerpo);
-  line-height: var(--alto-cuerpo);
-  text-wrap: balance;
-}
-
+CSS_SELECT = """
 /* EL DESPLEGABLE USA LA CAJA DEL SISTEMA —la misma de la pieza 4— y le suma
    lo único que un <select> necesita y un <input> no: la flecha. Va dibujada
    en el fondo y no como carácter, porque un carácter se puede seleccionar y
    se ve distinto en cada sistema. */
-.motivo select.caja {
+select.caja {
   appearance: none;
   padding-right: 40px;
   background-image:
@@ -7386,6 +7378,29 @@ CSS_MOTIVO = """
      Se deja la línea porque no rompe nada y porque el día que el navegador lo
      soporte, el color ya está puesto y es el nuestro. */
   accent-color: var(--dorado);
+}
+"""
+
+
+CSS_MOTIVO = """
+.motivo {
+  margin: 0 var(--margen-pagina);
+  padding: 32px 0 40px;
+}
+
+.motivo h1 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+  text-wrap: balance;
+}
+
+.motivo .ayuda-pantalla {
+  margin-top: 12px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  text-wrap: balance;
 }
 
 .motivo .btn {
@@ -7461,6 +7476,7 @@ def solo_motivo(tokens, css, ancho):
 {base_css(ancho)}
 {CSS_BOTON}
 {CSS_CAMPO}
+{CSS_SELECT}
 {CSS_ENCABEZADO}
 {CSS_MOTIVO}
 {CSS_FOCO}
@@ -7481,6 +7497,7 @@ def tablero_motivo(tokens, css, ancho):
 {base_css(ancho)}
 {CSS_BOTON}
 {CSS_CAMPO}
+{CSS_SELECT}
 {CSS_ENCABEZADO}
 {CSS_MOTIVO}
 {CSS_FOCO}
@@ -7848,6 +7865,311 @@ dos mitades</b>.</p>
 </section>
 </div>
 {dia_hora_del_sitio(ancho)}
+"""
+
+
+# ============================================================
+# PIEZA 20 — COBERTURA, OBSERVACIONES Y CONFIRMAR (el paso ⑥, y el último)
+#
+# Es la pantalla que dispara `POST /reservar`. No estrena ni un control: la
+# tarjeta es la pieza 6 sin su botón, el desplegable es la caja de la 4 con la
+# flecha de la 18, el campo largo es esa misma caja, y el botón es el de la 3.
+#
+# 🔴 LAS 71 OBRAS SOCIALES NO ESTÁN ESCRITAS ACÁ: se leen de la MIGRACIÓN que
+# las carga en la base. Es la misma regla que ya rige para los colores —el
+# tablero lee `tokens.css`—: un tablero no puede mentir sobre lo que el sistema
+# hace. Si mañana Cecilia suma un convenio, la migración lo trae y el tablero
+# se entera solo.
+# ============================================================
+
+def leer_obras_sociales():
+    """Las 71 filas, leídas de la migración que las carga en la base."""
+    archivo = next(
+        (RAIZ / "supabase" / "migrations").glob("*_cargar_obras_sociales.sql")
+    )
+
+    filas = []
+
+    for linea in archivo.read_text(encoding="utf-8").splitlines():
+        linea = linea.strip()
+
+        if not linea.startswith("( '"):
+            continue
+
+        crudo = linea.strip("(),; ")
+        nombre, entidad = [
+            parte.strip().strip("'")
+            for parte in crudo.split("', '")
+        ]
+        filas.append((nombre, entidad))
+
+    return filas
+
+
+def opciones_de_cobertura(elegida):
+    """El desplegable, agrupado por entidad.
+
+    ⚠️ UN <optgroup> SÓLO DONDE HAY MÁS DE UNA FILA, y el criterio importa:
+    de las 71, apenas cinco entidades agrupan a varias —IAPOS con seis, y
+    cuatro con dos—. Las otras 56 son entidad de sí mismas, y envolver cada una
+    en su propio título dibujaría 56 encabezados de un solo ítem: ruido que
+    esconde justamente a los cinco grupos que sí dicen algo.
+
+    El ORDEN no se toca: viene de la base —`Particular` primera por su columna
+    `orden`— y las filas de una misma entidad ya vienen contiguas.
+    """
+    salida = ""
+    grupo_abierto = None
+
+    filas = leer_obras_sociales()
+    cuantas = {}
+
+    for _, entidad in filas:
+        cuantas[entidad] = cuantas.get(entidad, 0) + 1
+
+    for nombre, entidad in filas:
+        agrupa = cuantas[entidad] > 1
+
+        if grupo_abierto and grupo_abierto != (entidad if agrupa else None):
+            salida += "\n        </optgroup>"
+            grupo_abierto = None
+
+        if agrupa and grupo_abierto != entidad:
+            salida += f'\n        <optgroup label="{entidad}">'
+            grupo_abierto = entidad
+
+        marca = " selected" if nombre == elegida else ""
+        sangria = "  " if agrupa else ""
+        salida += f'\n        {sangria}<option{marca}>{nombre}</option>'
+
+    if grupo_abierto:
+        salida += "\n        </optgroup>"
+
+    return salida
+
+
+CSS_CONFIRMAR = """
+.confirmar {
+  margin: 0 var(--margen-pagina);
+  padding: 32px 0 var(--aire-seccion);
+}
+
+.confirmar h1 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+  text-wrap: balance;
+}
+
+.confirmar .ayuda-pantalla {
+  margin-top: 12px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  text-wrap: balance;
+}
+
+/* La tarjeta acá NO es un ítem de una lista: es el resumen de lo que se está
+   por crear, así que arranca en el margen como el resto de la pantalla y no
+   se estira a lo ancho de la columna de listas. */
+.confirmar .turno {
+  max-width: var(--columna);
+  margin-top: 22px;
+}
+
+/* EL CAMPO LARGO USA LA MISMA CAJA QUE EL RESTO. Lo único propio es que puede
+   crecer: `resize: vertical` deja agrandarlo a lo alto y NO a lo ancho, porque
+   a lo ancho rompería la columna de lectura. */
+.confirmar textarea.caja {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.confirmar .btn {
+  margin-top: 28px;
+  margin-left: 0;
+}
+"""
+
+
+def confirmar_del_sitio(ancho):
+    """La pantalla ⑥, la última del flujo."""
+    logo = leer_png("cb-wordmark-600")
+
+    # ⚠️ LA TARJETA VA SIN DURACIÓN Y SIN MOTIVO — es la pieza 6 tal como se
+    # cerró. El motivo ya viaja en el correo operativo, que es donde le sirve a
+    # Cecilia, y la duración no se le muestra nunca al paciente.
+    tarjeta = tarjeta_turno(
+        "Jueves 11 de septiembre, 15:30",
+        "Consulta",
+        "con Cecilia Duarte",
+        "Paciente: María Fernanda Gómez",
+        accion=False,
+    )
+
+    return f"""
+<div class="pagina">
+  <header class="encabezado">
+    <div class="barra">
+      <img src="data:image/png;base64,{logo}"
+           alt="CB Odontología y Estética"
+           width="{ENCABEZADO_LOGO[ancho]}">
+    </div>
+  </header>
+
+  <div class="confirmar">
+    <h1>¿Confirmamos?</h1>
+
+    <p class="ayuda-pantalla">Revisá que esté todo bien y decinos con qué
+    cobertura venís.</p>
+{tarjeta}
+
+    <div class="campo">
+      <label class="etiqueta" for="cobertura">Cobertura</label>
+      <select class="caja" id="cobertura">{opciones_de_cobertura("IAPOS")}
+      </select>
+    </div>
+
+    <div class="campo">
+      <label class="etiqueta" for="observaciones">Algo que quieras avisarnos
+      <span class="opcional">(opcional)</span></label>
+      <textarea class="caja" id="observaciones"></textarea>
+      <p class="ayuda">Si hay algo puntual de este turno, escribilo acá.</p>
+    </div>
+
+    <button class="btn btn-1">Confirmar turno</button>
+  </div>
+</div>"""
+
+
+def solo_confirmar(tokens, css, ancho):
+    """La pantalla sola, a 1:1, sin una línea de explicación alrededor."""
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · Confirmar · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_CAMPO}
+{CSS_SELECT}
+{CSS_TARJETA}
+{CSS_ENCABEZADO}
+{CSS_CONFIRMAR}
+{CSS_FOCO}
+</style>
+{confirmar_del_sitio(ancho)}
+"""
+
+
+def tablero_confirmar(tokens, css, ancho):
+    """El tablero que explica la pieza. La pantalla sola vive en otro archivo."""
+    return f"""<!-- @dsCard group="Components" -->
+<meta charset="utf-8">
+<title>CB · 20 Confirmar · {ancho}</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+<style>
+{css}
+{base_css(ancho)}
+{CSS_BOTON}
+{CSS_CAMPO}
+{CSS_SELECT}
+{CSS_TARJETA}
+{CSS_ENCABEZADO}
+{CSS_CONFIRMAR}
+{CSS_FOCO}
+{css_margen_en_la_prosa()}
+</style>
+
+<div class="prosa">
+<p class="rotulo">Fase ⑧ · Pieza 20 · {ancho} px</p>
+<h1>Cobertura, observaciones y confirmar</h1>
+<div class="regla"></div>
+<p><b>Es la última pantalla del flujo y la que dispara
+<code>POST /reservar</code>.</b> No estrena un solo control: la tarjeta es la
+<b>pieza 6 sin su botón</b>, el desplegable es <b>la caja de la 4 con la flecha
+de la 18</b>, el campo largo es esa misma caja, y el botón es el de la 3.</p>
+
+<section>
+  <p class="rotulo">Las 71 obras sociales</p>
+  <h2>No están escritas en el tablero</h2>
+  <p><b>Se leen de la MIGRACIÓN que las carga en la base</b>, que es la misma
+  regla que ya rige para los colores —el tablero lee <code>tokens.css</code>—.
+  <b>Un tablero no puede mentir sobre lo que el sistema hace</b>: si mañana
+  Cecilia suma un convenio, la migración lo trae y esta pantalla se entera
+  sola.</p>
+  <p>⚠️ <b>Y hay un <code>&lt;optgroup&gt;</code> SÓLO donde hay más de una
+  fila.</b> De las 71, apenas <b>cinco entidades agrupan a varias</b> —IAPOS
+  con seis, y cuatro con dos—. Las otras <b>56 son entidad de sí mismas</b>, y
+  envolver cada una en su propio título dibujaría <b>56 encabezados de un solo
+  ítem</b>: ruido que esconde justo a los cinco grupos que sí dicen algo.</p>
+  <p class="dato" style="margin-top: 12px"><b>El orden no se toca:</b> viene de
+  la base —<code>Particular</code> primera por su columna <code>orden</code>— y
+  las filas de una misma entidad ya vienen contiguas. <i>Incluidas las dos que
+  no son obras sociales en sentido estricto: entran tal cual, que es decisión
+  cerrada del 17-sep.</i></p>
+  <p>⚠️ <b>Por qué la muestra abre con una cobertura YA elegida, que si no
+  parece un default puesto al azar:</b> está decidido que el desplegable venga
+  con <b>la última cobertura que usó ese paciente</b>. Lo que se ve acá es el
+  que <b>ya vino antes</b>. <b>Un paciente nuevo no tiene última</b>, así que
+  para él el desplegable abre sin elegir — y el campo es <b>obligatorio</b>, o
+  sea que no puede confirmar sin tocarlo.</p>
+  <p class="dato" style="margin-top: 12px">🔑 <b>No hay una segunda muestra para
+  ese caso, y es la regla que dejó la pieza 18:</b> un estado merece su propia
+  muestra <b>sólo si cambia el dibujo</b>, no si cambia el contenido de un
+  control.</p>
+</section>
+
+<section>
+  <p class="rotulo">La tarjeta</p>
+  <h2>La misma de «mis turnos», sin el botón</h2>
+  <p><b>Acá el turno TODAVÍA NO EXISTE</b>, así que no hay nada que cancelar.
+  Es la única diferencia entre los dos lugares donde vive la tarjeta, y por eso
+  <b>es un parámetro y no una tarjeta nueva</b>: el dibujo es uno solo.</p>
+  <p><b>Va sin duración y sin motivo</b>, como se cerró en la pieza 6. El
+  motivo ya viaja en el correo operativo, que es donde le sirve a Cecilia.</p>
+</section>
+
+<section>
+  <p class="rotulo">🔴 El campo que toca datos sensibles</p>
+  <h2>Lo que el formulario PIDE es una decisión, no un detalle</h2>
+  <p><code>turnos.observaciones_paciente</code> <b>puede contener datos de
+  salud</b> — es una propiedad del modelo, escrita y permanente. Lo que decide
+  esta pantalla no es si el dato existe: <b>es qué le pedimos al paciente que
+  escriba ahí</b>.</p>
+  <p>🔑 <b>El principio que lo gobierna ya está en el proyecto y tiene nombre:
+  <i>data minimization</i> (minimización de datos)</b> — lo que no se pide, no
+  hay que protegerlo. <b>Que el paciente escriba una condición de salud es su
+  decisión; que el formulario se la pida es la nuestra.</b></p>
+  <p>Por eso la etiqueta es <b>neutra</b> —«Algo que quieras avisarnos»— y la
+  ayuda <b>acota al turno</b>: «Si hay algo puntual de este turno, escribilo
+  acá». <b>No invita a contar una historia clínica y tampoco la prohíbe</b>, que
+  sería mentir sobre el campo: la columna está definida como <i>la voz del
+  paciente sobre ESE turno, médica o no</i>.</p>
+  <p class="dato" style="margin-top: 12px">⬜ <b>Queda abierto, y es de
+  producto:</b> si el texto tiene que decir además <b>quién lo va a leer</b>.
+  Hoy no lo dice.</p>
+</section>
+
+<section>
+  <p class="rotulo">Lo que NO tiene esta pantalla</p>
+  <h2>No hay botón «Volver»</h2>
+  <p><b>Ninguna de las cuatro pantallas anteriores lo tiene</b>, y meterlo sólo
+  acá rompe la única forma que tienen en común.</p>
+  <p>⚠️ <b>Se declara lo que contradice:</b> la tira de contexto de la pieza 8
+  sí lo dibujaba al lado de «Confirmar turno». <b>Y hay un efecto lateral que
+  conviene tener a la vista:</b> el pendiente viejo —que el botón secundario
+  pesa más que el principal, grafito 12,0 contra dorado 2,89— <b>no se destapa
+  hoy</b>, y sigue esperando al segundo tiempo de la ⑧, que es donde quedó
+  agendado.</p>
+</section>
+</div>
+{confirmar_del_sitio(ancho)}
 """
 
 
@@ -8435,6 +8757,21 @@ def main():
         destino = SALIDA / "19-dia-y-hora" / f"{ancho}-solo.html"
         destino.write_text(
             fijar_al_ancho(solo_dia_hora(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+        destino = SALIDA / "20-confirmar" / f"{ancho}.html"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            fijar_al_ancho(tablero_confirmar(tokens, css, ancho), ancho),
+            encoding="utf-8",
+        )
+        print(f"✓ {destino.relative_to(RAIZ)}")
+
+        destino = SALIDA / "20-confirmar" / f"{ancho}-solo.html"
+        destino.write_text(
+            fijar_al_ancho(solo_confirmar(tokens, css, ancho), ancho),
             encoding="utf-8",
         )
         print(f"✓ {destino.relative_to(RAIZ)}")

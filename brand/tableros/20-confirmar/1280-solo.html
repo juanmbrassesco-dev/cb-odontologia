@@ -1,6 +1,6 @@
 <!-- @dsCard group="Components" -->
 <meta charset="utf-8">
-<title>CB · ¿A qué venís? · 1280</title>
+<title>CB · Confirmar · 1280</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
@@ -982,6 +982,64 @@ select.caja {
 }
 
 
+/* TODO CENTRADO ADENTRO DE LA CAJA — decidido por Juan el 3-sep-2026, viendo
+   las tres alineaciones a 390 y a tamaño real. Es la variante C: se centra el
+   texto Y el botón deja de ocupar el ancho de la tarjeta.
+
+   Se aparta de la alineación del resto del sistema, que arranca todo en el
+   margen izquierdo, y por eso vale escribir qué NO rompe:
+
+   · La regla del teléfono de la pieza 3 dice "EL PRINCIPAL va de borde a
+     borde". Éste es el secundario, así que esa regla queda intacta.
+   · El piso táctil de 44 px se cumple igual: el botón conserva su min-height,
+     y del ancho le sobra.
+
+   Lo que sí cuesta: `medir-alineacion.py` mide contra el margen izquierdo y la
+   tarjeta ya no arranca ahí. Se le enseñó el caso; no se le bajó el piso. */
+.turno {
+  max-width: var(--columna-lista);
+  margin-top: 14px;
+  padding: 18px 18px 20px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  text-align: center;
+}
+
+/* El día y la hora son el título de la tarjeta: es lo que el paciente vino a
+   buscar, y lo único que necesita para reconocer su turno de un vistazo. */
+.turno h3 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+  color: var(--grafito);
+}
+
+.turno .que {
+  margin-top: 10px;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+}
+
+.turno .quien {
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.turno .btn {
+  margin-top: 18px;
+}
+
+.lista { margin-top: 4px; }
+
+/* La acción va SIEMPRE debajo de los datos y adentro del cuadro. En el
+   teléfono el botón ocupa el ancho de la tarjeta —lo pide el dedo—; de tablet
+   para arriba se ajusta a su texto, porque un "Cancelar turno" de 800 px de
+   ancho pesa como si fuera la acción que el sitio empuja, y no lo es. */
+
+
 /* El encabezado cruza la pantalla de lado a lado, así que el margen de página
    lo lleva él y no el <body>. Mismo mecanismo que la tira de la pieza 8. */
 body { padding: 0; }
@@ -1138,19 +1196,19 @@ body { padding: 0; }
 .reglas li { margin-top: 8px; }
 
 
-.motivo {
+.confirmar {
   margin: 0 var(--margen-pagina);
-  padding: 32px 0 40px;
+  padding: 32px 0 var(--aire-seccion);
 }
 
-.motivo h1 {
+.confirmar h1 {
   font-family: Marcellus, Georgia, serif;
   font-size: var(--tipo-h1);
   line-height: var(--alto-h1);
   text-wrap: balance;
 }
 
-.motivo .ayuda-pantalla {
+.confirmar .ayuda-pantalla {
   margin-top: 12px;
   color: var(--texto-segundo);
   font-size: var(--tipo-cuerpo);
@@ -1158,7 +1216,23 @@ body { padding: 0; }
   text-wrap: balance;
 }
 
-.motivo .btn {
+/* La tarjeta acá NO es un ítem de una lista: es el resumen de lo que se está
+   por crear, así que arranca en el margen como el resto de la pantalla y no
+   se estira a lo ancho de la columna de listas. */
+.confirmar .turno {
+  max-width: var(--columna);
+  margin-top: 22px;
+}
+
+/* EL CAMPO LARGO USA LA MISMA CAJA QUE EL RESTO. Lo único propio es que puede
+   crecer: `resize: vertical` deja agrandarlo a lo alto y NO a lo ancho, porque
+   a lo ancho rompería la columna de lectura. */
+.confirmar textarea.caja {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.confirmar .btn {
   margin-top: 28px;
   margin-left: 0;
 }
@@ -1193,33 +1267,114 @@ body { padding: 0; }
     </div>
   </header>
 
-  <div class="motivo">
-    <h1>¿A qué venís?</h1>
+  <div class="confirmar">
+    <h1>¿Confirmamos?</h1>
 
-    <p class="ayuda-pantalla">Elegí el motivo de la consulta. Si no estás
-    seguro, poné <b>consulta</b> y lo vemos ahí.</p>
+    <p class="ayuda-pantalla">Revisá que esté todo bien y decinos con qué
+    cobertura venís.</p>
+
+    <div class="turno">
+      <div class="datos">
+        <h3>Jueves 11 de septiembre, 15:30</h3>
+        <p class="que">Consulta con Cecilia Duarte</p>
+        <p class="quien">Paciente: María Fernanda Gómez</p>
+      </div>
+    </div>
 
     <div class="campo">
-      <label class="etiqueta" for="motivo">Motivo</label>
-      <select class="caja" id="motivo">
-        <option value="">Elegí una opción</option>
-        <option>consulta</option>
-        <option>limpieza</option>
-        <option>blanqueamiento</option>
-        <option>restauración</option>
-        <option>extracción</option>
-        <option selected>endodoncia</option>
-        <option>carillas</option>
-        <option>strass dentales</option>
-        <option>ortodoncia</option>
-        <option>ortopedia</option>
-        <option>cirugía</option>
-        <option>prótesis</option>
-        <option>ATM y bruxismo</option>
-        <option>otros</option>
+      <label class="etiqueta" for="cobertura">Cobertura</label>
+      <select class="caja" id="cobertura">
+        <option>Particular</option>
+        <option>A.M.U.R.</option>
+        <option>ACEITEROS - OSIAD Salud</option>
+        <option>AMEP</option>
+        <option>AMERICA SERVICIOS</option>
+        <option>AMSTERDAM SALUD</option>
+        <optgroup label="ARTE DE CURAR">
+          <option>ARTE DE CURAR</option>
+          <option>ARTE DE CURAR ORT, ORTOPEDIA, IMPL., CIRUGÍA</option>
+        </optgroup>
+        <option>ASOCIACIÓN DE TRABAJADORES DE FARMACIA</option>
+        <option>ASOCIACIÓN MUTUAL ARGUS SALUD</option>
+        <option>ASOCIACIÓN UNIÓN TAMBEROS - MILKAUT</option>
+        <option>ASSPE SALUD</option>
+        <option>AUTOMUTUAL</option>
+        <option>AVALIAN</option>
+        <option>BANCARIOS - OSBA (SIACO)</option>
+        <option>BOUNOUS</option>
+        <option>CAJA FORENSE</option>
+        <option>CENTRO ASISTENCIAL (ASOCIACIÓN MEDICA DEPARTAMENTO CASTELLANOS)</option>
+        <option>CIENCIAS ECONÓMICAS</option>
+        <option>COGAS</option>
+        <option>COOPERATIVA TELEFÓNICA TOSTADO</option>
+        <optgroup label="CORA">
+          <option>CORA - ASOCIACIÓN ESCLESIÁSTICA SAN PEDRO</option>
+          <option>CORA - O.S.S. Seguros</option>
+        </optgroup>
+        <option>DASUTeN</option>
+        <option>DOCTHOS</option>
+        <optgroup label="DOS">
+          <option>DOS BASICO</option>
+          <option>DOS INTEGRAL</option>
+          <option>DOS INTEGRAL PLATINO - DOS INTEGRAL PLATINO (OS)</option>
+        </optgroup>
+        <option>DOS MOTORES CZERWENY</option>
+        <option>ELEVAR - O.S. PASTELEROS-CONFITEROS-PIZZEROS-HELADEROS Y ALFAJOREROS</option>
+        <option>ENERGÍA SALUD (AGUA Y ENERGÍA)</option>
+        <option>ENSALUD (Molineros)</option>
+        <option>FE SALUD</option>
+        <option>FEDERADA SALUD</option>
+        <option>FUTBOLISTAS AGREMIADOS ARGENTINOS</option>
+        <option>GALENO ARGENTINA</option>
+        <optgroup label="IAPOS">
+          <option selected>IAPOS</option>
+          <option>IAPOS CAPACIDADES DIFERENTES</option>
+          <option>IAPOS EMBARAZADAS</option>
+          <option>IAPOS IMAGENES exclusivo IMPLANTES</option>
+          <option>IAPOS IMPLANTES</option>
+          <option>IAPOS PRÓTESIS</option>
+        </optgroup>
+        <option>INTEGRAL SALUD</option>
+        <option>JERARQUICOS SALUD</option>
+        <option>LUZ Y FUERZA</option>
+        <option>MEDICUS</option>
+        <optgroup label="MEDIFE">
+          <option>MEDIFE</option>
+          <option>MEDIFE ORTODONCIA Y ORTOPEDIA</option>
+        </optgroup>
+        <option>MEDYCIN</option>
+        <option>Normas de Trabajo de Pre Pago</option>
+        <option>O DONT</option>
+        <option>O.M.I.N.T.</option>
+        <option>O.P.D.E.A.</option>
+        <option>O.S. PERSONAL RECOLECCION - BARRIDO - LIMPIEZA</option>
+        <option>OSDE</option>
+        <option>OSDOP (Sistema Complementario)</option>
+        <option>OSPICA</option>
+        <option>OSSACRA</option>
+        <option>PERSONAL INDUSTRIA DEL CAUCHO</option>
+        <option>PREVENCION ART</option>
+        <option>PREVENCION SALUD</option>
+        <option>S.A.D.A.I.C.</option>
+        <option>S.A.T. (Sindicato Argentino de Televisión)</option>
+        <option>SANATORIO SANTA FE</option>
+        <option>SANCOR</option>
+        <option>SUTIAGA</option>
+        <option>SWISS MEDICAL GROUP</option>
+        <option>TADEO CZERWENY</option>
+        <option>UENO (ex SANITAS SALUD) - OSMATA</option>
+        <option>UNL</option>
+        <option>WILLIAM HOPE</option>
       </select>
     </div>
 
-    <button class="btn btn-1">Continuar</button>
+    <div class="campo">
+      <label class="etiqueta" for="observaciones">Algo que quieras avisarnos
+      <span class="opcional">(opcional)</span></label>
+      <textarea class="caja" id="observaciones"></textarea>
+      <p class="ayuda">Si hay algo puntual de este turno, escribilo acá.</p>
+    </div>
+
+    <button class="btn btn-1">Confirmar turno</button>
   </div>
 </div>
