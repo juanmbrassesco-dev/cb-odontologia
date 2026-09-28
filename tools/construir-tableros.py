@@ -21,6 +21,42 @@ RAIZ = pathlib.Path(__file__).resolve().parent.parent
 TOKENS = RAIZ / "css" / "tokens.css"
 SALIDA = RAIZ / "brand" / "tableros"
 
+# 🔴 EL CSS DEL SITIO NO VIVE ACÁ: vive en css/styles.css y se LEE.
+#
+# Es la misma regla que ya rige para los tokens y para las obras sociales: un
+# tablero no puede mentir sobre lo que el sistema hace. Mientras el CSS estuvo
+# escrito en este archivo, el sitio y el dibujo eran dos textos distintos, y
+# dos copias del mismo CSS no fallan con error — se separan en el primer
+# ajuste que se hace en una sola de las dos.
+ESTILOS = RAIZ / "css" / "styles.css"
+
+# Una sección de styles.css abre con esta marca y llega hasta la siguiente.
+# El `^` y el nombre en minúsculas son a propósito: el ejemplo que documenta la
+# convención adentro del comentario de cabecera va indentado y con `<nombre>`,
+# así que no coincide y no se lee como una pieza.
+PIEZA = re.compile(r"^/\* ══ pieza: ([a-z0-9-]+) ══ \*/$", re.M)
+
+
+def leer_pieza(nombre):
+    """El CSS de una pieza, tal cual está escrito en css/styles.css."""
+    css = ESTILOS.read_text(encoding="utf-8")
+    marcas = list(PIEZA.finditer(css))
+
+    for i, marca in enumerate(marcas):
+        if marca.group(1) != nombre:
+            continue
+
+        # Hasta la marca siguiente, o hasta el final si es la última.
+        if i + 1 < len(marcas):
+            fin = marcas[i + 1].start()
+        else:
+            fin = len(css)
+
+        # Los saltos de arriba y abajo los pone el que pega, no el archivo.
+        return "\n" + css[marca.end():fin].strip() + "\n"
+
+    raise SystemExit(f"✗ css/styles.css no declara la pieza «{nombre}»")
+
 
 def cargar_medidor():
     """Importa medir-contraste.py, que tiene guion en el nombre."""
@@ -952,109 +988,13 @@ al volver.</p>
 # PIEZA 3 — EL BOTÓN
 # ============================================================
 
-CSS_BOTON = """
-.btn {
-  display: inline-block;
-  text-decoration: none;
-  font-family: Jost, sans-serif;
-  font-size: 19px;
-  font-weight: 600;
-  line-height: 1.2;
-
-  /* 🔴 SIN MAYÚSCULAS — decidido por Juan el 3-sep-2026, viendo los botones
-     dentro del hero y no sueltos en un tablero. «R E S E R V A R» ocupaba un
-     30 % más que «Reservar» y no aportaba legibilidad.
-
-     Lo que NO se tocó, y es lo que hace que el cambio sea seguro: el alto
-     mínimo de 44 px (piso táctil) y la letra de 19 px, que la exige el
-     contraste — blanco sobre el dorado del brief mide 3,09, y ese número
-     sólo alcanza para texto grande. */
-  letter-spacing: 0.01em;
-  text-transform: none;
-  text-align: center;
-  padding: 12px 20px;
-  min-height: 44px;
-  border: 0;
-  border-radius: var(--radio);
-  cursor: pointer;
-
-  /* EL FORMATO ÚNICO — el porqué está en tokens.css, al lado del token.
-     Bloque para poder centrarlo, del ancho de su texto, centrado en su caja.
-     Nunca de borde a borde, en ningún ancho. */
-  display: block;
-  width: var(--boton-ancho);
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* DOS O MÁS BOTONES JUNTOS: la columna de la grilla mide lo que el MÁS LARGO
-   de la pareja y los hijos se estiran a esa medida. El número no se escribe: lo
-   fija el texto más largo, así que cambiar un rótulo no deja la pareja
-   despareja.
-
-   🔴 Y SE CENTRA ADENTRO DE `--columna`, NO DE LA PÁGINA. La primera versión
-   usaba `width: max-content` con márgenes automáticos, y eso centra contra el
-   padre: en escritorio el padre es la banda entera, así que los botones se iban
-   al medio de 1280 mientras su texto vivía en los primeros 640. Lo encontró
-   medir-alineacion.py el mismo día en que aprendió a medir el centrado — un
-   bloque centrado en la página no está centrado en su columna. */
-/* 🔴 EL BOTÓN CRECE EN ESCRITORIO — 13-sep-2026, lo levantó Juan mirando el
-   hero partido: «¿no quedaron chicos los botones para este tamaño?».
-
-   Tenía razón y es un problema de PROPORCIÓN, no de tamaño absoluto: los 19 px
-   del rótulo se decidieron contra un titular de 32 px en el teléfono; en
-   escritorio ese titular mide 52 y el botón se quedó donde estaba, así que la
-   distancia entre los dos pasó de 1,7 a 2,7 y el botón dejó de pesar lo que
-   tiene que pesar al lado de la promesa.
-
-   ⚠️ EL PISO DE 19 px NO SE TOCA HACIA ABAJO NUNCA: lo exige el contraste
-   —blanco sobre el dorado del brief mide 3,09, que es el piso del texto
-   GRANDE—. Acá sube, que es el lado seguro. */
-@media (min-width: 1280px) {
-  .btn {
-    font-size: 22px;
-    padding: 16px 32px;
-    min-height: 56px;
-  }
-}
-
-.acciones {
-  display: grid;
-  grid-template-columns: max-content;
-  justify-content: center;
-  gap: 12px;
-  max-width: var(--columna);
-  margin-top: 24px;
-}
-
-.acciones .btn,
-.acciones .btn-google {
-  width: auto;
-  margin: 0;
-}
-
-.btn-1 {
-  background: var(--boton-fondo);
-  color: var(--boton-texto);
-  box-shadow: var(--sombra-boton);
-}
-
-/* El ancho NO puede cambiar al enviar, y "Reservando…" es más corto que
-   "Reservar turno": como el botón se ajusta a su texto, se achicaba 30 px. El
-   botón lleva las dos palabras apiladas y la que no se ve sostiene el ancho.
-   Sin números mágicos: lo mide el texto más largo. */
-.pila { display: grid; }
-
-.pila > span { grid-area: 1 / 1; }
-
-.pila .fantasma { visibility: hidden; }
-
-/* Enviando: el mismo dorado oscurecido, con sombra, y la palabra cambiada. */
-.btn-1-enviando {
-  background: var(--boton-fondo-oscuro);
-  box-shadow: var(--sombra-boton-foco);
-  cursor: progress;
-}
+# LO QUE EL TABLERO LE AGREGA AL BOTÓN DEL SITIO, y por qué no se muda:
+#
+#   .btn-foco / .btn-2-foco — el tablero DIBUJA el foco con una clase a mano,
+#       porque una captura no tiene teclado. En el sitio lo pinta el navegador
+#       con `:focus-visible` (pieza «foco» de styles.css).
+#   .estado / .reglas — bloques de PROSA del tablero. No existen en el sitio.
+CSS_BOTON_TABLERO = """
 
 /* FOCO del principal: se oscurece la superficie y el contorno cae JUSTO sobre
    el filo del botón. Las letras quedan blancas — el filtro que también las
@@ -1062,13 +1002,6 @@ CSS_BOTON = """
 .btn-foco {
   background: var(--boton-fondo-oscuro);
   box-shadow: inset 0 0 0 2px var(--boton-foco-borde), var(--sombra-boton-foco);
-}
-
-/* El secundario del brief, página 17: grafito macizo con letra blanca. */
-.btn-2 {
-  background: var(--boton-2-fondo);
-  color: var(--boton-2-texto);
-  box-shadow: var(--sombra-boton);
 }
 
 /* Misma regla de foco que el principal —contorno sobre el filo, sombra más
@@ -1081,15 +1014,6 @@ CSS_BOTON = """
   border: 2px solid var(--boton-2-foco-filo);
   padding: 10px 24px;
   box-shadow: var(--sombra-boton-foco);
-}
-
-.btn-apagado {
-  background: var(--boton-apagado-fondo);
-  color: var(--boton-apagado-texto);
-  border: 1px solid var(--boton-apagado-borde);
-  padding: 11px 25px;
-  box-shadow: none;
-  cursor: not-allowed;
 }
 
 .estado {
@@ -1125,6 +1049,8 @@ CSS_BOTON = """
   margin-right: 10px;
 }
 """
+
+CSS_BOTON = leer_pieza("boton") + CSS_BOTON_TABLERO
 
 
 ESTADOS = [
@@ -7042,25 +6968,7 @@ paciente aterrizaría en una pantalla distinta de la que dejó.</p>
 # TECLADO y lo calla en un clic con el mouse, que es exactamente lo que se
 # quiere — el anillo es una ayuda para quien no ve dónde está parado, no una
 # marca en cada toque.
-CSS_FOCO = """
-:focus-visible {
-  outline: 2px solid var(--foco);
-  outline-offset: var(--foco-separacion);
-}
-
-/* El radio es la excepción: mide 20 px y con la separación negativa el anillo
-   le quedaría ADENTRO del círculo, invisible. Acá va por afuera. */
-.opcion input:focus-visible {
-  outline-offset: 2px;
-}
-
-/* Y en una fila entera tocable, el foco del radio se lee mejor marcando la
-   caja que lo contiene: es lo que el ojo busca. */
-.opcion:has( input:focus-visible ) {
-  outline: 2px solid var(--foco);
-  outline-offset: -4px;
-}
-"""
+CSS_FOCO = leer_pieza("foco")
 
 
 CSS_QUIEN = """

@@ -1,4 +1,43 @@
+/* CB Odontología y Estética — EL CSS DEL SITIO
+   ═══════════════════════════════════════════════════════════════════════════
+
+   🔴 ESTE ARCHIVO ES LA ÚNICA FUENTE DE VERDAD DEL CSS. Los tableros de
+   `brand/tableros/` NO tienen su propia copia: `tools/construir-tableros.py`
+   LEE de acá, igual que ya lee `css/tokens.css` para los tres anchos y la
+   lista de obras sociales desde su migración.
+
+   El porqué, que es el motivo por el que este archivo existe: mientras el CSS
+   vivió adentro del generador (en Python), el sitio y el dibujo eran dos
+   textos distintos. Dos copias del mismo CSS no fallan con error — se separan
+   en el primer ajuste que se hace en una sola de las dos, y se descubre meses
+   después.
+
+   ─── CÓMO LO LEE EL GENERADOR ──────────────────────────────────────────────
+
+   Por SECCIÓN, no el archivo entero. Cada sección abre con una marca:
+
+       /* ══ pieza: <nombre> ══ */
+
+   y llega hasta la marca siguiente. El generador pide la que necesita con
+   `leer_pieza("<nombre>")`. Por eso:
+
+     · agregar una sección nueva es agregar su marca; no hay lista que tocar,
+     · lo que está ARRIBA de la primera marca no lo lee nadie,
+     · y el orden de las secciones acá adentro no cambia el de los tableros:
+       cada tablero pide las suyas en el orden que necesita.
+
+   ⚠️ LO QUE NO VA EN ESTE ARCHIVO: el andamiaje del tablero. El fondo gris,
+   el `body` con el ancho clavado, los rótulos de las bandas y la prosa siguen
+   viviendo en el generador, porque no existen en el sitio. La pregunta para
+   decidir si una regla entra acá es una sola: ¿la necesita el SITIO?
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 @import "tokens.css";
+
+/* ⚠️ ANDAMIAJE A MORIR: lo que sigue es del `index.html` placeholder, que
+   todavía es el que está en la raíz. Se va cuando entre la landing de verdad
+   (rebanada 0.c del plan del front). No lo lee ningún tablero: está arriba de
+   la primera marca a propósito. */
 
 * {
   margin: 0;
@@ -19,4 +58,145 @@ header, main, footer {
 footer {
   text-align: center;
   color: #666;
+}
+
+
+/* ══ pieza: foco ══ */
+:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: var(--foco-separacion);
+}
+
+/* El radio es la excepción: mide 20 px y con la separación negativa el anillo
+   le quedaría ADENTRO del círculo, invisible. Acá va por afuera. */
+.opcion input:focus-visible {
+  outline-offset: 2px;
+}
+
+/* Y en una fila entera tocable, el foco del radio se lee mejor marcando la
+   caja que lo contiene: es lo que el ojo busca. */
+.opcion:has( input:focus-visible ) {
+  outline: 2px solid var(--foco);
+  outline-offset: -4px;
+}
+
+
+/* ══ pieza: boton ══ */
+.btn {
+  display: inline-block;
+  text-decoration: none;
+  font-family: Jost, sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.2;
+
+  /* 🔴 SIN MAYÚSCULAS — decidido por Juan el 3-sep-2026, viendo los botones
+     dentro del hero y no sueltos en un tablero. «R E S E R V A R» ocupaba un
+     30 % más que «Reservar» y no aportaba legibilidad.
+
+     Lo que NO se tocó, y es lo que hace que el cambio sea seguro: el alto
+     mínimo de 44 px (piso táctil) y la letra de 19 px, que la exige el
+     contraste — blanco sobre el dorado del brief mide 3,09, y ese número
+     sólo alcanza para texto grande. */
+  letter-spacing: 0.01em;
+  text-transform: none;
+  text-align: center;
+  padding: 12px 20px;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--radio);
+  cursor: pointer;
+
+  /* EL FORMATO ÚNICO — el porqué está en tokens.css, al lado del token.
+     Bloque para poder centrarlo, del ancho de su texto, centrado en su caja.
+     Nunca de borde a borde, en ningún ancho. */
+  display: block;
+  width: var(--boton-ancho);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* DOS O MÁS BOTONES JUNTOS: la columna de la grilla mide lo que el MÁS LARGO
+   de la pareja y los hijos se estiran a esa medida. El número no se escribe: lo
+   fija el texto más largo, así que cambiar un rótulo no deja la pareja
+   despareja.
+
+   🔴 Y SE CENTRA ADENTRO DE `--columna`, NO DE LA PÁGINA. La primera versión
+   usaba `width: max-content` con márgenes automáticos, y eso centra contra el
+   padre: en escritorio el padre es la banda entera, así que los botones se iban
+   al medio de 1280 mientras su texto vivía en los primeros 640. Lo encontró
+   medir-alineacion.py el mismo día en que aprendió a medir el centrado — un
+   bloque centrado en la página no está centrado en su columna. */
+/* 🔴 EL BOTÓN CRECE EN ESCRITORIO — 13-sep-2026, lo levantó Juan mirando el
+   hero partido: «¿no quedaron chicos los botones para este tamaño?».
+
+   Tenía razón y es un problema de PROPORCIÓN, no de tamaño absoluto: los 19 px
+   del rótulo se decidieron contra un titular de 32 px en el teléfono; en
+   escritorio ese titular mide 52 y el botón se quedó donde estaba, así que la
+   distancia entre los dos pasó de 1,7 a 2,7 y el botón dejó de pesar lo que
+   tiene que pesar al lado de la promesa.
+
+   ⚠️ EL PISO DE 19 px NO SE TOCA HACIA ABAJO NUNCA: lo exige el contraste
+   —blanco sobre el dorado del brief mide 3,09, que es el piso del texto
+   GRANDE—. Acá sube, que es el lado seguro. */
+@media (min-width: 1280px) {
+  .btn {
+    font-size: 22px;
+    padding: 16px 32px;
+    min-height: 56px;
+  }
+}
+
+.acciones {
+  display: grid;
+  grid-template-columns: max-content;
+  justify-content: center;
+  gap: 12px;
+  max-width: var(--columna);
+  margin-top: 24px;
+}
+
+.acciones .btn,
+.acciones .btn-google {
+  width: auto;
+  margin: 0;
+}
+
+.btn-1 {
+  background: var(--boton-fondo);
+  color: var(--boton-texto);
+  box-shadow: var(--sombra-boton);
+}
+
+/* El ancho NO puede cambiar al enviar, y "Reservando…" es más corto que
+   "Reservar turno": como el botón se ajusta a su texto, se achicaba 30 px. El
+   botón lleva las dos palabras apiladas y la que no se ve sostiene el ancho.
+   Sin números mágicos: lo mide el texto más largo. */
+.pila { display: grid; }
+
+.pila > span { grid-area: 1 / 1; }
+
+.pila .fantasma { visibility: hidden; }
+
+/* Enviando: el mismo dorado oscurecido, con sombra, y la palabra cambiada. */
+.btn-1-enviando {
+  background: var(--boton-fondo-oscuro);
+  box-shadow: var(--sombra-boton-foco);
+  cursor: progress;
+}
+
+/* El secundario del brief, página 17: grafito macizo con letra blanca. */
+.btn-2 {
+  background: var(--boton-2-fondo);
+  color: var(--boton-2-texto);
+  box-shadow: var(--sombra-boton);
+}
+
+.btn-apagado {
+  background: var(--boton-apagado-fondo);
+  color: var(--boton-apagado-texto);
+  border: 1px solid var(--boton-apagado-borde);
+  padding: 11px 25px;
+  box-shadow: none;
+  cursor: not-allowed;
 }
