@@ -411,6 +411,406 @@ p {
 }
 
 
+/* ══ pieza: hero ══ */
+
+/* LA FOTO. Va a sangre y sin esquinas redondeadas: el radio del sistema es de
+   controles y superficies, y el manual dibuja la foto cuadrada.
+
+   `aspect-ratio` fija la FORMA del hueco y `object-fit: cover` recorta la foto
+   para llenarlo sin deformarla — la proporción de la imagen no manda, manda la
+   del hueco. `object-position` dice qué parte se conserva al recortar: acá la
+   sonrisa, que es el motivo de la foto. */
+.hero-foto {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: 50% 52%;
+}
+
+.hero-texto { padding: 26px var(--margen-pagina) 32px; }
+
+.hero-texto h1 { max-width: var(--columna); }
+
+.hero-texto p {
+  margin-top: 16px;
+  max-width: var(--columna);
+  color: var(--texto-segundo);
+}
+
+/* Los dos botones ya vienen apilados e igualados por `.acciones` de la pieza
+   3. Acá sólo se los pega al margen izquierdo en vez de centrarlos: en el hero
+   el texto arranca en el margen y los botones lo siguen. */
+.hero-texto .acciones { justify-content: start; }
+
+/* EL HERO SOBRE LA FOTO — la forma que se propone.
+
+   La foto ocupa la pantalla y el texto va ARRIBA de ella, no debajo. Lo que
+   hace que eso se pueda leer no es el color de la letra: es el VELO, un
+   degradado del propio grafito de la marca que baja de transparente arriba a
+   casi opaco abajo. No entra ningún color nuevo al sistema — es el grafito
+   con transparencia.
+
+   🔴 El velo NO se elige a ojo: se mide sobre la captura, en la franja donde
+   cae el texto, con tools/medir-velo.py. Si el par blanco/fondo real no llega
+   a 4.5, el velo sube. */
+.hero-velo {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero-velo .hero-foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  object-fit: cover;
+  object-position: 50% 10%;
+  z-index: -2;
+}
+
+.hero-velo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to top,
+    rgba(51, 50, 47, 0.88) 0%,
+    rgba(51, 50, 47, 0.80) 48%,
+    rgba(51, 50, 47, 0.44) 68%,
+    rgba(51, 50, 47, 0.10) 86%,
+    rgba(51, 50, 47, 0.00) 100%
+  );
+}
+
+/* El texto se apoya ABAJO. Arriba queda la foto sola, que es lo que hace que
+   la pieza se lea como una foto con texto y no como una foto tapada. */
+.hero-velo .hero-texto {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 660px;
+  padding: 20px var(--margen-pagina) 24px;
+}
+
+.hero-velo h1 { color: var(--blanco); }
+
+/* La bajada baja al nivel «chico» de la escala —el que el sistema ya usa para
+   texto que se lee pero manda menos—. No se inventa ningún tamaño: se elige
+   otro peldaño de la escala, y con eso el bloque de texto ocupa menos y la
+   foto recupera cara. */
+.hero-velo .bajada {
+  margin-top: 12px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--blanco);
+  opacity: 0.92;
+}
+
+/* La raya dorada arriba del titular: es la misma que separa los bloques en
+   todo el sistema, y acá hace de arranque del texto. */
+.hero-velo .filo {
+  width: 56px;
+  height: 2px;
+  background: var(--dorado);
+  margin-bottom: 14px;
+}
+
+.hero-velo .acciones { justify-content: start; margin-top: 20px; }
+
+
+/* El secundario sobre la foto no puede ser grafito macizo: se hunde en el
+   velo. Se invierte —filo y letra blancos, relleno transparente—, que es el
+   mismo gesto que el sistema ya usa para el foco del secundario. */
+.hero-velo .btn-2 {
+  background: transparent;
+  color: var(--blanco);
+  box-shadow: none;
+  border: 2px solid var(--blanco);
+}
+/* 🔴 ACÁ HUBO UN ARREGLO QUE NO ARREGLÓ NADA — DOS VECES, y las dos por lo
+   mismo. Queda escrito entero porque el modo de falla es el peor que hay: no
+   da error, no se ve, y se reporta hecho.
+
+   INTENTO 1. Se escribió la regla con `.hero-foto`, UNA clase. En la página
+   la foto la gobierna `.hero-velo .hero-foto`, que son DOS. Perdió.
+   🔑 Y UNA `@media` NO SUMA PRIORIDAD: parece más específica porque está más
+   adentro, y no lo es.
+
+   INTENTO 2. Se corrigió el selector a dos clases… y siguió sin aplicar,
+   porque con la MISMA prioridad gana la que va ÚLTIMA en el archivo — y el
+   bloque vivía en `CSS_HERO`, que se pega ANTES que `CSS_HERO_VELO`. Por eso
+   ahora está acá abajo, pegado a la regla que pisa.
+
+   Las dos veces se confirmó midiendo el valor COMPUTADO en el navegador, no
+   mirando la captura. Lo levantó Juan las dos veces: «el texto del hero sigue
+   tapando la cara».
+
+   ⚠️ La lección operativa, y va en serio: un cambio de CSS no se da por hecho
+   porque la captura parezca distinta. Se pide el valor computado. */
+/* 🔴 EN ESCRITORIO EL HERO SE PARTE: TEXTO A LA IZQUIERDA, FOTO A LA DERECHA.
+
+   POR QUÉ SE LLEGÓ ACÁ, y es el tercer intento sobre el mismo problema. Los
+   dos anteriores movieron el RECORTE de la foto para que el texto no cayera
+   sobre la cara, y los dos fallaron por la misma razón de fondo: a 1280 la
+   foto llena los 1280 px de ancho y el texto ocupa la mitad izquierda, así
+   que la cara —que está en el centro— queda debajo del texto SIEMPRE. Subir
+   el recorte mueve la foto hacia arriba, no la cara hacia el costado. No
+   había `object-position` que lo arreglara: el problema era el layout.
+
+   🔑 Y ESTABA PREVISTO DESDE LA PIEZA 10, que lo dejó escrito en su brief de
+   fotos: «de tablet para arriba la foto ocupa media pantalla y se estira al
+   alto del texto». Esto no inventa una forma nueva: construye la que ya se
+   había decidido y nunca se había implementado.
+
+   LO QUE CAE SOLO AL PARTIRLO: el velo. Existía para que la letra blanca se
+   leyera sobre la foto; con el texto sobre marfil no hay nada que velar, y el
+   par grafito/marfil mide 12,00 contra los 7,7 que daba el velo. Los botones
+   vuelven a su forma normal del sistema por el mismo motivo. */
+/* 🔴 EL HERO A 768 — 13-sep-2026. Hasta hoy acá se pintaba el hero de móvil
+   con la pantalla el doble de ancha, y eso movía el texto justo ENCIMA de la
+   cara: a 390 la foto es vertical y la cara queda arriba del texto; a 768 la
+   caja se volvió apaisada, la cara bajó al centro y el texto la pisó.
+
+   Lo cazó Juan mirando la página, y eligió arreglar la forma que ya está
+   aprobada en vez de estrenar otra. Son TRES NÚMEROS, ninguna forma nueva:
+
+   1. EL TEXTO DEJA DE CRUZAR LA FOTO ENTERA. Sin techo medía los 688 de la
+      columna; con 520 la foto respira a la derecha y la línea no se estira.
+   2. 🔴 EL ALTO NO SE TOCA: 660, el mismo que a 390. Se probó subirlo a 820
+      para alejar el texto de la cara y FUE PEOR — con la barra encima, la
+      sección dejaba de entrar en la ventana de una notebook y había que
+      scrollear para ver el hero completo. Lo cazó Juan de una: «la sección
+      entera no queda en el cuadro». Un hero que no entra en la pantalla deja
+      de ser un hero.
+      Lo que aleja el texto de la cara es el ENCUADRE, que no cuesta alto.
+   3. LOS BOTONES VAN EN FILA. Apilados dejaban tres cuartos del ancho
+      vacíos; `.acciones` los apila a propósito en el teléfono, donde no
+      entran de a dos. Acá entran. */
+@media (min-width: 768px) {
+  /* EL TITULAR VA EN DOS RENGLONES Y A TODO EL CUADRO — lo pidió Juan el
+     13-sep-2026. El techo de 520 lo partía en cuatro y lo empujaba contra la
+     cara; con el ancho entero y `balance` los dos renglones quedan parejos y
+     el bloque de texto mide la mitad de alto. */
+  .hero-velo .hero-texto {
+    max-width: none;
+  }
+
+  /* 36 y no 42: es el tamaño MÁS GRANDE que deja el titular en dos renglones
+     a todo el ancho del cuadro. Medido: a 42 son tres líneas; a 37 todavía
+     son tres; a 36 son dos, de 688 y 582 px.
+
+     ⚠️ El rag de 106 px NO se arregla con el tamaño: con «Santa Fe» atado por
+     su espacio duro, el único corte posible es el de la coma. Achicar más la
+     letra baja los dos números a la vez y el desnivel queda igual. */
+  .hero-velo h1 {
+    font-size: 36px;
+  }
+
+  /* EL ENCUADRE SE CORRE A LA DERECHA. A 768 la caja es más apaisada que la
+     foto, así que `cover` recorta a los LADOS y no arriba: mover el foco en
+     horizontal es lo único que cambia qué queda a la vista. Con el foco al
+     68 % la persona se acomoda hacia la derecha y la esquina de abajo a la
+     izquierda —que es donde se apoya el texto— queda sobre fondo. */
+  .hero-velo .hero-foto {
+    object-position: 68% 10%;
+  }
+
+  .hero-velo .acciones {
+    grid-template-columns: max-content max-content;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hero-velo {
+    display: grid;
+    /* 🔴 LA COLUMNA DE LA FOTO ES MÁS ANGOSTA QUE LA DEL TEXTO, y el motivo
+       es la foto, no el texto. La del hero es VERTICAL —900 × 1350, y el
+       brief de la pieza 10 pide que la definitiva también lo sea—. Metida en
+       un hueco apaisado, `cover` la escala por el ancho y recorta el resto:
+       medido, con las columnas al 50 % se veía sólo el 60 % del alto de la
+       foto, así que la persona salía cortada. Lo levantó Juan.
+
+       Cuanto más angosto el hueco, más parecido a la proporción de la foto y
+       menos recorte. 57/43 es lo más lejos que se puede ir sin que el titular
+       empiece a partirse feo. */
+    grid-template-columns: 1.33fr 1fr;
+    isolation: auto;
+    position: relative;
+    /* 🔴 EL HERO OCUPA LA PANTALLA, menos el encabezado — lo pidió Juan el
+       13-sep-2026: «el tamaño del hero es más pequeño que el total de la
+       pantalla». Con un alto fijo quedaba una franja de marfil abajo antes de
+       la primera sección, y el hero dejaba de leerse como la portada.
+
+       Los 97 px que se restan son el alto REAL de la barra en escritorio y
+       están medidos, no estimados: logo 52 + aire 22 arriba + 22 abajo +
+       1 del filo dorado. Si el aire de la barra cambia, este número cambia. */
+    /* 🔴 `height`, NO `min-height` — 14-sep-2026, y lo pidió Juan:
+       «independientemente de la pantalla usada siempre tenga el tamaño de la
+       pantalla, ni más ni menos».
+
+       `min-height` es un PISO: el hero podía crecer por encima de él si el
+       contenido pedía más, y eso es exactamente lo que pasaba en una ventana
+       de 800 — el mínimo daba 703 y el texto pedía 745, así que el hero se
+       iba a 845 y LA FOTO NO LO ACOMPAÑABA: quedaba una franja de marfil de
+       ~40 px debajo de ella. `height` fija el alto, así que no hay hueco
+       posible entre el hero y su foto.
+
+       ⚠️ LO QUE SE RESIGNA, y es una decisión, no un descuido: el piso de
+       680 existía porque en una ventana baja la foto vertical se recorta más.
+       Ese recorte vuelve. A cambio el hero mide la pantalla siempre, que es
+       lo que se pidió.
+
+       ⚠️ Y EL LÍMITE MEDIDO: con los botones en fila el contenido del hero
+       pide unos 420 px. Por debajo de una ventana de ~520 el texto se sale
+       del hero. No hay pantalla de escritorio así de baja, pero si alguna vez
+       se agrega una línea al titular, este número baja. */
+    height: calc(100vh - 97px);
+
+    /* 🔴 Y LA FILA TIENE QUE PODER ENCOGER, si no el hero no entra en la
+       pantalla. Medido: sin esto el hero daba 960 px FIJOS con ventanas de
+       673, 773 y 863 — o sea que el `100vh` de arriba no mandaba nada.
+
+       Lo imponía la FOTO: en una columna de 640 px, su proporción natural la
+       estira a 960 de alto, y una fila de grilla crece hasta el alto
+       intrínseco de lo que tiene adentro. Por eso el hero se salía de la
+       pantalla y quedaba cortado. `1fr` más el `min-height: 0` de abajo le
+       sacan ese poder a la foto: la fila mide lo que el hero le da y la foto
+       se recorta con `cover`, que es para lo que está. */
+    /* ⚠️ `minmax(0, 1fr)` Y NO `1fr` A SECAS, y la diferencia es todo: un
+       `1fr` pelado es en realidad `minmax(auto, 1fr)`, y ese `auto` significa
+       «nunca menos que el tamaño intrínseco de lo que hay adentro». Con la
+       foto adentro eso eran 960 px, así que la fila se plantaba en 960 y el
+       `min-height` de arriba no tenía nada que hacer — medido: 616 px de
+       min-height computado contra una fila de 960. El `0` del minmax le saca
+       ese piso. */
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  /* 🔴 Y EL TITULAR SUBE CON EL HERO — 13-sep-2026. Juan dijo «se achicaron
+     las letras», y medido NO se achicó ninguna: el h1 sigue en 52 px, igual
+     que antes. Lo que cambió es el HUECO donde vive.
+
+     🔑 El hero pasó de un alto fijo de 620 px a ocupar la pantalla entera
+     —unos 850 en una ventana normal—, o sea creció cerca de un 37 %, y el
+     texto se quedó donde estaba. Un tamaño no se lee en píxeles: se lee
+     contra lo que tiene alrededor. La letra no encogió; el espacio creció.
+
+     64 px no estrena un peldaño arbitrario: es --tipo-h1 (52) llevado a la
+     misma proporción en que creció su caja. El titular del hero es el ÚNICO
+     que vive a pantalla completa, así que sube él solo y no el token — los
+     títulos de sección siguen en 52. */
+  /* ⚠️ 56 Y NO 64. Los 64 se eligieron mientras Juan miraba la página con el
+     zoom del navegador bajo —culpa mía, se lo había bajado yo— así que todo
+     se veía chico y el número salió inflado. Al verlo al 100 % real: «ahora
+     es muy grande». 56 sigue arriba de los 52 del token, que es lo que pedía
+     el hero a pantalla completa, sin pasarse. */
+  .hero-velo h1 {
+    font-size: 56px;
+    line-height: 1.12;
+  }
+
+  /* La foto deja de ser un fondo absoluto y pasa a ser la columna derecha. */
+  /* 🔴 LA FOTO VA FUERA DEL FLUJO, y es el tercer intento sobre lo mismo.
+
+     Qué pasaba, medido: el hero daba 960 px con ventanas de 673, 773 y 863 —
+     el `min-height` computaba bien (616) y no servía de nada—. La causa es
+     una regla de CSS que engaña: `height: 100%` NO se aplica cuando el padre
+     sólo tiene `min-height` y no `height`, así que la foto caía en su alto
+     natural —640 de ancho por su proporción, 960— e inflaba la fila entera.
+     Ni `minmax(0, 1fr)` ni `min-height: 0` lo arreglan, porque el problema no
+     era el mínimo de la fila sino la altura de la imagen.
+
+     Sacándola del flujo con `position: absolute`, la foto deja de tener voz
+     en cuánto mide el hero: se estira entre el borde de arriba y el de abajo
+     de lo que el hero termine midiendo, y `cover` recorta lo que sobre. El
+     alto lo deciden ahora el `min-height` y el texto, que es como tiene que
+     ser. */
+  .hero-velo .hero-foto {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    /* ⚠️ `left: auto` NO SOBRA: la regla de arriba pone `inset: 0`, que fija
+       los cuatro lados a la vez. Con `left` y `right` los dos en 0 y un
+       ancho del 50 %, el navegador resuelve el conflicto quedándose con el
+       IZQUIERDO, así que la foto se iba al lado equivocado y tapaba el texto.
+       Anular el lado que no se usa es lo que la manda a la derecha. */
+    left: auto;
+    width: 43%;
+    /* ⚠️ `100%` Y NO `auto`, y la diferencia es de manual: en un DIV, `auto`
+       con `top` y `bottom` puestos calcula el alto por los bordes. En una
+       IMAGEN no — es un elemento reemplazado, así que `auto` significa «usá
+       tu propia proporción» y el `bottom` se ignora. Medido: daba 960 px y se
+       pasaba 344 del hero, metiéndose adentro de Tratamientos.
+
+       Con la foto ya fuera del flujo, `100%` sí resuelve: el bloque de
+       referencia es el hero, cuya altura a esta altura del cálculo ya está
+       decidida. */
+    height: 100%;
+    aspect-ratio: auto;
+    object-fit: cover;
+    object-position: 50% 30%;
+    z-index: auto;
+  }
+
+
+  /* Sin foto debajo no hay nada que velar. */
+  .hero-velo::before {
+    display: none;
+  }
+
+  .hero-velo .hero-texto {
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: center;
+    min-height: 0;
+    /* 🔴 EL PADDING NO ES SIMÉTRICO, y es a propósito — 14-sep-2026.
+       El de la IZQUIERDA es el margen de la página: tiene que valer lo mismo
+       que el de las secciones o el hero rompe el borde unificado. El de la
+       DERECHA no es un margen de página: es el aire contra la foto, y por eso
+       vale 40, el mismo hueco que separa las dos columnas de «Nosotros».
+
+       Qué lo trajo: al unificar el margen en 90, el titular perdió 52 px de
+       ancho y pasó de 4 líneas a 5, más cortas. Con 90 a la izquierda y 40 a
+       la derecha el texto vuelve a ~600 px y el titular a 4 líneas, sin tocar
+       el borde. */
+    padding: 48px 40px 48px var(--margen-pagina);
+
+    /* 🔴 DEVUELVE EL ANCHO QUE LE PUSO EL CORTE DE 768, y hay que escribirlo
+       aunque no se vea: las dos @media se aplican las dos, y la de acá no
+       pisaba `max-width`. Sin esta línea el texto de 1280 se achicaba de 731
+       a 520 y el titular pasaba de 4 líneas a 6. Acá el ancho lo da la
+       COLUMNA del grid, que es lo aprobado el 13-sep. */
+    max-width: none;
+  }
+
+  /* 🔴 LOS BOTONES VAN EN FILA TAMBIÉN ACÁ — 14-sep-2026, lo decidió Juan:
+     «los desapilamos y aprovechamos el espacio». Hasta hoy 1280 los volvía a
+     apilar con una regla propia; ahora hereda la de 768 y no hay regla que
+     escribir. Un bloque menos que mantener. */
+
+  /* El texto vuelve al grafito: sobre marfil mide 12,00, que es el par más
+     alto del sistema. La letra blanca sólo existía por el velo. */
+  .hero-velo h1,
+  .hero-velo .bajada {
+    color: var(--grafito);
+    opacity: 1;
+  }
+
+  /* Y el secundario vuelve a su forma normal —grafito macizo—: la inversión
+     era para que no se hundiera en el velo, y el velo ya no está. */
+  .hero-velo .btn-2 {
+    background: var(--boton-2-fondo);
+    color: var(--boton-2-texto);
+    border: 0;
+  }
+}
+
+
 
 /* ══ pieza: fuentes ══ */
 /* 🔴 ESTA PIEZA LA USA EL SITIO Y NO LOS TABLEROS, y el motivo es mecánico:

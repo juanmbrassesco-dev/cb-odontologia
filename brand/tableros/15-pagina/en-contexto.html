@@ -1030,16 +1030,6 @@ body { padding: 0; }
 .reglas li { margin-top: 8px; }
 
 
-/* EL ENCABEZADO PEGADO AL HERO. El marco de `.muestra-barra` es andamiaje del
-   tablero de la pieza 9 —ahí sirve para decir «esto es una muestra»—, y acá
-   metía un filo y unos píxeles de marfil entre la barra y la foto. En el sitio
-   no hay nada entre una cosa y la otra: la raya dorada del encabezado ES el
-   borde de arriba del hero. */
-.muestra-barra {
-  border: 0;
-  margin: 0;
-}
-
 /* LA FOTO. Va a sangre y sin esquinas redondeadas: el radio del sistema es de
    controles y superficies, y el manual dibuja la foto cuadrada.
 
@@ -1053,38 +1043,6 @@ body { padding: 0; }
   aspect-ratio: 4 / 3;
   object-fit: cover;
   object-position: 50% 52%;
-}
-
-/* 🔴 EN ESCRITORIO EL RECORTE SUBE — 13-sep-2026, lo levantó Juan: «el texto
-   del hero tapa la foto». Medido mirando: a 1280 el titular caía sobre la
-   boca y el mentón, y los botones sobre el cuello.
-
-   NN/g lo llama COPY SPACE: la zona menos cargada de una foto, la única donde
-   se puede escribir sin tapar lo que importa. Y avisa justo nuestro caso — el
-   texto sobre una imagen casi siempre necesita ubicarse distinto en pantalla
-   grande que en chica, porque al cambiar el recorte lo que estaba despejado
-   deja de estarlo. A 390 el hueco es 4:3 sobre 390 px y la cara entra entera;
-   a 1280 el mismo 4:3 sobre 1280 px recorta muchísimo más alto.
-
-   Se mueve el ENCUADRE y no el texto: el titular, el velo y el contraste ya
-   medido (7,7) quedan intactos.
-
-   ⚠️ ESTO NO REEMPLAZA AL BRIEF DE FOTOS QUE ESCRIBIÓ ESTA MISMA PIEZA: la
-   foto definitiva se pide VERTICAL, con la cara en el TERCIO DE ARRIBA y aire
-   abajo para que el velo tenga dónde caer. Acá se acomoda la foto de EJEMPLO,
-   que es un primer plano apaisado y no cumple ese brief. */
-
-.hero-hueco {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  background: var(--dorado-claro);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--texto-segundo);
-  font-size: var(--tipo-chico);
-  text-align: center;
-  padding: 0 24px;
 }
 
 .hero-texto { padding: 26px var(--margen-pagina) 32px; }
@@ -1101,7 +1059,6 @@ body { padding: 0; }
    3. Acá sólo se los pega al margen izquierdo en vez de centrarlos: en el hero
    el texto arranca en el margen y los botones lo siguen. */
 .hero-texto .acciones { justify-content: start; }
-
 
 /* EL HERO SOBRE LA FOTO — la forma que se propone.
 
@@ -1468,6 +1425,49 @@ body { padding: 0; }
     color: var(--boton-2-texto);
     border: 0;
   }
+}
+
+
+/* EL ENCABEZADO PEGADO AL HERO. El marco de `.muestra-barra` es andamiaje del
+   tablero de la pieza 9 —ahí sirve para decir «esto es una muestra»—, y acá
+   metía un filo y unos píxeles de marfil entre la barra y la foto. En el sitio
+   no hay nada entre una cosa y la otra: la raya dorada del encabezado ES el
+   borde de arriba del hero. */
+.muestra-barra {
+  border: 0;
+  margin: 0;
+}
+
+/* 🔴 EN ESCRITORIO EL RECORTE SUBE — 13-sep-2026, lo levantó Juan: «el texto
+   del hero tapa la foto». Medido mirando: a 1280 el titular caía sobre la
+   boca y el mentón, y los botones sobre el cuello.
+
+   NN/g lo llama COPY SPACE: la zona menos cargada de una foto, la única donde
+   se puede escribir sin tapar lo que importa. Y avisa justo nuestro caso — el
+   texto sobre una imagen casi siempre necesita ubicarse distinto en pantalla
+   grande que en chica, porque al cambiar el recorte lo que estaba despejado
+   deja de estarlo. A 390 el hueco es 4:3 sobre 390 px y la cara entra entera;
+   a 1280 el mismo 4:3 sobre 1280 px recorta muchísimo más alto.
+
+   Se mueve el ENCUADRE y no el texto: el titular, el velo y el contraste ya
+   medido (7,7) quedan intactos.
+
+   ⚠️ ESTO NO REEMPLAZA AL BRIEF DE FOTOS QUE ESCRIBIÓ ESTA MISMA PIEZA: la
+   foto definitiva se pide VERTICAL, con la cara en el TERCIO DE ARRIBA y aire
+   abajo para que el velo tenga dónde caer. Acá se acomoda la foto de EJEMPLO,
+   que es un primer plano apaisado y no cumple ese brief. */
+
+.hero-hueco {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--dorado-claro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-chico);
+  text-align: center;
+  padding: 0 24px;
 }
 
 

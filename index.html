@@ -71,10 +71,38 @@
   </nav>
 
   <main>
-    <!-- ⏳ EN CONSTRUCCIÓN, bloque por bloque (plan del front, rebanada 0):
-         hero · tratamientos · nosotros · testimonios · contacto · pie.
+
+    <!--
+      EL HERO. La foto ocupa la pantalla y el texto va ENCIMA, no debajo. Lo que
+      hace legible al texto no es su color: es el VELO, un degradado del propio
+      grafito de la marca que baja de transparente arriba a casi opaco abajo.
+
+      ⚠️ LA FOTO ES DE EJEMPLO. Cuando llegue la de Cecilia se reemplaza el
+      archivo y se reescribe el `alt`, que hoy describe una foto de catálogo.
+    -->
+    <section class="hero hero-velo" id="inicio">
+      <img class="hero-foto"
+           src="brand/fotos/hero-ejemplo.jpg"
+           alt="Una paciente sonriendo, de frente, con luz cálida">
+
+      <div class="hero-texto">
+        <div class="filo"></div>
+
+        <h1>Odontología y estética dental en Santa&nbsp;Fe,
+            con la calma que tu sonrisa merece.</h1>
+
+        <div class="acciones">
+          <a class="btn btn-1" href="#reservar">Reservar</a>
+          <a class="btn btn-2" href="#tratamientos">Ver tratamientos</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⏳ SIGUEN, bloque por bloque (plan del front, rebanada 0):
+         tratamientos · nosotros · testimonios · contacto · pie.
          Cada uno entra con su HTML y su CSS en el mismo movimiento, medido
          contra el tablero ya aprobado. -->
+
   </main>
 
   <script src="js/main.js"></script>
