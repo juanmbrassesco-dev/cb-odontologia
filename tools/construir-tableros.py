@@ -7353,7 +7353,18 @@ en el sillón</b>.</p>
 # dura.
 # ============================================================
 
-TRATAMIENTOS = [
+# 🔴 SE LLAMA `MOTIVOS` Y NO `TRATAMIENTOS`, Y EL NOMBRE NO ES COSMÉTICA.
+#
+# Hasta el 28-sep-2026 esta lista se llamaba `TRATAMIENTOS`, igual que la de la
+# GRILLA DEL SITIO que está más arriba en este mismo archivo. Son dos listas
+# distintas —aquélla lleva nombre propio y descripción; ésta, el nombre de la
+# base y si se reserva sola por la web— y Python se queda con la última: la
+# grilla de la landing empezó a dibujar «consulta / True» en vez de
+# «Blanqueamiento / Aclara manchas…», sin íconos y sin fallar con error.
+#
+# Es el nombre que el propio proyecto ya usa para esta pantalla: el desplegable
+# de MOTIVO. Dos cosas distintas no pueden llamarse igual.
+MOTIVOS = [
     ("consulta", True),
     ("limpieza", True),
     ("blanqueamiento", False),
@@ -7432,7 +7443,7 @@ CSS_MOTIVO = """
 def opciones_de_motivo(elegido):
     salida = ""
 
-    for nombre, propia in TRATAMIENTOS:
+    for nombre, propia in MOTIVOS:
         marca = " selected" if nombre == elegido else ""
         salida += f'\n        <option{marca}>{nombre}</option>'
 
