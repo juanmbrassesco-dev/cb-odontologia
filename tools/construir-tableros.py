@@ -726,10 +726,17 @@ def leer_escala(css):
 
 
 def base_css(ancho):
-    """El armazón del tablero. Los tamaños salen de tokens.css, no de acá."""
+    """El armazón del tablero: la BASE DEL SITIO más lo que sólo el tablero usa.
+
+    La base —el reset, el body, los títulos y el párrafo— se lee de
+    css/styles.css, que es donde vive el CSS del sitio. Lo de acá abajo es
+    andamiaje: el fondo gris que dice dónde termina el dibujo, el ancho
+    clavado, y las clases de PROSA (rótulo, regla, dato, tabla, pie) que no
+    existen en ninguna pantalla del sitio.
+    """
     margen = MARGENES[ancho]
-    return f"""
-* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+
+    return leer_pieza("base") + f"""
 
 /* 🔴 EL TABLERO TIENE QUE TERMINAR DONDE TERMINA EL DIBUJO — 13-sep-2026.
 
@@ -747,50 +754,14 @@ html {{
   background: #8C8C8C;
 }}
 
+/* Lo que el TABLERO le agrega al body del sitio: el ancho clavado del dibujo,
+   centrado para poder mirarlo sin arrimar la ventana al borde, y el margen de
+   página como padding —en el sitio lo lleva cada bloque, porque el encabezado
+   y las fotos cruzan de lado a lado—. */
 body {{
   width: {ancho}px;
-  /* Centrado para poder mirarlo sin arrimar la ventana al borde. */
   margin: 0 auto;
-  background: var(--marfil);
-  color: var(--grafito);
-  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
-  font-size: var(--tipo-cuerpo);
-  line-height: var(--alto-cuerpo);
   padding: {margen}px {margen}px {margen * 2}px;
-}}
-
-h1, h2, h3 {{
-  font-family: Marcellus, Georgia, serif;
-  font-weight: 400;
-  max-width: var(--columna);
-  /* 🔴 EL EFECTO SIERRA — el borde derecho de un bloque de texto subiendo y
-     bajando en dientes. Lo levantó Juan el 13-sep-2026 y está medido: en el
-     titular del hero las cinco líneas medían 341, 418, 362, 480 y 188 px, o
-     sea que el borde derecho BAILABA 292 px.
-
-     `balance` reparte las palabras para que todas las líneas queden de un
-     largo parecido. Es para títulos: el navegador lo calcula sobre pocas
-     líneas y en bloques largos deja de aplicarlo solo. */
-  text-wrap: balance;
-}}
-
-h1 {{ font-size: var(--tipo-h1); line-height: var(--alto-h1); }}
-h2 {{ font-size: var(--tipo-h2); line-height: var(--alto-h2); }}
-h3 {{ font-size: var(--tipo-h3); line-height: var(--alto-h3); }}
-
-p {{
-  max-width: var(--columna);
-  /* 🔴 EN LOS PÁRRAFOS TAMBIÉN VA `balance`, Y SE PROBÓ AL REVÉS PRIMERO.
-     `pretty` se puso creyendo que era el indicado para texto corrido, y
-     medido NO movió un píxel: en el primer párrafo de «Nosotros» el borde
-     derecho siguió bailando 222 px. `pretty` arregla la línea final huérfana,
-     no el conjunto del bloque.
-
-     `balance` sí reparte las palabras entre todas las líneas. El navegador lo
-     apaga solo cuando el bloque pasa de unas seis líneas —ahí el costo de
-     calcularlo no vale—, así que ponerlo en todos los párrafos no rompe los
-     textos largos: simplemente no se aplica. */
-  text-wrap: balance;
 }}
 
 code {{
@@ -2856,7 +2827,13 @@ def alto_logo(pieza, ancho):
     return round(ENCABEZADO_LOGO[ancho] * PROPORCION[pieza])
 
 
-CSS_ENCABEZADO = """
+# LO QUE EL TABLERO LE AGREGA AL ENCABEZADO DEL SITIO:
+#
+#   body / .prosa — el tablero mete el margen de página en la prosa, porque su
+#       body lleva el ancho clavado. En el sitio cada bloque trae su margen.
+#   .muestra-barra / .marca-muestra / .reglas — rótulos y prosa del tablero.
+CSS_ENCABEZADO_TABLERO = """
+
 /* El encabezado cruza la pantalla de lado a lado, así que el margen de página
    lo lleva él y no el <body>. Mismo mecanismo que la tira de la pieza 8. */
 body { padding: 0; }
@@ -2866,131 +2843,6 @@ body { padding: 0; }
 }
 
 .prosa section { margin-top: var(--aire-seccion); }
-
-/* LA BARRA. Tres cosas en una fila: el logo a la izquierda, y a la derecha lo
-   que la decisión de abajo defina. `space-between` las separa sin escribir
-   ningún número de por medio: el hueco es lo que sobra. */
-.barra {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  /* 8 px y no 14: el alto de la barra lo fija el BOTÓN de menú, que no baja
-     de 44 px por ser el piso táctil. Con 14 arriba y abajo la barra medía 72 y
-     el logo —de 32— quedaba flotando en marfil, que se leía como un espacio
-     blanco entre el encabezado y el hero. El botón conserva sus 44. */
-  padding: var(--aire-barra) var(--margen-pagina);
-  background: var(--marfil);
-  border-bottom: 1px solid var(--dorado);
-}
-
-.barra img {
-  display: block;
-  height: auto;
-}
-
-/* El botón del sistema se centra solo en su caja —así quedó cerrado el
-   3-sep—. Adentro de una fila eso lo empujaría al medio: acá se le sacan los
-   márgenes automáticos y nada más. El formato, el color y el alto no se
-   tocan. */
-.barra .btn,
-.menu-abierto .btn {
-  margin: 0;
-  flex-shrink: 0;
-}
-
-.menu-abierto .btn { margin: 6px auto 14px; }
-
-/* EL BOTÓN DE MENÚ. Cuadrado de 44 px, que es el piso táctil del sistema. Las
-   tres rayas son el borde de arriba de tres cajas, sin ninguna imagen. */
-.menu-boton {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  padding: 0 9px;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-}
-
-.menu-boton span {
-  display: block;
-  height: 2px;
-  background: var(--grafito);
-}
-
-/* EL MENÚ ABIERTO. Cae debajo de la barra y ocupa el ancho entero: en el
-   teléfono no hay lugar para un panel flotante, y uno que tape media pantalla
-   esconde el sitio detrás de sí mismo. */
-.menu-abierto {
-  padding: 8px var(--margen-pagina) 20px;
-  background: var(--marfil);
-  border-bottom: 1px solid var(--dorado-claro);
-}
-
-.menu-abierto a {
-  display: block;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--dorado-claro);
-  color: var(--grafito);
-  text-decoration: none;
-  font-size: var(--tipo-cuerpo);
-}
-
-.menu-abierto a:last-of-type { border-bottom: 0; }
-
-/* EL MENÚ EN PANTALLA ANCHA. Los tres enlaces en fila, entre el logo y el
-   botón. El rótulo va en versalita como el resto del sistema. */
-.menu-fila {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-}
-
-/* 🔴 EL MENÚ EN FILA SUBE — 13-sep-2026, lo pidió Juan: «tratamientos,
-   nosotros y contacto del header muy chico».
-
-   Usaba --tipo-rotulo (13 px), que es la medida de los RÓTULOS de andamiaje
-   —esas líneas en versalitas que dicen de qué se trata un bloque—. El menú no
-   es un rótulo: es el único control de navegación del sitio y se toca. 15 px
-   con las versalitas y el espaciado que ya tiene lo deja legible sin dejar de
-   ser discreto, que es lo que la barra pide.
-
-   A 390 el menú no es esta fila: es el sándwich, que abre un panel con el
-   texto a --tipo-cuerpo. De 768 para arriba sí es la fila. */
-.menu-fila a {
-  /* EL ÁREA TÁCTIL, y por eso el enlace es una caja y no texto suelto. A 768
-     lo más probable es una tablet, o sea un dedo. El texto mide 18 px de alto
-     y el piso táctil del sistema son 44: sin esto, los tres destinos quedan a
-     la vista pero apenas se pueden tocar.
-
-     No agranda la barra, y eso está medido: por dentro mide 45 px a 768 y 52
-     a 1280, así que los 44 entran en los dos. */
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-
-  color: var(--grafito);
-  text-decoration: none;
-  font-size: var(--tipo-rotulo);
-  line-height: var(--alto-rotulo);
-  letter-spacing: var(--letra-rotulo);
-  text-transform: uppercase;
-}
-
-@media (min-width: 1280px) {
-  .menu-fila a {
-    font-size: 15px;
-  }
-
-  .menu-fila {
-    gap: 34px;
-  }
-}
 
 /* El marco que dice "esto es una muestra, no la página". Es andamiaje del
    tablero y no existe en el sitio. */
@@ -3012,6 +2864,8 @@ body { padding: 0; }
 
 .reglas li { margin-top: 8px; }
 """
+
+CSS_ENCABEZADO = leer_pieza("encabezado") + CSS_ENCABEZADO_TABLERO
 
 
 # LOS NÚMEROS DE LA BARRA — MEDIDOS con Chrome sobre la página real el
@@ -3150,7 +3004,7 @@ def barra(logo, pieza, ancho, con_menu, con_boton, abierto=False):
       <img src="data:image/png;base64,{logo}"
            alt="CB Odontología y Estética"
            width="{ENCABEZADO_LOGO[ancho]}">
-      <div style="display: flex; align-items: center; gap: 12px">{derecha}
+      <div class="barra-derecha">{derecha}
       </div>
     </div>{panel}
   </div>"""

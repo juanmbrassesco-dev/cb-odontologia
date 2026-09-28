@@ -490,34 +490,23 @@
 */
 
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-/* 🔴 EL TABLERO TIENE QUE TERMINAR DONDE TERMINA EL DIBUJO — 13-sep-2026.
-
-   `body` ya venía con el ancho clavado, pero el fondo se DERRAMABA a toda la
-   ventana: cuando <html> no declara fondo, el navegador propaga el del <body>
-   al lienzo entero. Efecto: el tablero de 768 abierto en una ventana de 1360
-   pintaba marfil de lado a lado, y como el hero es oscuro parecía un bloque
-   suelto en medio de una página más ancha. Juan lo leyó como una rotura del
-   hero —«parte no queda en el cuadro»— y no lo era: era el tablero mintiendo
-   sobre dónde termina la pantalla.
-
-   El gris de acá es ANDAMIAJE, no entra al sistema del sitio: es neutro justo
-   para no teñir el marfil que está al lado. */
-html {
-  background: #8C8C8C;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+/* EL BODY NO LLEVA ANCHO NI MARGEN LATERAL, y es la diferencia de fondo con el
+   tablero. El tablero le clava el ancho para dibujar UNA pantalla; el sitio se
+   adapta al que haya. El aire contra el filo lo pone cada bloque con
+   `--margen-pagina`, porque el encabezado y las fotos cruzan de lado a lado y
+   un padding en el body les cortaría los bordes. */
 body {
-  width: 1280px;
-  /* Centrado para poder mirarlo sin arrimar la ventana al borde. */
-  margin: 0 auto;
   background: var(--marfil);
   color: var(--grafito);
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
   font-size: var(--tipo-cuerpo);
   line-height: var(--alto-cuerpo);
-  padding: 90px 90px 180px;
 }
 
 h1, h2, h3 {
@@ -536,7 +525,9 @@ h1, h2, h3 {
 }
 
 h1 { font-size: var(--tipo-h1); line-height: var(--alto-h1); }
+
 h2 { font-size: var(--tipo-h2); line-height: var(--alto-h2); }
+
 h3 { font-size: var(--tipo-h3); line-height: var(--alto-h3); }
 
 p {
@@ -552,6 +543,33 @@ p {
      calcularlo no vale—, así que ponerlo en todos los párrafos no rompe los
      textos largos: simplemente no se aplica. */
   text-wrap: balance;
+}
+
+
+/* 🔴 EL TABLERO TIENE QUE TERMINAR DONDE TERMINA EL DIBUJO — 13-sep-2026.
+
+   `body` ya venía con el ancho clavado, pero el fondo se DERRAMABA a toda la
+   ventana: cuando <html> no declara fondo, el navegador propaga el del <body>
+   al lienzo entero. Efecto: el tablero de 768 abierto en una ventana de 1360
+   pintaba marfil de lado a lado, y como el hero es oscuro parecía un bloque
+   suelto en medio de una página más ancha. Juan lo leyó como una rotura del
+   hero —«parte no queda en el cuadro»— y no lo era: era el tablero mintiendo
+   sobre dónde termina la pantalla.
+
+   El gris de acá es ANDAMIAJE, no entra al sistema del sitio: es neutro justo
+   para no teñir el marfil que está al lado. */
+html {
+  background: #8C8C8C;
+}
+
+/* Lo que el TABLERO le agrega al body del sitio: el ancho clavado del dibujo,
+   centrado para poder mirarlo sin arrimar la ventana al borde, y el margen de
+   página como padding —en el sitio lo lleva cada bloque, porque el encabezado
+   y las fotos cruzan de lado a lado—. */
+body {
+  width: 1280px;
+  margin: 0 auto;
+  padding: 90px 90px 180px;
 }
 
 code {

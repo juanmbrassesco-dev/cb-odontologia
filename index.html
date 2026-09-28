@@ -3,21 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CB Odontología y Estética</title>
+
+  <!--
+    EL TÍTULO LLEVA LA CIUDAD, y no es relleno: la búsqueda que interesa es
+    «dentista Santa Fe», no «CB». Además hay un consultorio homónimo en Buenos
+    Aires posicionado desde hace años, así que el nombre solo compite de atrás.
+  -->
+  <title>CB Odontología y Estética — Santa Fe</title>
+
+  <meta name="description"
+        content="Consultorio de odontología y estética dental en Santa Fe.
+                 Reservá tu turno en línea: limpieza, blanqueamiento, ortodoncia
+                 y todos los tratamientos.">
+
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <header>
-    <h1>CB Odontología y Estética</h1>
+
+  <!--
+    EL ENCABEZADO — UN SOLO MARKUP PARA LOS TRES ANCHOS.
+
+    El tablero de esta pieza dibuja un HTML distinto por ancho: a 390 el botón
+    sándwich, de 768 para arriba los tres enlaces en fila, y a 1280 además el
+    botón «Reservar» adentro de la barra. El sitio no puede hacer eso — hay una
+    sola página y el ancho lo decide quien la abre —, así que va TODO en el
+    markup y el CSS muestra lo que corresponde.
+
+    La cuenta que decidió cada corte está en el tablero 09 y no se repite acá.
+  -->
+  <header class="barra">
+    <a class="barra-logo" href="#inicio" aria-label="CB Odontología y Estética, inicio">
+      <img src="brand/logo/curvas/cb-wordmark-curvas.svg"
+           alt="CB Odontología y Estética"
+           width="247" height="40">
+    </a>
+
+    <div class="barra-derecha">
+      <nav class="menu-fila" aria-label="Secciones">
+        <a href="#tratamientos">Tratamientos</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+
+      <a class="btn btn-1 barra-reservar" href="#reservar">Reservar</a>
+
+      <button class="menu-boton"
+              type="button"
+              aria-label="Abrir el menú"
+              aria-expanded="false"
+              aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </header>
 
-  <main>
-    <p>Bienvenido/a al sitio de CB Odontología y Estética.</p>
-  </main>
+  <!--
+    EL MENÚ DESPLEGADO. Arranca cerrado con `hidden` y lo abre el botón de
+    arriba. Va FUERA de `.barra` porque cae debajo de ella y ocupa el ancho
+    entero: en un teléfono no hay lugar para un panel flotante, y uno que tape
+    media pantalla esconde el sitio detrás de sí mismo.
+  -->
+  <nav class="menu-abierto" id="menu" aria-label="Menú" hidden>
+    <a class="btn btn-1" href="#reservar">Reservar</a>
+    <a href="#tratamientos">Tratamientos</a>
+    <a href="#nosotros">Nosotros</a>
+    <a href="#contacto">Contacto</a>
+  </nav>
 
-  <footer>
-    <p>&copy; 2026 CB Odontología y Estética</p>
-  </footer>
+  <main>
+    <!-- ⏳ EN CONSTRUCCIÓN, bloque por bloque (plan del front, rebanada 0):
+         hero · tratamientos · nosotros · testimonios · contacto · pie.
+         Cada uno entra con su HTML y su CSS en el mismo movimiento, medido
+         contra el tablero ya aprobado. -->
+  </main>
 
   <script src="js/main.js"></script>
 </body>

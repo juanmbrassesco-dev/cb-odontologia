@@ -427,34 +427,23 @@
 */
 
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-/* 🔴 EL TABLERO TIENE QUE TERMINAR DONDE TERMINA EL DIBUJO — 13-sep-2026.
-
-   `body` ya venía con el ancho clavado, pero el fondo se DERRAMABA a toda la
-   ventana: cuando <html> no declara fondo, el navegador propaga el del <body>
-   al lienzo entero. Efecto: el tablero de 768 abierto en una ventana de 1360
-   pintaba marfil de lado a lado, y como el hero es oscuro parecía un bloque
-   suelto en medio de una página más ancha. Juan lo leyó como una rotura del
-   hero —«parte no queda en el cuadro»— y no lo era: era el tablero mintiendo
-   sobre dónde termina la pantalla.
-
-   El gris de acá es ANDAMIAJE, no entra al sistema del sitio: es neutro justo
-   para no teñir el marfil que está al lado. */
-html {
-  background: #8C8C8C;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+/* EL BODY NO LLEVA ANCHO NI MARGEN LATERAL, y es la diferencia de fondo con el
+   tablero. El tablero le clava el ancho para dibujar UNA pantalla; el sitio se
+   adapta al que haya. El aire contra el filo lo pone cada bloque con
+   `--margen-pagina`, porque el encabezado y las fotos cruzan de lado a lado y
+   un padding en el body les cortaría los bordes. */
 body {
-  width: 390px;
-  /* Centrado para poder mirarlo sin arrimar la ventana al borde. */
-  margin: 0 auto;
   background: var(--marfil);
   color: var(--grafito);
   font-family: Jost, "Helvetica Neue", Arial, sans-serif;
   font-size: var(--tipo-cuerpo);
   line-height: var(--alto-cuerpo);
-  padding: 20px 20px 40px;
 }
 
 h1, h2, h3 {
@@ -473,7 +462,9 @@ h1, h2, h3 {
 }
 
 h1 { font-size: var(--tipo-h1); line-height: var(--alto-h1); }
+
 h2 { font-size: var(--tipo-h2); line-height: var(--alto-h2); }
+
 h3 { font-size: var(--tipo-h3); line-height: var(--alto-h3); }
 
 p {
@@ -489,6 +480,33 @@ p {
      calcularlo no vale—, así que ponerlo en todos los párrafos no rompe los
      textos largos: simplemente no se aplica. */
   text-wrap: balance;
+}
+
+
+/* 🔴 EL TABLERO TIENE QUE TERMINAR DONDE TERMINA EL DIBUJO — 13-sep-2026.
+
+   `body` ya venía con el ancho clavado, pero el fondo se DERRAMABA a toda la
+   ventana: cuando <html> no declara fondo, el navegador propaga el del <body>
+   al lienzo entero. Efecto: el tablero de 768 abierto en una ventana de 1360
+   pintaba marfil de lado a lado, y como el hero es oscuro parecía un bloque
+   suelto en medio de una página más ancha. Juan lo leyó como una rotura del
+   hero —«parte no queda en el cuadro»— y no lo era: era el tablero mintiendo
+   sobre dónde termina la pantalla.
+
+   El gris de acá es ANDAMIAJE, no entra al sistema del sitio: es neutro justo
+   para no teñir el marfil que está al lado. */
+html {
+  background: #8C8C8C;
+}
+
+/* Lo que el TABLERO le agrega al body del sitio: el ancho clavado del dibujo,
+   centrado para poder mirarlo sin arrimar la ventana al borde, y el margen de
+   página como padding —en el sitio lo lleva cada bloque, porque el encabezado
+   y las fotos cruzan de lado a lado—. */
+body {
+  width: 390px;
+  margin: 0 auto;
+  padding: 20px 20px 40px;
 }
 
 code {
@@ -1025,16 +1043,6 @@ select.caja {
    ancho pesa como si fuera la acción que el sitio empuja, y no lo es. */
 
 
-/* El encabezado cruza la pantalla de lado a lado, así que el margen de página
-   lo lleva él y no el <body>. Mismo mecanismo que la tira de la pieza 8. */
-body { padding: 0; }
-
-.prosa {
-  padding: 0 var(--margen-pagina);
-}
-
-.prosa section { margin-top: var(--aire-seccion); }
-
 /* LA BARRA. Tres cosas en una fila: el logo a la izquierda, y a la derecha lo
    que la decisión de abajo defina. `space-between` las separa sin escribir
    ningún número de por medio: el hueco es lo que sobra. */
@@ -1151,6 +1159,57 @@ body { padding: 0; }
 }
 
 
+
+/* EL LOGO. En el sitio es el SVG de contornos y no el PNG del tablero: pesa
+   26 kB, se ve nítido en cualquier pantalla y no depende de ninguna
+   tipografía instalada. Los tres anchos son los que ya decidió la pieza 9. */
+.barra-logo {
+  display: block;
+  flex-shrink: 0;
+  /* `line-height: 0` mata el renglón fantasma que el navegador le deja debajo
+     a una imagen en línea; si no, la barra mide unos píxeles de más. */
+  line-height: 0;
+  /* El logo es un ENLACE al inicio, así que hereda el azul de los enlaces del
+     navegador. Hoy no se nota porque adentro va un SVG con sus propios
+     colores, pero el día que entre una palabra ahí saldría azul. */
+  color: inherit;
+}
+
+.barra-logo img { width: 200px; }
+
+/* La caja de la derecha. En el tablero esto iba como estilo suelto adentro del
+   HTML; acá tiene nombre, así que hay UNA sola manera de dibujar la barra. */
+.barra-derecha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 🔴 QUÉ SE VE EN CADA ANCHO — es lo único que el tablero no podía tener,
+   porque él dibuja un HTML distinto por ancho y el sitio tiene uno solo.
+   Los dos cortes ya estaban decididos y medidos en la pieza 9:
+     · hasta 767 — sándwich. Los tres enlaces no entran.
+     · desde 768 — los tres enlaces en fila. La cuenta daba 616 de 688 útiles.
+     · desde 1280 — además el botón «Reservar» adentro de la barra. A 768 no
+       entraba: 745,5 contra 688. */
+.menu-fila { display: none; }
+
+.barra-reservar { display: none; }
+
+
+
+
+
+
+/* El encabezado cruza la pantalla de lado a lado, así que el margen de página
+   lo lleva él y no el <body>. Mismo mecanismo que la tira de la pieza 8. */
+body { padding: 0; }
+
+.prosa {
+  padding: 0 var(--margen-pagina);
+}
+
+.prosa section { margin-top: var(--aire-seccion); }
 
 /* El marco que dice "esto es una muestra, no la página". Es andamiaje del
    tablero y no existe en el sitio. */

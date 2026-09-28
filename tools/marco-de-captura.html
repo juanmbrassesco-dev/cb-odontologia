@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Marco de captura — el sitio a un ancho de verdad</title>
+
+<!--
+  PARA QUÉ EXISTE ESTE ARCHIVO, y no es un capricho.
+
+  Chrome tiene un ANCHO MÍNIMO DE VENTANA de 500 px: se le pide
+  `--window-size=390` y abre 500. Medido el 25-sep-2026 y confirmado el 28:
+  `--headless=new` recorta la CAPTURA a 390 pero la ventana sigue midiendo
+  500, así que la foto sale de 390 px de ancho mostrando una página maquetada
+  para 500. Es peor que un error: es una foto creíble de otra cosa.
+
+  Con los TABLEROS no molestaba, porque el generador les clava el ancho y
+  aplana las media queries: su dibujo no depende de la ventana. El SITIO sí
+  depende — sus media queries son de verdad—, así que hace falta un viewport
+  real de 390.
+
+  Un <iframe> ES un viewport. Adentro, `innerWidth` mide 390 y las media
+  queries resuelven contra eso. Verificado, no supuesto.
+
+  CÓMO SE USA (el servidor tiene que estar levantado en la raíz del repo):
+
+      python3 -m http.server 8765
+      chrome --headless=new --window-size=600,<ALTO> \
+             --screenshot=<SALIDA>.png \
+             "http://localhost:8765/tools/marco-de-captura.html?ancho=390&alto=<ALTO>&pagina=/index.html"
+      sips -c <ALTO> 390 <SALIDA>.png --out <RECORTADA>.png
+
+  El marco va CENTRADO para que el recorte del centro caiga justo sobre él.
+  Y tiene que servirse del MISMO origen que la página: si no, el navegador no
+  deja mirar adentro del marco para medir.
+-->
+
+<style>
+  html, body { margin: 0; padding: 0; background: #8C8C8C; }
+  iframe { display: block; border: 0; margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<iframe id="marco" title="El sitio"></iframe>
+
+<script>
+  const parametros = new URLSearchParams( location.search );
+  const marco = document.getElementById( 'marco' );
+
+  marco.style.width = ( parametros.get( 'ancho' ) || 390 ) + 'px';
+  marco.style.height = ( parametros.get( 'alto' ) || 600 ) + 'px';
+  marco.src = parametros.get( 'pagina' ) || '/index.html';
+</script>
+
+</body>
+</html>
