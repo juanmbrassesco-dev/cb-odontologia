@@ -811,6 +811,211 @@ p {
 }
 
 
+/* ══ pieza: tratamientos ══ */
+/* EL MARGEN ES DE LA SECCIÓN, no del tablero que la muestra. Antes se lo
+   prestaba el `padding` del body de su tablero, y apilada en la página —donde
+   ese padding no existe— la grilla se iba a sangre. Se escribe acá, en la
+   sección, para que mida lo mismo la mire quien la mire. */
+.grilla-tratamientos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 20px;
+  margin-left: var(--margen-seccion);
+  margin-right: var(--margen-seccion);
+  max-width: var(--ancho-pagina);
+}
+
+/* EN ESCRITORIO SON TRES COLUMNAS, y el número no es estético: son NUEVE
+   tarjetas, así que tres columnas dan tres filas COMPLETAS. Con cuatro
+   quedaría una sola tarjeta colgando en la última fila, y con dos —lo que
+   heredaba del teléfono— son cinco filas de tarjetas muy anchas para el texto
+   corto que llevan.
+
+   El hueco también sube: a 390 son 10 px porque no sobra ancho; con pantalla
+   el mismo 10 pega las tarjetas entre sí y la grilla se lee como una sola
+   mancha. Es la misma regla del aire entre secciones — un valor por ancho.
+
+   🔴 EL CORTE BAJA A 768 — 13-sep-2026. El argumento de arriba no dependía de
+   tener 1280 de ancho: dependía de que las tarjetas sean NUEVE. A 768 estaban
+   en dos columnas, o sea cinco filas con una tarjeta colgando sola al final,
+   y la sección medía 981 px. Con tres columnas mide 694 y entra en pantalla. */
+@media (min-width: 768px) {
+  .grilla-tratamientos {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+}
+
+/* LA TARJETA. Blanca sobre marfil, y ese par mide 1,03: la forma la marca el
+   BORDE, nunca el relleno. Es la misma regla del campo y del botón apagado. */
+.tratamiento {
+  background: var(--blanco);
+  border: 1px solid var(--dorado-claro);
+  border-radius: var(--radio);
+  padding: 14px 14px 16px;
+  display: block;
+  text-decoration: none;
+  color: var(--grafito);
+}
+
+.ico {
+  display: block;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 10px;
+}
+
+.ico * {
+  fill: none;
+  stroke: var(--dorado);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Los cuatro del brief todavía no están vectorizados: se muestran recortando
+   su propia lámina, que es la que está en brand/fotos/. */
+.ico-brief {
+  background-repeat: no-repeat;
+  background-size: 792px auto;
+}
+
+.tratamiento h3 {
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+  margin-bottom: 6px;
+}
+
+.tratamiento p {
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+/* El aviso de la consulta. No es una tarjeta más: es la regla que ordena todo
+   lo de arriba, así que va sobre el fondo suave y ocupa el ancho entero. */
+.aviso-consulta {
+  grid-column: 1 / -1;
+  background: var(--info-fondo);
+  border-radius: var(--radio);
+  padding: 16px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+
+/* ══ pieza: pagina ══ */
+/* LA PÁGINA ENTERA — PIEZA 15.
+
+   Lo único que esta pieza AGREGA es el aire entre secciones y los dos rótulos
+   que faltaban. Ninguna sección se retoca: cada una se aprobó mirándola a 1:1,
+   que es la aprobación más fuerte del proyecto. Acá se apilan tal como están.
+
+   EL AIRE VA ENTRE HERMANOS, no bloque por bloque: escrito así, sumar una
+   sección mañana no obliga a tocar esta regla. Sale de --aire-seccion, que
+   tiene un valor por ancho, porque en móvil el aire es el ÚNICO separador que
+   hay —no existe la banda de fondo ni la segunda columna que separan en
+   escritorio—.
+
+   ⚠️ Esta regla PISA a propósito los `margin-top: 0` que cada sección trae
+   puesto (`.nosotros`, por ejemplo). Empatan en especificidad, así que gana la
+   que va última en el archivo: por eso este bloque se escribe AL FINAL de la
+   lista de estilos y no antes. */
+.pagina > * + * {
+  margin-top: var(--aire-seccion);
+}
+
+/* LA ÚNICA EXCEPCIÓN, y no es un ajuste: es una decisión ya tomada. El hero
+   arranca PEGADO al encabezado —la pieza 9 cerró el logo sin hueco debajo y la
+   10 dibujó la foto a sangre—. Un aire acá abriría una franja blanca entre el
+   logo y la foto, que es exactamente lo que la pieza 9 corrigió. */
+.pagina > .hero {
+  margin-top: 0;
+}
+
+/* 🏁 ACÁ VIVÍA UN PARCHE Y YA NO HACE FALTA — 12-sep-2026.
+
+   La página destapó que tres secciones no traían su propio margen:
+   Tratamientos, Contacto y el Pie se aprobaron midiendo 350 dentro de 390,
+   pero ese margen se lo prestaba el `padding` del body de SU tablero.
+   Apiladas acá, donde ese padding no existe, las tres se iban a sangre.
+
+   Se tapó con una regla en este bloque —`.pagina .grilla-tratamientos, …`—
+   que les devolvía el margen sólo cuando estaban dentro de la página. Andaba,
+   y aun así estaba mal: el margen quedaba escrito en el lugar que MUESTRA la
+   sección y no en la sección, así que seguía sin ser suyo.
+
+   🔑 EL ARREGLO DE FONDO, que es el que está puesto hoy: cada sección lleva su
+   `margin-left`/`margin-right` en SU bloque de CSS —ver `CSS_TRATAMIENTOS`,
+   `CSS_CONTACTO` y `CSS_PIE`—, y los tres tableros que las muestran dejaron de
+   poner el margen en el body: lo pone `.prosa`, igual que la pieza 8 y la 9.
+
+   Verificado midiendo con Chrome las tres secciones en su tablero y en la
+   página, a 390, 768 y 1280: los seis pares dan el mismo número que antes del
+   cambio. «Nosotros» y «Testimonios» nunca estuvieron acá porque ya traían el
+   suyo, que es como debía ser desde el principio. */
+
+/* EL RÓTULO DE LAS DOS SECCIONES QUE NO LO TRAÍAN. «Nosotros» y «Testimonios»
+   ya tienen el suyo; «Tratamientos» y «Contacto» vivían sin título porque en
+   su tablero el título lo ponía la prosa. Los valores son los mismos que ya
+   usan los otros dos: esto no estrena ningún estilo. */
+/* 🔴 Y EL TÍTULO SE CENTRA CON SU SECCIÓN, no con la página. Lo destapó el
+   centrado de escritorio: «Tratamientos» y «Contacto» son hijos directos de
+   la página, así que con el margen de página quedaban a 64 mientras sus
+   tarjetas arrancaban a 210 — el título despegado de lo que encabeza. Por eso
+   lleva el mismo techo y el mismo token que la sección de abajo.
+
+   Va como MARGEN y no como `padding` justamente para que el techo de 860
+   mida el CONTENIDO: con `border-box`, 860 de `max-width` más 128 de padding
+   habrían dejado el texto arrancando 64 px adentro de la grilla. */
+.titulo-seccion {
+  max-width: var(--ancho-pagina);
+  margin-left: var(--margen-seccion);
+  margin-right: var(--margen-seccion);
+  margin-bottom: 16px;
+}
+
+/* 🔴 EL TÍTULO DE SECCIÓN NO MANDABA, y no es una impresión: está medido.
+   Todo el texto de la página pesa 400 y casi todo comparte color, así que de
+   las tres palancas de jerarquía —tamaño, peso, color— el sistema usaba UNA.
+   Y la distancia entre un título (26) y lo más grande que tiene debajo (20)
+   era de 1,3 a 1: casi nada.
+
+   ⚠️ LA PALANCA DEL PESO ESTÁ CERRADA, y se verificó contra la fuente: se le
+   pidieron a Google Fonts los pesos 400 y 700 de Marcellus y devuelve UN SOLO
+   archivo, el 400. La familia no tiene negrita; pedírsela obliga al navegador
+   a inventar una falsa, que en una serif fina se ve sucia.
+
+   ⇒ Se compensa con las dos palancas que quedan: sube a --tipo-h1 —32 px a
+   390, que es el techo que NN/g recomienda para un título— y estrena NINGÚN
+   tamaño nuevo: es el que ya usa el h1. */
+.pagina .titulo-seccion,
+.pagina .nosotros-titulo,
+.pagina .prueba-titulo {
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+}
+
+/* Y EL FILO ENCIMA DEL TÍTULO, que es el mismo recurso que ya usa el hero
+   —56 × 2 px de dorado—: no se estrena nada. No es adorno: marca dónde
+   ARRANCA cada capa de la página, que es como se recorre una página larga
+   (el «layer-cake pattern» de NN/g: la vista salta de título en título).
+
+   Va como ::before del propio título para no tener que tocar el HTML de
+   «Nosotros» ni el de «Testimonios», que se arman en su propia función. */
+.pagina .titulo-seccion::before,
+.pagina .nosotros-titulo::before,
+.pagina .prueba-titulo::before {
+  content: "";
+  display: block;
+  width: 56px;
+  height: 2px;
+  background: var(--dorado);
+  margin-bottom: 14px;
+}
+
+
 
 /* ══ pieza: fuentes ══ */
 /* 🔴 ESTA PIEZA LA USA EL SITIO Y NO LOS TABLEROS, y el motivo es mecánico:
@@ -847,4 +1052,19 @@ p {
   src: url("../brand/fonts/Jost-var.ttf") format("truetype-variations");
   font-weight: 100 900;
   font-display: swap;
+}
+
+
+/* ══ pieza: imagenes ══ */
+/* 🔴 IGUAL QUE LAS FUENTES: esta pieza la usa el SITIO y no los tableros, y
+   por la misma razón mecánica. La lámina de íconos vive en brand/fotos/, que
+   desde css/ es «../brand/fotos/» y desde brand/tableros/<pieza>/ es
+   «../../fotos/». Misma imagen, dos rutas.
+
+   Lo que NO se parte es la geometría —el tamaño de la lámina y el recorte—:
+   ésa vive una sola vez, en la pieza «tratamientos». Acá va la ruta y nada
+   más. ⏱ Y esto se muere entero cuando los cuatro íconos del brief pasen a
+   vector (fase ⑩): ahí dejan de ser un recorte de una lámina. */
+.ico-brief {
+  background-image: url("../brand/fotos/iconos-del-brief.png");
 }
