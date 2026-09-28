@@ -772,6 +772,15 @@ th.n { text-align: right; }
    Cada lugar declara CUÁL dorado le toca, y eso lo decide el contraste contra
    su fondo, no el gusto. */
 .iso {
+  /* 🔴 `block` Y NO EL `inline` QUE TRAE UN SVG POR DEFECTO — 28-sep-2026, y
+     apareció escribiendo el sitio. Un SVG en línea se apoya en la LÍNEA BASE
+     del texto, así que debajo le queda el hueco del descendente: el enlace de
+     las redes del pie medía 44 px en el tablero y 52 en el sitio, con el mismo
+     CSS y el mismo dibujo. Ese hueco depende de las métricas verticales de la
+     tipografía cargada, o sea que el alto de un control dependía de qué
+     archivo de fuente llegó. Con `block` el SVG deja de apoyarse en nada y la
+     caja mide lo que dice: relleno + dibujo + relleno. */
+  display: block;
   width: 24px;
   height: 24px;
   fill: currentColor;

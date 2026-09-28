@@ -772,6 +772,15 @@ th.n { text-align: right; }
    Cada lugar declara CUÁL dorado le toca, y eso lo decide el contraste contra
    su fondo, no el gusto. */
 .iso {
+  /* 🔴 `block` Y NO EL `inline` QUE TRAE UN SVG POR DEFECTO — 28-sep-2026, y
+     apareció escribiendo el sitio. Un SVG en línea se apoya en la LÍNEA BASE
+     del texto, así que debajo le queda el hueco del descendente: el enlace de
+     las redes del pie medía 44 px en el tablero y 52 en el sitio, con el mismo
+     CSS y el mismo dibujo. Ese hueco depende de las métricas verticales de la
+     tipografía cargada, o sea que el alto de un control dependía de qué
+     archivo de fuente llegó. Con `block` el SVG deja de apoyarse en nada y la
+     caja mide lo que dice: relleno + dibujo + relleno. */
+  display: block;
   width: 24px;
   height: 24px;
   fill: currentColor;
@@ -885,6 +894,11 @@ th.n { text-align: right; }
 .pie-marca {
   display: block;
   margin: 0 auto 24px;
+  /* Los tres anchos salen de la pieza 13 y antes venían en el atributo
+     `width` del HTML, uno por ancho. El sitio tiene un solo markup, así que
+     el que manda es el CSS. */
+  width: 120px;
+  height: auto;
 }
 
 /* El nombre y la matrícula son el contenido obligatorio: van en el gris de
@@ -939,6 +953,17 @@ th.n { text-align: right; }
   color: var(--texto-segundo);
   margin-top: 0;
 }
+
+
+/* Los tres anchos del logo del pie. En el tablero venían en el atributo
+   `width` del HTML —uno por ancho, porque el tablero dibuja un HTML por
+   ancho—; el sitio tiene un solo markup, así que los decide el CSS. Los
+   números son los de la pieza 13, sin tocar. */
+
+  .pie-marca { width: 142px; }
+
+
+
 
 
 /* El margen lateral se lo lleva la prosa: la muestra de abajo trae el suyo. */

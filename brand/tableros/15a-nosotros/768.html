@@ -838,20 +838,6 @@ body { padding: 0; }
   border: 1px solid var(--dorado-claro);
 }
 
-.nosotros-hueco {
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  background: var(--dorado-claro);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 0 24px;
-  color: var(--texto-segundo);
-  font-size: var(--tipo-chico);
-  line-height: var(--alto-chico);
-}
-
 /* EL BLOQUE NO HEREDA EL ANDAMIAJE DEL TABLERO. `base_css` le da 40 px de
    margen de arriba a todo <section>, que es prosa del tablero; el bloque del
    sitio no puede traerse ese número puesto, porque el aire entre secciones se
@@ -869,14 +855,6 @@ body { padding: 0; }
   max-width: calc(var(--ancho-pagina) + var(--margen-pagina) * 2);
   margin-left: auto;
   margin-right: auto;
-}
-
-/* El aire entre la foto y el texto. Es el ÚNICO separador que hay entre las
-   dos: no hay línea ni cambio de fondo. A 390 con menos de 24 el nombre se
-   pega a la foto y el bloque se lee como una sola mancha. */
-.nosotros-rotulo {
-  padding: 0 var(--margen-pagina);
-  margin-bottom: 12px;
 }
 
 /* VARIANTE «el título de sección manda»: el nombre de la sección va del
@@ -1090,6 +1068,33 @@ body { padding: 0; }
   }
 
 
+/* 1280 conserva SU reparto: allá el ancho sobra y la foto puede ser más
+   angosta sin apretar el texto. El 6/6 es la decisión de 768. */
+
+
+
+.nosotros-hueco {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: var(--dorado-claro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 24px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+/* El aire entre la foto y el texto. Es el ÚNICO separador que hay entre las
+   dos: no hay línea ni cambio de fondo. A 390 con menos de 24 el nombre se
+   pega a la foto y el bloque se lee como una sola mancha. */
+.nosotros-rotulo {
+  padding: 0 var(--margen-pagina);
+  margin-bottom: 12px;
+}
+
 /* ANDAMIAJE DEL TABLERO, NO DEL SITIO: la cinta que grita que el texto es
    provisorio. No entra al sitio y por eso vive acá abajo, separada. */
 .provisorio {
@@ -1100,10 +1105,6 @@ body { padding: 0; }
   line-height: var(--alto-chico);
   color: var(--texto-segundo);
 }
-
-/* 1280 conserva SU reparto: allá el ancho sobra y la foto puede ser más
-   angosta sin apretar el texto. El 6/6 es la decisión de 768. */
-
 
 </style>
 

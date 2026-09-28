@@ -1307,20 +1307,6 @@ body { padding: 0; }
   border: 1px solid var(--dorado-claro);
 }
 
-.nosotros-hueco {
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  background: var(--dorado-claro);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 0 24px;
-  color: var(--texto-segundo);
-  font-size: var(--tipo-chico);
-  line-height: var(--alto-chico);
-}
-
 /* EL BLOQUE NO HEREDA EL ANDAMIAJE DEL TABLERO. `base_css` le da 40 px de
    margen de arriba a todo <section>, que es prosa del tablero; el bloque del
    sitio no puede traerse ese número puesto, porque el aire entre secciones se
@@ -1338,14 +1324,6 @@ body { padding: 0; }
   max-width: calc(var(--ancho-pagina) + var(--margen-pagina) * 2);
   margin-left: auto;
   margin-right: auto;
-}
-
-/* El aire entre la foto y el texto. Es el ÚNICO separador que hay entre las
-   dos: no hay línea ni cambio de fondo. A 390 con menos de 24 el nombre se
-   pega a la foto y el bloque se lee como una sola mancha. */
-.nosotros-rotulo {
-  padding: 0 var(--margen-pagina);
-  margin-bottom: 12px;
 }
 
 /* VARIANTE «el título de sección manda»: el nombre de la sección va del
@@ -1490,6 +1468,33 @@ body { padding: 0; }
    de 270 — el máximo que se le puede dar sin ahogar el texto. */
 
 
+/* 1280 conserva SU reparto: allá el ancho sobra y la foto puede ser más
+   angosta sin apretar el texto. El 6/6 es la decisión de 768. */
+
+
+
+.nosotros-hueco {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: var(--dorado-claro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 24px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+/* El aire entre la foto y el texto. Es el ÚNICO separador que hay entre las
+   dos: no hay línea ni cambio de fondo. A 390 con menos de 24 el nombre se
+   pega a la foto y el bloque se lee como una sola mancha. */
+.nosotros-rotulo {
+  padding: 0 var(--margen-pagina);
+  margin-bottom: 12px;
+}
+
 /* ANDAMIAJE DEL TABLERO, NO DEL SITIO: la cinta que grita que el texto es
    provisorio. No entra al sitio y por eso vive acá abajo, separada. */
 .provisorio {
@@ -1500,10 +1505,6 @@ body { padding: 0; }
   line-height: var(--alto-chico);
   color: var(--texto-segundo);
 }
-
-/* 1280 conserva SU reparto: allá el ancho sobra y la foto puede ser más
-   angosta sin apretar el texto. El 6/6 es la decisión de 768. */
-
 
 
 /* El bloque no hereda los 40 px que base_css le da a todo <section>: ése es
@@ -1695,6 +1696,15 @@ body { padding: 0; }
    Cada lugar declara CUÁL dorado le toca, y eso lo decide el contraste contra
    su fondo, no el gusto. */
 .iso {
+  /* 🔴 `block` Y NO EL `inline` QUE TRAE UN SVG POR DEFECTO — 28-sep-2026, y
+     apareció escribiendo el sitio. Un SVG en línea se apoya en la LÍNEA BASE
+     del texto, así que debajo le queda el hueco del descendente: el enlace de
+     las redes del pie medía 44 px en el tablero y 52 en el sitio, con el mismo
+     CSS y el mismo dibujo. Ese hueco depende de las métricas verticales de la
+     tipografía cargada, o sea que el alto de un control dependía de qué
+     archivo de fuente llegó. Con `block` el SVG deja de apoyarse en nada y la
+     caja mide lo que dice: relleno + dibujo + relleno. */
+  display: block;
   width: 24px;
   height: 24px;
   fill: currentColor;
@@ -1919,6 +1929,11 @@ body { padding: 0; }
 .pie-marca {
   display: block;
   margin: 0 auto 24px;
+  /* Los tres anchos salen de la pieza 13 y antes venían en el atributo
+     `width` del HTML, uno por ancho. El sitio tiene un solo markup, así que
+     el que manda es el CSS. */
+  width: 120px;
+  height: auto;
 }
 
 /* El nombre y la matrícula son el contenido obligatorio: van en el gris de
@@ -1973,6 +1988,15 @@ body { padding: 0; }
   color: var(--texto-segundo);
   margin-top: 0;
 }
+
+
+/* Los tres anchos del logo del pie. En el tablero venían en el atributo
+   `width` del HTML —uno por ancho, porque el tablero dibuja un HTML por
+   ancho—; el sitio tiene un solo markup, así que los decide el CSS. Los
+   números son los de la pieza 13, sin tocar. */
+
+
+
 
 
 /* LA PÁGINA ENTERA — PIEZA 15.
