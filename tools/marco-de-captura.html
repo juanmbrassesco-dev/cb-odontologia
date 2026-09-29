@@ -23,10 +23,10 @@
 
   CÓMO SE USA (el servidor tiene que estar levantado en la raíz del repo):
 
-      python3 -m http.server 8765
+      python3 -m http.server 8000
       chrome --headless=new --window-size=600,<ALTO> \
              --screenshot=<SALIDA>.png \
-             "http://localhost:8765/tools/marco-de-captura.html?ancho=390&alto=<ALTO>&pagina=/index.html"
+             "http://localhost:8000/tools/marco-de-captura.html?ancho=390&alto=<ALTO>&pagina=/index.html"
       sips -c <ALTO> 390 <SALIDA>.png --out <RECORTADA>.png
 
   El marco va CENTRADO para que el recorte del centro caiga justo sobre él.
