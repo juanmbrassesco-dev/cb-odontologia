@@ -73,18 +73,20 @@
         anterior—, se sale al sitio. Un rótulo que nombra el DESTINO no se
         puede leer mal; «Volver» sí, y el propio Juan lo levantó.
 
-        ⏱ EL BOTÓN DE GOOGLE TODAVÍA NO HACE NADA: es la maqueta, sin el login
-        enganchado. Lo que falta para que ande es el ORIGEN DE JAVASCRIPT
-        cargado en la consola de Google y el Client ID, que no es secreto y va
-        escrito acá a la vista.
+        🔴 EL BOTÓN DE GOOGLE ES UN HUECO VACÍO A PROPÓSITO: lo dibuja Google
+        adentro, no nosotros. Su documentación dice que un botón propio no
+        puede disparar el login —«no hay API para iniciar el flujo cuando se
+        toca tu botón»—, así que lo único que se elige es cómo se ve, y eso se
+        configura en `js/auth.js`.
       -->
       <div class="entrar-acciones">
-        <button class="btn-google" type="button">
-          <img src="brand/ajenos/googleg_standard_color_128dp.png" alt="">Continuar con Google
-        </button>
+        <div id="boton-google"></div>
 
         <a class="btn btn-2" href="index.html">Inicio</a>
       </div>
+
+      <!-- Arranca oculto. Lo llena `js/entrar.js` cuando hay algo que decir. -->
+      <p class="entrar-aviso" id="aviso-entrar" hidden></p>
 
       <p class="salida">¿Tenés una consulta antes de reservar?
       <a href="https://wa.me/5493426293920">Escribinos por WhatsApp</a>.</p>
@@ -92,5 +94,16 @@
 
   </main>
 
+  <!--
+    LOS TRES SCRIPTS VAN EN ESTE ORDEN Y NINGUNO LLEVA `async`, que es lo que
+    Google sugiere. El motivo es que `async` no garantiza el orden: si su
+    biblioteca llegara después de `auth.js`, la llamada a `google.accounts`
+    fallaría sobre algo que todavía no existe. Cargados en fila, cada uno
+    encuentra al anterior puesto. Cuesta un instante de espera en una pantalla
+    cuyo único trabajo es ese botón.
+  -->
+  <script src="https://accounts.google.com/gsi/client"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/entrar.js"></script>
 </body>
 </html>

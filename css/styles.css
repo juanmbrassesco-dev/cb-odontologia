@@ -179,53 +179,19 @@ p {
   }
 }
 
-/* EL BOTÓN DE GOOGLE — mudado del tablero 16 el 29-sep-2026.
-   🔴 NO sigue el formato de `.btn` del sistema, y es a propósito: Google
-   publica lineamientos de marca para este botón y lo que está acá los cumple
-   —logo de 18 px, 10 px de separación después del logo, Roboto 14 medium, su
-   propio blanco y su propio filo—. Es el ÚNICO lugar del sitio donde la forma
-   la decide un tercero.
+/* 🔴 EL BOTÓN DE GOOGLE YA NO SE DIBUJA ACÁ, y la regla que lo hacía se borró
+   el 29-sep-2026. Se escribe en su lugar porque el archivo del tablero 16 la
+   sigue teniendo y alguien va a venir a buscarla.
 
-   🔑 SE PROBÓ EN DORADO Y JUAN LO DEVOLVIÓ AL BLANCO el 29-sep-2026, mirándolo
-   a tamaño real. Se anota para no volver a proponerlo: no es que el dorado
-   estuviera prohibido nada más —que lo está, los tres fondos permitidos son
-   blanco, oscuro #131314 y neutro #F2F2F2—, es que además NO SE VEÍA BIEN. El
-   ícono G está dibujado para leerse contra blanco y sobre dorado quedaba como
-   una mancha. Fuente: developers.google.com/identity/branding-guidelines
+   El motivo es técnico y no de marca: su documentación dice que un botón
+   propio NO PUEDE disparar el login —«no hay API para iniciar el flujo cuando
+   se toca tu botón»—, así que el botón lo inyecta su biblioteca adentro de un
+   hueco vacío. Lo único que se elige son sus opciones de aspecto, y ésas viven
+   en `js/auth.js`, no en CSS.
 
-   ⏱ PENDIENTE DE VERIFICAR, no de decidir: al escribir el login hay que
-   confirmar si el flujo de token de ID admite este botón propio o si obliga a
-   usar el que dibuja la biblioteca de Google. Si obliga, esta regla se borra y
-   el markup se reemplaza por el contenedor que ella pide. */
-.btn-google {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--boton-ancho);
-  margin-left: auto;
-  margin-right: auto;
-  min-height: 48px;
-  padding: 12px;
-  background: var(--google-fondo);
-  border: 1px solid var(--google-filo);
-  border-radius: var(--radio);
-  color: var(--google-texto);
-  font-family: Roboto, Jost, "Helvetica Neue", Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  letter-spacing: 0;
-  text-transform: none;
-  cursor: pointer;
-}
-
-/* Los 10 px que Google pide después del logo. No es un espaciado nuestro. */
-.btn-google img {
-  display: block;
-  width: 18px;
-  height: 18px;
-  margin-right: 10px;
-}
+   ⚠️ CONSECUENCIA QUE CONVIENE SABER ANTES DE PELEARLE: ese botón vive dentro
+   de un marco propio de Google. Los estilos de este archivo no entran ahí.
+   Fuente: developers.google.com/identity/gsi/web/guides/display-button */
 
 .acciones {
   display: grid;
@@ -1891,8 +1857,13 @@ p {
    280 y ya no entran—: ahí bajan de renglón, que es mejor que encogerse y
    partir el texto en dos líneas.
 
-   `stretch` los empareja de alto sin escribir un número: el de Google pide 48
-   px de mínimo y el del sistema 44, así que sueltos quedarían desparejos.
+   🔴 `center` Y NO `stretch`, y el cambio salió de un error de medición que
+   cazó Juan mirando la pantalla el 29-sep-2026. Con `stretch` el que se
+   estiraba era el HUECO donde Google dibuja —46,80 px— y NO el botón de
+   adentro, que mide 40 fijos y quedaba pegado arriba con 6,8 px de aire
+   abajo. El instrumento medía la caja y no el contenido: daba dos números
+   iguales sobre dos cosas que se veían distintas.
+   Los tres tamaños que Google ofrece son 32, 36 y 40: no hay uno de 44.
 
    El orden del markup es el orden de lectura y el del teclado: primero la
    acción de la pantalla, después la salida. No hay `order` de por medio, así
@@ -1900,7 +1871,7 @@ p {
 .entrar-acciones {
   display: flex;
   flex-wrap: wrap;
-  align-items: stretch;
+  align-items: center;
   gap: 12px;
   margin-top: 28px;
 }
@@ -1909,10 +1880,44 @@ p {
    `margin: auto` para centrarse solos; acá NO se centran —el bloque entero
    está alineado a la izquierda— así que se les saca. Va sobre los hijos
    DIRECTOS porque los dos botones no comparten clase: uno es `.btn` del
-   sistema y el otro es `.btn-google`, que sigue el formato de Google. */
+   sistema y el otro es el hueco donde dibuja Google. */
 .entrar-acciones > * {
   margin-left: 0;
   margin-right: 0;
+}
+
+/* 🔴 «INICIO» BAJA A LOS 40 px DEL BOTÓN DE GOOGLE — decidido el 29-sep-2026,
+   después de que Juan viera dos veces que no medían igual.
+
+   El sistema pide 44 px de piso táctil y acá se baja a 40. EL COSTO ES MENOR
+   DE LO QUE SUENA, y por eso se acepta: el botón PRINCIPAL de esta pantalla
+   ya mide 40 —los tamaños de Google son 32, 36 y 40, no hay uno de 44—, así
+   que exigirle 44 al secundario no protege a nadie. El dedo que falle en uno
+   falla en el otro.
+
+   No alcanza con `min-height`: lo que manda el alto es el relleno. Con 19 px
+   de letra el texto ocupa 22,8, así que 8 px arriba y abajo dan 38,8 y el
+   mínimo lo completa hasta 40. Con los 12 del sistema daba 46,8. */
+.entrar-acciones .btn {
+  min-height: 40px;
+  padding-block: 8px;
+}
+
+/* ⚠️ ESTO PISA UN ESTILO DE GOOGLE, y conviene saber qué clase de apuesta es.
+   Su rótulo viene a 14 px y al lado de los 19 de «Inicio» se veía chico; lo
+   pidió Juan el 29-sep-2026. Se sube a 16: no se iguala a 19 porque el ANCHO
+   del botón lo calcula Google para su propia letra, y pasado cierto tamaño el
+   texto no entra.
+
+   🔴 EL SELECTOR VA POR ESTRUCTURA Y NO POR CLASE, a propósito. La clase real
+   de ese rótulo es `nsm7Bb-HzV7m-LgbsSe-BPrWId`: un nombre generado, que
+   Google puede cambiar en cualquier momento sin avisarle a nadie. «Un span
+   adentro de nuestro hueco» es mucho más difícil que se mueva.
+
+   Y SI IGUAL SE ROMPE, FALLA SUAVE: el rótulo vuelve a sus 14 px y el botón
+   sigue andando. No hay nada que se caiga. */
+#boton-google span {
+  font-size: 16px;
 }
 
 
@@ -1940,6 +1945,17 @@ p {
 
 .entrar .salida a {
   color: var(--dorado-texto);
+}
+
+/* ⏱ PROVISORIO — el aviso de esta pantalla. La pieza «mensaje» del sistema
+   (tablero 05) todavía NO está mudada a este archivo, y mudarla entera por un
+   texto que se va cuando exista el paso siguiente sería trabajo al pedo.
+   Cuando esa pieza llegue, esto se borra y el aviso usa la del sistema. */
+.entrar-aviso {
+  margin-top: 20px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
 }
 
 /* LOS DOS TOPES DE LA FOTO, y no son el mismo número por descuido.
