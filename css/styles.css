@@ -1061,12 +1061,7 @@ p {
   border: 1px solid var(--dorado-claro);
 }
 
-/* EL BLOQUE NO HEREDA EL ANDAMIAJE DEL TABLERO. `base_css` le da 40 px de
-   margen de arriba a todo <section>, que es prosa del tablero; el bloque del
-   sitio no puede traerse ese número puesto, porque el aire entre secciones se
-   decide en el tablero 15 y sale de --aire-seccion. */
 .nosotros {
-  margin-top: 0;
   /* Mismo mecanismo que «Testimonios»: el margen lo lleva por dentro, así que
      el centrado es `auto` a secas. En los anchos chicos vale cero.
 

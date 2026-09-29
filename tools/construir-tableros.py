@@ -4129,6 +4129,19 @@ def pie_del_sitio(apilado, ancho):
 #       tablero 15a las muestra a las dos para poder elegir.
 #   .provisorio — la cinta que grita que el texto espera el visto de Cecilia.
 CSS_NOSOTROS_TABLERO = """
+
+/* 🔴 CANCELA EL ANDAMIAJE DEL TABLERO Y POR ESO VIVE ACÁ. `base_css` le da
+   40 px de margen de arriba a todo <section>, que es prosa del tablero; este
+   bloque no puede traerse ese número puesto, porque el aire entre secciones
+   se decide en el tablero 15 y sale de --aire-seccion.
+
+   ⚠️ NO SE MUDA AL SITIO, y ya rompió una vez: allá no hay ningún margen que
+   cancelar, y la regla empata en especificidad con el aire entre secciones
+   —`.pagina > * + *`—. Puesta después en el archivo, le gana: «Nosotros»
+   quedaba pegado a «Tratamientos». Lo cazó Juan mirando la página. */
+.nosotros {
+  margin-top: 0;
+}
 /* El aire entre la foto y el texto. Es el ÚNICO separador que hay entre las
    dos: no hay línea ni cambio de fondo. A 390 con menos de 24 el nombre se
    pega a la foto y el bloque se lee como una sola mancha. */
