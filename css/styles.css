@@ -179,6 +179,54 @@ p {
   }
 }
 
+/* EL BOTÓN DE GOOGLE — mudado del tablero 16 el 29-sep-2026.
+   🔴 NO sigue el formato de `.btn` del sistema, y es a propósito: Google
+   publica lineamientos de marca para este botón y lo que está acá los cumple
+   —logo de 18 px, 10 px de separación después del logo, Roboto 14 medium, su
+   propio blanco y su propio filo—. Es el ÚNICO lugar del sitio donde la forma
+   la decide un tercero.
+
+   🔑 SE PROBÓ EN DORADO Y JUAN LO DEVOLVIÓ AL BLANCO el 29-sep-2026, mirándolo
+   a tamaño real. Se anota para no volver a proponerlo: no es que el dorado
+   estuviera prohibido nada más —que lo está, los tres fondos permitidos son
+   blanco, oscuro #131314 y neutro #F2F2F2—, es que además NO SE VEÍA BIEN. El
+   ícono G está dibujado para leerse contra blanco y sobre dorado quedaba como
+   una mancha. Fuente: developers.google.com/identity/branding-guidelines
+
+   ⏱ PENDIENTE DE VERIFICAR, no de decidir: al escribir el login hay que
+   confirmar si el flujo de token de ID admite este botón propio o si obliga a
+   usar el que dibuja la biblioteca de Google. Si obliga, esta regla se borra y
+   el markup se reemplaza por el contenedor que ella pide. */
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--boton-ancho);
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 48px;
+  padding: 12px;
+  background: var(--google-fondo);
+  border: 1px solid var(--google-filo);
+  border-radius: var(--radio);
+  color: var(--google-texto);
+  font-family: Roboto, Jost, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+}
+
+/* Los 10 px que Google pide después del logo. No es un espaciado nuestro. */
+.btn-google img {
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
 .acciones {
   display: grid;
   grid-template-columns: max-content;
@@ -1778,6 +1826,140 @@ p {
 
 @media (min-width: 1280px) {
   .pie-marca { width: 158px; }
+}
+
+
+/* ══ pieza: entrar ══ */
+/* La primera pantalla del flujo de reserva, mudada del tablero 16 el
+   29-sep-2026. Lo que en el tablero eran TRES archivos —uno por ancho— acá es
+   un solo bloque con sus dos @media: el sitio tiene una sola página y el ancho
+   lo decide quien la abre. */
+
+/* LA FOTO VA A SANGRE, sin radio y sin filo: a sangre no hay fondo contra el
+   que perderse, y el radio de 3 px del sistema es de controles, no de fotos.
+
+   16/9 y no la proporción del hero (4/3): ésta NO es una portada. Tiene que
+   dejar el botón arriba del pliegue en un teléfono de 844 de alto, y a 390 de
+   ancho un 4/3 se come 292 px contra los 219 de un 16/9. */
+.entrar-foto {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  /* El archivo YA viene recortado a 16/9, así que `cover` no recorta nada:
+     está para que una foto futura de otra proporción no deforme el hueco.
+     ⚠ Sin `object-position` porque no hace falta acá — y cuando una foto lo
+     necesita, no es decoración: el primer intento de esta pieza usó la foto
+     VERTICAL del hero y el recorte por el centro geométrico dejó la cara
+     afuera, se veía la boca y el mentón. */
+  object-fit: cover;
+}
+
+.entrar {
+  margin: 0 var(--margen-pagina);
+  padding: 32px 0;
+}
+
+/* El texto NO va centrado y es a propósito: esta pantalla se lee, no se
+   contempla. El centrado es del hero, que es una portada. */
+.entrar h1 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+  text-wrap: balance;
+}
+
+/* UNA SOLA LÍNEA, y el recorte lo pidió Juan el 24-sep-2026: «le estás
+   haciendo leer demasiado a la persona». Tenía razón — pero no se borra
+   entera: lo que queda es el MOTIVO por el que se pide entrar, que es lo único
+   que esta pantalla tiene que justificar. Lo que se fue («después podés ver y
+   cancelar…») es información de DESPUÉS de reservar, y ahí es donde va. */
+.entrar .porque {
+  margin-top: 12px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  text-wrap: balance;
+}
+
+/* LOS DOS BOTONES, EN FILA EN LOS TRES ANCHOS — lo pidió Juan el 29-sep-2026.
+   MEDIDO a 390, no estimado: el de Google mide 191 px, «Inicio» 88, y con los
+   12 del hueco dan 291 contra los 350 útiles que deja `--margen-pagina`.
+   Sobran 59. (Una cuenta anterior decía que no entraban: estaba hecha sobre la
+   versión dorada, donde el texto iba a 19 px y el botón medía 258.)
+
+   `wrap` está para el teléfono angosto que no medimos —a 320 el útil baja a
+   280 y ya no entran—: ahí bajan de renglón, que es mejor que encogerse y
+   partir el texto en dos líneas.
+
+   `stretch` los empareja de alto sin escribir un número: el de Google pide 48
+   px de mínimo y el del sistema 44, así que sueltos quedarían desparejos.
+
+   El orden del markup es el orden de lectura y el del teclado: primero la
+   acción de la pantalla, después la salida. No hay `order` de por medio, así
+   que lo que se ve y lo que recorre el tabulador son lo mismo. */
+.entrar-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+/* El ancho sale de --boton-ancho, que es el del sistema. Los dos botones traen
+   `margin: auto` para centrarse solos; acá NO se centran —el bloque entero
+   está alineado a la izquierda— así que se les saca. Va sobre los hijos
+   DIRECTOS porque los dos botones no comparten clase: uno es `.btn` del
+   sistema y el otro es `.btn-google`, que sigue el formato de Google. */
+.entrar-acciones > * {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+
+/* La salida para el que NO entra. Va abajo, sin botón y sin ícono: es una
+   puerta que existe, no un segundo camino que se promueve — la regla de la
+   § 4 sobre WhatsApp sigue rigiendo acá adentro.
+
+   🔴 ACÁ HABÍA UN ERROR DE ESCALA Y LO CAZÓ JUAN — 24-sep-2026.
+   Estaba en `--aire-seccion`, que es el aire ENTRE SECCIONES de la página:
+   56 px a 390. Pero acá no se separan dos secciones, se separa la acción
+   principal de una nota al pie DENTRO de la misma. Con 56 arriba más 20 de
+   relleno el texto quedaba a 76 px del botón, flotando.
+
+   La mitad del aire de sección, y se escribe como CUENTA y no como número
+   suelto: así los tres anchos se mueven solos si el aire de sección cambia
+   —28 · 36 · 48— y no queda una constante nueva que mantener aparte. */
+.entrar .salida {
+  margin-top: calc(var(--aire-seccion) / 2);
+  padding-top: 16px;
+  border-top: 1px solid var(--dorado-claro);
+  color: var(--texto-segundo);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+.entrar .salida a {
+  color: var(--dorado-texto);
+}
+
+/* LOS DOS TOPES DE LA FOTO, y no son el mismo número por descuido.
+   Sin tope, un 16/9 a 1280 de ancho mide 720 px de alto: un cartelón que
+   empuja el título y el botón abajo del pliegue. En una pantalla cuyo único
+   trabajo es una acción, eso no es gusto: es una rotura.
+
+   ⚠️ El 320 de 1280 es MÁS BAJO que el 360 de 768, y lo eligió Juan: sacar
+   aire de abajo del botón NO sube el botón —acorta la página—, mientras que
+   una foto más alta sí lo baja, píxel por píxel. */
+@media (min-width: 768px) {
+  .entrar-foto { max-height: 360px; }
+
+  .entrar { padding: 28px 0; }
+}
+
+@media (min-width: 1280px) {
+  .entrar-foto { max-height: 320px; }
+
+  .entrar { padding: 24px 0; }
 }
 
 

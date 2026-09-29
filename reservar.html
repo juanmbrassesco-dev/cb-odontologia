@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Reservar turno — CB Odontología y Estética</title>
+
+  <meta name="description"
+        content="Reservá tu turno en CB Odontología y Estética, Santa Fe.
+                 Elegí tratamiento, día y hora en línea.">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!--
+    EL ENCABEZADO — SÓLO EL LOGO, Y ES LA ÚNICA SALIDA DE ESTA PÁGINA.
+
+    Decidido por Juan el 29-sep-2026, después de mirar los tres anchos. El
+    encabezado completo de la landing dejaba el «Reservar» presente a 390 y a
+    1280 y AUSENTE entre 768 y 1279 —no entraba: 745 px contra 688 útiles—, y
+    el mismo control significaba cosas distintas según la página. Sin menú, el
+    problema no se resuelve: deja de existir.
+
+    Es el patrón de cualquier flujo de reserva o de compra: se reduce la
+    navegación para no dar cinco puertas de salida donde la persona está
+    completando algo. El logo lleva al inicio, que es la convención, y por eso
+    su texto accesible dice el DESTINO y no sólo el nombre.
+
+    ⚠️ ESTA PÁGINA NO USA `js/main.js`: ese archivo busca `.menu-boton` y
+    `#menu`, que acá ya no existen, y sin ellos `addEventListener` reventaría
+    sobre `null`. La landing lo sigue usando.
+  -->
+  <header class="barra">
+    <a class="barra-logo" href="index.html" aria-label="CB Odontología y Estética, ir al inicio">
+      <img src="brand/logo/curvas/cb-wordmark-curvas.svg"
+           alt="CB Odontología y Estética"
+           width="247" height="40">
+    </a>
+  </header>
+
+  <!--
+    ⚠️ SIN `class="pagina"` A PROPÓSITO. Esa clase mete `--aire-seccion` entre
+    hermanos, y acá la foto va PEGADA al bloque de texto: el aire que separa a
+    los dos es el `padding` propio de `.entrar`, que se aprobó así.
+  -->
+  <main>
+
+    <!--
+      LA PANTALLA «ENTRAR» — pieza 16, aprobada por Juan el 24-sep-2026.
+
+      ⚠️ LA FOTO ES DE EJEMPLO, igual que la del hero: es de banco (Unsplash,
+      con su ficha en brand/fotos/PROCEDENCIA.md) y NO es la sala de espera de
+      Cecilia. Se publica con el mismo criterio que el hero —no afirma ser de
+      nadie en particular— y se reemplaza cuando llegue la suya. El pedido ya
+      está escrito: una toma horizontal de la sala de espera o la entrada, luz
+      cálida, sin equipamiento clínico a la vista.
+    -->
+    <img class="entrar-foto" src="brand/fotos/entrar-ejemplo.jpg"
+         alt="Sala de espera de CB Odontología y Estética">
+
+    <div class="entrar">
+      <h1>Reservá tu turno</h1>
+
+      <p class="porque">Entrá con Google para ver los horarios disponibles.</p>
+
+      <!--
+        LAS DOS ACCIONES. La de entrar lleva el blanco de Google —su formato
+        no lo decide el sitio— y la salida lleva el grafito del sistema.
+
+        «Inicio» y no «Volver»: desde acá no se vuelve un paso —no hay paso
+        anterior—, se sale al sitio. Un rótulo que nombra el DESTINO no se
+        puede leer mal; «Volver» sí, y el propio Juan lo levantó.
+
+        ⏱ EL BOTÓN DE GOOGLE TODAVÍA NO HACE NADA: es la maqueta, sin el login
+        enganchado. Lo que falta para que ande es el ORIGEN DE JAVASCRIPT
+        cargado en la consola de Google y el Client ID, que no es secreto y va
+        escrito acá a la vista.
+      -->
+      <div class="entrar-acciones">
+        <button class="btn-google" type="button">
+          <img src="brand/ajenos/googleg_standard_color_128dp.png" alt="">Continuar con Google
+        </button>
+
+        <a class="btn btn-2" href="index.html">Inicio</a>
+      </div>
+
+      <p class="salida">¿Tenés una consulta antes de reservar?
+      <a href="https://wa.me/5493426293920">Escribinos por WhatsApp</a>.</p>
+    </div>
+
+  </main>
+
+</body>
+</html>
