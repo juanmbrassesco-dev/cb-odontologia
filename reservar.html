@@ -77,9 +77,21 @@
         LAS DOS ACCIONES. La de entrar lleva el blanco de Google —su formato
         no lo decide el sitio— y la salida lleva el grafito del sistema.
 
-        «Inicio» y no «Volver»: desde acá no se vuelve un paso —no hay paso
-        anterior—, se sale al sitio. Un rótulo que nombra el DESTINO no se
-        puede leer mal; «Volver» sí, y el propio Juan lo levantó.
+        EL RÓTULO NOMBRA EL DESTINO, no la dirección: desde acá no se vuelve
+        un paso —no hay paso anterior—, se sale al sitio. La regla la puso
+        Juan y no cambió.
+
+        🔴 LO QUE CAMBIÓ ES EL RÓTULO: decía «Inicio» y dice «Ir al sitio»
+        —30-sep-2026, y lo levantó Juan—. «Inicio» parecía cumplir la regla y
+        no la cumplía: en castellano nombra un destino Y un comienzo, así que
+        al lado de un botón de reservar se lee «tocá acá y empezá». Un rótulo
+        con dos lecturas es exactamente lo que la regla venía a evitar.
+
+        ⛔ DESCARTADA, con su motivo: «Volver al sitio». Suena más natural y
+        también nombra el destino. Se cae por un caso —el que llega acá desde
+        el enlace de un correo no viene del sitio, así que «volver» le miente—.
+        📌 Ganaría el día que se decida que a esta pantalla sólo se llega
+        desde la landing.
 
         🔴 EL BOTÓN DE GOOGLE ES UN HUECO VACÍO A PROPÓSITO: lo dibuja Google
         adentro, no nosotros. Su documentación dice que un botón propio no
@@ -90,7 +102,7 @@
       <div class="entrar-acciones">
         <div id="boton-google"></div>
 
-        <a class="btn btn-2" href="index.html">Inicio</a>
+        <a class="btn btn-2" href="index.html">Ir al sitio</a>
       </div>
 
       <!-- Arranca oculto. Lo llena `js/entrar.js` cuando hay algo que decir. -->
@@ -209,7 +221,7 @@
         al navegador que deshaga un paso del historial. Un <a> tendría que
         apuntar a algo, y no hay a qué.
       -->
-      <div class="acciones">
+      <div class="acciones acciones-fila">
         <button class="btn btn-1" id="motivo-continuar">Continuar</button>
 
         <button class="btn btn-2" id="motivo-atras">Atrás</button>
