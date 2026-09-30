@@ -199,7 +199,21 @@
         </select>
       </div>
 
-      <button class="btn btn-1" id="motivo-continuar">Continuar</button>
+      <!--
+        LAS DOS ACCIONES. El «Atrás» aparece ACÁ y no antes, y es decisión del
+        29-sep: desde la pantalla ② el atrás sale al sitio —la de entrar no
+        queda en el historial—, así que un «Atrás» propio ahí prometería un
+        paso que no existe. Desde la ③ sí hay paso anterior.
+
+        ES UN <button> Y NO UN ENLACE: no lleva a ninguna dirección, le pide
+        al navegador que deshaga un paso del historial. Un <a> tendría que
+        apuntar a algo, y no hay a qué.
+      -->
+      <div class="acciones">
+        <button class="btn btn-1" id="motivo-continuar">Continuar</button>
+
+        <button class="btn btn-2" id="motivo-atras">Atrás</button>
+      </div>
 
     </section>
 

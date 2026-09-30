@@ -112,3 +112,18 @@ document.querySelector( '#motivo-continuar' ).addEventListener( 'click', () => {
 
   console.log( 'Tratamiento elegido:', tratamientoElegido );
 } );
+
+
+// EL «ATRÁS» DE ESTA PANTALLA.
+//
+// 🔑 NO ESCONDE NI MUESTRA NADA: le pide al navegador que retroceda un paso, y
+// el resto lo hace solo el oyente de `popstate` que ya vive en `pasos.js`.
+//
+// El porqué es que así hay UNA sola manera de volver, no dos. Si este botón
+// cambiara de pantalla por su cuenta, el historial se quedaría donde estaba y
+// el «atrás» del teléfono empezaría a contar pasos distintos que este botón —
+// dos mecanismos para lo mismo, que es de donde salen los bugs que nadie
+// reproduce.
+document.querySelector( '#motivo-atras' ).addEventListener( 'click', () => {
+  history.back();
+} );
