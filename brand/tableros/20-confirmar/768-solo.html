@@ -800,6 +800,20 @@ th.n { text-align: right; }
 }
 
 
+/* 🔴 ESTA PIEZA LLEGÓ TARDE — se mudó el 30-sep-2026, y hasta ese día el sitio
+   dibujaba los campos con la forma que trae el navegador. No se veía como un
+   error: el `<input>` de «Nombre» y el de «Apellido» de la pantalla ② salían
+   con su recuadro fino del sistema y la etiqueta al costado, sin la altura
+   táctil ni el radio del resto del sitio.
+
+   Por qué se pasó: la pieza `para-quien` sí se había mudado, y ADENTRO trae
+   reglas que apuntan a estas clases —`.alta-abierta .campo:first-of-type`—.
+   Un selector que nombra una clase inexistente no da error: no aplica nada y
+   la página se dibuja igual de bien, con la forma equivocada.
+
+   EL FOCO NO SE DECIDE ACÁ. En el sitio el anillo lo pone la pieza `foco`,
+   que alcanza a cualquier elemento. `.caja-foco` es lo que el TABLERO se
+   pinta a mano para poder mostrar ese estado en una captura quieta. */
 .campo {
   max-width: var(--columna);
   margin-top: 18px;

@@ -1254,108 +1254,7 @@ def seccion_google(logo):
 # PIEZA 4 — EL CAMPO
 # ============================================================
 
-CSS_CAMPO = """
-.campo {
-  max-width: var(--columna);
-  margin-top: 18px;
-}
-
-/* La etiqueta es un bloque propio arriba del campo: nunca vive adentro. */
-.etiqueta {
-  display: block;
-  font-size: var(--tipo-chico);
-  line-height: var(--alto-chico);
-  font-weight: 500;
-  color: var(--campo-etiqueta);
-  margin-bottom: 6px;
-}
-
-.etiqueta .opcional {
-  font-weight: 400;
-  color: var(--campo-ayuda);
-}
-
-.caja {
-  display: block;
-  width: 100%;
-  min-height: var(--campo-alto);
-  padding: 12px 14px;
-  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
-  font-size: var(--tipo-cuerpo);
-  line-height: var(--alto-cuerpo);
-  color: var(--campo-texto);
-  background: var(--campo-fondo);
-  border: 1px solid var(--campo-borde);
-  border-radius: var(--radio);
-}
-
-/* FOCO: el filo pasa de 1 px de borde a 2 px de grafito y se marca la sombra.
-   El relleno se compensa para que el campo no cambie de tamaño ni empuje a los
-   de abajo — un campo que salta al tocarlo se siente roto. */
-.caja-foco {
-  border: 2px solid var(--campo-foco-filo);
-  padding: 11px 13px;
-  box-shadow: var(--campo-sombra-foco);
-}
-
-.caja-error {
-  border: 2px solid var(--campo-error-filo);
-  padding: 11px 13px;
-}
-
-.caja-apagada {
-  background: var(--campo-apagado-fondo);
-  border-color: var(--campo-apagado-borde);
-  color: var(--campo-apagado-texto);
-  cursor: not-allowed;
-}
-
-.ayuda {
-  font-size: var(--tipo-chico);
-  line-height: var(--alto-chico);
-  color: var(--campo-ayuda);
-  margin-top: 6px;
-}
-
-/* El mensaje de error arranca con la palabra: el color es el refuerzo, no
-   el mensaje. Quien no distingue el rojo lee exactamente lo mismo. */
-.error-texto {
-  font-size: var(--tipo-chico);
-  line-height: var(--alto-chico);
-  color: var(--campo-error-texto);
-  margin-top: 6px;
-  font-weight: 500;
-}
-
-/* El desplegable es el mismo campo con una punta de flecha dibujada al filo
-   derecho. No entra ningún ícono nuevo: son dos bordes girados 45°. */
-.desplegable { position: relative; }
-
-.desplegable::after {
-  content: "";
-  position: absolute;
-  right: 18px;
-  top: 50%;
-  width: 8px;
-  height: 8px;
-  margin-top: -7px;
-  border-right: 2px solid var(--grafito);
-  border-bottom: 2px solid var(--grafito);
-  transform: rotate(45deg);
-  pointer-events: none;
-}
-
-select.caja {
-  appearance: none;
-  -webkit-appearance: none;
-  padding-right: 44px;
-}
-
-textarea.caja {
-  min-height: 104px;
-  resize: vertical;
-}
-
+CSS_CAMPO_TABLERO = """
 /* Sin borde de acento a la izquierda: lo prohíbe la pauta 10 y el brief no
    tiene nada así. El bloque se separa con la misma raya superior que ya usan
    las especificaciones de la pieza 2. */
@@ -1403,6 +1302,8 @@ section > h2 + p { margin-top: 8px; }
   margin-right: 10px;
 }
 """
+
+CSS_CAMPO = leer_pieza("campo") + CSS_CAMPO_TABLERO
 
 
 # clase · estado · etiqueta · lo escrito · pie · porqué
