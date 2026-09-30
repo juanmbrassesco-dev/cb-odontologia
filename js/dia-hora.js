@@ -61,30 +61,12 @@ function prepararLaPantallaDeDiaHora( profesionales ) {
     return 'falló';
   }
 
-  const dato  = document.querySelector( '#profesional-dato' );
-  const campo = document.querySelector( '#profesional-campo' );
-
-  // ── UNO SOLO: no hay nada que preguntar ─────────────────────────────────
-  //
-  // Se muestra igual, como DATO y no como pregunta. El paciente tiene que
-  // saber de quién es la agenda que está mirando; sin esta línea no se entera
-  // hasta la pantalla de confirmar.
-  if ( profesionales.length === 1 ) {
-
-    profesionalElegido = profesionales[ 0 ].id;
-
-    // `textContent` y no HTML pegado: es un nombre que escribió una persona en
-    // la base. Misma defensa contra XSS que en `quien.js` y en `motivo.js`.
-    dato.textContent =
-      'Con ' + profesionales[ 0 ].nombre + ' ' + profesionales[ 0 ].apellido + '.';
-
-    dato.hidden  = false;
-    campo.hidden = true;
-
-    return 'mostrar';
-  }
-
-  // ── DOS O MÁS: la pregunta ──────────────────────────────────────────────
+  // EL DESPLEGABLE VA SIEMPRE, haya uno o haya cinco —decidido por Juan el
+  // 30-sep-2026—. Con una sola profesional queda un desplegable de una opción,
+  // que parece de más y no lo es: es el MISMO control en los dos casos, así
+  // que el día que Cecilia sume a alguien no cambia la pantalla, cambia lo que
+  // el control tiene adentro. Una pantalla que se transforma según los datos
+  // es una pantalla que hay que probar dos veces y acordarse de las dos.
   const desplegable = document.querySelector( '#profesional' );
 
   desplegable.textContent = '';
@@ -94,18 +76,19 @@ function prepararLaPantallaDeDiaHora( profesionales ) {
     const opcion = document.createElement( 'option' );
 
     opcion.value = profesional.id;
+
+    // `textContent` y no HTML pegado: es un nombre que escribió una persona en
+    // la base. Misma defensa contra XSS que en `quien.js` y en `motivo.js`.
     opcion.textContent = profesional.nombre + ' ' + profesional.apellido;
 
     desplegable.appendChild( opcion );
   }
 
   // El primero queda elegido: con el desplegable cerrado hay que mostrar algo,
-  // y mostrar «Elegí una opción» obligaría a un toque que no decide nada
-  // cuando el paciente no tiene preferencia.
+  // y «Elegí una opción» obligaría a un toque que no decide nada cuando el
+  // paciente no tiene preferencia — y con una sola profesional, a un toque que
+  // no decide nada nunca.
   profesionalElegido = Number( desplegable.value );
-
-  dato.hidden  = true;
-  campo.hidden = false;
 
   return 'mostrar';
 }

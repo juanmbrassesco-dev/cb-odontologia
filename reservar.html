@@ -245,19 +245,17 @@
       al lado del almanaque que ella misma manda. Los nombres no elegidos,
       puestos junto a una agenda, dejan dudando de quién es esa agenda.
 
-      DOS FORMAS SEGÚN CUÁNTOS HAYA, y las dos ya están en el HTML:
-        · UNO    → no es pregunta, es dato: «Con Cecilia Brassesco».
-        · DOS+   → el desplegable, con el primero elegido.
-      Lo decide `js/dia-hora.js` con lo que conteste el portero. El día que
-      Cecilia sume a alguien, la pantalla cambia sola.
+UNA SOLA FORMA, HAYA UNO O HAYA CINCO. Con una sola profesional queda un
+      desplegable de una opción, y es a propósito: es el MISMO control en los
+      dos casos, así que el día que Cecilia sume a alguien no cambia la
+      pantalla — cambia lo que el control tiene adentro. Lo llena
+      `js/dia-hora.js` con lo que conteste el portero.
     -->
     <section class="dia-hora" id="paso-dia-hora" hidden>
 
       <h1>¿Qué día y a qué hora?</h1>
 
-      <p class="ayuda-pantalla" id="profesional-dato" hidden></p>
-
-      <div class="campo" id="profesional-campo" hidden>
+      <div class="campo" id="profesional-campo">
         <label class="etiqueta" for="profesional">¿Con quién?</label>
         <select class="caja" id="profesional"></select>
       </div>
