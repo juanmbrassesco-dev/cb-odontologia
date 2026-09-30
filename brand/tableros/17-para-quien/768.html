@@ -706,6 +706,21 @@ th.n { text-align: right; }
   margin: 0;
 }
 
+/* LAS PANTALLAS DEL FLUJO PONEN SUS DOS BOTONES EN FILA, EN TODOS LOS ANCHOS
+   —decidido por Juan el 30-sep-2026: «ponelos al lado del otro, no así en
+   columna»—.
+
+   No se cambia `.acciones`: ahí el apilado es decisión tomada, y es del HERO,
+   donde los rótulos son largos («Reservar turno», «Ver tratamientos») y a 390
+   no entran de a dos. Acá entran —«Continuar» y «Atrás» son cortos—, así que
+   la que se aparta es esta fila y no aquélla.
+
+   La técnica es la misma que el hero usa a partir de 768: dos columnas del
+   ancho de su contenido. Una sola manera de hacer una fila de botones. */
+.acciones-fila {
+  grid-template-columns: max-content max-content;
+}
+
 .btn-1 {
   background: var(--boton-fondo);
   color: var(--boton-texto);
@@ -1169,26 +1184,38 @@ body { padding: 0; }
 .reglas li { margin-top: 8px; }
 
 
-/* La segunda pantalla del flujo de reserva, mudada del tablero 17 el
-   29-sep-2026. Igual que la pieza `entrar`: lo que en el tablero eran tres
-   archivos —uno por ancho— acá es un solo bloque.
+/* LA CÁSCARA COMÚN DE TODA PANTALLA DEL FLUJO DE RESERVA — unificada el
+   30-sep-2026, cuando la tercera copia de las mismas reglas llegó al archivo y
+   una cuarta, una quinta y una sexta esperaban en el generador de tableros
+   (`.dia-hora`, `.confirmar`, `.mis-turnos`).
 
-   ⚠ EL ANILLO DE FOCO DE `.opcion` NO ESTÁ ACÁ: vive en la pieza `foco`, que
-   es de todo el sitio. Repetirlo sería tener la misma decisión en dos lugares
-   que se separan el día que uno se toque. */
-.quien {
+   🔴 POR QUÉ UNA CLASE Y NO UNA LISTA DE SELECTORES SEPARADOS POR COMA. Las
+   dos formas dejan el mismo resultado hoy; se diferencian el día que se sume
+   una pantalla. Con la lista, la pantalla nueva no hereda nada hasta que
+   alguien se acuerde de agregarla a la lista — o sea, la duplicación no
+   desaparece: cambia de forma y se muda al final de una enumeración. Con la
+   clase, la pantalla nueva escribe `class="paso <lo suyo>"` y ya está
+   adentro. UNA sola manera de hacer la cosa.
+
+   ⚠ LO QUE ESTA PIEZA NO INCLUYE, Y NO ES UN OLVIDO: el margen del botón.
+   `.quien` y `.motivo` le ponen `margin-top: 28px` y `.dia-hora` NO —medido
+   con el valor computado, no leído del archivo—, así que las tres NO estaban
+   iguales y meterlas en la misma regla cambiaría la pantalla ④ sin que nadie
+   lo haya decidido. Queda para el maquetado de la ④, que es donde esa fila de
+   botones se mira a tamaño real. */
+.paso {
   margin: 0 var(--margen-pagina);
   padding: 32px 0 var(--aire-seccion);
 }
 
-.quien h1 {
+.paso h1 {
   font-family: Marcellus, Georgia, serif;
   font-size: var(--tipo-h1);
   line-height: var(--alto-h1);
   text-wrap: balance;
 }
 
-.quien .ayuda-pantalla {
+.paso .ayuda-pantalla {
   margin-top: 12px;
   color: var(--texto-segundo);
   font-size: var(--tipo-cuerpo);
@@ -1196,6 +1223,17 @@ body { padding: 0; }
   text-wrap: balance;
 }
 
+/* La segunda pantalla del flujo de reserva, mudada del tablero 17 el
+   29-sep-2026. Igual que la pieza `entrar`: lo que en el tablero eran tres
+   archivos —uno por ancho— acá es un solo bloque.
+
+   ⚠ EL ANILLO DE FOCO DE `.opcion` NO ESTÁ ACÁ: vive en la pieza `foco`, que
+   es de todo el sitio. Repetirlo sería tener la misma decisión en dos lugares
+   que se separan el día que uno se toque.
+
+   ⚠ EL MARGEN DE LA SECCIÓN, EL h1 Y LA AYUDA TAMPOCO ESTÁN ACÁ: son de la
+   pieza `paso`, la cáscara que comparten las pantallas del flujo. Acá queda
+   sólo lo que es de ESTA pantalla y de ninguna otra. */
 .opciones {
   margin-top: 28px;
   max-width: var(--columna);
@@ -1393,7 +1431,7 @@ en el sillón</b>.</p>
     </div>
   </header>
 
-  <div class="quien">
+  <div class="paso quien">
     <h1>¿Para quién es el turno?</h1>
 
     <p class="ayuda-pantalla">Con tu correo figura más de una persona. Elegí
@@ -1431,7 +1469,7 @@ en el sillón</b>.</p>
     </div>
   </header>
 
-  <div class="quien">
+  <div class="paso quien">
     <h1>¿Para quién es el turno?</h1>
 
     <p class="ayuda-pantalla">Con tu correo figura más de una persona. Elegí

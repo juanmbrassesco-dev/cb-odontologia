@@ -763,6 +763,21 @@ th.n { text-align: right; }
   margin: 0;
 }
 
+/* LAS PANTALLAS DEL FLUJO PONEN SUS DOS BOTONES EN FILA, EN TODOS LOS ANCHOS
+   —decidido por Juan el 30-sep-2026: «ponelos al lado del otro, no así en
+   columna»—.
+
+   No se cambia `.acciones`: ahí el apilado es decisión tomada, y es del HERO,
+   donde los rótulos son largos («Reservar turno», «Ver tratamientos») y a 390
+   no entran de a dos. Acá entran —«Continuar» y «Atrás» son cortos—, así que
+   la que se aparta es esta fila y no aquélla.
+
+   La técnica es la misma que el hero usa a partir de 768: dos columnas del
+   ancho de su contenido. Una sola manera de hacer una fila de botones. */
+.acciones-fila {
+  grid-template-columns: max-content max-content;
+}
+
 .btn-1 {
   background: var(--boton-fondo);
   color: var(--boton-texto);
@@ -857,6 +872,18 @@ th.n { text-align: right; }
 }
 
 
+/* EL ALMANAQUE Y LOS HORARIOS DEL DÍA — mudados desde el generador de tableros
+   el 30-sep-2026, tal cual estaban aprobados en la pieza 7 y en la 19.
+
+   Son DOS PARTES DE LA MISMA PIEZA y por eso viven juntas: el almanaque elige
+   el día y la grilla elige la hora, y el portero las alimenta a las dos con una
+   sola llamada —`GET /horarios-disponibles` recibe `desde` y `hasta`, así que
+   devuelve el mes entero de una vez—.
+
+   ⚠ EL MARKUP DE ESTAS DOS PARTES NO ES FIJO COMO EL DEL TABLERO: en el tablero
+   los días y las horas están escritos a mano para poder mirarlos; en el sitio
+   los pinta `js/dia-hora.js` con lo que conteste el portero. Lo que se mudó es
+   la FORMA, que es lo que se aprobó. */
 .almanaque {
   max-width: 420px;
   margin-top: 14px;
@@ -1240,19 +1267,38 @@ body { padding: 0; }
 .reglas li { margin-top: 8px; }
 
 
-.dia-hora {
+/* LA CÁSCARA COMÚN DE TODA PANTALLA DEL FLUJO DE RESERVA — unificada el
+   30-sep-2026, cuando la tercera copia de las mismas reglas llegó al archivo y
+   una cuarta, una quinta y una sexta esperaban en el generador de tableros
+   (`.dia-hora`, `.confirmar`, `.mis-turnos`).
+
+   🔴 POR QUÉ UNA CLASE Y NO UNA LISTA DE SELECTORES SEPARADOS POR COMA. Las
+   dos formas dejan el mismo resultado hoy; se diferencian el día que se sume
+   una pantalla. Con la lista, la pantalla nueva no hereda nada hasta que
+   alguien se acuerde de agregarla a la lista — o sea, la duplicación no
+   desaparece: cambia de forma y se muda al final de una enumeración. Con la
+   clase, la pantalla nueva escribe `class="paso <lo suyo>"` y ya está
+   adentro. UNA sola manera de hacer la cosa.
+
+   ⚠ LO QUE ESTA PIEZA NO INCLUYE, Y NO ES UN OLVIDO: el margen del botón.
+   `.quien` y `.motivo` le ponen `margin-top: 28px` y `.dia-hora` NO —medido
+   con el valor computado, no leído del archivo—, así que las tres NO estaban
+   iguales y meterlas en la misma regla cambiaría la pantalla ④ sin que nadie
+   lo haya decidido. Queda para el maquetado de la ④, que es donde esa fila de
+   botones se mira a tamaño real. */
+.paso {
   margin: 0 var(--margen-pagina);
   padding: 32px 0 var(--aire-seccion);
 }
 
-.dia-hora h1 {
+.paso h1 {
   font-family: Marcellus, Georgia, serif;
   font-size: var(--tipo-h1);
   line-height: var(--alto-h1);
   text-wrap: balance;
 }
 
-.dia-hora .ayuda-pantalla {
+.paso .ayuda-pantalla {
   margin-top: 12px;
   color: var(--texto-segundo);
   font-size: var(--tipo-cuerpo);
@@ -1260,6 +1306,11 @@ body { padding: 0; }
   text-wrap: balance;
 }
 
+/* LO QUE ES DE LA PANTALLA ④ Y DE NINGUNA OTRA — mudado el 30-sep-2026.
+
+   La cáscara de esta pantalla (el margen de la página, el h1 y la línea de
+   ayuda) NO está acá: vive en la pieza `paso`, que comparten las cinco
+   pantallas del flujo. */
 .reserva {
   margin-top: 24px;
 }
@@ -1328,7 +1379,7 @@ body { padding: 0; }
     </div>
   </header>
 
-  <div class="dia-hora">
+  <div class="paso dia-hora">
     <h1>¿Qué día y a qué hora?</h1>
 
     <p class="ayuda-pantalla">Los días en gris no tienen lugar. Tocá uno con

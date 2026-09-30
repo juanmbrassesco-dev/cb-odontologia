@@ -2000,182 +2000,10 @@ adonde llegan tres de las cinco pantallas de la pieza 5. Todo a escala 1:1 en
 # recibe `desde` y `hasta`, así que devuelve el mes completo en una llamada.
 # ============================================================
 
-CSS_GRILLA = """
-.almanaque {
-  max-width: 420px;
-  margin-top: 14px;
-}
-
-.mes {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.mes h3 {
-  font-family: Marcellus, Georgia, serif;
-  font-size: var(--tipo-h3);
-  line-height: var(--alto-h3);
-}
-
-.mes .pasar {
-  display: flex;
-  gap: 8px;
-}
-
-.mes button {
-  width: 44px;
-  height: 44px;
-  font-size: 20px;
-  line-height: 1;
-  background: var(--blanco);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  color: var(--grafito);
-  cursor: pointer;
-}
-
-.semana {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-
-.semana .letra {
-  text-align: center;
-  padding-bottom: 6px;
-  font-size: var(--tipo-rotulo);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--texto-segundo);
-}
-
-/* El día es un control táctil: no baja de 44 px de lado. Con siete columnas,
-   eso es lo que fija el ancho mínimo del almanaque entero. */
-.dia {
-  /* `display: block` y `text-decoration: none` están acá porque en la pantalla
-     real el día NO es un botón: es un <a> —o un <span> si está cerrado—, y un
-     enlace en línea no toma el alto ni suelta el subrayado. El botón del
-     tablero de la pieza 7 no se entera: ya era bloque y nunca tuvo subrayado. */
-  display: block;
-  text-decoration: none;
-  min-height: 48px;
-  /* 🔴 EL PISO TÁCTIL TAMBIÉN VA A LO ANCHO, y faltaba. La pieza 7 lo declaró
-     —«el día no baja de 44 px de lado, y con siete columnas eso fija el ancho
-     mínimo del almanaque»— pero sólo estaba escrito el ALTO. A 1280, donde el
-     almanaque va al costado con `flex: none`, las siete columnas se encogían
-     al contenido y el día quedaba en 36 px: la regla existía y la pantalla
-     decía otra cosa. Medido el 25-sep-2026. */
-  min-width: 44px;
-  padding: 6px 2px 8px;
-  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
-  font-size: 17px;
-  font-weight: 500;
-  line-height: 1.1;
-  text-align: center;
-  background: var(--blanco);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  color: var(--grafito);
-  cursor: pointer;
-}
-
-/* La marca de que ese día tiene lugar. Va ADEMÁS del relleno: los días sin
-   lugar son grises, así que la diferencia no depende del punto. */
-.dia .marca {
-  display: block;
-  width: 5px;
-  height: 5px;
-  margin: 4px auto 0;
-  border-radius: 50%;
-  background: var(--dorado);
-}
-
-.dia-elegido {
-  background: var(--boton-fondo);
-  border-color: var(--boton-fondo);
-  color: var(--boton-texto);
-}
-
-.dia-elegido .marca { background: var(--blanco); }
-
-.dia-apagado {
-  background: var(--boton-apagado-fondo);
-  border-color: var(--boton-apagado-borde);
-  color: var(--boton-apagado-texto);
-  cursor: not-allowed;
-}
-
-.grilla {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 10px;
-  max-width: var(--columna-lista);
-  margin-top: 14px;
-}
-
-/* Todos los bloques miden lo mismo y llevan la misma letra, elegido o no: si
-   el elegido cambiara de tamaño, la grilla entera se reacomodaría al tocarlo. */
-.hora {
-  min-height: 52px;
-  padding: 12px 8px;
-  font-family: Jost, "Helvetica Neue", Arial, sans-serif;
-  font-size: 19px;
-  font-weight: 500;
-  line-height: 1.2;
-  text-align: center;
-  border-radius: var(--radio);
-  cursor: pointer;
-  background: var(--blanco);
-  border: 1px solid var(--borde);
-  color: var(--grafito);
-}
-
-/* ELEGIDO: el dorado del botón principal con letra blanca. No estrena color, y
-   la letra no baja de 19 px, que es lo que ese par exige. */
-.hora-elegida {
-  background: var(--boton-fondo);
-  border-color: var(--boton-fondo);
-  color: var(--boton-texto);
-}
-
-/* FOCO: el contorno sobre el filo, la misma regla del botón y del campo. */
-.hora-foco {
-  box-shadow: inset 0 0 0 2px var(--foco);
-}
-
-.hora-apagada {
-  background: var(--boton-apagado-fondo);
-  border-color: var(--boton-apagado-borde);
-  color: var(--boton-apagado-texto);
-  cursor: not-allowed;
-}
-
-/* En escritorio las dos partes se ven juntas: el mes a la izquierda y los
-   horarios del día elegido a la derecha. Debajo de eso van una arriba de la
-   otra, y elegir un día baja a los horarios. */
-@media (min-width: 1280px) {
-
-  .juntas {
-    display: flex;
-    align-items: flex-start;
-    gap: 40px;
-  }
-
-  .juntas .almanaque { flex: none; }
-
-  .juntas .lado {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .juntas .grilla {
-    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-    margin-top: 0;
-  }
-}
-"""
+# EL CSS DE ESTA PIEZA SE MUDÓ A css/styles.css el 30-sep-2026, con la pantalla
+# ④ del sitio. Se lee de allá y no se copia: una pieza en dos archivos es una
+# pieza que se arregla en uno solo y sigue rota en el otro.
+CSS_GRILLA = leer_pieza( "grilla-de-horarios" )
 
 
 # número del día · clase · si tiene lugar
@@ -5543,7 +5371,13 @@ CSS_FOCO = leer_pieza("foco")
 
 # El CSS de esta pantalla vive en css/styles.css desde el 29-sep-2026, como
 # la pieza `para-quien`. Acá no hay copia: se lee de ahí.
-CSS_QUIEN = leer_pieza( "para-quien" )
+# LA CÁSCARA QUE COMPARTEN LAS PANTALLAS DEL FLUJO. Desde el 30-sep-2026 el
+# margen de la página, el h1 y la línea de ayuda no están en cada pieza: viven
+# en `paso`, así que cada tablero de pantalla pega ESTA pieza y después la suya.
+# Sin esto, los tableros 17, 18 y 19 salen sin título, sin ayuda y sin margen.
+CSS_PASO = leer_pieza( "paso" )
+
+CSS_QUIEN = CSS_PASO + leer_pieza( "para-quien" )
 
 
 PACIENTES_DE_EJEMPLO = [
@@ -5667,7 +5501,7 @@ def quien_del_sitio(ancho, caso="varios"):
       </div>""" if eligiendo_otra else ""
 
     return encabezado + f"""
-  <div class="quien">
+  <div class="paso quien">
     <h1>¿Para quién es el turno?</h1>
 
     <p class="ayuda-pantalla">Con tu correo figura más de una persona. Elegí
@@ -5861,7 +5695,7 @@ MOTIVOS = [
 
 
 
-CSS_MOTIVO = leer_pieza( "a-que-venis" )
+CSS_MOTIVO = CSS_PASO + leer_pieza( "a-que-venis" )
 
 
 def opciones_de_motivo(elegido):
@@ -5900,7 +5734,7 @@ def motivo_del_sitio(ancho, elegido=None):
     </div>
   </header>
 
-  <div class="motivo">
+  <div class="paso motivo">
     <h1>¿A qué venís?</h1>
 
     <p class="ayuda-pantalla">Elegí el motivo de la consulta. Si no estás
@@ -6070,65 +5904,10 @@ del endpoint</b>. <b>El orden también viene resuelto de la base</b> —columna
 # turno desde un teléfono real.
 # ============================================================
 
-CSS_DIA_HORA = """
-.dia-hora {
-  margin: 0 var(--margen-pagina);
-  padding: 32px 0 var(--aire-seccion);
-}
-
-.dia-hora h1 {
-  font-family: Marcellus, Georgia, serif;
-  font-size: var(--tipo-h1);
-  line-height: var(--alto-h1);
-  text-wrap: balance;
-}
-
-.dia-hora .ayuda-pantalla {
-  margin-top: 12px;
-  color: var(--texto-segundo);
-  font-size: var(--tipo-cuerpo);
-  line-height: var(--alto-cuerpo);
-  text-wrap: balance;
-}
-
-.reserva {
-  margin-top: 24px;
-}
-
-/* EL DESTINO DEL ANCLA. Al saltar, el navegador pega el destino contra el
-   borde de arriba: `scroll-margin-top` le reserva aire para que la etiqueta
-   del día —lo único que dice QUÉ día se está mirando— no quede al filo. */
-.horarios {
-  scroll-margin-top: 16px;
-}
-
-/* 🔴 EL DESTINO DEL ANCLA NO LLEVA ANILLO DE FOCO, y es la SEGUNDA excepción
-   declarada del sistema —la primera es el radio de la pieza 17—.
-
-   MEDIDO el 25-sep-2026, no supuesto: al tocar un día, `#horarios` recibe el
-   foco (que es TODO EL PUNTO del ancla) y `:focus-visible` se dibujaba, o sea
-   un contorno grafito de 2 px alrededor de media pantalla en cada toque.
-
-   El anillo existe para decir QUÉ SE VA A OPERAR al teclear. Un cajón de
-   aterrizaje no se opera: se lee. Y la confirmación de que el salto ocurrió ya
-   la da la página moviéndose. Los controles de adentro —cada hora, el botón—
-   conservan su anillo intacto. */
-.horarios:focus-visible {
-  outline: none;
-}
-
-/* QUÉ DÍA SE ESTÁ MIRANDO. Sin esto, el ancla baja a una grilla de horas que
-   no dice de cuándo son — y el almanaque, que lo diría, quedó arriba. */
-.horarios .cuando {
-  margin-top: 22px;
-  font-weight: 500;
-}
-
-.dia-hora .btn {
-  margin-top: 28px;
-  margin-left: 0;
-}
-"""
+# Mudada a css/styles.css el 30-sep-2026, igual que la grilla. La cáscara
+# común llega por CSS_PASO; acá queda lo que es de esta pantalla y de ninguna
+# otra.
+CSS_DIA_HORA = CSS_PASO + leer_pieza( "dia-y-hora" )
 
 
 def dia_hora_del_sitio(ancho):
@@ -6150,7 +5929,7 @@ def dia_hora_del_sitio(ancho):
     </div>
   </header>
 
-  <div class="dia-hora">
+  <div class="paso dia-hora">
     <h1>¿Qué día y a qué hora?</h1>
 
     <p class="ayuda-pantalla">Los días en gris no tienen lugar. Tocá uno con

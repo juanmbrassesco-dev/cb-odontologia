@@ -32,6 +32,26 @@
   El marco va CENTRADO para que el recorte del centro caiga justo sobre él.
   Y tiene que servirse del MISMO origen que la página: si no, el navegador no
   deja mirar adentro del marco para medir.
+
+  🔴 SEGUNDA TRAMPA DEL MISMO INSTRUMENTO, MEDIDA EL 30-sep-2026: LA PRIMERA
+  CAPTURA DE UNA PÁGINA NO ES REPRODUCIBLE.
+
+  Las tipografías vienen de fonts.googleapis.com, o sea de la red. En la
+  primera corrida sobre una página pueden no llegar a tiempo y el texto se
+  dibuja con la de reserva —Georgia en lugar de Marcellus, que es más ancha—,
+  así que un título de dos líneas sale de tres y TODO lo que está abajo se
+  corre. De la segunda corrida en adelante la fuente ya está en caché y la
+  captura se estabiliza.
+
+  Es el mismo modo de falla que el del ancho de ventana y es peor de cazar: no
+  da error, la foto se ve perfecta, y comparada contra otra foto acusa un
+  cambio que nunca ocurrió. Pasó así: una mudanza de CSS pareció mover el
+  título del tablero 08, y el valor computado decía que el título medía
+  exactamente lo mismo antes y después.
+
+  LA REGLA QUE SE SIGUE: para comparar dos capturas, se toma una de descarte
+  de cada archivo ANTES de las que se van a comparar. Y si una foto y una
+  medición se contradicen, GANA LA MEDICIÓN.
 -->
 
 <style>

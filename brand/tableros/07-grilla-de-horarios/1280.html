@@ -763,6 +763,21 @@ th.n { text-align: right; }
   margin: 0;
 }
 
+/* LAS PANTALLAS DEL FLUJO PONEN SUS DOS BOTONES EN FILA, EN TODOS LOS ANCHOS
+   —decidido por Juan el 30-sep-2026: «ponelos al lado del otro, no así en
+   columna»—.
+
+   No se cambia `.acciones`: ahí el apilado es decisión tomada, y es del HERO,
+   donde los rótulos son largos («Reservar turno», «Ver tratamientos») y a 390
+   no entran de a dos. Acá entran —«Continuar» y «Atrás» son cortos—, así que
+   la que se aparta es esta fila y no aquélla.
+
+   La técnica es la misma que el hero usa a partir de 768: dos columnas del
+   ancho de su contenido. Una sola manera de hacer una fila de botones. */
+.acciones-fila {
+  grid-template-columns: max-content max-content;
+}
+
 .btn-1 {
   background: var(--boton-fondo);
   color: var(--boton-texto);
@@ -857,6 +872,18 @@ th.n { text-align: right; }
 }
 
 
+/* EL ALMANAQUE Y LOS HORARIOS DEL DÍA — mudados desde el generador de tableros
+   el 30-sep-2026, tal cual estaban aprobados en la pieza 7 y en la 19.
+
+   Son DOS PARTES DE LA MISMA PIEZA y por eso viven juntas: el almanaque elige
+   el día y la grilla elige la hora, y el portero las alimenta a las dos con una
+   sola llamada —`GET /horarios-disponibles` recibe `desde` y `hasta`, así que
+   devuelve el mes entero de una vez—.
+
+   ⚠ EL MARKUP DE ESTAS DOS PARTES NO ES FIJO COMO EL DEL TABLERO: en el tablero
+   los días y las horas están escritos a mano para poder mirarlos; en el sitio
+   los pinta `js/dia-hora.js` con lo que conteste el portero. Lo que se mudó es
+   la FORMA, que es lo que se aprobó. */
 .almanaque {
   max-width: 420px;
   margin-top: 14px;

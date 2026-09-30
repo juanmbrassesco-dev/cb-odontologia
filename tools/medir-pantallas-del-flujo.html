@@ -49,6 +49,12 @@
 
   var DEL_BOTON = [ "marginTop", "marginLeft" ];
 
+  // La fila de acciones se mide aparte del botón porque el aire que separa a
+  // los botones del contenido sale de LOS DOS: `.acciones` pone su margen y el
+  // botón puede poner el suyo encima. Sin las dos medidas, el número total no
+  // se puede explicar.
+  var DE_LAS_ACCIONES = [ "marginTop" ];
+
   function leer( elemento, propiedades ) {
     if ( !elemento ) {
       return "(no está)";
@@ -88,6 +94,7 @@
           lineas.push( "    sección : " + leer( seccion, DE_LA_SECCION ) );
           lineas.push( "    h1      : " + leer( seccion.querySelector( "h1" ), DEL_TITULO ) );
           lineas.push( "    ayuda   : " + leer( seccion.querySelector( ".ayuda-pantalla" ), DE_LA_AYUDA ) );
+          lineas.push( "    acciones: " + leer( seccion.querySelector( ".acciones" ), DE_LAS_ACCIONES ) );
           lineas.push( "    botón 1 : " + leer( seccion.querySelector( ".btn" ), DEL_BOTON ) );
         } );
 
