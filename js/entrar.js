@@ -31,7 +31,7 @@ prepararElBoton( {
       return;
     }
 
-    mostrarPantalla( '#paso-quien' );
+    reemplazarPor( '#paso-quien' );
   },
 
   alFallar: () => {
