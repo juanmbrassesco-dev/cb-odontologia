@@ -30,13 +30,36 @@ PUERTO = 8000
 
 
 class Servidor( http.server.SimpleHTTPRequestHandler ):
-    """El servidor de archivos de siempre, con el encabezado que Google pide."""
+    """El servidor de archivos de siempre, con dos encabezados agregados."""
 
     def end_headers( self ):
+
+        # ① EL QUE PIDE GOOGLE PARA EL LOGIN. El porqué, arriba del archivo.
         self.send_header(
             'Referrer-Policy',
             'no-referrer-when-downgrade'
         )
+
+        # ② PROHIBIDO GUARDAR NADA EN EL CACHÉ — puesto el 30-sep-2026, después
+        #    de perder un rato buscando un bug que no existía.
+        #
+        #    El servidor pelado manda `Last-Modified` y NINGUNA instrucción de
+        #    caché. Ante esa falta el navegador NO pregunta: aplica su propia
+        #    regla y se guarda el archivo un rato. Así, un `js/` recién escrito
+        #    puede no llegar nunca a la pantalla, y lo que se prueba es la
+        #    versión anterior.
+        #
+        #    🔴 ES EL PEOR MODO DE FALLA QUE HAY: no da error, no avisa, y todo
+        #    lo que se mide queda mal medido. El síntoma es «lo arreglé y sigue
+        #    igual», que manda a buscar el problema al único lado donde no está.
+        #
+        #    Las tres líneas son la instrucción completa: `no-store` para los
+        #    navegadores de hoy, y las otras dos para los intermediarios viejos
+        #    que sólo entienden HTTP/1.0.
+        self.send_header( 'Cache-Control', 'no-store, no-cache, must-revalidate' )
+        self.send_header( 'Pragma', 'no-cache' )
+        self.send_header( 'Expires', '0' )
+
         super().end_headers()
 
 
