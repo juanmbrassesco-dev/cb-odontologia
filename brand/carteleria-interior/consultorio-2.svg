@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="160.0mm"
+     height="160.0mm"
+     viewBox="0 0 160 160">
+<!--
+  ⚠ EL TEXTO TODAVÍA ES TEXTO. Este archivo es el ORIGINAL EDITABLE y NO se
+  entrega: pide Marcellus a quien lo abra, y una imprenta sin esa tipografía
+  lo abre en Georgia sin avisar. El que se entrega es el `-curvas.svg` y su
+  PDF. Marcellus se usa bajo licencia OFL.
+-->
+  <rect x="0" y="0" width="160" height="160" fill="#FFFFFF"/>
+  <rect
+    x="9"
+    y="9"
+    width="142"
+    height="142"
+    rx="9"
+    fill="none"
+    stroke="#B08D57"
+    stroke-width="1.2"
+  />
+  <text
+    x="80"
+    y="34.6992"
+    font-family="Marcellus"
+    font-size="10.8"
+    letter-spacing="0.16em"
+    text-anchor="middle"
+    fill="#33322F"
+  >CONSULTORIO</text>
+  <rect
+    x="27.46"
+    y="41.6627"
+    width="105.08"
+    height="0.8"
+    fill="#B08D57"
+  />
+  <text
+    x="80"
+    y="122.7722"
+    font-family="Marcellus"
+    font-size="74"
+    letter-spacing="0em"
+    text-anchor="middle"
+    fill="#33322F"
+  >2</text>
+</svg>

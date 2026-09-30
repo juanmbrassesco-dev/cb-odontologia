@@ -1,0 +1,76 @@
+CARTELERÍA DE INTERIOR — CB ODONTOLOGÍA Y ESTÉTICA
+Cinco piezas. Hoja de datos. Cualquier duda, preguntame antes de resolverla.
+
+
+QUÉ ARCHIVO ES CUÁL
+
+  consultorio-1-curvas.pdf / .svg    160 × 160 mm
+  consultorio-2-curvas.pdf / .svg    160 × 160 mm
+  consultorio-3-curvas.pdf / .svg    160 × 160 mm
+  bano-curvas.pdf / .svg             160 ×  60 mm
+  salida-curvas.pdf / .svg           160 ×  60 mm
+
+  _vista-previa.png                  Cómo quedan. NO sirve para producir.
+
+  Los que terminan en "-curvas" son los que se producen. El PDF y el SVG
+  llevan el mismo dibujo: usá el que te abra mejor.
+
+  ⚠ Si en algún momento te llega un archivo SIN "-curvas"
+  (consultorio-1.svg, bano.svg…), NO lo uses: ésos son los originales
+  editables, todavía piden la tipografía, y una máquina que no la tenga los
+  abre en otra letra sin avisar. No van en este paquete a propósito.
+
+
+LAS LETRAS YA SON DIBUJOS: NO HAY QUE TIPEAR NADA
+
+  En los archivos "-curvas" el texto está convertido a curvas. No necesitás
+  la tipografía ni escribir una sola letra: se corta o se imprime tal cual.
+
+  ⚠ NO REHAGAS NINGÚN NÚMERO. El 3 está centrado a mano, a propósito: esa
+  tipografía lo dibuja bajando de la línea de apoyo, así que si se centra
+  como el 1 y el 2 queda hundido. Ya viene resuelto. Si por algo hay que
+  tocarlo, avisame y lo mando de nuevo — no lo muevas vos.
+
+
+LOS DOS COLORES
+
+  Texto        grafito   #33322F
+  Marco        dorado    #B08D57
+
+  El dorado va SÓLO en el marco y en la línea bajo "CONSULTORIO".
+  Ninguna letra va en dorado. No es gusto: medido, el dorado sobre blanco
+  da 3,09 de contraste y el grafito 12,82, y la señalética pide 65-70 %.
+  Una letra dorada a dos metros y con luz de techo se pierde.
+
+  ⚠ SI EL DORADO SE IMPRIME EN CMYK VA A SALIR MOSTAZA. El dorado metálico
+  no existe en cuatricromía. Si el proceso es impresión digital, decímelo:
+  cambiamos la expectativa o cambiamos la técnica (vinilo foil dorado,
+  estampado en caliente, o un Pantone metálico). Prefiero saberlo antes.
+
+
+MEDIDAS
+
+  Las cinco comparten ancho: 160 mm. Es a propósito — colgadas en la misma
+  pared tienen que alinearse por los costados.
+
+  La medida exacta está en el SVG. El PDF puede traer hasta 0,2 mm de más
+  por cómo lo escribe el navegador; si tu equipo necesita la medida al
+  centésimo, usá el SVG.
+
+
+MATERIAL Y MONTAJE
+
+  Acabado MATE, siempre. El brillo con luz de techo devuelve el reflejo
+  justo a la altura de los ojos y el cartel deja de leerse.
+
+  Van en la PARED, del lado de la manija — no sobre la puerta: la puerta se
+  abre y el cartel se va con ella. Centro a 1,50 m del piso, los cinco a la
+  misma altura.
+
+
+UN DATO QUE CONVIENE QUE QUEDE ESCRITO
+
+  El cartel de SALIDA es de ORIENTACIÓN: dice por dónde se sale. NO es
+  señalización de evacuación —ésa es verde, con pictograma y
+  fotoluminiscente— y no la reemplaza. Si hiciera falta la de evacuación,
+  es otra pieza y te la pido aparte.
