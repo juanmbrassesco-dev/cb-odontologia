@@ -9,23 +9,33 @@ const contenedorDelBoton = document.querySelector( '#boton-google' );
 const aviso = document.querySelector( '#aviso-entrar' );
 
 
+/** Escribe un aviso debajo del botón. Es lo único que esta pantalla dibuja. */
+function avisar( texto ) {
+  aviso.hidden = false;
+  aviso.textContent = texto;
+}
+
+
 prepararElBoton( {
 
   contenedor: contenedorDelBoton,
 
-  // ⏱ PROVISORIO — hasta que exista el paso ② («¿para quién es el turno?»).
-  // Hoy la rebanada termina acá: se prueba que el recorrido completo anda
-  // —Google firma, Supabase canjea, la página se entera— y lo que sigue se
-  // construye sobre esto.
-  alEntrar: () => {
-    aviso.hidden = false;
-    aviso.textContent = 'Entraste. El paso siguiente todavía no está construido.';
+  // ENTRÓ. De acá en adelante la pantalla de entrar ya no sirve para nada:
+  // lo que sigue es preguntar para quién es el turno.
+  alEntrar: async () => {
+
+    const queHacer = prepararLaPantallaDeQuien( await pedirLosPacientes() );
+
+    if ( queHacer === 'falló' ) {
+      avisar( 'Entraste, pero no pudimos leer tus datos. Probá de nuevo, o escribinos por WhatsApp.' );
+      return;
+    }
+
+    mostrarPantalla( '#paso-quien' );
   },
 
   alFallar: () => {
-    aviso.hidden = false;
-    aviso.textContent =
-      'No pudimos entrar. Probá de nuevo, o escribinos por WhatsApp.';
+    avisar( 'No pudimos entrar. Probá de nuevo, o escribinos por WhatsApp.' );
   }
 
 } );

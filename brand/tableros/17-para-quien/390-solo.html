@@ -439,7 +439,18 @@
    escondiera, y al tocarla el radio quedaba marcado sin forma de desmarcarlo.
 
    El mecanismo, MEDIDO con el valor computado y no deducido: el navegador trae
-   `[hidden] { display: none }
+   `[hidden] { display: none }` en su propia hoja, y esa hoja pierde contra la
+   del sitio. `.opcion` declara `display: flex`, así que le ganaba — el atributo
+   estaba puesto y el elemento se veía igual. Medido: `.opcion` con `hidden`
+   daba `flex`, y un `<p>` con `hidden` daba `none`.
+
+   Va con `!important` a propósito, que es la única vez que se usa en el
+   archivo: `hidden` significa «esto no está», y ninguna regla de diseño tiene
+   por qué poder contradecirlo. Es la regla que traen todos los reset modernos,
+   por este mismo motivo. */
+[hidden] {
+  display: none !important;
+}
 
 /* EL BODY NO LLEVA ANCHO NI MARGEN LATERAL, y es la diferencia de fondo con el
    tablero. El tablero le clava el ancho para dibujar UNA pantalla; el sitio se
@@ -1115,6 +1126,13 @@ body { padding: 0; }
 .reglas li { margin-top: 8px; }
 
 
+/* La segunda pantalla del flujo de reserva, mudada del tablero 17 el
+   29-sep-2026. Igual que la pieza `entrar`: lo que en el tablero eran tres
+   archivos —uno por ancho— acá es un solo bloque.
+
+   ⚠ EL ANILLO DE FOCO DE `.opcion` NO ESTÁ ACÁ: vive en la pieza `foco`, que
+   es de todo el sitio. Repetirlo sería tener la misma decisión en dos lugares
+   que se separan el día que uno se toque. */
 .quien {
   margin: 0 var(--margen-pagina);
   padding: 32px 0 var(--aire-seccion);

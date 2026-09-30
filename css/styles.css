@@ -50,7 +50,18 @@
    escondiera, y al tocarla el radio quedaba marcado sin forma de desmarcarlo.
 
    El mecanismo, MEDIDO con el valor computado y no deducido: el navegador trae
-   `[hidden] { display: none }
+   `[hidden] { display: none }` en su propia hoja, y esa hoja pierde contra la
+   del sitio. `.opcion` declara `display: flex`, así que le ganaba — el atributo
+   estaba puesto y el elemento se veía igual. Medido: `.opcion` con `hidden`
+   daba `flex`, y un `<p>` con `hidden` daba `none`.
+
+   Va con `!important` a propósito, que es la única vez que se usa en el
+   archivo: `hidden` significa «esto no está», y ninguna regla de diseño tiene
+   por qué poder contradecirlo. Es la regla que traen todos los reset modernos,
+   por este mismo motivo. */
+[hidden] {
+  display: none !important;
+}
 
 /* EL BODY NO LLEVA ANCHO NI MARGEN LATERAL, y es la diferencia de fondo con el
    tablero. El tablero le clava el ancho para dibujar UNA pantalla; el sitio se
@@ -1984,6 +1995,110 @@ p {
   .entrar-foto { max-height: 320px; }
 
   .entrar { padding: 24px 0; }
+}
+
+
+/* ══ pieza: para-quien ══ */
+/* La segunda pantalla del flujo de reserva, mudada del tablero 17 el
+   29-sep-2026. Igual que la pieza `entrar`: lo que en el tablero eran tres
+   archivos —uno por ancho— acá es un solo bloque.
+
+   ⚠ EL ANILLO DE FOCO DE `.opcion` NO ESTÁ ACÁ: vive en la pieza `foco`, que
+   es de todo el sitio. Repetirlo sería tener la misma decisión en dos lugares
+   que se separan el día que uno se toque. */
+.quien {
+  margin: 0 var(--margen-pagina);
+  padding: 32px 0 var(--aire-seccion);
+}
+
+.quien h1 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+  text-wrap: balance;
+}
+
+.quien .ayuda-pantalla {
+  margin-top: 12px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  text-wrap: balance;
+}
+
+.opciones {
+  margin-top: 28px;
+  max-width: var(--columna);
+}
+
+/* CADA OPCIÓN ES UN <label> QUE ENVUELVE A SU RADIO, y eso no es un detalle
+   de marcado: envolviéndolo, toda la caja queda tocable sin escribir un solo
+   `for`/`id`, y el área táctil pasa de los 20 px del círculo a los 56 de la
+   fila entera. En un teléfono eso es la diferencia entre elegir y errarle. */
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 14px;
+  background: var(--campo-fondo);
+  border: 1px solid var(--campo-borde);
+  border-radius: var(--radio);
+  cursor: pointer;
+}
+
+.opcion + .opcion {
+  margin-top: 10px;
+}
+
+/* 🔴 EL RADIO NO SE ESCONDE. Es la tentación obvia —queda más prolijo— y
+   rompe el teclado: un `display: none` lo saca del recorrido de tabulación y
+   la lista deja de poder recorrerse sin mouse. Se lo deja real y visible, con
+   el tamaño subido para que se vea a la distancia de un teléfono. */
+.opcion input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--grafito);
+}
+
+.opcion .nombre {
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+}
+
+/* La última opción es de otra clase de cosa —no es una persona, es una
+   salida— y por eso se separa con aire y no con un color: el color ya tiene
+   trabajo asignado en este sistema. */
+.opcion.otra {
+  margin-top: 18px;
+}
+
+/* LA CAJA QUE SE ABRE AL ELEGIR «otra persona». Va PEGADA a su opción y
+   metida hacia adentro: lo que aparece tiene que leerse como consecuencia de
+   lo que se tocó, no como una sección nueva que cayó del cielo.
+   ⚠ El proyecto tiene escrito, en la opción D del almanaque, que hacer
+   aparecer contenido nuevo debajo del dedo es menos suave que bajar a algo que
+   ya existe. Acá pesa menos y por eso se hace igual: son DOS campos, no una
+   grilla de mes, y aparecen inmediatamente debajo de lo que se acaba de tocar
+   — no en otro lado de la página. */
+.alta-abierta {
+  margin: 10px 0 0 14px;
+  padding-left: 14px;
+  border-left: 2px solid var(--dorado-claro);
+}
+
+.alta-abierta .campo:first-of-type {
+  margin-top: 12px;
+}
+
+.quien .btn {
+  margin-top: 28px;
+  margin-left: 0;
+}
+
+.quien .campo:first-of-type {
+  margin-top: 28px;
 }
 
 

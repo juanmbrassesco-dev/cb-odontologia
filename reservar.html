@@ -48,6 +48,14 @@
   <main>
 
     <!--
+      LAS PANTALLAS DEL FLUJO VIVEN TODAS ACÁ, Y SE MUESTRA UNA SOLA POR VEZ.
+      Cada una es una <section> con su `id`: eso es lo que `js/pasos.js` pide
+      para mostrarla y esconder a las demás. La que arranca a la vista es la
+      única sin `hidden`.
+    -->
+    <section id="paso-entrar">
+
+    <!--
       LA PANTALLA «ENTRAR» — pieza 16, aprobada por Juan el 24-sep-2026.
 
       ⚠️ LA FOTO ES DE EJEMPLO, igual que la del hero: es de banco (Unsplash,
@@ -92,18 +100,107 @@
       <a href="https://wa.me/5493426293920">Escribinos por WhatsApp</a>.</p>
     </div>
 
+    </section>
+
+
+    <!--
+      LA PANTALLA «¿PARA QUIÉN ES EL TURNO?» — pieza 17, aprobada por Juan el
+      24-sep-2026 y mudada acá el 29-sep. El markup es el aprobado y no se
+      rediscute; lo único que se le agregó son los `id`, que el tablero no
+      necesitaba porque ahí nada se movía.
+
+      🔴 LA LISTA DE PERSONAS NO ESTÁ ESCRITA ACÁ, Y NO PUEDE ESTARLO: sale de
+      la base, del endpoint GET /mis-pacientes, y es distinta para cada correo.
+      Lo que hay acá es el molde; las filas las pone `js/quien.js`.
+
+      LOS DOS CASOS QUE ATIENDE ESTA MISMA PANTALLA:
+
+        · VARIOS pacientes bajo el correo → la lista, más «Es para otra
+          persona». Es lo que está escrito abajo.
+
+        · NINGUNO —el que reserva por primera vez— → sin lista: van sólo los
+          dos campos, y el título y la ayuda cambian. Lo hace `js/quien.js`.
+
+      ⚠️ EL CASO DE UNO SOLO NO TIENE PANTALLA, y es decisión del maquetado, no
+      un olvido: si bajo ese correo hay una sola persona, no hay nada que
+      preguntar y el paso se saltea.
+    -->
+    <section class="quien" id="paso-quien" hidden>
+
+      <h1 id="quien-titulo">¿Para quién es el turno?</h1>
+
+      <p class="ayuda-pantalla" id="quien-ayuda">Con tu correo figura más de una
+      persona. Elegí quién se va a atender.</p>
+
+      <div class="opciones" id="quien-opciones">
+
+        <!-- Acá adentro, ANTES de «Es para otra persona», van las personas. -->
+
+        <label class="opcion otra">
+          <input type="radio" name="paciente" value="nueva" id="quien-otra">
+          <span class="nombre">Es para otra persona</span>
+        </label>
+
+        <!--
+          LOS CAMPOS SE ABREN ACÁ MISMO, DEBAJO DE LA OPCIÓN, y no en una
+          pantalla aparte: es la MISMA decisión —para quién es el turno—, así
+          que partirla en dos convierte una elección en dos. El flujo ya tiene
+          seis pantallas.
+
+          ⚠️ SON LOS ÚNICOS DOS CAMPOS DEL ARCHIVO, a propósito. El caso de la
+          primera vez usa estos mismos, sin la lista y sin la clase
+          `alta-abierta` —que es la que dibuja el filo y la sangría—: dos `id`
+          iguales en una página es un error que no avisa, y `querySelector`
+          devuelve siempre el primero.
+        -->
+        <div class="alta-abierta" id="quien-alta" hidden>
+
+          <p class="ayuda-pantalla" id="quien-alta-ayuda">Poné el nombre de la
+          persona que se va a atender. Queda guardada para la próxima vez.</p>
+
+          <div class="campo">
+            <label class="etiqueta" for="nombre">Nombre</label>
+            <input class="caja" id="nombre" type="text" autocomplete="given-name">
+          </div>
+
+          <div class="campo">
+            <label class="etiqueta" for="apellido">Apellido</label>
+            <input class="caja" id="apellido" type="text" autocomplete="family-name">
+          </div>
+
+        </div>
+
+      </div>
+
+      <button class="btn btn-1" id="quien-continuar">Continuar</button>
+
+    </section>
+
   </main>
 
   <!--
-    LOS TRES SCRIPTS VAN EN ESTE ORDEN Y NINGUNO LLEVA `async`, que es lo que
+    LOS CINCO SCRIPTS VAN EN ESTE ORDEN Y NINGUNO LLEVA `async`, que es lo que
     Google sugiere. El motivo es que `async` no garantiza el orden: si su
     biblioteca llegara después de `auth.js`, la llamada a `google.accounts`
     fallaría sobre algo que todavía no existe. Cargados en fila, cada uno
     encuentra al anterior puesto. Cuesta un instante de espera en una pantalla
     cuyo único trabajo es ese botón.
+
+    EL ORDEN NO ES ALFABÉTICO, ES DE DEPENDENCIA — cada uno usa a los de
+    arriba:
+
+      · `auth.js`   habla con Google y con Supabase. No sabe qué pantalla lo
+                    llamó ni qué dibujar después.
+      · `pasos.js`  muestra una pantalla y esconde las otras, y lleva la
+                    cuenta en el historial del navegador. No sabe qué hay
+                    adentro de ninguna.
+      · `quien.js`  llena la pantalla ② con los pacientes del correo.
+      · `entrar.js` el pegamento: junta a los tres cuando el login sale bien.
   -->
   <script src="https://accounts.google.com/gsi/client"></script>
   <script src="js/auth.js"></script>
+  <script src="js/pasos.js"></script>
+  <script src="js/quien.js"></script>
   <script src="js/entrar.js"></script>
 </body>
 </html>

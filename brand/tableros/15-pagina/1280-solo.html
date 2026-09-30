@@ -502,7 +502,18 @@
    escondiera, y al tocarla el radio quedaba marcado sin forma de desmarcarlo.
 
    El mecanismo, MEDIDO con el valor computado y no deducido: el navegador trae
-   `[hidden] { display: none }
+   `[hidden] { display: none }` en su propia hoja, y esa hoja pierde contra la
+   del sitio. `.opcion` declara `display: flex`, así que le ganaba — el atributo
+   estaba puesto y el elemento se veía igual. Medido: `.opcion` con `hidden`
+   daba `flex`, y un `<p>` con `hidden` daba `none`.
+
+   Va con `!important` a propósito, que es la única vez que se usa en el
+   archivo: `hidden` significa «esto no está», y ninguna regla de diseño tiene
+   por qué poder contradecirlo. Es la regla que traen todos los reset modernos,
+   por este mismo motivo. */
+[hidden] {
+  display: none !important;
+}
 
 /* EL BODY NO LLEVA ANCHO NI MARGEN LATERAL, y es la diferencia de fondo con el
    tablero. El tablero le clava el ancho para dibujar UNA pantalla; el sitio se
