@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Medición: las tres pantallas del flujo, en los tres anchos</title>
+</head>
+<body>
+<!--
+  PARA QUÉ EXISTE. La unificación de las reglas repetidas de `.quien`,
+  `.motivo` y `.dia-hora` no puede verificarse leyendo el CSS: cuatro reglas
+  pueden no hacer nada y no dan error. Esto lee el VALOR COMPUTADO de cada
+  propiedad en cada pantalla y en cada ancho, así que el antes y el después se
+  comparan como dos listas de números.
+
+  NO COPIA MARKUP. Carga `reservar.html` de verdad dentro de un marco y le
+  saca el `hidden` a las tres secciones: si copiara el markup mediría otra
+  página que la que anda.
+
+  POR QUÉ VIVE EN tools/ Y NO EN revisiones/. Ahí nació, y era el lugar
+  equivocado: `revisiones/` está en el .gitignore porque guarda capturas de un
+  solo uso, así que esto no habría viajado al repo y el día que haga falta
+  comparar de nuevo habría que reescribirlo. No es una captura: es un
+  instrumento, y los instrumentos del proyecto viven acá.
+
+  CÓMO SE CORRE:
+    python3 tools/servidor-de-pruebas.py
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+      --headless --disable-gpu --virtual-time-budget=4000 --dump-dom \
+      http://localhost:8000/tools/medir-pantallas-del-flujo.html
+
+  Se corre ANTES del cambio y DESPUÉS, y las dos salidas se comparan con
+  `diff`. Lo que no aparece en el diff es lo que la unificación no movió.
+-->
+  <div id="marcos"></div>
+  <pre id="medida" style="font:12px monospace"></pre>
+
+<script>
+  var ANCHOS = [ 390, 768, 1280 ];
+
+  var PANTALLAS = [ "paso-quien", "paso-tratamiento", "paso-dia-hora" ];
+
+  // Qué se mira de cada parte. Son las propiedades que las tres pantallas
+  // declaraban por separado — las que la unificación tiene que dejar iguales.
+  var DE_LA_SECCION = [ "marginLeft", "marginRight", "paddingTop", "paddingBottom" ];
+
+  var DEL_TITULO = [ "fontFamily", "fontSize", "lineHeight", "textWrap" ];
+
+  var DE_LA_AYUDA = [ "marginTop", "color", "fontSize", "lineHeight", "textWrap" ];
+
+  var DEL_BOTON = [ "marginTop", "marginLeft" ];
+
+  function leer( elemento, propiedades ) {
+    if ( !elemento ) {
+      return "(no está)";
+    }
+
+    var calculado = getComputedStyle( elemento );
+
+    return propiedades
+      .map( function ( propiedad ) {
+        return propiedad + "=" + calculado[ propiedad ];
+      } )
+      .join( "  " );
+  }
+
+  function medirUnAncho( ancho ) {
+    return new Promise( function ( listo ) {
+      var marco = document.createElement( "iframe" );
+
+      marco.width = ancho;
+      marco.height = 900;
+      marco.style.border = "0";
+      marco.src = "/reservar.html";
+
+      marco.addEventListener( "load", function () {
+        var doc = marco.contentDocument;
+        var lineas = [ "", "══════ " + ancho + " px ══════" ];
+
+        PANTALLAS.forEach( function ( id ) {
+          var seccion = doc.getElementById( id );
+
+          // Sin esto getComputedStyle informa `display: none` y las medidas
+          // de adentro no existen todavía.
+          seccion.hidden = false;
+
+          lineas.push( "" );
+          lineas.push( "· " + id + "   [class=\"" + seccion.className + "\"]" );
+          lineas.push( "    sección : " + leer( seccion, DE_LA_SECCION ) );
+          lineas.push( "    h1      : " + leer( seccion.querySelector( "h1" ), DEL_TITULO ) );
+          lineas.push( "    ayuda   : " + leer( seccion.querySelector( ".ayuda-pantalla" ), DE_LA_AYUDA ) );
+          lineas.push( "    botón 1 : " + leer( seccion.querySelector( ".btn" ), DEL_BOTON ) );
+        } );
+
+        listo( lineas.join( "\n" ) );
+      } );
+
+      document.getElementById( "marcos" ).appendChild( marco );
+    } );
+  }
+
+  // De a uno y en orden: tres marcos midiéndose a la vez dan una lista
+  // desordenada, y una lista desordenada no se puede comparar con la de ayer.
+  ( async function () {
+    var partes = [];
+
+    for ( var i = 0; i < ANCHOS.length; i++ ) {
+      partes.push( await medirUnAncho( ANCHOS[ i ] ) );
+    }
+
+    document.getElementById( "medida" ).textContent = partes.join( "\n" );
+  } )( );
+</script>
+</body>
+</html>

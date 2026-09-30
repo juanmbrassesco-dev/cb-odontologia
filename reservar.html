@@ -52,6 +52,13 @@
       Cada una es una <section> con su `id`: eso es lo que `js/pasos.js` pide
       para mostrarla y esconder a las demás. La que arranca a la vista es la
       única sin `hidden`.
+
+      CADA UNA LLEVA DOS CLASES, Y NO ES REPETICIÓN: `paso` es la cáscara que
+      comparten todas —el margen de la página, el título y la línea de ayuda—
+      y la segunda es lo que tiene ESA pantalla y ninguna otra. Se unificó así
+      el 30-sep-2026, cuando la tercera copia de las mismas reglas llegó al
+      CSS; el porqué de elegir una clase compartida está escrito en la pieza
+      `paso` de `css/styles.css`.
     -->
     <section id="paso-entrar">
 
@@ -137,7 +144,7 @@
       un olvido: si bajo ese correo hay una sola persona, no hay nada que
       preguntar y el paso se saltea.
     -->
-    <section class="quien" id="paso-quien" hidden>
+    <section class="paso quien" id="paso-quien" hidden>
 
       <h1 id="quien-titulo">¿Para quién es el turno?</h1>
 
@@ -197,7 +204,7 @@
       copiarlas al sitio sería tener la lista en dos lados, y el día que
       Cecilia agregue un tratamiento sólo cambiaría uno.
     -->
-    <section class="motivo" id="paso-tratamiento" hidden>
+    <section class="paso motivo" id="paso-tratamiento" hidden>
 
       <h1>¿A qué venís?</h1>
 
@@ -251,7 +258,7 @@ UNA SOLA FORMA, HAYA UNO O HAYA CINCO. Con una sola profesional queda un
       pantalla — cambia lo que el control tiene adentro. Lo llena
       `js/dia-hora.js` con lo que conteste el portero.
     -->
-    <section class="dia-hora" id="paso-dia-hora" hidden>
+    <section class="paso dia-hora" id="paso-dia-hora" hidden>
 
       <h1>¿Qué día y a qué hora?</h1>
 

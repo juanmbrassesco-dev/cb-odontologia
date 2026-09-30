@@ -50,6 +50,28 @@
   marco.style.width = ( parametros.get( 'ancho' ) || 390 ) + 'px';
   marco.style.height = ( parametros.get( 'alto' ) || 600 ) + 'px';
   marco.src = parametros.get( 'pagina' ) || '/index.html';
+
+  // `mostrar=<id de la sección>` — agregado el 30-sep-2026.
+  //
+  // POR QUÉ HACE FALTA: los seis pasos de `reservar.html` viven en UNA sola
+  // página y cinco están con `hidden`, así que sin esto el marco sólo puede
+  // fotografiar la primera. La salida hasta hoy era copiar el markup de la
+  // pantalla a un archivo de chequeo aparte — y esa copia envejece sola: el
+  // día que el sitio cambia, la foto sigue mostrando la versión vieja sin
+  // avisar. Esto fotografía SIEMPRE el archivo que anda.
+  marco.addEventListener( 'load', function () {
+    const cual = parametros.get( 'mostrar' );
+
+    if ( !cual ) {
+      return;
+    }
+
+    const adentro = marco.contentDocument;
+
+    adentro.querySelectorAll( 'section[id^="paso-"]' ).forEach( function ( seccion ) {
+      seccion.hidden = seccion.id !== cual;
+    } );
+  } );
 </script>
 
 </body>
