@@ -229,6 +229,49 @@
 
     </section>
 
+    <!--
+      LA PANTALLA ④ — «¿qué día y a qué hora?».
+
+      HOY ENTRA SÓLO EL PROFESIONAL. El almanaque y la grilla de horarios son
+      lo que sigue, y van acá adentro.
+
+      EL PROFESIONAL SE ELIGE EN ESTA PANTALLA Y NO EN UNA PROPIA —decidido por
+      Juan el 30-sep-2026—: elegirlo CAMBIA el almanaque, y esa relación se
+      entiende viéndola, no en dos pasos separados.
+
+      🔴 Y ES UN DESPLEGABLE, NO UNA LISTA TOCABLE, que es lo contrario de lo
+      que se decidió para «¿para quién?». No se contradicen, y el argumento es
+      de Juan: allá la lista DESAPARECE al avanzar, acá se quedaría en pantalla
+      al lado del almanaque que ella misma manda. Los nombres no elegidos,
+      puestos junto a una agenda, dejan dudando de quién es esa agenda.
+
+      DOS FORMAS SEGÚN CUÁNTOS HAYA, y las dos ya están en el HTML:
+        · UNO    → no es pregunta, es dato: «Con Cecilia Brassesco».
+        · DOS+   → el desplegable, con el primero elegido.
+      Lo decide `js/dia-hora.js` con lo que conteste el portero. El día que
+      Cecilia sume a alguien, la pantalla cambia sola.
+    -->
+    <section class="dia-hora" id="paso-dia-hora" hidden>
+
+      <h1>¿Qué día y a qué hora?</h1>
+
+      <p class="ayuda-pantalla" id="profesional-dato" hidden></p>
+
+      <div class="campo" id="profesional-campo" hidden>
+        <label class="etiqueta" for="profesional">¿Con quién?</label>
+        <select class="caja" id="profesional"></select>
+      </div>
+
+      <!-- ⏱ ACÁ VAN EL ALMANAQUE Y LA GRILLA DE HORARIOS. -->
+
+      <div class="acciones acciones-fila">
+        <button class="btn btn-1" id="dia-hora-continuar">Continuar</button>
+
+        <button class="btn btn-2" id="dia-hora-atras">Atrás</button>
+      </div>
+
+    </section>
+
   </main>
 
   <!--
@@ -255,6 +298,7 @@
   <script src="js/pasos.js"></script>
   <script src="js/quien.js"></script>
   <script src="js/motivo.js"></script>
+  <script src="js/dia-hora.js"></script>
   <script src="js/entrar.js"></script>
 </body>
 </html>

@@ -91,11 +91,13 @@ async function prepararLaPantallaDeMotivo() {
 prepararLaPantallaDeMotivo();
 
 
-// ⏱ EL «CONTINUAR» DE ESTA PANTALLA TODAVÍA NO LLEVA A NINGÚN LADO, y es por
-// lo mismo que hasta hoy pasaba con el de la pantalla ②: la pantalla ④ —día y
-// hora— no está escrita. Lo que SÍ hace ya es guardar la elección, así que el
-// día que exista la ④ sólo se le agrega el `avanzarA`.
-document.querySelector( '#motivo-continuar' ).addEventListener( 'click', () => {
+// EL «CONTINUAR» DE ESTA PANTALLA.
+//
+// PREPARA LA SIGUIENTE ANTES DE MOSTRARLA, que es el mismo orden que usa
+// `entrar.js`: primero se le pide al portero lo que la pantalla ④ necesita, y
+// recién si eso salió bien se avanza. Al revés, el paciente vería una pantalla
+// vacía llenarse delante suyo, o quedarse vacía si el pedido falla.
+document.querySelector( '#motivo-continuar' ).addEventListener( 'click', async () => {
 
   const desplegable = document.querySelector( '#motivo' );
 
@@ -110,7 +112,17 @@ document.querySelector( '#motivo-continuar' ).addEventListener( 'click', () => {
 
   tratamientoElegido = Number( desplegable.value );
 
-  console.log( 'Tratamiento elegido:', tratamientoElegido );
+  // ⬜ SI FALLA, HOY NO SE LE DICE NADA AL PACIENTE, y es deuda declarada: esta
+  // pantalla no tiene dónde escribir un aviso —la ① sí, con `#aviso-entrar`—.
+  // No se inventa uno acá: el maquetado es donde se decide qué dice y dónde va.
+  const profesionales = await pedirLosProfesionales( tratamientoElegido );
+
+  if ( prepararLaPantallaDeDiaHora( profesionales ) === 'falló' ) {
+    console.error( 'No se pudo preparar la pantalla de día y hora.' );
+    return;
+  }
+
+  avanzarA( '#paso-dia-hora' );
 } );
 
 

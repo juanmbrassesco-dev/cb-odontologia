@@ -2282,6 +2282,38 @@ textarea.caja {
 }
 
 
+/* ══ pieza: dia-y-hora ══ */
+
+/* LA PANTALLA ④. Hoy entra SÓLO SU CÁSCARA y el profesional; el almanaque y la
+   grilla de horarios se mudan con su markup, no antes — CSS sin markup que lo
+   consuma es una decisión que nadie puede verificar.
+
+   🔴 TERCERA COPIA DE LAS MISMAS CUATRO REGLAS —`.quien`, `.motivo` y ahora
+   ésta declaran el mismo h1, la misma ayuda y el mismo margen—. La nota de la
+   pieza `a-que-venis` decía «con la ④ van a ser tres y ahí conviene una sola
+   clase»: LLEGÓ ESE DÍA. No se unifica en el mismo movimiento que agrega la
+   pantalla, para no mezclar una cosa que se agrega con dos que se tocan. */
+.dia-hora {
+  margin: 0 var(--margen-pagina);
+  padding: 32px 0 var(--aire-seccion);
+}
+
+.dia-hora h1 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h1);
+  line-height: var(--alto-h1);
+  text-wrap: balance;
+}
+
+.dia-hora .ayuda-pantalla {
+  margin-top: 12px;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  text-wrap: balance;
+}
+
+
 /* ══ pieza: fuentes ══ */
 /* 🔴 ESTA PIEZA LA USA EL SITIO Y NO LOS TABLEROS, y el motivo es mecánico:
    las rutas de abajo son relativas a ESTE archivo (css/), y un tablero vive en
