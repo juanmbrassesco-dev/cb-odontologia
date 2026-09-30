@@ -34,10 +34,21 @@ SUBIR = "../"
 
 
 def recortar_la_pantalla():
-    """La <section> de la pantalla ②, tal cual está en `reservar.html`."""
+    """La <section> de la pantalla ②, tal cual está en `reservar.html`.
+
+    🔴 SE BUSCA POR EL `id`, NO POR LAS CLASES, y esto se arregló el
+    30-sep-2026 después de que se rompiera. Antes buscaba la línea entera
+    —`<section class="quien" id="paso-quien"`— y el día que la pantalla sumó
+    una segunda clase (`class="paso quien"`) este archivo dejó de encontrarla.
+
+    El `id` es lo que NO cambia: es el que `js/pasos.js` usa para mostrar y
+    esconder los pasos, así que cambiarlo rompería el flujo entero y nadie lo
+    va a tocar de pasada. Las clases son de presentación y se mueven solas.
+    """
     pagina = PAGINA.read_text( encoding = "utf-8" )
 
-    arranque = pagina.index( '<section class="quien" id="paso-quien"' )
+    ancla    = pagina.index( 'id="paso-quien"' )
+    arranque = pagina.rindex( "<section", 0, ancla )
     cierre   = pagina.index( "</section>", arranque ) + len( "</section>" )
 
     # Sin `hidden`: acá la pantalla es lo único que hay, y arranca a la vista.
