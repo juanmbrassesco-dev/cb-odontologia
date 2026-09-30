@@ -7,8 +7,8 @@
 //
 //   · NINGUNO → el que reserva por primera vez. No hay lista: van los dos
 //     campos solos, y la pregunta cambia a «¿Cómo te llamás?».
-//   · UNO     → no se muestra nada. No hay nada que preguntar, así que el paso
-//     se saltea y se avisa hacia afuera quién es.
+//   · UNO     → la lista igual, con su única fila ya marcada y OTRA ayuda. No
+//     se saltea, y el porqué está escrito entero abajo, sobre la función.
 //   · VARIOS  → la lista, que es el caso que se maquetó.
 
 
@@ -188,3 +188,43 @@ function prepararLaPantallaDeQuien( pacientes ) {
 
   return 'mostrar';
 }
+
+
+// EL «CONTINUAR» DE LA PANTALLA ②. Vive acá y no en `pasos.js` porque la
+// decisión de si se puede avanzar es de ESTA pantalla: `pasos.js` sabe mostrar
+// pantallas y no sabe qué hay adentro de ninguna.
+//
+// El oyente se cuelga al cargar el archivo, y acá sí es seguro —a diferencia
+// del de la lista, que tuvo que mudarse adentro de la función el 29-sep—:
+// escucha un CLIC sobre un botón que existe siempre, no un 'change' que sube
+// desde cualquier campo de la pantalla.
+document.querySelector( '#quien-continuar' ).addEventListener( 'click', () => {
+
+  const alta     = document.querySelector( '#quien-alta' );
+  const nombre   = document.querySelector( '#nombre' );
+  const apellido = document.querySelector( '#apellido' );
+
+  // Los campos sólo cuentan cuando están A LA VISTA: si el turno es para
+  // alguien que ya figura en la lista, están escondidos y vacíos, y exigirlos
+  // dejaría trabado al que no tiene nada que completar.
+  if ( !alta.hidden ) {
+
+    // `.trim( )` saca los espacios de los bordes: un nombre de puros espacios
+    // no es un nombre, y sin esto pasaría el control.
+    if ( nombre.value.trim() === '' ) {
+      nombre.focus();
+      return;
+    }
+
+    if ( apellido.value.trim() === '' ) {
+      apellido.focus();
+      return;
+    }
+  }
+
+  // ⏱ TODAVÍA NO SE AVISA HACIA AFUERA A QUIÉN SE ELIGIÓ. Lo va a necesitar
+  // `POST /reservar`, que pide `paciente_id` O `paciente_nuevo`, y ese pedido
+  // lo arma la pantalla ⑤. Hasta que exista, avanzar es lo único que hay que
+  // hacer acá.
+  avanzarA( '#paso-tratamiento' );
+} );

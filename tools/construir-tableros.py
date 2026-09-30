@@ -1422,9 +1422,7 @@ partes y sus cinco estados. Todo a escala 1:1 en {ancho} px.</p>
   </div>
   <div class="campo">
     <label class="etiqueta">¿Para quién es el turno?</label>
-    <div class="desplegable">
-      <select class="caja"><option>María Fernanda Gómez</option></select>
-    </div>
+    <select class="caja"><option>María Fernanda Gómez</option></select>
     <p class="ayuda">Un mismo correo puede tener varias personas: una madre
     anota a sus hijos con su casilla.</p>
   </div>
@@ -2530,11 +2528,7 @@ def campo_tira(etiqueta, valor, clase, ayuda, opcional):
     pie = f'\n      <p class="ayuda">{ayuda}</p>' if ayuda else ""
 
     if clase == "desplegable":
-        caja = (
-            '\n      <div class="desplegable">'
-            f'\n        <select class="caja"><option>{valor}</option></select>'
-            '\n      </div>'
-        )
+        caja = f'\n      <select class="caja"><option>{valor}</option></select>'
     elif clase == "textarea":
         caja = f'\n      <textarea class="caja">{valor}</textarea>'
     else:
@@ -5865,62 +5859,9 @@ MOTIVOS = [
 ]
 
 
-CSS_SELECT = """
-/* EL DESPLEGABLE USA LA CAJA DEL SISTEMA —la misma de la pieza 4— y le suma
-   lo único que un <select> necesita y un <input> no: la flecha. Va dibujada
-   en el fondo y no como carácter, porque un carácter se puede seleccionar y
-   se ve distinto en cada sistema. */
-select.caja {
-  appearance: none;
-  padding-right: 40px;
-  background-image:
-    linear-gradient( 45deg, transparent 50%, var(--grafito) 50% ),
-    linear-gradient( 135deg, var(--grafito) 50%, transparent 50% );
-  background-position:
-    calc( 100% - 20px ) calc( 50% + 2px ),
-    calc( 100% - 14px ) calc( 50% + 2px );
-  background-size: 6px 6px, 6px 6px;
-  background-repeat: no-repeat;
-  cursor: pointer;
-  /* 🔴 ESTO PROBABLEMENTE NO HAGA NADA, y se deja UNA versión con el motivo
-     escrito para que nadie lo vuelva a intentar a ciegas.
-     `accent-color` rige checkbox, radio, range y progress — no el resaltado de
-     un <option>. Ese resaltado lo pinta el SISTEMA OPERATIVO con su color de
-     acento, y Safari incluso lo dibuja ENCIMA del fondo que declare el autor.
-     ⇒ El azul del desplegable abierto no se cambia por CSS.
-     Se deja la línea porque no rompe nada y porque el día que el navegador lo
-     soporte, el color ya está puesto y es el nuestro. */
-  accent-color: var(--dorado);
-}
-"""
 
 
-CSS_MOTIVO = """
-.motivo {
-  margin: 0 var(--margen-pagina);
-  padding: 32px 0 40px;
-}
-
-.motivo h1 {
-  font-family: Marcellus, Georgia, serif;
-  font-size: var(--tipo-h1);
-  line-height: var(--alto-h1);
-  text-wrap: balance;
-}
-
-.motivo .ayuda-pantalla {
-  margin-top: 12px;
-  color: var(--texto-segundo);
-  font-size: var(--tipo-cuerpo);
-  line-height: var(--alto-cuerpo);
-  text-wrap: balance;
-}
-
-.motivo .btn {
-  margin-top: 28px;
-  margin-left: 0;
-}
-"""
+CSS_MOTIVO = leer_pieza( "a-que-venis" )
 
 
 def opciones_de_motivo(elegido):
@@ -5989,7 +5930,6 @@ def solo_motivo(tokens, css, ancho):
 {base_css(ancho)}
 {CSS_BOTON}
 {CSS_CAMPO}
-{CSS_SELECT}
 {CSS_ENCABEZADO}
 {CSS_MOTIVO}
 {CSS_FOCO}
@@ -6010,7 +5950,6 @@ def tablero_motivo(tokens, css, ancho):
 {base_css(ancho)}
 {CSS_BOTON}
 {CSS_CAMPO}
-{CSS_SELECT}
 {CSS_ENCABEZADO}
 {CSS_MOTIVO}
 {CSS_FOCO}
@@ -6576,7 +6515,6 @@ def solo_confirmar(tokens, css, ancho):
 {base_css(ancho)}
 {CSS_BOTON}
 {CSS_CAMPO}
-{CSS_SELECT}
 {CSS_TARJETA}
 {CSS_ENCABEZADO}
 {CSS_CONFIRMAR}
@@ -6599,7 +6537,6 @@ def tablero_confirmar(tokens, css, ancho):
 {base_css(ancho)}
 {CSS_BOTON}
 {CSS_CAMPO}
-{CSS_SELECT}
 {CSS_TARJETA}
 {CSS_ENCABEZADO}
 {CSS_CONFIRMAR}

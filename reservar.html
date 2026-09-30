@@ -176,6 +176,33 @@
 
     </section>
 
+    <!--
+      LA PANTALLA ③ — «¿a qué venís?».
+
+      EL DESPLEGABLE ARRANCA VACÍO A PROPÓSITO: las catorce opciones no se
+      escriben acá, se las pide `js/motivo.js` a `GET /tratamientos`. En el
+      tablero están escritas a mano porque un tablero no habla con la base;
+      copiarlas al sitio sería tener la lista en dos lados, y el día que
+      Cecilia agregue un tratamiento sólo cambiaría uno.
+    -->
+    <section class="motivo" id="paso-tratamiento" hidden>
+
+      <h1>¿A qué venís?</h1>
+
+      <p class="ayuda-pantalla">Elegí el motivo de la consulta. Si no estás
+      seguro, poné <b>consulta</b> y lo vemos ahí.</p>
+
+      <div class="campo">
+        <label class="etiqueta" for="motivo">Motivo</label>
+        <select class="caja" id="motivo">
+          <option value="">Elegí una opción</option>
+        </select>
+      </div>
+
+      <button class="btn btn-1" id="motivo-continuar">Continuar</button>
+
+    </section>
+
   </main>
 
   <!--
@@ -201,6 +228,7 @@
   <script src="js/auth.js"></script>
   <script src="js/pasos.js"></script>
   <script src="js/quien.js"></script>
+  <script src="js/motivo.js"></script>
   <script src="js/entrar.js"></script>
 </body>
 </html>
