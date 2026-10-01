@@ -213,13 +213,26 @@ function prepararLaPantallaDeConfirmar() {
  * se PISA, así que el «atrás» del teléfono no devuelve al paciente a un
  * formulario lleno con un botón que vuelve a reservar.
  */
-function darLaNoticia( { titulo, cuerpo, accion } ) {
+function darLaNoticia( { titulo, cuerpo, accion, accion2 } ) {
 
   document.querySelector( '#mensaje-titulo' ).textContent = titulo;
   document.querySelector( '#mensaje-cuerpo' ).textContent = cuerpo;
 
   const boton = document.querySelector( '#mensaje-accion' );
+  const segundo = document.querySelector( '#mensaje-accion-2' );
   const hueco = document.querySelector( '#mensaje-google' );
+
+  // EL SEGUNDO BOTÓN ES LA EXCEPCIÓN, NO LA REGLA: arranca escondido en cada
+  // noticia y sólo lo enciende la que lo trae. Sin este apagado, el botón de
+  // una noticia anterior quedaría puesto en la siguiente.
+  segundo.hidden = true;
+
+  if ( accion2 ) {
+    segundo.hidden = false;
+    segundo.textContent = accion2.rotulo;
+    segundo.className = 'btn ' + accion2.clase;
+    segundo.onclick = accion2.hacer;
+  }
 
   if ( accion === null ) {
 
@@ -287,6 +300,19 @@ const NOTICIAS = {
       rotulo: 'Volver al inicio',
       clase: 'btn-1',
       hacer: () => { window.location.href = 'index.html'; }
+    },
+
+    // 🔴 EL SEGUNDO BOTÓN, pedido por Juan el 1-oct-2026 probando el sitio
+    // publicado: **reservó y no tenía cómo comprobar que el turno había
+    // quedado.** El cuerpo de esta noticia ya le prometía que podía verlo
+    // «desde tus turnos», y no había ninguna puerta.
+    //
+    // ⚠️ Va de secundario: la acción que el sitio empuja sigue siendo cerrar el
+    // flujo. Ver los turnos es comprobar algo que ya se le dijo.
+    accion2: {
+      rotulo: 'Ir a mis turnos',
+      clase: 'btn-2',
+      hacer: () => { window.location.href = 'mis-turnos.html'; }
     }
   },
 

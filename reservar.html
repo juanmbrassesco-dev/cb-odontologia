@@ -144,6 +144,45 @@
       un olvido: si bajo ese correo hay una sola persona, no hay nada que
       preguntar y el paso se saltea.
     -->
+    <!--
+      LA PANTALLA ①.b — «¿qué querés hacer?».
+
+      POR QUÉ EXISTE, y lo pidió Juan el 1-oct-2026 probando el sitio ya
+      publicado: **después de entrar, el paciente caía directo a reservar y no
+      tenía ninguna puerta a sus turnos**. El correo sí la tiene; el que no
+      encuentra el correo, no. Esta pantalla es esa puerta, y está ANTES de
+      «¿para quién?» porque es la pregunta que viene primero: a qué vine.
+
+      SON DOS OPCIONES Y UN BOTÓN, con la misma pieza que la ②: cada opción es
+      un `<label>` que envuelve su radio, así toda la caja es tocable.
+
+      LA PRIMERA VIENE ELEGIDA —reservar—, como en la ②: es a lo que viene la
+      mayoría, y el que quiere la otra toca una sola vez.
+    -->
+    <section class="paso que-hacer" id="paso-que-hacer" hidden>
+
+      <h1>¿Qué querés hacer?</h1>
+
+      <div class="opciones">
+
+        <label class="opcion">
+          <input type="radio" name="que-hacer" value="reservar" id="que-reservar" checked>
+          <span class="nombre">Reservar un turno</span>
+        </label>
+
+        <label class="opcion">
+          <input type="radio" name="que-hacer" value="mis-turnos">
+          <span class="nombre">Ver mis turnos</span>
+        </label>
+
+      </div>
+
+      <div class="acciones">
+        <button class="btn btn-1" id="que-hacer-continuar">Continuar</button>
+      </div>
+
+    </section>
+
     <section class="paso quien" id="paso-quien" hidden>
 
       <h1 id="quien-titulo">¿Para quién es el turno?</h1>
@@ -419,8 +458,16 @@ UNA SOLA FORMA, HAYA UNO O HAYA CINCO. Con una sola profesional queda un
 
       <p id="mensaje-cuerpo"></p>
 
-      <div class="acciones">
+      <!--
+        DOS BOTONES, Y EL SEGUNDO ARRANCA ESCONDIDO: sólo la noticia del turno
+        reservado lo usa —para ir a «mis turnos»—, porque es el único momento
+        en que el paciente tiene algo nuevo que mirar ahí. Lo pidió Juan el
+        1-oct-2026, probando el sitio publicado.
+      -->
+      <div class="acciones acciones-fila" id="mensaje-acciones">
         <button class="btn" id="mensaje-accion"></button>
+
+        <button class="btn" id="mensaje-accion-2" hidden></button>
 
         <div id="mensaje-google" hidden></div>
       </div>
@@ -452,6 +499,7 @@ UNA SOLA FORMA, HAYA UNO O HAYA CINCO. Con una sola profesional queda un
   <script src="js/auth.js"></script>
   <script src="js/fechas.js"></script>
   <script src="js/pasos.js"></script>
+  <script src="js/que-hacer.js"></script>
   <script src="js/quien.js"></script>
   <script src="js/motivo.js"></script>
   <script src="js/dia-hora.js"></script>

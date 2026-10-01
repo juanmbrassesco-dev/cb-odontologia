@@ -304,6 +304,17 @@ def armar():
 </script>
 <script src="{ SUBIR }js/fechas.js"></script>
 <script src="{ SUBIR }js/pasos.js"></script>
+<script>
+  // 🔴 `pasos.js` arranca anotando que la pantalla a la vista es la de entrar,
+  // porque en el sitio ésa es la única sin `hidden`. Acá la que está a la vista
+  // es la ⑤, y sin corregirlo la noticia aparecía DEBAJO del formulario en vez
+  // de reemplazarlo: `mostrarPantalla` escondía la pantalla equivocada.
+  //
+  // ⚠️ Era un defecto de la PRUEBA y no del sitio —en el flujo de verdad se
+  // llega a la ⑤ con `avanzarA`, que sí la anota—, y se arregla acá porque una
+  // prueba que dibuja algo que el sitio no hace es peor que no tenerla.
+  pantallaALaVista = document.querySelector( '#paso-confirmar' );
+</script>
 <script src="{ SUBIR }js/confirmar.js"></script>
 <script>
   // Arranca la pantalla como lo haría el «Continuar» de la ④.
