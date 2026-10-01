@@ -556,6 +556,30 @@ textarea.caja {
 
 /* La caja de la derecha. En el tablero esto iba como estilo suelto adentro del
    HTML; acá tiene nombre, así que hay UNA sola manera de dibujar la barra. */
+/* LA PUERTA A «MIS TURNOS» EN EL ENCABEZADO.
+
+   ⚠️ NO ES UN BOTÓN Y NO DEBE SERLO: al lado de «Reservar» —que es la acción
+   que el sitio empuja— un segundo botón partiría la atención en dos. Esto es
+   una salida para el que ya reservó, así que pesa como un enlace.
+
+   A 390 el encabezado deja 91 px libres entre el logo y la hamburguesa
+   —medido, no estimado— y por eso el texto va un punto más chico ahí: entra
+   sin empujar el logo ni pelearse con el menú. */
+.barra-turnos {
+  flex: none;
+  color: var(--texto-segundo);
+  font-size: var(--tipo-chico);
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.barra-turnos:hover {
+  color: var(--grafito);
+  text-decoration: underline;
+}
+
+
 .barra-derecha {
   display: flex;
   align-items: center;

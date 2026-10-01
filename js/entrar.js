@@ -16,14 +16,23 @@ function avisar( texto ) {
 }
 
 
+/** Lo que pasa cuando hay sesión: se arma la ② y se muestra. */
+async function seguirConLaReserva() {
+
+  if ( prepararLaPantallaDeQuien( await pedirLosPacientes() ) === 'falló' ) {
+    avisar( 'Entraste, pero no pudimos leer tus datos. Probá de nuevo, o escribinos por WhatsApp.' );
+    return;
+  }
+
+  reemplazarPor( '#paso-quien' );
+}
+
+
 // 🔴 SI YA ENTRÓ, NO SE LE PIDE ENTRAR DE NUEVO. La sesión sobrevive al salto
-// entre las dos páginas del sitio desde el 1-oct-2026, así que el que vuelve
-// acá desde «mis turnos» —o el que recarga— se saltea esta pantalla.
-//
-// `reemplazarPor` y no `avanzarA`: la pantalla de entrar no tiene por qué
-// quedar en el historial de alguien que ya entró.
+// entre las dos páginas del sitio, así que el que vuelve acá desde «mis
+// turnos» —o el que recarga— se saltea esta pantalla.
 if ( haySesion() ) {
-  reemplazarPor( '#paso-que-hacer' );
+  seguirConLaReserva();
 }
 
 
@@ -32,16 +41,14 @@ prepararElBoton( {
   contenedor: contenedorDelBoton,
 
   // ENTRÓ. De acá en adelante la pantalla de entrar ya no sirve para nada:
-  // lo que sigue es preguntar A QUÉ VINO.
+  // lo que sigue es preguntar para quién es el turno.
   //
-  // 🔴 ANTES ESTO LLEVABA DERECHO A «¿para quién es el turno?», y por eso el
-  // que entraba para mirar un turno suyo quedaba sin salida —lo encontró Juan
-  // el 1-oct-2026 probando el sitio publicado—. La lista de pacientes ya no se
-  // pide acá: la pide la pantalla nueva, y sólo si eligen reservar. **El que
-  // viene a ver sus turnos ya no espera un pedido que no le sirve.**
-  alEntrar: () => {
-    reemplazarPor( '#paso-que-hacer' );
-  },
+  // ⚠️ ACÁ NO SE PREGUNTA «¿qué querés hacer?», y es una decisión que se tomó y
+  // se dio vuelta el mismo día: esta página es SÓLO para reservar. **La puerta
+  // a «mis turnos» vive en el encabezado del sitio, antes de entrar**, porque
+  // obligar a identificarse para recién ahí ofrecer la opción es al revés de
+  // como lo busca una persona. *Lo levantó Juan el 1-oct-2026.*
+  alEntrar: seguirConLaReserva,
 
   alFallar: () => {
     avisar( 'No pudimos entrar. Probá de nuevo, o escribinos por WhatsApp.' );
