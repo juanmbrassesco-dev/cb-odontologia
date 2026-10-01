@@ -2139,6 +2139,38 @@ textarea.caja {
   .entrar-foto { max-height: 320px; }
 
   .entrar { padding: 24px 0; }
+
+  /* 🔴 Y ACÁ TAMBIÉN SE CENTRA, por la misma decisión del 1-oct-2026 que
+     centró las otras cinco pantallas del flujo.
+
+     ⚠️ ESTO DA VUELTA DOS COSAS QUE ESTABAN ESCRITAS, y Juan lo dijo con todas
+     las letras: «lo validado el 24 no cuenta ahora que cambiamos». La primera
+     es el comentario de arriba —«el texto NO va centrado… el centrado es del
+     hero»—, que sigue valiendo en el teléfono y deja de valer acá. La segunda
+     es el «acá NO se centran» de los botones.
+
+     🔑 El motivo de fondo no es estético: con las otras cinco centradas, ésta
+     era la ÚNICA pegada al margen, y una pantalla que se mueve de lugar entre
+     un paso y el siguiente se lee como otra página. La homogeneidad del flujo
+     pesa más que la regla de cada pieza suelta. */
+  .entrar > * {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .entrar h1,
+  .entrar .porque,
+  .entrar .salida,
+  .entrar-aviso {
+    text-align: center;
+  }
+
+  /* Los dos botones se centran como bloque: `.entrar-acciones` es una fila, y
+     lo que la acomoda adentro es `justify-content`, no los márgenes de los
+     hijos —a los hijos se les siguen sacando, como en los otros anchos. */
+  .entrar-acciones {
+    justify-content: center;
+  }
 }
 
 
