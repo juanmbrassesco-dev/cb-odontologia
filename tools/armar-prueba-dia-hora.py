@@ -257,6 +257,7 @@ def armar():
 <script>
 { cuerpo }
 </script>
+<script src="{ SUBIR }js/fechas.js"></script>
 <script src="{ SUBIR }js/pasos.js"></script>
 <script src="{ SUBIR }js/dia-hora.js"></script>
 <script>

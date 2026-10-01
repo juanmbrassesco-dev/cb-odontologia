@@ -148,10 +148,6 @@ CUERPO_JS = r'''
   let diaElegido = '2026-10-08';
   let horaElegida = '2026-10-08T15:30:00-03:00';
 
-  function elDiaEnPalabras() {
-    return 'Jueves 8 de octubre';
-  }
-
   // El «Volver a la agenda» del fallo genérico la llama. Acá no hay agenda que
   // recargar, así que se deja dicho en la página qué habría pasado.
   async function recargarLaAgenda() {
@@ -306,6 +302,7 @@ def armar():
 <script>
 { cuerpo }
 </script>
+<script src="{ SUBIR }js/fechas.js"></script>
 <script src="{ SUBIR }js/pasos.js"></script>
 <script src="{ SUBIR }js/confirmar.js"></script>
 <script>
