@@ -253,10 +253,25 @@
         <span class="enlace">Escribinos por WhatsApp</span>
       </a>
     
-      <div class="dato-contacto">
+      <!--
+        EL CORREO ES UN ENLACE COMO EL TELÉFONO, y antes no lo era: hasta el
+        1-oct-2026 acá decía `cecilia@example.com`, que es un dominio reservado
+        para ejemplos (RFC 2606) y no le llega a nadie — enlazarlo habría
+        abierto el programa de correo para escribirle a la nada.
+
+        Con el correo de verdad puesto, la caja pasa a ser el mismo componente
+        que el teléfono y el WhatsApp: los tres datos de contacto se tocan.
+
+        ⏱ ES PROVISIONAL —`cb.odontologa@gmail.com`— y está dicho dónde vive su
+        reemplazo: el día que exista `contacto@<el dominio>`, se cambia acá.
+        ⚠️ Y NO va en nada impreso: un sitio se edita en un minuto, un cartel y
+        una tanda de recetas no.
+      -->
+      <a class="dato-contacto" href="mailto:cb.odontologa@gmail.com"
+         aria-label="Escribirle un correo al consultorio">
         <svg class="ico-contacto" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5.4" width="17.6" height="13.2" rx="2.4"/><path d="M3.9 7 l8.1 5.9 l8.1-5.9"/></svg>
-        <span>cecilia@example.com</span>
-      </div>
+        <span class="enlace">cb.odontologa@gmail.com</span>
+      </a>
       </div>
     </div>
     </section>
