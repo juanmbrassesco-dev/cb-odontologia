@@ -2371,6 +2371,25 @@ textarea.caja {
   margin-left: 0;
 }
 
+/* 🔴 Y EN ESCRITORIO VUELVE A CENTRARSE —lo cazó Juan el 1-oct-2026 mirando el
+   sitio ya publicado: «en pantalla grande el botón de continuar no está
+   centrado y queda mal»—.
+
+   QUÉ PASÓ, que es lo que conviene entender: la pieza `paso` centra TODO lo
+   que cuelga de una pantalla del flujo, pero este botón trae de arriba un
+   `margin-left: 0` propio, y ese selector pesa más. **El arreglo no es volver
+   a centrarlo desde la cáscara: es que la regla que lo descentra deje de valer
+   donde la pantalla se centra.**
+
+   ⚠️ Es el ÚNICO botón del flujo al que le pasa: los demás viven adentro de
+   `.acciones`, que los acomoda con `justify-content` y no con márgenes. */
+@media (min-width: 768px) {
+
+  .quien .btn {
+    margin-left: auto;
+  }
+}
+
 .quien .campo:first-of-type {
   margin-top: 28px;
 }
