@@ -1,0 +1,27 @@
+// CÓMO SE PUBLICA EL SITIO — la configuración que lee Cloudflare al desplegar.
+//
+// QUÉ ES ESTO, en una línea: le dice a Cloudflare que acá no hay código que
+// ejecutar, sólo una carpeta de archivos que servir.
+//
+// 🔑 NO HAY `main`, Y ESA AUSENCIA ES EL PUNTO. Un proyecto de Workers suele
+// apuntar a un archivo de JavaScript que corre en el servidor de Cloudflare;
+// este sitio no tiene ninguno —toda la lógica vive en las Edge Functions de
+// Supabase, que son otro servicio— así que lo único que Cloudflare hace es
+// entregar los archivos de `dist/`.
+//
+// ⚠️ `dist/` NO ESTÁ EN EL REPO: lo arma `tools/armar-publicacion.sh` en cada
+// despliegue, con las tres páginas, el CSS, el JS y las cuatro imágenes que el
+// HTML usa. El resto del repositorio —los tableros de marca, las pruebas, las
+// migraciones— no se publica: es andamiaje.
+//
+// `compatibility_date` congela el comportamiento de la plataforma al día en
+// que se escribió esto. Cloudflare cambia cosas con el tiempo y esta fecha es
+// la promesa de que el sitio se va a seguir sirviendo como el día que anduvo.
+// Subirla es una decisión, no un mantenimiento automático.
+{
+  "name": "cb-odontologia",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist"
+  }
+}
