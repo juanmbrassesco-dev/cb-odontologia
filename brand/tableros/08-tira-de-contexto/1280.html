@@ -1191,7 +1191,14 @@ section > h2 + p { margin-top: 8px; }
   color: var(--texto-segundo);
 }
 
-.turno .btn {
+/* 🔴 ESTA REGLA NOMBRA LA PANTALLA A PROPÓSITO, porque si no PIERDE: la
+   convención del 1-oct —`.paso .btn`, 28 px— alcanza a cualquier botón que esté
+   adentro de una pantalla del flujo, y el de la tarjeta NO es la acción de la
+   pantalla: es la acción de ESA tarjeta, y su aire es parte del dibujo de la
+   pieza 6. Sin el `.paso` delante, el botón pasaba de 18 a 28 px sin que nadie
+   lo decidiera. Lo cazó el diff contra la medición vieja, no la vista. */
+.turno .btn,
+.paso .turno .btn {
   margin-top: 18px;
 }
 
@@ -1242,17 +1249,14 @@ section > h2 + p { margin-top: 8px; }
      Juan: ahí la tarjeta lleva botón y de tablet para arriba va EN FILA, así
      que necesita el ancho de una lista y no el de una tarjeta suelta. La de
      confirmar —que no tiene botón— se queda donde estaba. */
-  .lista {
+  .lista,
+  .lista-turnos {
     width: var(--tarjeta-ancho);
   }
 
   .lista .turno,
   .lista-turnos .turno {
     width: auto;
-  }
-
-  .lista-turnos {
-    width: 100%;
   }
 
 
@@ -1313,7 +1317,14 @@ section > h2 + p { margin-top: 8px; }
 
    Y EL TEXTO DEJA DE ESTAR CENTRADO en esta variante: centrado tiene sentido
    en una caja angosta donde el texto ES la tarjeta; en una fila ancha, con el
-   botón a la derecha, el ojo necesita un borde del que arrancar. */
+   botón a la derecha, el ojo necesita un borde del que arrancar.
+
+   🔴 Y VA SÓLO EN EL ANCHO MÁS GRANDE —lo acotó Juan el 1-oct-2026 mirando la
+   pantalla: «la de 768 dejala como antes, sólo hacemos fila la más grande de
+   todas»—. **POR QUÉ 768 SE QUEDA APILADA, y está medido: ahí a los datos les
+   quedan 409 px y los cuatro piden 800.** La fila entraba a medias —tres
+   renglones en vez de cuatro—, que es el peor de los dos mundos: ni la caja
+   angosta que se lee de un vistazo, ni la línea que aprovecha el ancho. */
 
 
   .turno.con-accion {
@@ -1323,6 +1334,15 @@ section > h2 + p { margin-top: 8px; }
     gap: 28px;
     width: auto;
     text-align: left;
+
+    /* 🔴 Y SE LE SACA EL TECHO DE 860 QUE TRAE `.turno`, que era el que estaba
+       apilando de verdad: la lista medía 1100 y la tarjeta se frenaba en 860,
+       así que a los datos les quedaban 536 px donde había 777 disponibles.
+       **Medido con el valor computado, no deducido del archivo** — a ojo se
+       veía «la tarjeta no usa el ancho» y la causa estaba dos reglas más
+       arriba. El techo sigue valiendo para la tarjeta SIN acción, que es una
+       caja angosta de lectura. */
+    max-width: none;
   }
 
   /* 🔴 LOS DATOS SE ESTIRAN Y EL BOTÓN NO, y sin esto la fila sale mal: con los
@@ -1332,9 +1352,36 @@ section > h2 + p { margin-top: 8px; }
      lista no se alinean entre sí—. Estirando los datos, el sobrante queda del
      lado del texto y el botón termina SIEMPRE contra el borde derecho.
 
-     `flex: 1` es «quedate con todo el espacio que sobre». */
+     `flex: 1` es «quedate con todo el espacio que sobre».
+
+     🔴 Y LOS CUATRO RENGLONES TAMBIÉN VAN EN FILA —lo corrigió Juan el
+     1-oct-2026 mirando la pantalla: «me pusiste filas con los elementos
+     apilados, es lo peor de los dos mundos»—. Tenía razón: una tarjeta en fila
+     con los datos apilados adentro deja una columna de texto angosta, un
+     hueco al medio y el botón lejos, o sea los dos problemas juntos. Puestos
+     en fila, la tarjeta pasa de cuatro renglones a uno o dos.
+
+     `flex-wrap: wrap` y no columnas de ancho fijo: los cuatro datos miden lo
+     que mide su texto —un nombre largo, una obra social corta— y lo que no
+     entra baja solo. Sin números mágicos y sin un ancho que haya que ajustar
+     cada vez que aparezca un nombre más largo.
+
+     `align-items: baseline` los apoya a TODOS sobre la misma línea de
+     escritura, que es lo que hace que se lean como una frase y no como cuatro
+     cajas de distinto tamaño puestas una al lado de la otra. */
   .turno.con-accion .datos {
     flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 22px;
+  }
+
+  /* Adentro de la fila ninguno pone aire propio: el que separa es el `gap` de
+     arriba, uno solo para los cuatro. Si cada uno conservara su `margin-top`,
+     el renglón quedaría dentado. */
+  .turno.con-accion .datos > * {
+    margin-top: 0;
   }
 
   /* El botón no se estira ni se achica: mide su texto. `flex: none` apaga las
@@ -1347,10 +1394,17 @@ section > h2 + p { margin-top: 8px; }
 
 
 
-  /* El techo de las listas del sistema. Sin esto, la fila cruzaría los 1100 px
-     de la página y el botón quedaría a un palmo de los datos. */
+  /* 🔴 LA LISTA DE TURNOS SE SALE DEL TECHO DE 860 Y TOMA LA PÁGINA ENTERA, y
+     es consecuencia de la regla que puso Juan el 1-oct-2026: «al haber más
+     espacio se hacen filas, apilado sólo cuando no entra». Con 860 los cuatro
+     datos y el botón NO entran en un renglón —piden ~990—, así que el
+     apilamiento no venía de falta de ganas sino de falta de ancho.
+
+     ⚠️ Es la única lista del sitio que se aparta de `--columna-lista`, y el
+     motivo es que no es una lista de LECTURA: son cuatro datos cortos y una
+     acción, no prosa que se vuelva ilegible al ensancharse. */
   .lista-turnos {
-    width: var(--columna-lista);
+    width: 100%;
   }
 
 

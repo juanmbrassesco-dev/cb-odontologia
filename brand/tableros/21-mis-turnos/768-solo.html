@@ -881,7 +881,14 @@ th.n { text-align: right; }
   color: var(--texto-segundo);
 }
 
-.turno .btn {
+/* 🔴 ESTA REGLA NOMBRA LA PANTALLA A PROPÓSITO, porque si no PIERDE: la
+   convención del 1-oct —`.paso .btn`, 28 px— alcanza a cualquier botón que esté
+   adentro de una pantalla del flujo, y el de la tarjeta NO es la acción de la
+   pantalla: es la acción de ESA tarjeta, y su aire es parte del dibujo de la
+   pieza 6. Sin el `.paso` delante, el botón pasaba de 18 a 28 px sin que nadie
+   lo decidiera. Lo cazó el diff contra la medición vieja, no la vista. */
+.turno .btn,
+.paso .turno .btn {
   margin-top: 18px;
 }
 
@@ -932,17 +939,14 @@ th.n { text-align: right; }
      Juan: ahí la tarjeta lleva botón y de tablet para arriba va EN FILA, así
      que necesita el ancho de una lista y no el de una tarjeta suelta. La de
      confirmar —que no tiene botón— se queda donde estaba. */
-  .lista {
+  .lista,
+  .lista-turnos {
     width: var(--tarjeta-ancho);
   }
 
   .lista .turno,
   .lista-turnos .turno {
     width: auto;
-  }
-
-  .lista-turnos {
-    width: 100%;
   }
 
 
@@ -998,36 +1002,14 @@ th.n { text-align: right; }
 
    Y EL TEXTO DEJA DE ESTAR CENTRADO en esta variante: centrado tiene sentido
    en una caja angosta donde el texto ES la tarjeta; en una fila ancha, con el
-   botón a la derecha, el ojo necesita un borde del que arrancar. */
+   botón a la derecha, el ojo necesita un borde del que arrancar.
 
-
-  .turno.con-accion {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-    width: auto;
-    text-align: left;
-  }
-
-  /* 🔴 LOS DATOS SE ESTIRAN Y EL BOTÓN NO, y sin esto la fila sale mal: con los
-     dos midiendo su contenido, el botón queda pegado al texto y cae en un
-     lugar distinto en cada tarjeta —«ortodoncia con Cecilia Brassesco» es más
-     largo que «limpieza con Cecilia Brassesco», así que los botones de una
-     lista no se alinean entre sí—. Estirando los datos, el sobrante queda del
-     lado del texto y el botón termina SIEMPRE contra el borde derecho.
-
-     `flex: 1` es «quedate con todo el espacio que sobre». */
-  .turno.con-accion .datos {
-    flex: 1;
-  }
-
-  /* El botón no se estira ni se achica: mide su texto. `flex: none` apaga las
-     dos cosas de una. */
-  .turno.con-accion .btn {
-    flex: none;
-    margin-top: 0;
-  }
+   🔴 Y VA SÓLO EN EL ANCHO MÁS GRANDE —lo acotó Juan el 1-oct-2026 mirando la
+   pantalla: «la de 768 dejala como antes, sólo hacemos fila la más grande de
+   todas»—. **POR QUÉ 768 SE QUEDA APILADA, y está medido: ahí a los datos les
+   quedan 409 px y los cuatro piden 800.** La fila entraba a medias —tres
+   renglones en vez de cuatro—, que es el peor de los dos mundos: ni la caja
+   angosta que se lee de un vistazo, ni la línea que aprovecha el ancho. */
 
 
 
