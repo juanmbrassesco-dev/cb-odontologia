@@ -285,18 +285,22 @@ UNA SOLA FORMA, HAYA UNO O HAYA CINCO. Con una sola profesional queda un
         del tablero es la FORMA —qué cajas hay y cómo se ven—, que es lo que
         se aprobó; los datos nunca fueron parte de eso.
 
-        LAS DOS MITADES Y EL ANCLA QUE LAS UNE. En el teléfono el mes ocupa
-        ~400 px y las horas ~372: no entran juntas en una pantalla de 745, así
-        que cada día es un <a href="#horarios"> y tocarlo BAJA a la grilla en
-        vez de abrir nada. En escritorio (1280) la clase `juntas` las pone una
-        al lado de la otra y el ancla no tiene nada que hacer, porque las dos
-        ya están a la vista.
+        LAS DOS MITADES Y EL ANCLA QUE LAS UNE. El mes ocupa ~400 px y las
+        horas ~372: no entran juntas en una pantalla de teléfono, así que cada
+        día es un <a href="#horarios"> y tocarlo BAJA a la grilla en vez de
+        abrir nada.
+
+        🔴 Y BAJA EN LOS TRES ANCHOS, no sólo en el teléfono —decidido por Juan
+        el 1-oct-2026, «que baje»—. Antes, en escritorio, el mes y las horas
+        iban uno al lado del otro y el ancla no tenía nada que hacer; ahora
+        comparten una caja centrada y van apilados, así que el salto hace el
+        mismo trabajo en todos lados. **Una pantalla, un comportamiento.**
 
         `.horarios` arranca con `hidden` porque hasta que no se elige un día no
         hay ninguna hora que mostrar, y una grilla vacía con un título encima
         se lee como «no hay turnos» en lugar de «todavía no elegiste».
       -->
-      <div class="reserva juntas">
+      <div class="reserva">
 
         <div class="almanaque" id="almanaque"></div>
 

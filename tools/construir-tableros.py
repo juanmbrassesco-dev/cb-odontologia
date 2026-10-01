@@ -1942,9 +1942,11 @@ def grilla(bloques):
 
 
 def tablero_grilla(tokens, css, ancho):
-    juntas = ancho >= 1280
-    apertura = '\n  <div class="juntas">' if juntas else '\n  <div>'
-    lado = '\n    <div class="lado">' if juntas else '\n    <div>'
+    # 🔴 YA NO SE PARTE EN DOS A 1280: el mes y las horas comparten una caja
+    # centrada en los tres anchos, decidido por Juan el 1-oct-2026. La clase
+    # `juntas` no la consume ninguna regla y por eso no se escribe más.
+    apertura = '\n  <div class="reserva">'
+    lado = '\n    <div>'
 
     return f"""<!-- @dsCard group="Components" -->
 <meta charset="utf-8">
