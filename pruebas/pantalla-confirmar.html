@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prueba · la pantalla ⑤ y sus cinco respuestas</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    /* Lo de abajo NO es parte del sitio: es el tablero de mandos de la prueba.
+       Va con un fondo distinto para que no se confunda con la pantalla. */
+    .mandos {
+      padding: 10px 20px;
+      background: #2b2a27;
+      color: #fff;
+      font: 13px/1.5 ui-monospace, monospace;
+    }
+    .mandos a { color: #e8c87a; }
+    #registro {
+      margin: 0;
+      padding: 10px 20px;
+      max-height: 120px;
+      overflow: auto;
+      background: #1c1b19;
+      color: #cfcdc7;
+      font: 12px/1.5 ui-monospace, monospace;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="mandos">
+  qué contesta el portero:
+  <a href="?caso=feliz">201 reservado</a> ·
+  <a href="?caso=limite">409 tope</a> ·
+  <a href="?caso=hora">409 hora tomada</a> ·
+  <a href="?caso=sesion">403 sesión</a> ·
+  <a href="?caso=fallo">500</a> ·
+  <a href="?caso=red">sin red</a>
+</div>
+<pre id="registro"></pre>
+
+  <main>
+    <!-- `pasos.js` arranca guardando la pantalla que está a la vista, y en el
+         sitio ésa es la de entrar. Acá no está, así que se le deja una vacía
+         para esconder: sin esto, el primer cambio de pantalla se cae. -->
+    <section id="paso-entrar" hidden></section>
+
+<section class="paso confirmar" id="paso-confirmar">
+
+      <h1>¿Confirmamos?</h1>
+
+      <p class="ayuda-pantalla">Revisá que esté todo bien y decinos con qué
+      cobertura venís.</p>
+
+      <div class="turno">
+        <div class="datos">
+          <h3 id="confirmar-cuando"></h3>
+          <p class="que" id="confirmar-que"></p>
+          <p class="quien" id="confirmar-quien"></p>
+        </div>
+      </div>
+
+      <!--
+        LA COBERTURA ES OBLIGATORIA Y ARRANCA SIN ELEGIR, y las dos cosas van
+        juntas. La lista trae «Particular» primera por la columna `orden` de la
+        base, así que dejar la primera ya marcada haría que el que no toca nada
+        reserve como particular sin haberlo dicho. La decisión escrita es que
+        «el que paga de su bolsillo ELIGE una opción, no una excepción»: para
+        que elegir sea un acto hace falta que el arranque no sea una elección.
+
+        LAS OPCIONES NO ESTÁN ACÁ: son 71 filas de la tabla `obras_sociales` y
+        las cuelga `js/confirmar.js`. Escribirlas también acá sería tener la
+        misma lista en dos lados.
+      -->
+      <div class="campo">
+        <label class="etiqueta" for="cobertura">Cobertura</label>
+        <select class="caja" id="cobertura">
+          <option value="">Elegí una opción</option>
+        </select>
+      </div>
+
+      <!--
+        ⚠️ ESTE CAMPO PUEDE RECIBIR DATOS DE SALUD —es una propiedad del modelo
+        de datos, no un pendiente—, y por eso su ayuda pide UNA LÍNEA. El texto
+        es el de la pieza 4, que es la que define este campo; el tablero de la
+        pantalla ⑤ no la tenía, y es el mismo caso ya visto dos veces en este
+        proyecto: lo decidido en una pieza no baja solo a la pantalla que la
+        usa.
+      -->
+      <div class="campo">
+        <label class="etiqueta" for="observaciones">Algo que quieras avisarnos
+        <span class="opcional">(opcional)</span></label>
+        <textarea class="caja" id="observaciones"></textarea>
+        <p class="ayuda">Con una línea alcanza. Lo demás se habla en el
+        consultorio.</p>
+      </div>
+
+      <div class="acciones acciones-fila">
+        <button class="btn btn-1 pila" id="confirmar-reservar">
+          <span>Confirmar turno</span>
+          <span class="fantasma" aria-hidden="true">Reservando…</span>
+        </button>
+
+        <button class="btn btn-2" id="confirmar-atras">Atrás</button>
+      </div>
+
+    </section>
+
+<section class="paso mensaje" id="paso-mensaje" hidden>
+
+      <h2 id="mensaje-titulo"></h2>
+
+      <p id="mensaje-cuerpo"></p>
+
+      <div class="acciones">
+        <button class="btn" id="mensaje-accion"></button>
+
+        <div id="mensaje-google" hidden></div>
+      </div>
+
+    </section>
+  </main>
+
+<script>
+
+  // ── LO QUE NORMALMENTE PONEN LAS CUATRO PANTALLAS ANTERIORES ──
+  //
+  // Esta página no entra con Google ni pasa por el flujo, así que todo lo que
+  // `confirmar.js` espera encontrar puesto se pone acá a mano. Son las MISMAS
+  // variables y las mismas funciones, con los mismos nombres: si alguna
+  // cambiara de nombre, esta prueba se rompe en vez de mentir.
+  const SUPABASE_URL = 'https://ejemplo.invalido';
+  const SUPABASE_CLAVE_PUBLICA = 'clave-de-prueba';
+
+  function tokenDeLaSesion() {
+    return 'token-de-prueba';
+  }
+
+  // De `motivo.js` y de `dia-hora.js`.
+  let tratamientoElegido = 1;
+  let nombreDelTratamiento = 'Ortodoncia';
+  let profesionalElegido = 1;
+  let nombreDelProfesional = 'Cecilia Brassesco';
+  let diaElegido = '2026-10-08';
+  let horaElegida = '2026-10-08T15:30:00-03:00';
+
+  function elDiaEnPalabras() {
+    return 'Jueves 8 de octubre';
+  }
+
+  // El «Volver a la agenda» del fallo genérico la llama. Acá no hay agenda que
+  // recargar, así que se deja dicho en la página qué habría pasado.
+  async function recargarLaAgenda() {
+    avisar( 'Se llamó a recargarLaAgenda(): en el sitio, acá se vuelve a pedir el mes.' );
+  }
+
+  // De `quien.js`. El caso con `paciente_id` es el más común —la persona ya
+  // figura— y el de alta se mira cambiando esto a mano.
+  let pacienteElegido = {
+    pedido: { paciente_id: 225 },
+    nombre: 'María Fernanda Gómez'
+  };
+
+  // De `auth.js`. El botón de Google NO se puede dibujar acá: lo dibuja su
+  // biblioteca y necesita el origen autorizado. Se pone un cartel que dice qué
+  // va en ese lugar, para que nadie confunda este recuadro con el botón real.
+  function prepararElBoton( { contenedor, alEntrar } ) {
+
+    contenedor.textContent = '';
+
+    const cartel = document.createElement( 'button' );
+    cartel.className = 'btn btn-2';
+    cartel.textContent = '(acá dibuja Google su botón) · entrar';
+
+    cartel.addEventListener( 'click', alEntrar );
+
+    contenedor.appendChild( cartel );
+  }
+
+
+  // ── EL PEDIDO AL PORTERO, INTERCEPTADO ──
+  //
+  // Se reemplaza `fetch` en vez de llamar a `darLaNoticia(…)` a mano, y la
+  // diferencia importa: así corre el camino ENTERO —armar el cuerpo, mandarlo,
+  // leer el estado, elegir la noticia—. Saltearse el pedido dejaría sin probar
+  // justo la parte que más se toca.
+  const CASO = new URLSearchParams( location.search ).get( 'caso' ) || 'feliz';
+
+  const RESPUESTAS = {"feliz": [201, {"id": 999, "inicio": "2026-10-08T15:30:00-03:00", "duracion_min": 30}], "limite": [409, {"error": "Ya tenés un turno con este profesional. Podés cancelarlo desde «mis turnos», o escribinos si necesitás otro.", "codigo": "limite_alcanzado"}], "hora": [409, {"error": "Esa hora se acaba de ocupar. Elegí otra, por favor", "codigo": "hora_tomada"}], "sesion": [403, {"error": "Sesión no válida"}], "fallo": [500, {"error": "No se pudo reservar el turno"}]};
+
+  const fetchDeVerdad = window.fetch;
+
+  window.fetch = async function ( direccion, opciones ) {
+
+    if ( String( direccion ).includes( 'obras-sociales' ) ) {
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => [{"id": 1, "nombre": "Particular", "entidad": "Particular"}, {"id": 2, "nombre": "IAPOS", "entidad": "IAPOS"}, {"id": 3, "nombre": "IAPOS Plan Superior", "entidad": "IAPOS"}, {"id": 4, "nombre": "IAPOS Jubilados", "entidad": "IAPOS"}, {"id": 5, "nombre": "OSDE 210", "entidad": "OSDE"}, {"id": 6, "nombre": "OSDE 310", "entidad": "OSDE"}, {"id": 7, "nombre": "Swiss Medical", "entidad": "Swiss Medical"}]
+      };
+    }
+
+    if ( String( direccion ).includes( 'reservar' ) ) {
+
+      // Lo que la pantalla mandó queda escrito arriba: es la mitad que no se
+      // ve mirando la pantalla, y es la que tiene que llegarle al portero.
+      avisar( 'POST /reservar ← ' + opciones.body );
+
+      // SIN RED: el caso en que el pedido no llega a salir. `fetch` lanza, y lo
+      // que se prueba es que la pantalla igual diga algo en vez de quedarse
+      // muda con el botón apagado.
+      if ( CASO === 'red' ) {
+        throw new TypeError( 'Failed to fetch (simulado)' );
+      }
+
+      const respuesta = RESPUESTAS[ CASO ];
+
+      return {
+        ok: respuesta[ 0 ] === 201,
+        status: respuesta[ 0 ],
+        json: async () => respuesta[ 1 ]
+      };
+    }
+
+    return fetchDeVerdad( direccion, opciones );
+  };
+
+
+  function avisar( texto ) {
+    const registro = document.querySelector( '#registro' );
+    registro.textContent = texto + '\n' + registro.textContent;
+  }
+
+</script>
+<script src="../js/pasos.js"></script>
+<script src="../js/confirmar.js"></script>
+<script>
+  // Arranca la pantalla como lo haría el «Continuar» de la ④.
+  prepararLaPantallaDeConfirmar();
+</script>
+</body>
+</html>

@@ -977,6 +977,18 @@ section > h2 + p { margin-top: 8px; }
 }
 
 
+/* LA TARJETA DE UN TURNO — mudada del generador de tableros el 1-oct-2026, tal
+   cual estaba aprobada en la pieza 6.
+
+   VIVE EN DOS LUGARES Y ES UNA SOLA PIEZA: la pantalla ⑤ la usa para resumir
+   el turno que está por crearse, y «mis turnos» para listar los que existen.
+   Lo único que cambia entre los dos es el botón de cancelar, que allá va y acá
+   no: el turno de la ⑤ todavía no existe, así que no hay nada que cancelar.
+
+   ⏱ `--tarjeta-ancho` sigue declarado ACÁ ADENTRO y no en `tokens.css`. El
+   comentario original decía «si el front lo confirma, sube al sistema», y el
+   front lo acaba de confirmar — pero subirlo es otra mudanza, con su propia
+   verificación, y no entra junto con ésta. */
 /* EL ANCHO DE LA TARJETA DE TABLET PARA ARRIBA. Vive acá y no en `tokens.css`
    porque todavía es de esta pieza: si el front lo confirma, sube al sistema. */
 
@@ -1277,19 +1289,65 @@ body { padding: 0; }
 .reglas li { margin-top: 8px; }
 
 
-.confirmar {
+/* LA CÁSCARA COMÚN DE TODA PANTALLA DEL FLUJO DE RESERVA — unificada el
+   30-sep-2026, cuando la tercera copia de las mismas reglas llegó al archivo y
+   una cuarta, una quinta y una sexta esperaban en el generador de tableros
+   (`.dia-hora`, `.confirmar`, `.mis-turnos`).
+
+   🔴 POR QUÉ UNA CLASE Y NO UNA LISTA DE SELECTORES SEPARADOS POR COMA. Las
+   dos formas dejan el mismo resultado hoy; se diferencian el día que se sume
+   una pantalla. Con la lista, la pantalla nueva no hereda nada hasta que
+   alguien se acuerde de agregarla a la lista — o sea, la duplicación no
+   desaparece: cambia de forma y se muda al final de una enumeración. Con la
+   clase, la pantalla nueva escribe `class="paso <lo suyo>"` y ya está
+   adentro. UNA sola manera de hacer la cosa.
+
+   🏁 EL MARGEN DEL BOTÓN YA ESTÁ ACÁ —entró el 1-oct-2026, y la nota que
+   decía «queda para el maquetado de la ④» se reemplaza porque esa espera
+   terminó—. ABAJO, en la regla del aire, está el porqué del número. */
+.paso {
   margin: 0 var(--margen-pagina);
   padding: 32px 0 var(--aire-seccion);
 }
 
-.confirmar h1 {
+
+/* 🔴 EL AIRE QUE SEPARA LOS BOTONES DEL CONTENIDO — UN SOLO DUEÑO Y UN SOLO
+   NÚMERO, PARA TODAS LAS PANTALLAS DEL FLUJO. Convención cerrada por Juan el
+   1-oct-2026: «el aire entre botones es el mismo según pantalla y debe ser una
+   convención», o sea que no se vuelve a elegir pantalla por pantalla.
+
+   POR QUÉ 28 Y NO 52, QUE ES LO QUE SE VEÍA: 28 es el número que están
+   mostrando los tres tableros aprobados (17, 18 y 19) y es el mismo aire que
+   estas pantallas usan entre sus otros bloques (`.opciones`, el primer
+   `.campo`). El 52 no lo decidió nadie: era la SUMA de dos dueños —`.acciones`
+   ponía 24 y el botón 28 encima—, así que la pantalla ② mostraba 28 y las ③ y
+   ④ mostraban 52. Medido con el valor computado, no leído del archivo.
+
+   POR QUÉ EL DUEÑO ES EL BOTÓN Y NO LA FILA: el botón es la única pieza que
+   está en TODAS las formas que existen hoy —suelto en la ②, adentro de
+   `.acciones` en la ③ y la ④, y adentro de `.horarios` en el tablero 19—. Con
+   la fila como dueña habría que tocar el markup del sitio y del generador de
+   tableros para que las tres formas se parezcan; con el botón, la regla
+   alcanza a las tres sin mover un `<div>`.
+
+   ⚠️ Y POR ESO LA FILA SE PONE EN CERO: si las dos dueñas ponen su margen, el
+   total vuelve a ser una suma que nadie eligió. */
+.paso .btn {
+  margin-top: 28px;
+}
+
+.paso .acciones {
+  margin-top: 0;
+}
+
+.paso h1 {
   font-family: Marcellus, Georgia, serif;
   font-size: var(--tipo-h1);
   line-height: var(--alto-h1);
   text-wrap: balance;
 }
 
-.confirmar .ayuda-pantalla {
+.paso .ayuda-pantalla {
   margin-top: 12px;
   color: var(--texto-segundo);
   font-size: var(--tipo-cuerpo);
@@ -1297,6 +1355,11 @@ body { padding: 0; }
   text-wrap: balance;
 }
 
+/* LA PANTALLA ⑤ — «¿confirmamos?» — mudada del generador el 1-oct-2026.
+
+   ⚠ EL MARGEN DE LA SECCIÓN, EL h1 Y LA AYUDA NO ESTÁN ACÁ: son de la pieza
+   `paso`, la cáscara que comparten las pantallas del flujo. Acá queda sólo lo
+   que es de ESTA pantalla y de ninguna otra. */
 /* La tarjeta acá NO es un ítem de una lista: es el resumen de lo que se está
    por crear, así que arranca en el margen como el resto de la pantalla y no
    se estira a lo ancho de la columna de listas. */
@@ -1317,8 +1380,9 @@ body { padding: 0; }
    la tarjeta medía 406 y los campos 640 en la misma columna. */
 
 
+/* Sólo la ALINEACIÓN: el aire de arriba lo pone `.paso .btn`, que es el dueño
+   único de los tres. */
 .confirmar .btn {
-  margin-top: 28px;
   margin-left: 0;
 }
 
@@ -1446,7 +1510,7 @@ de la 18</b>, el campo largo es esa misma caja, y el botón es el de la 3.</p>
     </div>
   </header>
 
-  <div class="confirmar">
+  <div class="paso confirmar">
     <h1>¿Confirmamos?</h1>
 
     <p class="ayuda-pantalla">Revisá que esté todo bien y decinos con qué

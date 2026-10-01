@@ -318,6 +318,111 @@ UNA SOLA FORMA, HAYA UNO O HAYA CINCO. Con una sola profesional queda un
 
     </section>
 
+    <!--
+      LA PANTALLA ⑤ — «¿confirmamos?». Es la que RESERVA: acá se junta todo lo
+      que eligieron las cuatro pantallas anteriores y recién acá se le habla a
+      `POST /reservar`.
+
+      LA TARJETA VA VACÍA EN EL HTML, igual que el almanaque de la ④: lo que se
+      mudó de la maqueta es la FORMA —qué cajas hay y cómo se ven—, y los datos
+      los pone `js/confirmar.js` con lo que el paciente eligió. Escribir acá un
+      día o un nombre de ejemplo sería dejar en la página de verdad el relleno
+      de un tablero.
+
+      ES LA MISMA TARJETA QUE «MIS TURNOS», no una parecida: allá el turno
+      existe y se puede cancelar, así que lleva botón; acá todavía no existe y
+      no hay nada que cancelar. Un dibujo, dos usos.
+    -->
+    <section class="paso confirmar" id="paso-confirmar" hidden>
+
+      <h1>¿Confirmamos?</h1>
+
+      <p class="ayuda-pantalla">Revisá que esté todo bien y decinos con qué
+      cobertura venís.</p>
+
+      <div class="turno">
+        <div class="datos">
+          <h3 id="confirmar-cuando"></h3>
+          <p class="que" id="confirmar-que"></p>
+          <p class="quien" id="confirmar-quien"></p>
+        </div>
+      </div>
+
+      <!--
+        LA COBERTURA ES OBLIGATORIA Y ARRANCA SIN ELEGIR, y las dos cosas van
+        juntas. La lista trae «Particular» primera por la columna `orden` de la
+        base, así que dejar la primera ya marcada haría que el que no toca nada
+        reserve como particular sin haberlo dicho. La decisión escrita es que
+        «el que paga de su bolsillo ELIGE una opción, no una excepción»: para
+        que elegir sea un acto hace falta que el arranque no sea una elección.
+
+        LAS OPCIONES NO ESTÁN ACÁ: son 71 filas de la tabla `obras_sociales` y
+        las cuelga `js/confirmar.js`. Escribirlas también acá sería tener la
+        misma lista en dos lados.
+      -->
+      <div class="campo">
+        <label class="etiqueta" for="cobertura">Cobertura</label>
+        <select class="caja" id="cobertura">
+          <option value="">Elegí una opción</option>
+        </select>
+      </div>
+
+      <!--
+        ⚠️ ESTE CAMPO PUEDE RECIBIR DATOS DE SALUD —es una propiedad del modelo
+        de datos, no un pendiente—, y por eso su ayuda pide UNA LÍNEA. El texto
+        es el de la pieza 4, que es la que define este campo; el tablero de la
+        pantalla ⑤ no la tenía, y es el mismo caso ya visto dos veces en este
+        proyecto: lo decidido en una pieza no baja solo a la pantalla que la
+        usa.
+      -->
+      <div class="campo">
+        <label class="etiqueta" for="observaciones">Algo que quieras avisarnos
+        <span class="opcional">(opcional)</span></label>
+        <textarea class="caja" id="observaciones"></textarea>
+        <p class="ayuda">Con una línea alcanza. Lo demás se habla en el
+        consultorio.</p>
+      </div>
+
+      <div class="acciones acciones-fila">
+        <button class="btn btn-1 pila" id="confirmar-reservar">
+          <span>Confirmar turno</span>
+          <span class="fantasma" aria-hidden="true">Reservando…</span>
+        </button>
+
+        <button class="btn btn-2" id="confirmar-atras">Atrás</button>
+      </div>
+
+    </section>
+
+    <!--
+      LA PANTALLA QUE DA LA NOTICIA — pieza 5, decidida por Juan el 2-sep-2026:
+      el mensaje NO es un bloque adentro del formulario. Cada operación termina
+      en una pantalla propia, y cada pantalla devuelve al paciente al lugar
+      donde puede seguir.
+
+      ES UNA SOLA PANTALLA CON CUATRO TEXTOS, no cuatro pantallas: el título,
+      el cuerpo y la acción los escribe `js/confirmar.js` según lo que haya
+      contestado el portero. Cuatro copias del mismo dibujo serían cuatro
+      lugares donde arreglar un cambio de forma.
+
+      EL HUECO DEL BOTÓN DE GOOGLE existe para UN solo estado —«se cerró tu
+      sesión»—, y está vacío porque ese botón lo dibuja Google adentro, no
+      nosotros. Es el mismo motivo escrito en `js/auth.js`.
+    -->
+    <section class="paso mensaje" id="paso-mensaje" hidden>
+
+      <h2 id="mensaje-titulo"></h2>
+
+      <p id="mensaje-cuerpo"></p>
+
+      <div class="acciones">
+        <button class="btn" id="mensaje-accion"></button>
+
+        <div id="mensaje-google" hidden></div>
+      </div>
+
+    </section>
+
   </main>
 
   <!--
@@ -345,6 +450,7 @@ UNA SOLA FORMA, HAYA UNO O HAYA CINCO. Con una sola profesional queda un
   <script src="js/quien.js"></script>
   <script src="js/motivo.js"></script>
   <script src="js/dia-hora.js"></script>
+  <script src="js/confirmar.js"></script>
   <script src="js/entrar.js"></script>
 </body>
 </html>

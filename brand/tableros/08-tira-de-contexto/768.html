@@ -1031,30 +1031,53 @@ section > h2 + p { margin-top: 8px; }
   background: var(--marfil);
 }
 
+/* LA PANTALLA QUE DA UNA NOTICIA Y DEVUELVE AL PACIENTE A ALGÚN LADO — mudada
+   del generador el 1-oct-2026, tal cual estaba aprobada en la pieza 5.
+
+   DECIDIDO POR JUAN EL 2-sep-2026: el mensaje NO es un bloque adentro del
+   formulario. Cada operación termina en una PANTALLA propia, y cada pantalla
+   devuelve al paciente al lugar donde puede seguir. */
+/* ⚠ EL MARCO NO ESTÁ ACÁ Y ES A PROPÓSITO: el `.pantalla` del tablero —borde,
+   fondo y esquinas redondeadas— es el RECORTE con que un tablero simula una
+   pantalla entera, y vive en el generador. En el sitio esta pantalla ocupa la
+   página, así que no tiene de qué recortarse. Lo que se mudó son las reglas
+   del CONTENIDO, que son las que se aprobaron. */
 /* LOS TÍTULOS VAN EN GRAFITO, no en rojo ni en verde — lo cortó Juan el
    2-sep-2026. Lo que dice de qué tipo es la pantalla es EL TEXTO, y una frase
    se entiende sin distinguir colores. El rojo y el verde quedan para donde
    acompañan a un texto corto que no puede explicarse solo: el error de un
    campo. Una pantalla entera tiene lugar para decirlo con palabras. */
-.pantalla h2 {
+.mensaje h2 {
   font-size: var(--tipo-h2);
   line-height: var(--alto-h2);
   color: var(--grafito);
 }
 
-.pantalla p {
+.mensaje p {
   margin-top: 14px;
   color: var(--grafito);
   font-size: var(--tipo-cuerpo);
   line-height: var(--alto-cuerpo);
 }
 
-.pantalla .btn,
-.pantalla .btn-google {
+.mensaje .btn,
+.mensaje .btn-google {
   margin-top: 26px;
 }
 
 
+/* LA TARJETA DE UN TURNO — mudada del generador de tableros el 1-oct-2026, tal
+   cual estaba aprobada en la pieza 6.
+
+   VIVE EN DOS LUGARES Y ES UNA SOLA PIEZA: la pantalla ⑤ la usa para resumir
+   el turno que está por crearse, y «mis turnos» para listar los que existen.
+   Lo único que cambia entre los dos es el botón de cancelar, que allá va y acá
+   no: el turno de la ⑤ todavía no existe, así que no hay nada que cancelar.
+
+   ⏱ `--tarjeta-ancho` sigue declarado ACÁ ADENTRO y no en `tokens.css`. El
+   comentario original decía «si el front lo confirma, sube al sistema», y el
+   front lo acaba de confirmar — pero subirlo es otra mudanza, con su propia
+   verificación, y no entra junto con ésta. */
 /* EL ANCHO DE LA TARJETA DE TABLET PARA ARRIBA. Vive acá y no en `tokens.css`
    porque todavía es de esta pieza: si el front lo confirma, sube al sistema. */
 
@@ -1596,7 +1619,7 @@ body { padding: 0; }
 
 <p class="marca-banda">Pantalla 5 · el turno quedó reservado</p>
 <div class="banda">
-  <div class="pantalla pantalla-real">
+  <div class="pantalla mensaje pantalla-real">
     <h2>Tu turno quedó reservado</h2>
     <p>Te mandamos un correo con los datos. <b>Si no te llega, podés verlo y
     cancelarlo desde tus turnos</b>, entrando con la misma cuenta.</p>

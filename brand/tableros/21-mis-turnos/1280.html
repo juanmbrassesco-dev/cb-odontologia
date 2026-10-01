@@ -872,6 +872,18 @@ th.n { text-align: right; }
 }
 
 
+/* LA TARJETA DE UN TURNO — mudada del generador de tableros el 1-oct-2026, tal
+   cual estaba aprobada en la pieza 6.
+
+   VIVE EN DOS LUGARES Y ES UNA SOLA PIEZA: la pantalla ⑤ la usa para resumir
+   el turno que está por crearse, y «mis turnos» para listar los que existen.
+   Lo único que cambia entre los dos es el botón de cancelar, que allá va y acá
+   no: el turno de la ⑤ todavía no existe, así que no hay nada que cancelar.
+
+   ⏱ `--tarjeta-ancho` sigue declarado ACÁ ADENTRO y no en `tokens.css`. El
+   comentario original decía «si el front lo confirma, sube al sistema», y el
+   front lo acaba de confirmar — pero subirlo es otra mudanza, con su propia
+   verificación, y no entra junto con ésta. */
 /* EL ANCHO DE LA TARJETA DE TABLET PARA ARRIBA. Vive acá y no en `tokens.css`
    porque todavía es de esta pieza: si el front lo confirma, sube al sistema. */
 

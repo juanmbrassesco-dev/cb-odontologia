@@ -17,6 +17,18 @@
 const DIRECCION_DE_MIS_PACIENTES = SUPABASE_URL + '/functions/v1/mis-pacientes';
 
 
+// A QUIÉN SE LE SACA EL TURNO, que es lo único que esta pantalla le deja al
+// resto del flujo.
+//
+// GUARDA DOS COSAS DISTINTAS Y A PROPÓSITO: `pedido` es lo que viaja a
+// `POST /reservar` —`paciente_id` si la persona ya existe, `paciente_nuevo` si
+// hay que darla de alta, UNO de los dos y nunca los dos—, y `nombre` es sólo
+// para mostrarlo en la tarjeta de la pantalla ⑤. Son dos usos que no se pueden
+// servir con el mismo valor: el portero no quiere el nombre y el paciente no
+// reconoce un id.
+let pacienteElegido = null;
+
+
 /**
  * Le pide al portero la lista de pacientes del correo que entró.
  *
@@ -222,9 +234,40 @@ document.querySelector( '#quien-continuar' ).addEventListener( 'click', () => {
     }
   }
 
-  // ⏱ TODAVÍA NO SE AVISA HACIA AFUERA A QUIÉN SE ELIGIÓ. Lo va a necesitar
-  // `POST /reservar`, que pide `paciente_id` O `paciente_nuevo`, y ese pedido
-  // lo arma la pantalla ⑤. Hasta que exista, avanzar es lo único que hay que
-  // hacer acá.
+  // ── A QUIÉN SE ELIGIÓ, dicho de la única forma que sirve afuera ──────────
+  //
+  // Los campos a la vista son lo que decide el caso, y no la lista: tanto el
+  // que entra por primera vez —que no tiene lista— como el que eligió «es para
+  // otra persona» terminan acá con los campos abiertos, y los dos son un alta.
+  if ( !alta.hidden ) {
+
+    pacienteElegido = {
+      pedido: {
+        paciente_nuevo: {
+          nombre: nombre.value.trim(),
+          apellido: apellido.value.trim()
+        }
+      },
+      nombre: nombre.value.trim() + ' ' + apellido.value.trim()
+    };
+
+  } else {
+
+    // La fila elegida de la lista. `:checked` pide «el que está marcado», y
+    // sobre `[name="paciente"]` hay uno solo marcado por definición: son
+    // radios, no casillas.
+    const marcado = document.querySelector( 'input[name="paciente"]:checked' );
+
+    pacienteElegido = {
+      pedido: { paciente_id: Number( marcado.value ) },
+
+      // El nombre se lee de la pantalla y no de la lista que llegó del
+      // portero: es el mismo texto que el paciente tiene delante, así que la
+      // tarjeta de la ⑤ no puede decir un nombre distinto del que acaba de
+      // tocar.
+      nombre: marcado.closest( '.opcion' ).querySelector( '.nombre' ).textContent
+    };
+  }
+
   avanzarA( '#paso-tratamiento' );
 } );

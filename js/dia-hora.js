@@ -23,6 +23,11 @@ const DIRECCION_DE_PROFESIONALES = SUPABASE_URL + '/functions/v1/profesionales';
 let profesionalElegido = null;
 
 
+// Y SU NOMBRE, por el mismo motivo que en `motivo.js`: el portero entiende el
+// id y el paciente reconoce el nombre. La tarjeta de la pantalla ⑤ lee éste.
+let nombreDelProfesional = null;
+
+
 /**
  * Le pide al portero quiénes hacen ese tratamiento.
  *
@@ -98,6 +103,7 @@ function prepararLaPantallaDeDiaHora( profesionales ) {
   // paciente no tiene preferencia — y con una sola profesional, a un toque que
   // no decide nada nunca.
   profesionalElegido = Number( desplegable.value );
+  nombreDelProfesional = desplegable.selectedOptions[ 0 ].textContent;
 
   // EL ALMANAQUE ARRANCA EN EL MES DE HOY. Se pide sin esperar la respuesta
   // —no hay `await`— a propósito: la pantalla se muestra enseguida con el
@@ -123,6 +129,7 @@ function prepararLaPantallaDeDiaHora( profesionales ) {
 document.querySelector( '#profesional' ).addEventListener( 'change', async ( evento ) => {
 
   profesionalElegido = Number( evento.target.value );
+  nombreDelProfesional = evento.target.selectedOptions[ 0 ].textContent;
 
   // Se suelta lo elegido con el profesional viejo: un horario de la agenda de
   // otra persona no significa nada en ésta.
@@ -138,6 +145,60 @@ document.querySelector( '#profesional' ).addEventListener( 'change', async ( eve
 document.querySelector( '#dia-hora-atras' ).addEventListener( 'click', () => {
   history.back();
 } );
+
+
+// EL «CONTINUAR» DE ESTA PANTALLA.
+//
+// Mismo orden que las otras dos —preparar la siguiente y recién ahí mostrarla—
+// y misma decisión sobre el que no eligió: NO se avanza y se le devuelve el
+// foco al lugar donde falta tocar. No se inventa un aviso: el único mensaje
+// escrito en la maqueta para esta pantalla es la línea de ayuda que ya está
+// arriba, y los avisos de error son pantalla propia (pieza 5), no un texto
+// suelto al lado de un botón.
+document.querySelector( '#dia-hora-continuar' ).addEventListener( 'click', () => {
+
+  // El día sin la hora no alcanza: lo que `POST /reservar` pide es el INICIO,
+  // que es día y hora juntos. Se mira `horaElegida` y no las dos cosas porque
+  // no se puede tener hora sin día — la grilla de horas sólo existe después de
+  // tocar un día.
+  if ( horaElegida === null ) {
+
+    // Si ya eligió el día, lo que falta es la hora y el foco va a la grilla;
+    // si no, lo que falta es el día y va al almanaque. Mandarlo siempre al
+    // mismo lado deja a la mitad de los casos mirando el lugar equivocado.
+    const faltaTocar = diaElegido === null
+      ? document.querySelector( '#almanaque' )
+      : document.querySelector( '#horarios' );
+
+    faltaTocar.focus();
+    return;
+  }
+
+  prepararLaPantallaDeConfirmar();
+
+  avanzarA( '#paso-confirmar' );
+} );
+
+
+/**
+ * Vuelve a la agenda con los horarios RECIÉN pedidos.
+ *
+ * La usa la pantalla de mensaje cuando algo salió mal: el texto aprobado dice
+ * «volver a la agenda, que ya viene actualizada», y las cuatro causas de ese
+ * error —alguien tomó la hora, se cumplieron las 12 horas de anticipación,
+ * Cecilia tapó el día, se dio de baja el profesional— tienen en común que lo
+ * que el paciente tenía en pantalla dejó de ser cierto. Volver sin volver a
+ * preguntar sería devolverlo a la misma pantalla equivocada.
+ */
+async function recargarLaAgenda() {
+
+  diaElegido = null;
+  horaElegida = null;
+
+  document.querySelector( '#horarios' ).hidden = true;
+
+  await traerElMesYDibujarlo();
+}
 
 
 // ══════════════════════════════════════════════════════════════════════
@@ -494,6 +555,28 @@ function elegirElDia( texto ) {
 }
 
 
+/**
+ * El día elegido escrito como lo lee una persona: «Jueves 11 de septiembre».
+ *
+ * 🔑 VIVE EN UNA FUNCIÓN PORQUE LO ESCRIBEN DOS PANTALLAS: esta grilla y la
+ * tarjeta de la ⑤. Escrito dos veces, el día que se decida poner el año —o
+ * abreviar el mes— habría que acordarse de los dos lugares, y el segundo se
+ * descubre cuando un paciente ve dos formatos distintos para el mismo turno.
+ *
+ * LA FECHA SE ARMA CON 'T00:00:00' PEGADO y no con el texto suelto: un
+ * '2026-10-08' solo lo lee el navegador como medianoche UTC, que en Argentina
+ * es el día anterior a las 21. Con la hora puesta se lee como local y el día
+ * no se corre.
+ */
+function elDiaEnPalabras() {
+
+  const fecha = new Date( diaElegido + 'T00:00:00' );
+
+  return NOMBRES_DE_DIA[ fecha.getDay() ] + ' ' + fecha.getDate() +
+    ' de ' + NOMBRES_DE_MES[ fecha.getMonth() ].toLowerCase();
+}
+
+
 /** Las horas del día elegido, con sus cuatro estados. */
 function dibujarLaGrilla() {
 
@@ -513,11 +596,7 @@ function dibujarLaGrilla() {
   // QUÉ DÍA SE ESTÁ MIRANDO, ESCRITO. El ancla baja a una grilla de horas y el
   // almanaque queda arriba, fuera de la vista: sin esta línea, las horas no
   // dicen de cuándo son.
-  const fecha = new Date( diaElegido + 'T00:00:00' );
-
-  cuando.textContent =
-    NOMBRES_DE_DIA[ fecha.getDay() ] + ' ' + fecha.getDate() +
-    ' de ' + NOMBRES_DE_MES[ fecha.getMonth() ].toLowerCase();
+  cuando.textContent = elDiaEnPalabras();
 
   grilla.textContent = '';
 

@@ -126,11 +126,22 @@ function noEsTuyo(): Response {
 function horaTomada(): Response {
 
   return Response.json(
-    { error: 'Esa hora se acaba de ocupar. Elegí otra, por favor' },
+    {
+      error: 'Esa hora se acaba de ocupar. Elegí otra, por favor',
+      codigo: 'hora_tomada',
+    },
     { status: 409 },
   )
 }
 
+// 🔴 LOS DOS 409 LLEVAN `codigo`, Y NO ES DECORACIÓN: la pantalla tiene que
+// mandarlos a lugares DISTINTOS —al que llegó segundo, de vuelta a la agenda;
+// al que ya tiene un turno, a «mis turnos», porque elegir otra hora no le
+// arregla nada— y hasta hoy lo único que los separaba era el TEXTO del error.
+// Distinguir por texto significa que el día que alguien mejore una frase, la
+// pantalla manda al paciente al lugar equivocado y nada avisa. El código es
+// nuestro, no de Postgres, y no cambia cuando cambia la redacción.
+//
 // El tope: ya tiene un turno abierto con ese profesional. Comparte el 409 con
 // el choque de horarios porque es la misma familia —el pedido estaba bien armado
 // y el estado del sistema lo rechaza—, pero el texto tiene que ser distinto: al
@@ -146,6 +157,7 @@ function limiteAlcanzado(): Response {
     {
       error: 'Ya tenés un turno con este profesional. '
         + 'Podés cancelarlo desde «mis turnos», o escribinos si necesitás otro.',
+      codigo: 'limite_alcanzado',
     },
     { status: 409 },
   )

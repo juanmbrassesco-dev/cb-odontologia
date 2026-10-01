@@ -1475,7 +1475,10 @@ de <code>tokens.css</code> y los nueve pares del campo los mide
 # devuelve al paciente al lugar donde puede seguir.
 # ============================================================
 
-CSS_MENSAJE = """
+# EL MARCO ES DEL TABLERO, NO DEL SITIO: es el recorte con que un tablero
+# simula una pantalla entera. Las reglas del contenido se leen de la hoja del
+# sitio, que es donde viven una sola vez.
+CSS_PANTALLA_MARCO = """
 /* El marco no es parte del diseño: es el recorte de la pantalla, para que se
    entienda que esto ocupa todo y no es una tarjeta dentro de otra cosa. */
 .pantalla {
@@ -1486,30 +1489,9 @@ CSS_MENSAJE = """
   border-radius: var(--radio);
   background: var(--marfil);
 }
-
-/* LOS TÍTULOS VAN EN GRAFITO, no en rojo ni en verde — lo cortó Juan el
-   2-sep-2026. Lo que dice de qué tipo es la pantalla es EL TEXTO, y una frase
-   se entiende sin distinguir colores. El rojo y el verde quedan para donde
-   acompañan a un texto corto que no puede explicarse solo: el error de un
-   campo. Una pantalla entera tiene lugar para decirlo con palabras. */
-.pantalla h2 {
-  font-size: var(--tipo-h2);
-  line-height: var(--alto-h2);
-  color: var(--grafito);
-}
-
-.pantalla p {
-  margin-top: 14px;
-  color: var(--grafito);
-  font-size: var(--tipo-cuerpo);
-  line-height: var(--alto-cuerpo);
-}
-
-.pantalla .btn,
-.pantalla .btn-google {
-  margin-top: 26px;
-}
 """
+
+CSS_MENSAJE = CSS_PANTALLA_MARCO + leer_pieza( "mensaje" )
 
 
 # clase · título · cuerpo · botón · de dónde sale · porqué
@@ -1573,7 +1555,7 @@ def bloque_pantalla(clase, titulo, cuerpo, tipo, texto_boton, origen, porque, lo
     return (
         '\n  <div class="estado">'
         f'\n    <p class="dato">{origen}</p>'
-        f'\n    <div class="pantalla {clase}">'
+        f'\n    <div class="pantalla mensaje {clase}">'
         f'\n      <h2>{titulo}</h2>'
         f'\n      <p>{cuerpo}</p>'
         f'{accion(tipo, texto_boton, logo)}'
@@ -1680,168 +1662,7 @@ lugar donde puede seguir</b>. Todo a escala 1:1 en {ancho} px.</p>
 # propio tablero y mal con el resto de la página al lado. Lo cortó Juan.
 # ============================================================
 
-CSS_TARJETA = """
-/* EL ANCHO DE LA TARJETA DE TABLET PARA ARRIBA. Vive acá y no en `tokens.css`
-   porque todavía es de esta pieza: si el front lo confirma, sube al sistema. */
-@media (min-width: 768px) {
-  :root { --tarjeta-ancho: 400px; }
-}
-
-@media (min-width: 1280px) {
-  :root { --tarjeta-ancho: 424px; }
-}
-
-/* TODO CENTRADO ADENTRO DE LA CAJA — decidido por Juan el 3-sep-2026, viendo
-   las tres alineaciones a 390 y a tamaño real. Es la variante C: se centra el
-   texto Y el botón deja de ocupar el ancho de la tarjeta.
-
-   Se aparta de la alineación del resto del sistema, que arranca todo en el
-   margen izquierdo, y por eso vale escribir qué NO rompe:
-
-   · La regla del teléfono de la pieza 3 dice "EL PRINCIPAL va de borde a
-     borde". Éste es el secundario, así que esa regla queda intacta.
-   · El piso táctil de 44 px se cumple igual: el botón conserva su min-height,
-     y del ancho le sobra.
-
-   Lo que sí cuesta: `medir-alineacion.py` mide contra el margen izquierdo y la
-   tarjeta ya no arranca ahí. Se le enseñó el caso; no se le bajó el piso. */
-.turno {
-  max-width: var(--columna-lista);
-  margin-top: 14px;
-  padding: 18px 18px 20px;
-  background: var(--blanco);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  text-align: center;
-}
-
-/* El día y la hora son el título de la tarjeta: es lo que el paciente vino a
-   buscar, y lo único que necesita para reconocer su turno de un vistazo. */
-.turno h3 {
-  font-family: Marcellus, Georgia, serif;
-  font-size: var(--tipo-h3);
-  line-height: var(--alto-h3);
-  color: var(--grafito);
-}
-
-.turno .que {
-  margin-top: 10px;
-  font-size: var(--tipo-cuerpo);
-  line-height: var(--alto-cuerpo);
-}
-
-.turno .quien {
-  margin-top: 2px;
-  font-size: var(--tipo-chico);
-  line-height: var(--alto-chico);
-  color: var(--texto-segundo);
-}
-
-.turno .btn {
-  margin-top: 18px;
-}
-
-.lista { margin-top: 4px; }
-
-/* 🔴 DE TABLET PARA ARRIBA LA TARJETA MIDE SU CONTENIDO, VIVA DONDE VIVA — lo
-   pidió Juan el 25-sep-2026: «no tiene sentido que ocupe todo el cuadro en
-   sentido horizontal». Una tarjeta de 860 px con el texto centrado adentro es
-   una caja casi vacía. En el teléfono no cambia nada: ahí el ancho disponible
-   ya es el del contenido.
-
-   ⚠️ SE APLICÓ PRIMERO SÓLO EN LA LISTA DE «MIS TURNOS» y la de la pantalla de
-   confirmar siguió cruzando la página —«volviste a devolver las tarjetas
-   enormes»—. Es LA MISMA TARJETA: la regla va en ella, no en uno de los dos
-   lugares donde aparece.
-
-   🔑 Y ARREGLA UN DESFASE QUE JUAN TAMBIÉN CAZÓ —«alineá en columna el texto
-   con el botón»—, con causa medible: `h3` y `p` traen `max-width: var(--columna)`
-   (640) de la base, así que dentro de una tarjeta de 860 el texto se centraba
-   respecto a 640 y el botón respecto a 860. Dos ejes a 92 px uno del otro. */
-@media (min-width: 768px) {
-
-  /* ⚠️ ANCHO DECLARADO Y NO `fit-content`, y el motivo es que la tarjeta NO
-     vive sola: en la pantalla de confirmar tiene debajo un desplegable y un
-     campo largo, y con `fit-content` quedaban de anchos distintos —«tienen que
-     tener el mismo para que no se note», 25-sep-2026—.
-
-     Un `<select>` con 71 obras sociales adentro tiene un ancho intrínseco
-     enorme, así que no se lo puede dejar seguir a una caja que mide su propio
-     contenido: el que manda tiene que ser un NÚMERO, y los tres se cuelgan de
-     él. Sale de medir la tarjeta con `fit-content` —395 a 768 y 423 a 1280— y
-     redondear para arriba. */
-  .turno {
-    width: var(--tarjeta-ancho);
-    padding: 24px 40px 26px;
-  }
-
-  /* TODAS LAS DE UNA LISTA MIDEN LO MISMO: el ancho de la más ancha.
-     `fit-content` en cada tarjeta las dejaba de anchos distintos —cada una
-     medía su propio texto— y la lista quedaba dentada por la derecha. La
-     rejilla de una columna resuelve las dos: la columna mide lo que la fila
-     más ancha, y las tarjetas la llenan. */
-  /* La lista se cuelga del MISMO número que la tarjeta suelta: así una tarjeta
-     mide lo mismo en «mis turnos» que en confirmar. Con `fit-content` medían
-     395 y 400, que es distinto sin ningún motivo. */
-  .lista,
-  .lista-turnos {
-    width: var(--tarjeta-ancho);
-  }
-
-  .lista .turno,
-  .lista-turnos .turno {
-    width: auto;
-  }
-}
-
-/* 🔴 DE TABLET PARA ARRIBA LA TARJETA MIDE LO QUE MIDE SU CONTENIDO — lo pidió
-   Juan el 25-sep-2026: «no tiene sentido que ocupe todo el cuadro en sentido
-   horizontal». Una tarjeta de 860 px con el texto centrado adentro es una caja
-   casi vacía. En el teléfono NO cambia: ahí el ancho disponible ya es el del
-   contenido.
-
-   🔑 Y ARREGLA UN SEGUNDO PROBLEMA QUE ÉL TAMBIÉN CAZÓ —«alineá en columna el
-   texto con el botón»—, que tenía una causa medible: `h3` y `p` traen
-   `max-width: var(--columna)` (640) de la base, así que dentro de una tarjeta
-   de 860 el texto se centraba respecto a 640 y el botón respecto a 860. Dos
-   ejes distintos a 92 px uno del otro. Con la tarjeta del ancho de su
-   contenido, los dos centros son el mismo. */
-/* LA LISTA SEPARA CON `gap`, EN LOS TRES ANCHOS — una sola forma de separar
-   dos tarjetas. El aire de arriba lo pidió Juan el 25-sep: sin la línea de
-   ayuda que había antes, el título quedaba pegado a la primera tarjeta. Son
-   los mismos 28 px que la pieza 17 pone entre el texto y sus opciones. */
-.lista-turnos {
-  display: grid;
-  gap: 14px;
-  margin-top: 28px;
-}
-
-.lista-turnos .turno {
-  margin-top: 0;
-}
-
-@media (min-width: 768px) {
-
-  /* EL AIRE CRECE CON EL TÍTULO. A 390 los 28 px quedan —lo miró Juan— pero
-     el mismo valor debajo de un título de escritorio se ve apretado: el h1
-     pasa de 32 px a 52, y el aire que lo acompaña tiene que seguirlo. */
-  .lista-turnos {
-    margin-top: 40px;
-  }
-}
-
-@media (min-width: 1280px) {
-
-  .lista-turnos {
-    margin-top: 48px;
-  }
-}
-
-/* La acción va SIEMPRE debajo de los datos y adentro del cuadro. En el
-   teléfono el botón ocupa el ancho de la tarjeta —lo pide el dedo—; de tablet
-   para arriba se ajusta a su texto, porque un "Cancelar turno" de 800 px de
-   ancho pesa como si fuera la acción que el sitio empuja, y no lo es. */
-"""
+CSS_TARJETA = leer_pieza( "tarjeta" )
 
 
 # día y hora · tratamiento · profesional · para quién
@@ -2451,7 +2272,7 @@ def tablero_contexto(tokens, css, ancho):
 
 <p class="marca-banda">Pantalla 5 · el turno quedó reservado</p>
 <div class="banda">
-  <div class="pantalla pantalla-real">
+  <div class="pantalla mensaje pantalla-real">
     <h2>Tu turno quedó reservado</h2>
     <p>Te mandamos un correo con los datos. <b>Si no te llega, podés verlo y
     cancelarlo desde tus turnos</b>, entrando con la misma cuenta.</p>
@@ -6179,57 +6000,7 @@ def opciones_de_cobertura(elegida):
     return salida
 
 
-CSS_CONFIRMAR = """
-.confirmar {
-  margin: 0 var(--margen-pagina);
-  padding: 32px 0 var(--aire-seccion);
-}
-
-.confirmar h1 {
-  font-family: Marcellus, Georgia, serif;
-  font-size: var(--tipo-h1);
-  line-height: var(--alto-h1);
-  text-wrap: balance;
-}
-
-.confirmar .ayuda-pantalla {
-  margin-top: 12px;
-  color: var(--texto-segundo);
-  font-size: var(--tipo-cuerpo);
-  line-height: var(--alto-cuerpo);
-  text-wrap: balance;
-}
-
-/* La tarjeta acá NO es un ítem de una lista: es el resumen de lo que se está
-   por crear, así que arranca en el margen como el resto de la pantalla y no
-   se estira a lo ancho de la columna de listas. */
-.confirmar .turno {
-  max-width: var(--columna);
-  margin-top: 22px;
-}
-
-/* EL CAMPO LARGO USA LA MISMA CAJA QUE EL RESTO. Lo único propio es que puede
-   crecer: `resize: vertical` deja agrandarlo a lo alto y NO a lo ancho, porque
-   a lo ancho rompería la columna de lectura. */
-.confirmar textarea.caja {
-  min-height: 96px;
-  resize: vertical;
-}
-
-/* EL DESPLEGABLE Y EL CAMPO LARGO MIDEN LO MISMO QUE LA TARJETA. Sin esto,
-   la tarjeta medía 406 y los campos 640 en la misma columna. */
-@media (min-width: 768px) {
-
-  .confirmar .campo {
-    max-width: var(--tarjeta-ancho);
-  }
-}
-
-.confirmar .btn {
-  margin-top: 28px;
-  margin-left: 0;
-}
-"""
+CSS_CONFIRMAR = CSS_PASO + leer_pieza( "confirmar" )
 
 
 def confirmar_del_sitio(ancho):
@@ -6257,7 +6028,7 @@ def confirmar_del_sitio(ancho):
     </div>
   </header>
 
-  <div class="confirmar">
+  <div class="paso confirmar">
     <h1>¿Confirmamos?</h1>
 
     <p class="ayuda-pantalla">Revisá que esté todo bien y decinos con qué

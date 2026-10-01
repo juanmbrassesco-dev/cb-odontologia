@@ -23,6 +23,13 @@ const DIRECCION_DE_TRATAMIENTOS = SUPABASE_URL + '/functions/v1/tratamientos';
 let tratamientoElegido = null;
 
 
+// Y SU NOMBRE, que es otro trabajo: el id es lo que entiende el portero y el
+// nombre es lo que el paciente va a releer en la tarjeta de la pantalla ⑤.
+// Guardarlo acá —y no volver a buscarlo allá— deja la lista de tratamientos
+// viviendo en un solo archivo.
+let nombreDelTratamiento = null;
+
+
 /**
  * Le pide al portero la lista de tratamientos.
  *
@@ -111,6 +118,11 @@ document.querySelector( '#motivo-continuar' ).addEventListener( 'click', async (
   }
 
   tratamientoElegido = Number( desplegable.value );
+
+  // `selectedOptions` es la lista de lo elegido —uno solo, porque el
+  // desplegable no es múltiple—, así que el nombre sale de la opción misma y
+  // no de volver a recorrer la lista buscando ese id.
+  nombreDelTratamiento = desplegable.selectedOptions[ 0 ].textContent;
 
   // ⬜ SI FALLA, HOY NO SE LE DICE NADA AL PACIENTE, y es deuda declarada: esta
   // pantalla no tiene dónde escribir un aviso —la ① sí, con `#aviso-entrar`—.
