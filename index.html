@@ -96,7 +96,21 @@
     media pantalla esconde el sitio detrás de sí mismo.
   -->
   <nav class="menu-abierto" id="menu" aria-label="Menú" hidden>
-    <a class="btn btn-1" href="reservar.html">Reservar</a>
+    <!--
+      🔴 «RESERVAR» ACÁ ADENTRO NO ES UN BOTÓN —lo cortó Juan el 1-oct-2026:
+      «ese reservar adentro del sándwich debe ser igual que los otros elementos
+      de la lista porque ahí ya juega en otro contexto»—.
+
+      Tenía razón y la razón es de contexto, no de gusto: en la barra el botón
+      es LA acción, rodeada de aire y sin nada que compita. Adentro del panel
+      es el primer renglón de una lista de cinco, y un bloque dorado arriba de
+      cuatro renglones de texto no jerarquiza: rompe la lista.
+
+      ⚠️ LO QUE SE PIERDE, dicho: en el teléfono el menú deja de tener una
+      acción destacada. No queda sin ninguna en la pantalla — el hero tiene su
+      botón «Reservar» apenas se cierra el panel, que es donde el sitio empuja.
+    -->
+    <a href="reservar.html">Reservar</a>
     <a href="#tratamientos">Tratamientos</a>
     <a href="#nosotros">Nosotros</a>
     <a href="#contacto">Contacto</a>
