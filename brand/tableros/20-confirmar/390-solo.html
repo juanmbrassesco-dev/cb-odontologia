@@ -1094,7 +1094,27 @@ section > h2 + p { margin-top: 8px; }
 
 
 
-/* La acción va SIEMPRE debajo de los datos y adentro del cuadro. En el
+/* 🔴 LA TARJETA QUE LLEVA ACCIÓN VA EN FILA DE 768 PARA ARRIBA —lo pidió Juan
+   el 1-oct-2026: «en resolución de pantalla grande la tarjeta la quiero en fila
+   no apilada»—. Los datos a la izquierda, el botón a la derecha.
+
+   POR QUÉ LA CLASE Y NO TODAS LAS TARJETAS: la de la pantalla ⑤ no tiene botón
+   —el turno todavía no existe, no hay nada que cancelar—, así que en fila no
+   tendría qué poner a la derecha. Es la MISMA pieza con dos usos, y el que
+   cambia es el que tiene la acción.
+
+   ⚠️ EN EL TELÉFONO NO CAMBIA NADA y es a propósito: a 390 no hay ancho para
+   dos cosas al lado de la otra, y lo apilado está aprobado desde la pieza 6.
+
+   Y EL TEXTO DEJA DE ESTAR CENTRADO en esta variante: centrado tiene sentido
+   en una caja angosta donde el texto ES la tarjeta; en una fila ancha, con el
+   botón a la derecha, el ojo necesita un borde del que arrancar. */
+
+
+
+
+
+/* La acción va debajo de los datos y adentro del cuadro EN EL TELÉFONO. En el
    teléfono el botón ocupa el ancho de la tarjeta —lo pide el dedo—; de tablet
    para arriba se ajusta a su texto, porque un "Cancelar turno" de 800 px de
    ancho pesa como si fuera la acción que el sitio empuja, y no lo es. */

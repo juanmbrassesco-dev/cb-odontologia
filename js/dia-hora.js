@@ -214,14 +214,10 @@ const DIRECCION_DE_HORARIOS = SUPABASE_URL + '/functions/v1/horarios-disponibles
 // `columnaDelDia`, escrita una sola vez.
 const LETRAS_DE_LA_SEMANA = [ 'L', 'M', 'M', 'J', 'V', 'S', 'D' ];
 
-const NOMBRES_DE_MES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-];
-
-const NOMBRES_DE_DIA = [
-  'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'
-];
+// ⚠ LOS NOMBRES DE LOS MESES Y DE LOS DÍAS NO ESTÁN ACÁ: viven en
+// `js/fechas.js`, porque los escriben tres pantallas y una está en otra
+// página. Lo que sí es de este archivo son las LETRAS de la cabecera del
+// almanaque, que no se usan en ningún otro lado.
 
 
 // CUÁNTOS MESES ADELANTE SE PUEDE MIRAR. Sale de la ventana de reserva, que
@@ -555,28 +551,6 @@ function elegirElDia( texto ) {
 }
 
 
-/**
- * El día elegido escrito como lo lee una persona: «Jueves 11 de septiembre».
- *
- * 🔑 VIVE EN UNA FUNCIÓN PORQUE LO ESCRIBEN DOS PANTALLAS: esta grilla y la
- * tarjeta de la ⑤. Escrito dos veces, el día que se decida poner el año —o
- * abreviar el mes— habría que acordarse de los dos lugares, y el segundo se
- * descubre cuando un paciente ve dos formatos distintos para el mismo turno.
- *
- * LA FECHA SE ARMA CON 'T00:00:00' PEGADO y no con el texto suelto: un
- * '2026-10-08' solo lo lee el navegador como medianoche UTC, que en Argentina
- * es el día anterior a las 21. Con la hora puesta se lee como local y el día
- * no se corre.
- */
-function elDiaEnPalabras() {
-
-  const fecha = new Date( diaElegido + 'T00:00:00' );
-
-  return NOMBRES_DE_DIA[ fecha.getDay() ] + ' ' + fecha.getDate() +
-    ' de ' + NOMBRES_DE_MES[ fecha.getMonth() ].toLowerCase();
-}
-
-
 /** Las horas del día elegido, con sus cuatro estados. */
 function dibujarLaGrilla() {
 
@@ -596,7 +570,7 @@ function dibujarLaGrilla() {
   // QUÉ DÍA SE ESTÁ MIRANDO, ESCRITO. El ancla baja a una grilla de horas y el
   // almanaque queda arriba, fuera de la vista: sin esta línea, las horas no
   // dicen de cuándo son.
-  cuando.textContent = elDiaEnPalabras();
+  cuando.textContent = diaEnPalabras( diaElegido );
 
   grilla.textContent = '';
 

@@ -2669,15 +2669,23 @@ textarea.caja {
      más ancha, y las tarjetas la llenan. */
   /* La lista se cuelga del MISMO número que la tarjeta suelta: así una tarjeta
      mide lo mismo en «mis turnos» que en confirmar. Con `fit-content` medían
-     395 y 400, que es distinto sin ningún motivo. */
-  .lista,
-  .lista-turnos {
+     395 y 400, que es distinto sin ningún motivo.
+
+     🔴 Y «MIS TURNOS» SE SALIÓ DE ESE NÚMERO el 1-oct-2026, por decisión de
+     Juan: ahí la tarjeta lleva botón y de tablet para arriba va EN FILA, así
+     que necesita el ancho de una lista y no el de una tarjeta suelta. La de
+     confirmar —que no tiene botón— se queda donde estaba. */
+  .lista {
     width: var(--tarjeta-ancho);
   }
 
   .lista .turno,
   .lista-turnos .turno {
     width: auto;
+  }
+
+  .lista-turnos {
+    width: 100%;
   }
 }
 
@@ -2724,7 +2732,63 @@ textarea.caja {
   }
 }
 
-/* La acción va SIEMPRE debajo de los datos y adentro del cuadro. En el
+/* 🔴 LA TARJETA QUE LLEVA ACCIÓN VA EN FILA DE 768 PARA ARRIBA —lo pidió Juan
+   el 1-oct-2026: «en resolución de pantalla grande la tarjeta la quiero en fila
+   no apilada»—. Los datos a la izquierda, el botón a la derecha.
+
+   POR QUÉ LA CLASE Y NO TODAS LAS TARJETAS: la de la pantalla ⑤ no tiene botón
+   —el turno todavía no existe, no hay nada que cancelar—, así que en fila no
+   tendría qué poner a la derecha. Es la MISMA pieza con dos usos, y el que
+   cambia es el que tiene la acción.
+
+   ⚠️ EN EL TELÉFONO NO CAMBIA NADA y es a propósito: a 390 no hay ancho para
+   dos cosas al lado de la otra, y lo apilado está aprobado desde la pieza 6.
+
+   Y EL TEXTO DEJA DE ESTAR CENTRADO en esta variante: centrado tiene sentido
+   en una caja angosta donde el texto ES la tarjeta; en una fila ancha, con el
+   botón a la derecha, el ojo necesita un borde del que arrancar. */
+@media (min-width: 768px) {
+
+  .turno.con-accion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    width: auto;
+    text-align: left;
+  }
+
+  /* 🔴 LOS DATOS SE ESTIRAN Y EL BOTÓN NO, y sin esto la fila sale mal: con los
+     dos midiendo su contenido, el botón queda pegado al texto y cae en un
+     lugar distinto en cada tarjeta —«ortodoncia con Cecilia Brassesco» es más
+     largo que «limpieza con Cecilia Brassesco», así que los botones de una
+     lista no se alinean entre sí—. Estirando los datos, el sobrante queda del
+     lado del texto y el botón termina SIEMPRE contra el borde derecho.
+
+     `flex: 1` es «quedate con todo el espacio que sobre». */
+  .turno.con-accion .datos {
+    flex: 1;
+  }
+
+  /* El botón no se estira ni se achica: mide su texto. `flex: none` apaga las
+     dos cosas de una. */
+  .turno.con-accion .btn {
+    flex: none;
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 1280px) {
+
+  /* El techo de las listas del sistema. Sin esto, la fila cruzaría los 1100 px
+     de la página y el botón quedaría a un palmo de los datos. */
+  .lista-turnos {
+    width: var(--columna-lista);
+  }
+}
+
+
+/* La acción va debajo de los datos y adentro del cuadro EN EL TELÉFONO. En el
    teléfono el botón ocupa el ancho de la tarjeta —lo pide el dedo—; de tablet
    para arriba se ajusta a su texto, porque un "Cancelar turno" de 800 px de
    ancho pesa como si fuera la acción que el sitio empuja, y no lo es. */
@@ -2803,6 +2867,23 @@ textarea.caja {
 .mensaje .btn,
 .mensaje .btn-google {
   margin-top: 26px;
+}
+
+
+/* ══ pieza: mis-turnos ══ */
+
+/* LA PANTALLA ⑥ — «mis turnos» — mudada del generador el 1-oct-2026.
+
+   ⚠ EL MARGEN DE LA SECCIÓN, EL h1 Y LA AYUDA NO ESTÁN ACÁ: son de la pieza
+   `paso`. Y LA TARJETA TAMPOCO: es la pieza `tarjeta`, la misma que usa la
+   pantalla ⑤. Acá queda sólo lo que es de ESTA pantalla y de ninguna otra. */
+/* La cobertura es el renglón MÁS callado de la tarjeta: es un dato de control,
+   no lo que el paciente vino a mirar. Mismo tamaño que «Paciente: …». */
+.turno .cobertura {
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
 }
 
 

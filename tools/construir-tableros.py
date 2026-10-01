@@ -1693,8 +1693,12 @@ def tarjeta_turno(cuando, tratamiento, profesional, quien, accion=True,
         if cobertura else ''
     )
 
+    # La clase extra la lleva SÓLO la que tiene botón: es la que va en fila de
+    # 768 para arriba. La de confirmar no tiene qué poner a la derecha.
+    clase = "turno con-accion" if accion else "turno"
+
     return (
-        '\n    <div class="turno">'
+        f'\n    <div class="{ clase }">'
         '\n      <div class="datos">'
         f'\n        <h3>{cuando}</h3>'
         f'\n        <p class="que">{tratamiento} {profesional}</p>'
@@ -6195,37 +6199,7 @@ de la 18</b>, el campo largo es esa misma caja, y el botón es el de la 3.</p>
 # decisión, una sola variable por archivo— y no como una pantalla cerrada.
 # ============================================================
 
-CSS_MIS_TURNOS = """
-.mis-turnos {
-  margin: 0 var(--margen-pagina);
-  padding: 32px 0 var(--aire-seccion);
-}
-
-.mis-turnos h1 {
-  font-family: Marcellus, Georgia, serif;
-  font-size: var(--tipo-h1);
-  line-height: var(--alto-h1);
-  text-wrap: balance;
-}
-
-.mis-turnos .ayuda-pantalla {
-  margin-top: 12px;
-  color: var(--texto-segundo);
-  font-size: var(--tipo-cuerpo);
-  line-height: var(--alto-cuerpo);
-  text-wrap: balance;
-}
-
-/* La cobertura es el renglón MÁS callado de la tarjeta: es un dato de control,
-   no lo que el paciente vino a mirar. Mismo tamaño que «Paciente: …». */
-.turno .cobertura {
-  margin-top: 2px;
-  font-size: var(--tipo-chico);
-  line-height: var(--alto-chico);
-  color: var(--texto-segundo);
-}
-
-"""
+CSS_MIS_TURNOS = CSS_PASO + leer_pieza( "mis-turnos" )
 
 
 COBERTURAS_DE_LA_MUESTRA = ("IAPOS", "Particular")
@@ -6269,7 +6243,7 @@ def mis_turnos_del_sitio(ancho, vacio=False):
     </div>
   </header>
 
-  <div class="mis-turnos">
+  <div class="paso mis-turnos">
     <h1>Mis turnos</h1>
 {cuerpo}
   </div>

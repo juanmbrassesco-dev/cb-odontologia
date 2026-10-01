@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Mis turnos — CB Odontología y Estética</title>
+
+  <meta name="description"
+        content="Mirá y cancelá tus turnos de CB Odontología y Estética, Santa Fe.">
+
+  <!--
+    🔴 ESTA PÁGINA NO SE INDEXA. Lo que muestra son los turnos de una persona,
+    así que no tiene nada que hacer en un buscador: no hay nada acá que alguien
+    pueda estar buscando sin haber reservado antes. `noindex` dice que no la
+    liste; `nofollow`, que no siga sus enlaces.
+  -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!--
+    EL MISMO ENCABEZADO QUE `reservar.html`: sólo el logo, que lleva al inicio.
+    El porqué está escrito allá y no se repite acá — es una decisión, no dos.
+  -->
+  <header class="barra">
+    <a class="barra-logo" href="index.html" aria-label="CB Odontología y Estética, ir al inicio">
+      <img src="brand/logo/curvas/cb-wordmark-curvas.svg"
+           alt="CB Odontología y Estética"
+           width="247" height="40">
+    </a>
+  </header>
+
+  <main>
+
+    <!--
+      ⚠️ ESTA PÁGINA TAMBIÉN ARRANCA PIDIENDO ENTRAR, Y NO ES UNA COPIA DE MÁS:
+      acá se llega DESDE EL CORREO —`URL_MIS_TURNOS`—, y el que abre ese enlace
+      no trae sesión. Sin esta pantalla, el enlace del correo llevaría a una
+      lista vacía que diría «no tenés turnos» al que sí los tiene.
+
+      El texto aprobado del correo ya lo dice: «podés verlo y cancelarlo desde
+      tus turnos, ENTRANDO CON LA MISMA CUENTA».
+
+      ES LA PIEZA 16 TAL CUAL, con dos textos cambiados: el título y la línea
+      que dice para qué se entra. Lo demás —la foto, el formato del botón de
+      Google, la salida al sitio, el WhatsApp— es lo aprobado el 24-sep-2026.
+    -->
+    <section id="paso-entrar">
+
+      <img class="entrar-foto" src="brand/fotos/entrar-ejemplo.jpg"
+           alt="Sala de espera de CB Odontología y Estética">
+
+      <div class="entrar">
+        <h1>Mis turnos</h1>
+
+        <p class="porque">Entrá con Google para ver y cancelar tus turnos.</p>
+
+        <div class="entrar-acciones">
+          <div id="boton-google"></div>
+
+          <a class="btn btn-2" href="index.html">Ir al sitio</a>
+        </div>
+
+        <p class="entrar-aviso" id="aviso-entrar" hidden></p>
+
+        <p class="salida">¿Tenés una consulta antes de reservar?
+        <a href="https://wa.me/5493426293920">Escribinos por WhatsApp</a>.</p>
+      </div>
+
+    </section>
+
+    <!--
+      LA LISTA — pantalla ⑥, pieza 21, aprobada por Juan el 25-sep-2026.
+
+      LOS DOS ESTADOS VIVEN EN EL MISMO HTML y se enciende uno: la lista cuando
+      hay turnos, y el aviso de que no hay ninguno cuando la respuesta viene
+      vacía. 🔑 Una lista vacía NO es un error: es el paciente que no tiene
+      turnos, y el portero lo contesta con un `200` y una lista de cero.
+
+      SIN LÍNEA DE AYUDA DEBAJO DEL TÍTULO —lo sacó Juan el 25-sep: «ya se avisa
+      en el correo», y está verificado que el correo del paciente cierra con
+      «podés cancelarlo vos desde: …». Repetirlo acá es decirle dos veces lo
+      mismo a quien ya llegó a la pantalla.
+    -->
+    <section class="paso mis-turnos" id="paso-turnos" hidden>
+
+      <h1>Mis turnos</h1>
+
+      <!--
+        EL ESTADO VACÍO. La segunda línea la decidió Juan el 1-oct-2026 y cubre
+        un caso real que la primera deja afuera: el que tiene DOS cuentas de
+        Google y reservó con la otra. Para él la primera frase es verdadera y
+        engañosa a la vez —con ESE correo no tiene turnos—, y sin esta línea
+        concluye que el turno se perdió: llama al consultorio, o reserva otro
+        que va a quedar ocupando un horario al que no va a ir nadie.
+      -->
+      <div id="turnos-vacio" hidden>
+        <p class="ayuda-pantalla">No tenés ningún turno reservado.
+        Si reservaste con otro correo, entrá con esa cuenta.</p>
+
+        <div class="acciones">
+          <a class="btn btn-1" href="reservar.html">Pedir un turno</a>
+        </div>
+      </div>
+
+      <!-- Las tarjetas las cuelga `js/mis-turnos.js`. -->
+      <div class="lista-turnos" id="turnos-lista" hidden></div>
+
+    </section>
+
+    <!--
+      LA PANTALLA QUE DA LA NOTICIA — la misma pieza 5 que usa `reservar.html`,
+      con sus mismos tres huecos. Acá cuenta cómo salió una cancelación.
+    -->
+    <section class="paso mensaje" id="paso-mensaje" hidden>
+
+      <h2 id="mensaje-titulo"></h2>
+
+      <p id="mensaje-cuerpo"></p>
+
+      <div class="acciones">
+        <button class="btn" id="mensaje-accion"></button>
+
+        <div id="mensaje-google" hidden></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!--
+    EL MISMO ORDEN DE DEPENDENCIA QUE `reservar.html`: `auth.js` habla con
+    Google y con Supabase, `pasos.js` muestra una pantalla y esconde las otras,
+    y `mis-turnos.js` es el que sabe qué hay adentro de ésta.
+
+    ⚠️ ACÁ NO VA `js/pasos.js` POR COSTUMBRE: esta página también tiene tres
+    pantallas y un «atrás» del navegador que tiene que hacer algo razonable.
+  -->
+  <script src="https://accounts.google.com/gsi/client"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/fechas.js"></script>
+  <script src="js/pasos.js"></script>
+  <script src="js/mis-turnos.js"></script>
+</body>
+</html>

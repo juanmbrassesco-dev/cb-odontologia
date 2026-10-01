@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prueba · la pantalla ⑥ con turnos inventados</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    /* Lo de abajo NO es parte del sitio: es el tablero de mandos de la prueba. */
+    .mandos {
+      padding: 10px 20px;
+      background: #2b2a27;
+      color: #fff;
+      font: 13px/1.5 ui-monospace, monospace;
+    }
+    .mandos a { color: #e8c87a; }
+    #registro {
+      margin: 0;
+      padding: 10px 20px;
+      max-height: 100px;
+      overflow: auto;
+      background: #1c1b19;
+      color: #cfcdc7;
+      font: 12px/1.5 ui-monospace, monospace;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="mandos">
+  la lista y lo que contesta el portero al cancelar:
+  <a href="?caso=dos">dos turnos</a> ·
+  <a href="?caso=uno">uno</a> ·
+  <a href="?caso=vacio">ninguno</a> ·
+  <a href="?caso=tarde">403 ya no se puede</a> ·
+  <a href="?caso=sesion">403 sesión</a> ·
+  <a href="?caso=fallo">500</a>
+</div>
+<pre id="registro"></pre>
+
+  <main>
+    <!-- `mis-turnos.js` cuelga el botón de Google y el aviso al cargar, y los
+         busca por `id`. Acá la pantalla de entrar no está recortada, así que
+         se le dejan los dos huecos: sin ellos el archivo se cae sobre `null`
+         antes de dibujar nada. -->
+    <div id="boton-google" hidden></div>
+    <p id="aviso-entrar" hidden></p>
+
+<section class="paso mis-turnos" id="paso-turnos">
+
+      <h1>Mis turnos</h1>
+
+      <!--
+        EL ESTADO VACÍO. La segunda línea la decidió Juan el 1-oct-2026 y cubre
+        un caso real que la primera deja afuera: el que tiene DOS cuentas de
+        Google y reservó con la otra. Para él la primera frase es verdadera y
+        engañosa a la vez —con ESE correo no tiene turnos—, y sin esta línea
+        concluye que el turno se perdió: llama al consultorio, o reserva otro
+        que va a quedar ocupando un horario al que no va a ir nadie.
+      -->
+      <div id="turnos-vacio" hidden>
+        <p class="ayuda-pantalla">No tenés ningún turno reservado.
+        Si reservaste con otro correo, entrá con esa cuenta.</p>
+
+        <div class="acciones">
+          <a class="btn btn-1" href="reservar.html">Pedir un turno</a>
+        </div>
+      </div>
+
+      <!-- Las tarjetas las cuelga `js/mis-turnos.js`. -->
+      <div class="lista-turnos" id="turnos-lista" hidden></div>
+
+    </section>
+
+<section class="paso mensaje" id="paso-mensaje" hidden>
+
+      <h2 id="mensaje-titulo"></h2>
+
+      <p id="mensaje-cuerpo"></p>
+
+      <div class="acciones">
+        <button class="btn" id="mensaje-accion"></button>
+
+        <div id="mensaje-google" hidden></div>
+      </div>
+
+    </section>
+  </main>
+
+<script>
+
+  // ── LO QUE NORMALMENTE PONE `auth.js` ──
+  //
+  // Esta página no entra con Google, así que lo que `mis-turnos.js` espera
+  // encontrar puesto se pone acá a mano, con los MISMOS nombres: si alguno
+  // cambiara, esta prueba se rompe en vez de mentir.
+  const SUPABASE_URL = 'https://ejemplo.invalido';
+  const SUPABASE_CLAVE_PUBLICA = 'clave-de-prueba';
+
+  function tokenDeLaSesion() {
+    return 'token-de-prueba';
+  }
+
+  // El botón de Google NO se puede dibujar acá: lo dibuja su biblioteca y
+  // necesita el origen autorizado. Se pone un cartel que dice qué va en ese
+  // lugar, para que nadie lo confunda con el botón real.
+  function prepararElBoton( { contenedor, alEntrar } ) {
+
+    contenedor.textContent = '';
+
+    const cartel = document.createElement( 'button' );
+    cartel.className = 'btn btn-2';
+    cartel.textContent = '(acá dibuja Google su botón) · entrar';
+
+    cartel.addEventListener( 'click', alEntrar );
+
+    contenedor.appendChild( cartel );
+  }
+
+
+  // ── LOS PEDIDOS AL PORTERO, INTERCEPTADOS ──
+  const CASO = new URLSearchParams( location.search ).get( 'caso' ) || 'dos';
+
+  const TURNOS = [{"id": 501, "inicio": "2026-10-08T18:30:00+00:00", "duracion_min": 30, "paciente": {"id": 225, "nombre": "María Fernanda", "apellido": "Gómez"}, "profesional": {"nombre": "Cecilia", "apellido": "Brassesco"}, "tratamiento": {"nombre": "consulta"}, "motivo": {"nombre": "ortodoncia"}, "obra_social": {"nombre": "IAPOS"}}, {"id": 502, "inicio": "2026-10-30T12:00:00+00:00", "duracion_min": 60, "paciente": {"id": 226, "nombre": "Joaquín", "apellido": "Gómez"}, "profesional": {"nombre": "Cecilia", "apellido": "Brassesco"}, "tratamiento": {"nombre": "limpieza"}, "motivo": null, "obra_social": {"nombre": "Particular"}}];
+  const CANCELACIONES = {"dos": [200, {"id": 501, "activo": false}], "uno": [200, {"id": 501, "activo": false}], "vacio": [200, {}], "sesion": [403, {"error": "Sesión no válida", "codigo": "sesion_invalida"}], "tarde": [403, {"error": "Ese turno no se puede cancelar", "codigo": "no_cancelable"}], "fallo": [500, {"error": "No se pudo cancelar el turno"}]};
+  const CUANTOS = {"dos": 2, "uno": 1, "vacio": 0, "sesion": 2, "tarde": 2, "fallo": 2};
+
+  // Los turnos que «quedan»: cancelar uno tiene que sacarlo de la lista, y eso
+  // sólo se ve si el segundo pedido contesta distinto que el primero.
+  let quedan = TURNOS.slice( 0, CUANTOS[ CASO ] );
+
+  const fetchDeVerdad = window.fetch;
+
+  window.fetch = async function ( direccion, opciones ) {
+
+    if ( String( direccion ).includes( 'mis-turnos' ) ) {
+
+      avisar( 'GET /mis-turnos → ' + quedan.length + ' turno(s)' );
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => quedan
+      };
+    }
+
+    if ( String( direccion ).includes( 'cancelar' ) ) {
+
+      avisar( 'POST /cancelar ← ' + opciones.body );
+
+      const respuesta = CANCELACIONES[ CASO ];
+
+      if ( respuesta[ 0 ] === 200 ) {
+        const cancelado = JSON.parse( opciones.body ).turno_id;
+        quedan = quedan.filter( ( turno ) => turno.id !== cancelado );
+      }
+
+      return {
+        ok: respuesta[ 0 ] === 200,
+        status: respuesta[ 0 ],
+        json: async () => respuesta[ 1 ]
+      };
+    }
+
+    return fetchDeVerdad( direccion, opciones );
+  };
+
+
+  function avisar( texto ) {
+    const registro = document.querySelector( '#registro' );
+    registro.textContent = texto + '\n' + registro.textContent;
+  }
+
+</script>
+<script src="../js/fechas.js"></script>
+<script src="../js/pasos.js"></script>
+<script>
+  // `pasos.js` arranca guardando la pantalla que está a la vista, y en la
+  // página de verdad ésa es la de entrar. Acá no está, así que la de la lista
+  // ocupa su lugar: sin esto, el primer cambio de pantalla se cae.
+  pantallaALaVista = document.querySelector( '#paso-turnos' );
+</script>
+<script src="../js/mis-turnos.js"></script>
+<script>
+  // Arranca la pantalla como lo haría el login.
+  mostrarLosTurnos();
+</script>
+</body>
+</html>

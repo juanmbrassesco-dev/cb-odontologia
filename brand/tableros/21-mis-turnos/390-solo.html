@@ -920,7 +920,27 @@ th.n { text-align: right; }
 
 
 
-/* La acción va SIEMPRE debajo de los datos y adentro del cuadro. En el
+/* 🔴 LA TARJETA QUE LLEVA ACCIÓN VA EN FILA DE 768 PARA ARRIBA —lo pidió Juan
+   el 1-oct-2026: «en resolución de pantalla grande la tarjeta la quiero en fila
+   no apilada»—. Los datos a la izquierda, el botón a la derecha.
+
+   POR QUÉ LA CLASE Y NO TODAS LAS TARJETAS: la de la pantalla ⑤ no tiene botón
+   —el turno todavía no existe, no hay nada que cancelar—, así que en fila no
+   tendría qué poner a la derecha. Es la MISMA pieza con dos usos, y el que
+   cambia es el que tiene la acción.
+
+   ⚠️ EN EL TELÉFONO NO CAMBIA NADA y es a propósito: a 390 no hay ancho para
+   dos cosas al lado de la otra, y lo apilado está aprobado desde la pieza 6.
+
+   Y EL TEXTO DEJA DE ESTAR CENTRADO en esta variante: centrado tiene sentido
+   en una caja angosta donde el texto ES la tarjeta; en una fila ancha, con el
+   botón a la derecha, el ojo necesita un borde del que arrancar. */
+
+
+
+
+
+/* La acción va debajo de los datos y adentro del cuadro EN EL TELÉFONO. En el
    teléfono el botón ocupa el ancho de la tarjeta —lo pide el dedo—; de tablet
    para arriba se ajusta a su texto, porque un "Cancelar turno" de 800 px de
    ancho pesa como si fuera la acción que el sitio empuja, y no lo es. */
@@ -1115,19 +1135,65 @@ body { padding: 0; }
 .reglas li { margin-top: 8px; }
 
 
-.mis-turnos {
+/* LA CÁSCARA COMÚN DE TODA PANTALLA DEL FLUJO DE RESERVA — unificada el
+   30-sep-2026, cuando la tercera copia de las mismas reglas llegó al archivo y
+   una cuarta, una quinta y una sexta esperaban en el generador de tableros
+   (`.dia-hora`, `.confirmar`, `.mis-turnos`).
+
+   🔴 POR QUÉ UNA CLASE Y NO UNA LISTA DE SELECTORES SEPARADOS POR COMA. Las
+   dos formas dejan el mismo resultado hoy; se diferencian el día que se sume
+   una pantalla. Con la lista, la pantalla nueva no hereda nada hasta que
+   alguien se acuerde de agregarla a la lista — o sea, la duplicación no
+   desaparece: cambia de forma y se muda al final de una enumeración. Con la
+   clase, la pantalla nueva escribe `class="paso <lo suyo>"` y ya está
+   adentro. UNA sola manera de hacer la cosa.
+
+   🏁 EL MARGEN DEL BOTÓN YA ESTÁ ACÁ —entró el 1-oct-2026, y la nota que
+   decía «queda para el maquetado de la ④» se reemplaza porque esa espera
+   terminó—. ABAJO, en la regla del aire, está el porqué del número. */
+.paso {
   margin: 0 var(--margen-pagina);
   padding: 32px 0 var(--aire-seccion);
 }
 
-.mis-turnos h1 {
+
+/* 🔴 EL AIRE QUE SEPARA LOS BOTONES DEL CONTENIDO — UN SOLO DUEÑO Y UN SOLO
+   NÚMERO, PARA TODAS LAS PANTALLAS DEL FLUJO. Convención cerrada por Juan el
+   1-oct-2026: «el aire entre botones es el mismo según pantalla y debe ser una
+   convención», o sea que no se vuelve a elegir pantalla por pantalla.
+
+   POR QUÉ 28 Y NO 52, QUE ES LO QUE SE VEÍA: 28 es el número que están
+   mostrando los tres tableros aprobados (17, 18 y 19) y es el mismo aire que
+   estas pantallas usan entre sus otros bloques (`.opciones`, el primer
+   `.campo`). El 52 no lo decidió nadie: era la SUMA de dos dueños —`.acciones`
+   ponía 24 y el botón 28 encima—, así que la pantalla ② mostraba 28 y las ③ y
+   ④ mostraban 52. Medido con el valor computado, no leído del archivo.
+
+   POR QUÉ EL DUEÑO ES EL BOTÓN Y NO LA FILA: el botón es la única pieza que
+   está en TODAS las formas que existen hoy —suelto en la ②, adentro de
+   `.acciones` en la ③ y la ④, y adentro de `.horarios` en el tablero 19—. Con
+   la fila como dueña habría que tocar el markup del sitio y del generador de
+   tableros para que las tres formas se parezcan; con el botón, la regla
+   alcanza a las tres sin mover un `<div>`.
+
+   ⚠️ Y POR ESO LA FILA SE PONE EN CERO: si las dos dueñas ponen su margen, el
+   total vuelve a ser una suma que nadie eligió. */
+.paso .btn {
+  margin-top: 28px;
+}
+
+.paso .acciones {
+  margin-top: 0;
+}
+
+.paso h1 {
   font-family: Marcellus, Georgia, serif;
   font-size: var(--tipo-h1);
   line-height: var(--alto-h1);
   text-wrap: balance;
 }
 
-.mis-turnos .ayuda-pantalla {
+.paso .ayuda-pantalla {
   margin-top: 12px;
   color: var(--texto-segundo);
   font-size: var(--tipo-cuerpo);
@@ -1135,6 +1201,11 @@ body { padding: 0; }
   text-wrap: balance;
 }
 
+/* LA PANTALLA ⑥ — «mis turnos» — mudada del generador el 1-oct-2026.
+
+   ⚠ EL MARGEN DE LA SECCIÓN, EL h1 Y LA AYUDA NO ESTÁN ACÁ: son de la pieza
+   `paso`. Y LA TARJETA TAMPOCO: es la pieza `tarjeta`, la misma que usa la
+   pantalla ⑤. Acá queda sólo lo que es de ESTA pantalla y de ninguna otra. */
 /* La cobertura es el renglón MÁS callado de la tarjeta: es un dato de control,
    no lo que el paciente vino a mirar. Mismo tamaño que «Paciente: …». */
 .turno .cobertura {
@@ -1143,7 +1214,6 @@ body { padding: 0; }
   line-height: var(--alto-chico);
   color: var(--texto-segundo);
 }
-
 
 
 :focus-visible {
@@ -1175,11 +1245,11 @@ body { padding: 0; }
     </div>
   </header>
 
-  <div class="mis-turnos">
+  <div class="paso mis-turnos">
     <h1>Mis turnos</h1>
 
     <div class="lista-turnos">
-    <div class="turno">
+    <div class="turno con-accion">
       <div class="datos">
         <h3>Jueves 11 de septiembre, 15:30</h3>
         <p class="que">Consulta con Cecilia Duarte</p>
@@ -1188,7 +1258,7 @@ body { padding: 0; }
       </div>
       <button class="btn btn-2">Cancelar turno</button>
     </div>
-    <div class="turno">
+    <div class="turno con-accion">
       <div class="datos">
         <h3>Martes 30 de septiembre, 09:00</h3>
         <p class="que">Limpieza con Cecilia Duarte</p>

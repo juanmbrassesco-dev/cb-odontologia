@@ -74,10 +74,19 @@ function falloDeBase(): Response {
 // Va en 403 y no en 404 porque acá hay sesión: la respuesta honesta es "estás
 // identificado y esto no te corresponde". Un 404 afirmaría "eso no existe", que
 // en tres de los cuatro casos es mentira.
+// 🔴 LOS DOS 403 DE ESTE ENDPOINT LLEVAN `codigo`, por lo mismo que los dos 409
+// de `reservar`: significan cosas distintas y la pantalla tiene que hacer cosas
+// distintas. Con la sesión vencida hay que volver a entrar; con un turno que ya
+// no se puede cancelar, lo que hay que hacer es volver a mirar la lista, que
+// está desactualizada. Sin el código, lo único que los separa es el texto del
+// error, y entonces una frase mejor escrita manda al paciente a dar vueltas.
 function noSePuedeCancelar(): Response {
 
   return Response.json(
-    { error: 'Ese turno no se puede cancelar' },
+    {
+      error: 'Ese turno no se puede cancelar',
+      codigo: 'no_cancelable',
+    },
     { status: 403 },
   )
 }
@@ -104,7 +113,10 @@ export default {
 
       if ( !correo ) {
         return Response.json(
-          { error: 'Sesión no válida' },
+          {
+            error: 'Sesión no válida',
+            codigo: 'sesion_invalida',
+          },
           { status: 403 },
         )
       }

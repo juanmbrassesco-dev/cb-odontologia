@@ -185,7 +185,7 @@ function prepararLaPantallaDeConfirmar() {
   const hora = horaElegida.slice( 11, 16 );
 
   document.querySelector( '#confirmar-cuando' ).textContent =
-    elDiaEnPalabras() + ', ' + hora;
+    diaEnPalabras( diaElegido ) + ', ' + hora;
 
   // «Consulta con Cecilia Duarte». El tratamiento es el que el paciente eligió
   // en la ③ y no «consulta»: eso último es lo que el turno ES para la agenda
