@@ -493,7 +493,13 @@ textarea.caja {
 .menu-fila {
   display: flex;
   align-items: center;
-  gap: 28px;
+
+  /* 🔴 18, Y ES EL MISMO QUE SEPARA A «MIS TURNOS» —ver `.barra-derecha`—.
+     Desde que la barra tiene CUATRO enlaces a 768, que los tres de sección
+     estuvieran más juntos entre sí que el cuarto los hacía leerse como un
+     bloque con algo colgando al lado. Con la misma separación para los cuatro,
+     la fila se lee pareja. A 1280 sobra lugar y el gap vuelve a abrirse. */
+  gap: 18px;
 }
 
 /* 🔴 EL MENÚ EN FILA SUBE — 13-sep-2026, lo pidió Juan: «tratamientos,
@@ -567,23 +573,71 @@ textarea.caja {
    sin empujar el logo ni pelearse con el menú. */
 .barra-turnos {
   flex: none;
-  color: var(--texto-segundo);
-  font-size: var(--tipo-chico);
-  line-height: 1.2;
-  text-decoration: none;
   white-space: nowrap;
-}
 
-.barra-turnos:hover {
+  /* 🔴 LA MISMA LETRA QUE LOS OTROS ENLACES DE LA BARRA —lo pidió Juan el
+     1-oct-2026: «tiene letra distinta en el header de 768 y el de 1280»—.
+
+     Tenía dos problemas de una. Crecía con OTRA escala *(14 px a 768 y 17 a
+     1280, contra 13 y 15 del menú)*, así que la diferencia entre los dos
+     anchos era distinta a la del resto de la barra; y además iba en minúsculas
+     donde todo lo demás va en versalitas, así que a simple vista parecía otra
+     tipografía. **Ahora es una sola regla para los cuatro enlaces.**
+
+     ⚠️ LO QUE LO SIGUE SEPARANDO DE LAS SECCIONES NO ES LA LETRA: es DÓNDE
+     está —último, pegado a «Reservar»— y que las otras tres llevan a lugares
+     de esta misma página. */
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+
   color: var(--grafito);
-  text-decoration: underline;
+  text-decoration: none;
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+}
+
+/* A 390 NO ESTÁ EN LA BARRA: vive adentro del sándwich —lo decidió Juan el
+   1-oct-2026—. En un teléfono la barra tiene lugar para el logo y una cosa
+   más, y esa cosa es el menú. */
+.barra-turnos { display: none; }
+
+@media (min-width: 768px) {
+  .barra-turnos { display: flex; }
+}
+
+@media (min-width: 1280px) {
+  .barra-turnos { font-size: 15px; }
 }
 
 
+/* LA MISMA SEPARACIÓN QUE ADENTRO DEL MENÚ, para que los cuatro enlaces de la
+   barra se lean como una sola fila y no como tres más uno. */
 .barra-derecha {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 18px;
+}
+
+/* 🔴 EL HUECO DE 1280 SE ESCRIBE ACÁ, PEGADO AL DE ARRIBA, y no en el bloque
+   de 1280 que vive doscientas líneas antes. Estaba allá y NO HACÍA NADA: una
+   regla suelta más abajo del archivo le gana a una de media query más arriba
+   cuando las dos pesan igual.
+
+   Se vio midiendo los huecos entre los cuatro enlaces: 34 · 34 · 18. Los tres
+   de sección se separaban con el número nuevo y «Mis turnos» se quedaba con el
+   viejo, o sea la fila despareja que esto venía a arreglar.
+
+   🔑 Es la TERCERA vez en el día que el orden del archivo decide un valor. La
+   regla que queda: lo que modifica a un bloque se escribe al lado del bloque,
+   no en la sección temática que le correspondería. */
+@media (min-width: 1280px) {
+
+  .barra-derecha {
+    gap: 34px;
+  }
 }
 
 /* 🔴 QUÉ SE VE EN CADA ANCHO — es lo único que el tablero no podía tener,
@@ -598,7 +652,13 @@ textarea.caja {
 .barra-reservar { display: none; }
 
 @media (min-width: 768px) {
-  .barra-logo img { width: 260px; }
+  /* 🔴 EL LOGO NO CRECE EN ESTE ANCHO: se queda en los 200 del teléfono
+     —1-oct-2026—. Desde que «Mis turnos» entró a la barra, los cinco elementos
+     pedían 725 px donde hay 673. **El margen de la página no se toca** —es el
+     de toda la landing, no el de la barra—, así que el lugar sale del logo y
+     del aire entre enlaces. Medido después: entran con 16 px de sobra.
+     A 1280 el logo sigue creciendo a 320. */
+  .barra-logo img { width: 200px; }
 
   .menu-fila { display: flex; }
 
