@@ -419,6 +419,30 @@ async function cancelar( turnoId ) {
 // llamó; acá se le dice dónde dibujar el botón y qué hacer cuando entró.
 const aviso = document.querySelector( '#aviso-entrar' );
 
+
+// 🔴 SI YA ENTRÓ EN ESTA PESTAÑA, LA LISTA SALE DIRECTO. Es el arreglo del
+// error que encontró Juan el 1-oct-2026 probando el sitio publicado: elegía
+// «ver mis turnos» recién entrado y esta página le pedía entrar otra vez.
+// **Para el paciente no hay dos páginas: hay un sitio donde ya se identificó.**
+//
+// 🔑 SE CAMBIA DE PANTALLA ANTES DE QUE LLEGUEN LOS DATOS, a propósito: si se
+// esperara la respuesta, el paciente vería asomar la pantalla de entrar y
+// desaparecer. Lo que ve mientras tanto es el título «Mis turnos» y nada más
+// —la lista y el aviso de vacío arrancan los dos escondidos—, que es la
+// verdad: todavía no sabemos cuántos turnos tiene.
+if ( haySesion() ) {
+
+  reemplazarPor( '#paso-turnos' );
+
+  mostrarLosTurnos().then( ( queHacer ) => {
+
+    if ( queHacer === 'falló' ) {
+      darLaNoticia( NOTICIAS.sesionVencida );
+    }
+  } );
+}
+
+
 prepararElBoton( {
 
   contenedor: document.querySelector( '#boton-google' ),

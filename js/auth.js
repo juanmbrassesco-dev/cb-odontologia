@@ -40,11 +40,100 @@ const SUPABASE_CLAVE_PUBLICA = 'sb_publishable_TSqUMMo4al7PR9CNncy6fw_GudBDQq2';
 
 // ─── DONDE VIVE LA SESIÓN ────────────────────────────────────────────────────
 //
-// Arranca en `null`, que significa "todavía no entró nadie". Se llena en el
-// paso ② y se vacía sola al cerrar la pestaña, porque no hay nada que la
-// sobreviva.
+// Arranca en `null`, que significa "todavía no entró nadie". Se llena al
+// canjear el papel de Google.
+//
+// 🔴 Y DESDE EL 1-oct-2026 SOBREVIVE AL CAMBIO DE PÁGINA, que es una decisión
+// de seguridad y no de comodidad. El motivo lo encontró Juan probando el sitio
+// publicado: el sitio son DOS páginas —reservar y mis turnos—, y al pasar de
+// una a la otra la sesión se perdía, **así que al paciente que acababa de
+// entrar se le pedía entrar otra vez**. Para él no hay dos páginas: hay un
+// sitio donde ya se identificó.
+//
+// POR QUÉ `sessionStorage` Y NO `localStorage`, que es la diferencia que
+// importa: `sessionStorage` vive en ESTA pestaña y muere cuando se cierra;
+// `localStorage` queda en el disco hasta que alguien lo borre. Con el segundo,
+// el token de una paciente sobreviviría en una computadora compartida —un
+// locutorio, la máquina del trabajo— días después de que se fue.
+//
+// ⚠️ LO QUE ESTO NO EMPEORA, y conviene decirlo para no sobreactuar el riesgo:
+// contra un XSS (Cross-Site Scripting) guardar el token acá no es peor que
+// tenerlo en una variable — el código atacante corre en la misma página y
+// alcanza las dos. Lo que cambia es CUÁNTO dura, y por eso se eligió el que
+// dura menos.
+const DONDE_SE_GUARDA = 'cb.sesion';
 
 let sesion = null;
+
+
+/**
+ * Guarda la sesión para que sobreviva al salto de una página a la otra.
+ *
+ * ⚠️ TODO ACCESO VA ADENTRO DE UN `try`: en una ventana privada, o con el
+ * almacenamiento del sitio bloqueado, esto LANZA en vez de devolver vacío. Un
+ * sitio que se cae por no poder guardar una comodidad está roto por la
+ * comodidad.
+ */
+function guardarLaSesion() {
+  try {
+    sessionStorage.setItem( DONDE_SE_GUARDA, JSON.stringify( sesion ) );
+  } catch ( falla ) {
+    console.error( 'No se pudo guardar la sesión en esta pestaña:', falla );
+  }
+}
+
+
+/**
+ * Recupera la sesión guardada, si hay una y si todavía sirve.
+ *
+ * 🔑 SE MIRA EL VENCIMIENTO ACÁ Y NO SE CONFÍA EN QUE EL PORTERO LO RECHACE.
+ * Rechazarlo lo rechaza igual —el token lo valida él, que es la defensa de
+ * verdad— pero un token vencido manda al paciente a una pantalla que falla en
+ * vez de a la que le pide entrar.
+ */
+function recuperarLaSesion() {
+
+  let guardada = null;
+
+  try {
+    guardada = sessionStorage.getItem( DONDE_SE_GUARDA );
+  } catch ( falla ) {
+    return;
+  }
+
+  if ( guardada === null ) {
+    return;
+  }
+
+  const candidata = JSON.parse( guardada );
+
+  // `expires_at` viene en SEGUNDOS desde 1970 y `Date.now()` en milisegundos:
+  // sin el /1000 la comparación da siempre que está vencida.
+  const vencida = !candidata.expires_at || candidata.expires_at < Date.now() / 1000;
+
+  if ( vencida ) {
+    olvidarLaSesion();
+    return;
+  }
+
+  sesion = candidata;
+}
+
+
+/** Borra la sesión guardada. La usa el vencimiento, y la va a usar un «salir». */
+function olvidarLaSesion() {
+
+  sesion = null;
+
+  try {
+    sessionStorage.removeItem( DONDE_SE_GUARDA );
+  } catch ( falla ) {
+    // Si no se puede borrar es porque tampoco se pudo guardar.
+  }
+}
+
+
+recuperarLaSesion();
 
 
 /**
@@ -53,6 +142,12 @@ let sesion = null;
  */
 function tokenDeLaSesion() {
   return sesion === null ? null : sesion.access_token;
+}
+
+
+/** Si hay alguien adentro. Lo preguntan las dos páginas al arrancar. */
+function haySesion() {
+  return sesion !== null;
 }
 
 
@@ -92,6 +187,9 @@ async function canjearElPapel( papelDeGoogle ) {
   }
 
   sesion = await respuesta.json();
+
+  guardarLaSesion();
+
   return true;
 }
 

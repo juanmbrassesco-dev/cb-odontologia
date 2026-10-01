@@ -16,6 +16,17 @@ function avisar( texto ) {
 }
 
 
+// 🔴 SI YA ENTRÓ, NO SE LE PIDE ENTRAR DE NUEVO. La sesión sobrevive al salto
+// entre las dos páginas del sitio desde el 1-oct-2026, así que el que vuelve
+// acá desde «mis turnos» —o el que recarga— se saltea esta pantalla.
+//
+// `reemplazarPor` y no `avanzarA`: la pantalla de entrar no tiene por qué
+// quedar en el historial de alguien que ya entró.
+if ( haySesion() ) {
+  reemplazarPor( '#paso-que-hacer' );
+}
+
+
 prepararElBoton( {
 
   contenedor: contenedorDelBoton,
