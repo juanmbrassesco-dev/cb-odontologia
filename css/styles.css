@@ -2562,27 +2562,43 @@ textarea.caja {
   cursor: not-allowed;
 }
 
-/* En escritorio las dos partes se ven juntas: el mes a la izquierda y los
-   horarios del día elegido a la derecha. Debajo de eso van una arriba de la
-   otra, y elegir un día baja a los horarios. */
-@media (min-width: 1280px) {
+/* 🔴 EL MES Y LAS HORAS VAN SIEMPRE UNO ARRIBA DEL OTRO, EN LOS TRES ANCHOS —
+   lo cerró Juan el 1-oct-2026: «dale un margen con tarjeta o algo así al
+   almanaque con algo de aire a los costados, y que las horas se vayan apilando
+   en ese margen, así quedan todos los elementos sobre el mismo eje».
 
-  .juntas {
-    display: flex;
-    align-items: flex-start;
-    gap: 40px;
+   ⚠️ ESTO REEMPLAZA AL LADO A LADO que la pieza 7 tenía en escritorio —el mes
+   a la izquierda y las horas a la derecha—. Lo que aquello ganaba era ver las
+   dos mitades juntas; lo que costaba es que el mes y las horas vivían en dos
+   ejes distintos, y ninguno coincidía con el del resto de la pantalla.
+
+   LA CAJA MIDE LO QUE EL ALMANAQUE Y SE CENTRA. Adentro, las horas se apilan
+   en el mismo ancho, así que el día, la etiqueta y las horas arrancan todos en
+   la misma línea vertical. ⚠️ La última fila de horas queda despareja según
+   cuántas haya ese día, y eso está aceptado: la asimetría es del dato, no del
+   dibujo.
+
+   SIN SUPERFICIE: la caja es aire, no una tarjeta con filo y fondo. Es la
+   regla del proyecto —antes de separar con una superficie se prueba con el
+   aire— y acá el aire alcanza para que se lea como un bloque. */
+@media (min-width: 768px) {
+
+  .reserva {
+    width: 420px;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 10px;
   }
 
-  .juntas .almanaque { flex: none; }
-
-  .juntas .lado {
-    flex: 1;
-    min-width: 0;
+  /* Adentro de la caja, las dos piezas toman el ancho entero: ésa es la línea
+     vertical que comparten. */
+  .reserva .almanaque {
+    max-width: none;
   }
 
-  .juntas .grilla {
-    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-    margin-top: 0;
+  .reserva .grilla {
+    max-width: none;
   }
 }
 
