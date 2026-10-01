@@ -24,3 +24,6 @@ brand/tableros/15-pagina/ver-*.html
 # Capturas para mirar, de un solo uso. No son entregables: se rehacen
 # con un comando y pesan. (Puestas el 14-sep-2026.)
 revisiones/
+
+# Lo que se publica: lo arma `tools/armar-publicacion.sh` en cada despliegue.
+dist/

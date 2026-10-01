@@ -32,7 +32,12 @@ from pathlib import Path
 import sys
 
 
-RAIZ = Path( __file__ ).resolve().parent.parent
+# La raíz es el repo, o la carpeta que se le pase: así el mismo chequeo sirve
+# para el sitio tal como está y para `dist/`, que es lo que de verdad se
+# publica. Revisar sólo el repo dejaría sin mirar el único momento en que un
+# archivo puede faltar: cuando se arma la publicación.
+RAIZ = Path( sys.argv[ 1 ] ).resolve() if len( sys.argv ) > 1 \
+    else Path( __file__ ).resolve().parent.parent
 
 # Las páginas del sitio. Los tableros y las pruebas quedan afuera a propósito:
 # son andamiaje, no lo que se publica.
