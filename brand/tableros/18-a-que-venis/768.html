@@ -1197,15 +1197,42 @@ body { padding: 0; }
    clase, la pantalla nueva escribe `class="paso <lo suyo>"` y ya está
    adentro. UNA sola manera de hacer la cosa.
 
-   ⚠ LO QUE ESTA PIEZA NO INCLUYE, Y NO ES UN OLVIDO: el margen del botón.
-   `.quien` y `.motivo` le ponen `margin-top: 28px` y `.dia-hora` NO —medido
-   con el valor computado, no leído del archivo—, así que las tres NO estaban
-   iguales y meterlas en la misma regla cambiaría la pantalla ④ sin que nadie
-   lo haya decidido. Queda para el maquetado de la ④, que es donde esa fila de
-   botones se mira a tamaño real. */
+   🏁 EL MARGEN DEL BOTÓN YA ESTÁ ACÁ —entró el 1-oct-2026, y la nota que
+   decía «queda para el maquetado de la ④» se reemplaza porque esa espera
+   terminó—. ABAJO, en la regla del aire, está el porqué del número. */
 .paso {
   margin: 0 var(--margen-pagina);
   padding: 32px 0 var(--aire-seccion);
+}
+
+
+/* 🔴 EL AIRE QUE SEPARA LOS BOTONES DEL CONTENIDO — UN SOLO DUEÑO Y UN SOLO
+   NÚMERO, PARA TODAS LAS PANTALLAS DEL FLUJO. Convención cerrada por Juan el
+   1-oct-2026: «el aire entre botones es el mismo según pantalla y debe ser una
+   convención», o sea que no se vuelve a elegir pantalla por pantalla.
+
+   POR QUÉ 28 Y NO 52, QUE ES LO QUE SE VEÍA: 28 es el número que están
+   mostrando los tres tableros aprobados (17, 18 y 19) y es el mismo aire que
+   estas pantallas usan entre sus otros bloques (`.opciones`, el primer
+   `.campo`). El 52 no lo decidió nadie: era la SUMA de dos dueños —`.acciones`
+   ponía 24 y el botón 28 encima—, así que la pantalla ② mostraba 28 y las ③ y
+   ④ mostraban 52. Medido con el valor computado, no leído del archivo.
+
+   POR QUÉ EL DUEÑO ES EL BOTÓN Y NO LA FILA: el botón es la única pieza que
+   está en TODAS las formas que existen hoy —suelto en la ②, adentro de
+   `.acciones` en la ③ y la ④, y adentro de `.horarios` en el tablero 19—. Con
+   la fila como dueña habría que tocar el markup del sitio y del generador de
+   tableros para que las tres formas se parezcan; con el botón, la regla
+   alcanza a las tres sin mover un `<div>`.
+
+   ⚠️ Y POR ESO LA FILA SE PONE EN CERO: si las dos dueñas ponen su margen, el
+   total vuelve a ser una suma que nadie eligió. */
+.paso .btn {
+  margin-top: 28px;
+}
+
+.paso .acciones {
+  margin-top: 0;
 }
 
 .paso h1 {
@@ -1238,7 +1265,6 @@ body { padding: 0; }
    porque es el final del contenido de la pantalla. ⚠ «Casi letra por letra» es
    lo que se creía; la medición dijo otra cosa. */
 .motivo .btn {
-  margin-top: 28px;
   margin-left: 0;
 }
 
