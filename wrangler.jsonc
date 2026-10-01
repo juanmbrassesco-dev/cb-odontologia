@@ -18,10 +18,29 @@
 // que se escribió esto. Cloudflare cambia cosas con el tiempo y esta fecha es
 // la promesa de que el sitio se va a seguir sirviendo como el día que anduvo.
 // Subirla es una decisión, no un mantenimiento automático.
+//
+// LOS DOS INTERRUPTORES DE ABAJO LOS PUSO EL PRIMER DESPLIEGUE, que avisó que
+// los estaba encendiendo «por defecto porque no están en tu archivo». 🔑 Y uno
+// de los dos ya se había apagado a mano en el formulario de Cloudflare: lo que
+// no está escrito acá, la herramienta lo vuelve a decidir sola en cada
+// despliegue. **Una decisión que vive sólo en un panel no es una decisión: es
+// un estado que alguien puede pisar sin enterarse.**
 {
   "name": "cb-odontologia",
   "compatibility_date": "2026-10-01",
+
   "assets": {
     "directory": "./dist"
-  }
+  },
+
+  // La dirección `…workers.dev`, que hoy es la ÚNICA que tiene el sitio.
+  // ⏱ Pasa a `false` el día que el dominio propio esté andando: dos
+  // direcciones para el mismo sitio es contenido duplicado para Google y una
+  // copia pública del consultorio que nadie vigila.
+  "workers_dev": true,
+
+  // 🔴 APAGADO: con esto encendido, CADA versión desplegada queda con su
+  // propia dirección pública y permanente. Serían copias del flujo de reserva
+  // REAL —con el portero de verdad del otro lado— dando vueltas por ahí.
+  "preview_urls": false
 }
