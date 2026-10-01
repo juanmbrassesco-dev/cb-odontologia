@@ -1183,6 +1183,30 @@ body { padding: 0; }
 }
 
 
+/* 🔴 EN ESCRITORIO LA PANTALLA SE CENTRA — decidido por Juan el 1-oct-2026,
+   mirando las dos variantes a tamaño real sobre la pantalla ③, que es la más
+   vacía de las seis.
+
+   QUÉ PROBLEMA RESUELVE: a 1280 el contenido de una pantalla del flujo mide
+   640 px y la página 1100, así que pegado al margen izquierdo deja 460 px de
+   vacío TODO JUNTO a la derecha, y eso no se lee como aire: se lee como una
+   pantalla a medio cargar. Centrada, el mismo vacío se reparte en dos y pasa a
+   leerse como margen.
+
+   ⚠️ NO ES EL LAYOUT DE DOS COLUMNAS que Juan descartó el 24-sep-2026 (revert
+   `ec79357`). Aquél metía una segunda cosa al lado del contenido; esto no
+   agrega nada, sólo mueve de lugar lo que ya está.
+
+   POR QUÉ NO A 768: ahí `--columna` todavía es 100%, así que el contenido ya
+   ocupa el ancho y no hay nada que centrar. La regla no haría nada y sería una
+   regla que nadie consume.
+
+   ⛔ DESCARTADA, con su motivo: meter el contenido en una TARJETA blanca
+   centrada. Estrena una superficie, y la regla del proyecto dice que antes de
+   separar con una superficie se prueba con aire — y acá el aire alcanza. */
+
+
+
 /* 🔴 EL AIRE QUE SEPARA LOS BOTONES DEL CONTENIDO — UN SOLO DUEÑO Y UN SOLO
    NÚMERO, PARA TODAS LAS PANTALLAS DEL FLUJO. Convención cerrada por Juan el
    1-oct-2026: «el aire entre botones es el mismo según pantalla y debe ser una
