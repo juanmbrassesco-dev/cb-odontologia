@@ -324,15 +324,21 @@ const NOTICIAS = {
     accion: null
   },
 
-  // ⚠️ TEXTO NUEVO, NO APROBADO EN NINGÚN TABLERO: la pieza 5 tiene el error de
-  // RESERVAR y no el de cancelar. Se escribe con el mismo criterio que aquél
-  // —varias causas, un solo texto, y la acción devuelve al paciente al lugar
-  // donde puede seguir—: el turno ya cancelado, la hora que pasó mientras
-  // miraba, y el fallo de la base terminan todos en «mirá cómo quedaron tus
-  // turnos», que es lo único que el paciente puede hacer.
+  // TEXTO NUEVO —la pieza 5 tiene el error de RESERVAR y no el de cancelar—,
+  // aprobado por Juan el 1-oct-2026.
+  //
+  // 🔴 NO DICE LA CAUSA, Y ESA ES LA DECISIÓN. La primera versión arriesgaba
+  // «puede que ya esté cancelado, o que la hora haya pasado»: acierta casi
+  // siempre y MIENTE cuando el fallo es de la base o de la red, que es una de
+  // las cuatro causas. Un texto que explica algo que no ocurrió hace dudar de
+  // lo que el paciente ve después en su lista.
+  //
+  // Es además el criterio que ya estaba aprobado para el fallo al RESERVAR
+  // —cuatro causas, un solo texto, ninguna nombrada— y la acción es lo único
+  // que el paciente puede hacer: volver a mirar cómo quedaron sus turnos.
   noSePudo: {
     titulo: 'No pudimos cancelar tu turno',
-    cuerpo: 'Puede que ya esté cancelado, o que la hora haya pasado. '
+    cuerpo: 'Algo no salió como esperábamos. '
       + 'Mirá tus turnos para ver cómo quedaron.',
     accion: {
       rotulo: 'Ver mis turnos',
