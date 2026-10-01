@@ -19,6 +19,16 @@
 #
 #   · las tres páginas          · css/ y js/
 #   · las dos fotos y los dos logos que el HTML usa
+#   · las DOS TIPOGRAFÍAS y la lámina de íconos, que NO las nombra el HTML
+#     sino el CSS
+#
+# 🔴 Y ESOS TRES ÚLTIMOS FALTABAN —1-oct-2026, los encontró Juan mirando el
+# sitio publicado: «faltan íconos de las tarjetas de tratamientos»—. El sitio
+# estuvo publicado un rato CON LAS TIPOGRAFÍAS CAÍDAS: Marcellus y Jost daban
+# 404 y el navegador las reemplazaba por Georgia y Helvetica, que es
+# exactamente el modo de falla que no grita. **Un archivo que sólo nombra el
+# CSS no aparece en el HTML, así que ninguna lista escrita a ojo lo incluye.**
+# Por eso el verificador de enlaces ahora también mira los `url( … )` del CSS.
 #
 # ⚠️ `brand/fotos/PROCEDENCIA.md` NO se copia aunque el HTML lo nombre en un
 # comentario: es la ficha de dónde salió cada foto de banco, y es documentación
@@ -34,7 +44,7 @@ set -euo pipefail
 cd "$( dirname "$0" )/.."
 
 rm -rf dist
-mkdir -p dist/css dist/js dist/brand/fotos dist/brand/logo/curvas
+mkdir -p dist/css dist/js dist/brand/fotos dist/brand/logo/curvas dist/brand/fonts
 
 cp index.html reservar.html mis-turnos.html dist/
 
@@ -42,6 +52,8 @@ cp css/tokens.css css/styles.css dist/css/
 cp js/*.js dist/js/
 
 cp brand/fotos/entrar-ejemplo.jpg brand/fotos/hero-ejemplo.jpg dist/brand/fotos/
+cp brand/fotos/iconos-del-brief.png dist/brand/fotos/
+cp brand/fonts/*.ttf dist/brand/fonts/
 cp brand/logo/curvas/cb-apilado-curvas.svg brand/logo/curvas/cb-wordmark-curvas.svg dist/brand/logo/curvas/
 
 echo "✓ dist/ armado"

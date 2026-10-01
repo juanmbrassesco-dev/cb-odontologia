@@ -29,6 +29,7 @@ hook o de una acción antes de publicar.
 
 from html.parser import HTMLParser
 from pathlib import Path
+import re
 import sys
 
 
@@ -42,6 +43,12 @@ RAIZ = Path( sys.argv[ 1 ] ).resolve() if len( sys.argv ) > 1 \
 # Las páginas del sitio. Los tableros y las pruebas quedan afuera a propósito:
 # son andamiaje, no lo que se publica.
 PAGINAS = [ "index.html", "reservar.html", "mis-turnos.html" ]
+
+# Las hojas de estilo, para mirar adentro lo que piden con `url( … )`.
+HOJAS = [ "css/styles.css", "css/tokens.css" ]
+
+# `url( "algo" )`, con comillas o sin ellas.
+URL_DEL_CSS = re.compile( r'url\(\s*[\'"]?([^\'")]+)[\'"]?\s*\)' )
 
 # Atributos que apuntan a algún lado.
 APUNTAN = ( "href", "src" )
@@ -114,6 +121,36 @@ def revisar( pagina ):
     return rotos, externos
 
 
+def revisar_la_hoja( hoja ):
+    """Los archivos que una hoja de estilo pide con `url( … )` y no están.
+
+    🔴 ESTO SE SUMÓ EL 1-oct-2026 PORQUE FALTABA Y COSTÓ CARO: el sitio se
+    publicó con las DOS tipografías en 404 y nadie lo vio, porque el navegador
+    las reemplaza por otras parecidas sin decir nada. **Un archivo que sólo
+    nombra el CSS no aparece en el HTML**, así que ninguna lista escrita a mano
+    lo incluye.
+
+    ⚠️ LAS RUTAS DEL CSS SON RELATIVAS A LA HOJA, no a la raíz: un
+    `../brand/…` escrito en `css/styles.css` significa `brand/…`. Resolverlo
+    mal haría que el chequeo no encuentre nada y cante que está todo bien, que
+    es peor que no tenerlo.
+    """
+    ruta = RAIZ / hoja
+    rotos = []
+
+    for destino in URL_DEL_CSS.findall( ruta.read_text( encoding = "utf-8" ) ):
+
+        if destino.startswith( ( "data:", "http://", "https://", "//" ) ):
+            continue
+
+        archivo = ( ruta.parent / destino.split( "?" )[ 0 ] ).resolve()
+
+        if not archivo.exists():
+            rotos.append( destino + " — no está" )
+
+    return rotos
+
+
 def main():
 
     hubo_rotos = False
@@ -131,6 +168,18 @@ def main():
                 print( f"    { roto }" )
         else:
             print( f"✓ { pagina }" )
+
+    for hoja in HOJAS:
+
+        rotos = revisar_la_hoja( hoja )
+
+        if rotos:
+            hubo_rotos = True
+            print( f"\n✗ { hoja } — { len( rotos ) } roto(s):" )
+            for roto in rotos:
+                print( f"    { roto }" )
+        else:
+            print( f"✓ { hoja }" )
 
     print( f"\nEnlaces externos (no se visitan, se listan): { len( todos_los_externos ) }" )
     for externo in sorted( todos_los_externos ):
