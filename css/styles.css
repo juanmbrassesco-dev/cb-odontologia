@@ -2133,12 +2133,6 @@ textarea.caja {
   .entrar-foto { max-height: 360px; }
 
   .entrar { padding: 28px 0; }
-}
-
-@media (min-width: 1280px) {
-  .entrar-foto { max-height: 320px; }
-
-  .entrar { padding: 24px 0; }
 
   /* 🔴 Y ACÁ TAMBIÉN SE CENTRA, por la misma decisión del 1-oct-2026 que
      centró las otras cinco pantallas del flujo.
@@ -2171,6 +2165,14 @@ textarea.caja {
   .entrar-acciones {
     justify-content: center;
   }
+}
+
+@media (min-width: 1280px) {
+  .entrar-foto { max-height: 320px; }
+
+  .entrar { padding: 24px 0; }
+
+
 }
 
 
@@ -2212,14 +2214,18 @@ textarea.caja {
    `ec79357`). Aquél metía una segunda cosa al lado del contenido; esto no
    agrega nada, sólo mueve de lugar lo que ya está.
 
-   POR QUÉ NO A 768: ahí `--columna` todavía es 100%, así que el contenido ya
-   ocupa el ancho y no hay nada que centrar. La regla no haría nada y sería una
-   regla que nadie consume.
+   🔴 Y VA DESDE 768, NO DESDE 1280 —lo cerró Juan el 1-oct-2026 mirando los dos
+   anchos: «todo centrado en 768 también, así no rompe visualmente con la
+   pantalla de 1280»—. **El argumento no es el vacío, que a 768 es la mitad: es
+   que así la regla es UNA sola** —«en el teléfono contra el margen, en
+   escritorio centrado»— en vez de tres, una por ancho. *A 768 no cambian la ②
+   ni la ③, cuyo contenido ya ocupa los 688 disponibles; sí la ①, la ④, la ⑤ y
+   la ⑥, que tienen piezas de ancho propio.*
 
    ⛔ DESCARTADA, con su motivo: meter el contenido en una TARJETA blanca
    centrada. Estrena una superficie, y la regla del proyecto dice que antes de
    separar con una superficie se prueba con aire — y acá el aire alcanza. */
-@media (min-width: 1280px) {
+@media (min-width: 768px) {
 
   .paso > * {
     margin-left: auto;
