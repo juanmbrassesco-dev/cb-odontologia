@@ -130,6 +130,28 @@ def recortar( id_de_la_pantalla ):
     return pagina[ arranque : cierre ]
 
 
+def recortar_el_cartel():
+    """El `<dialog>` de la pregunta, tal cual está en `mis-turnos.html`.
+
+    🔴 VA APARTE DEL RECORTE DE PANTALLAS porque no es una `<section>`, y sin
+    esta función la prueba se quedaba sin el cartel: `mis-turnos.js` lo busca
+    por `id` al cargar y se caía sobre `null` antes de dibujar un solo turno.
+    """
+    pagina = PAGINA.read_text( encoding = "utf-8" )
+
+    # 🔴 SE BUSCA DESDE EL `id` HACIA ATRÁS, igual que el recorte de pantallas,
+    # y NO con el primer `"<dialog"` del archivo: el comentario que está arriba
+    # del cartel NOMBRA la etiqueta —«por qué `<dialog>` y no un `<div>`»—, así
+    # que el recorte simple arrancaba ADENTRO del comentario y lo partía al
+    # medio. La página salía con el comentario convertido en texto a la vista y
+    # un cartel sin caja: abierto, pero de 0×0.
+    ancla    = pagina.index( 'id="cartel-cancelar"' )
+    arranque = pagina.rindex( "<dialog", 0, ancla )
+    cierre   = pagina.index( "</dialog>", ancla ) + len( "</dialog>" )
+
+    return pagina[ arranque : cierre ]
+
+
 def sin_hidden( pantalla ):
     """La pantalla a la vista. Sólo la primera marca: las de adentro se quedan."""
     return pantalla.replace( " hidden>", ">", 1 )
@@ -285,6 +307,8 @@ def armar():
 { sin_hidden( recortar( "paso-turnos" ) ) }
 
 { recortar( "paso-mensaje" ) }
+
+{ recortar_el_cartel() }
   </main>
 
 <script>

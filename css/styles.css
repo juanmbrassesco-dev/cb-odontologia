@@ -3138,6 +3138,112 @@ textarea.caja {
 }
 
 
+/* ══ pieza: cartel ══ */
+
+/* EL CARTEL FLOTANTE QUE PREGUNTA ANTES DE CANCELAR — pieza NUEVA del sistema,
+   2-oct-2026, la pidió Juan. Es la primera superficie del sitio que se dibuja
+   ENCIMA de otra.
+
+   🔑 NO TRAE NI UNA FORMA NUEVA: es la caja de la pieza 6 —fondo blanco, el
+   mismo borde, el mismo radio— con los botones de la pieza 3 y la fila de dos
+   que ya usan las pantallas del flujo. Lo único que es de ESTA pieza es cómo
+   flota: el fondo oscurecido de atrás y el ancho, que no puede ser el de una
+   tarjeta de lista porque un cartel que tapa tiene que leerse de un vistazo.
+
+   ⚠️ LA SOMBRA ES LA QUE YA EXISTE —`--sombra-boton-foco`— y no una nueva. Un
+   cartel flotante normalmente pide más elevación, pero acá el que separa del
+   resto es el fondo oscurecido, no la sombra. Si al verlo queda chato, lo que
+   falta es un token de sombra de superficie, y eso se agrega al sistema con su
+   decisión, no acá adentro. */
+.cartel {
+  /* A 390 el cartel deja 16 px de aire a cada lado —el margen del sitio—, y de
+     ahí para arriba se frena en el ancho de una tarjeta: más ancho que eso, el
+     renglón del turno se estira y deja de leerse de un vistazo. */
+  width: calc( 100% - 32px );
+  max-width: 360px;
+
+  /* 🔴 `margin: auto` NO SOBRA, Y ES LO QUE LO CENTRA: el navegador ya se lo
+     pone a un `<dialog>` abierto, pero el reset de la pieza `base` —`*`, con
+     `margin: 0`— se lo saca. Sin esta línea el cartel se dibuja pegado al
+     ángulo de arriba a la izquierda. Medido, no deducido: 0,0 en los tres
+     anchos. */
+  margin: auto;
+
+  /* El relleno vive en la caja de adentro. El porqué está en el HTML, al lado
+     del markup: tocar el fondo cierra, y el borde interior del cartel contaría
+     como fondo. */
+  padding: 0;
+
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  box-shadow: var(--sombra-boton-foco);
+}
+
+/* EL FONDO OSCURECIDO. Es lo que dice «esto no se sigue usando hasta que
+   contestes», y es grafito con transparencia y no negro: el negro puro no está
+   en la paleta del sitio. */
+.cartel::backdrop {
+  background: rgba( 51, 50, 47, 0.55 );
+}
+
+.cartel-caja {
+  padding: 24px 20px 26px;
+  text-align: center;
+}
+
+/* EL TÍTULO ES EL DE UNA TARJETA, NO EL DE UNA PANTALLA: Marcellus en el
+   tamaño h3. El h2 de la pieza `mensaje` —que es el de una pantalla entera—
+   mide 32 px y adentro de un cartel de 360 ocuparía tres renglones. */
+.cartel h2 {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h3);
+  line-height: var(--alto-h3);
+  color: var(--grafito);
+}
+
+/* QUÉ TURNO SE ESTÁ POR CANCELAR. El día y la hora mandan —son lo que el
+   paciente reconoce— y el tratamiento va debajo, más callado, igual que en la
+   tarjeta. */
+.cartel .cartel-cuando {
+  margin-top: 14px;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  color: var(--grafito);
+}
+
+.cartel .cartel-que {
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+/* La fila de «Sí» y «No» es la pieza `acciones` + `acciones-fila` tal cual.
+   Acá sólo se le da el aire que separa de un texto. */
+.cartel .acciones {
+  margin-top: 24px;
+}
+
+@media (min-width: 768px) {
+
+  .cartel {
+    max-width: var(--tarjeta-ancho);
+  }
+
+  .cartel-caja {
+    padding: 28px 32px 30px;
+  }
+}
+
+@media (min-width: 1280px) {
+
+  .cartel-caja {
+    padding: 32px 40px 34px;
+  }
+}
+
+
 /* ══ pieza: fuentes ══ */
 /* 🔴 ESTA PIEZA LA USA EL SITIO Y NO LOS TABLEROS, y el motivo es mecánico:
    las rutas de abajo son relativas a ESTE archivo (css/), y un tablero vive en

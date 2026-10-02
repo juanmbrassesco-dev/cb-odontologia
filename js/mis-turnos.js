@@ -18,18 +18,26 @@ const DIRECCION_DE_MIS_TURNOS = SUPABASE_URL + '/functions/v1/mis-turnos';
 const DIRECCION_DE_CANCELAR = SUPABASE_URL + '/functions/v1/cancelar';
 
 
-// EL BOTÓN QUE ESTÁ ESPERANDO CONFIRMACIÓN, o `null` si no hay ninguno.
+// EL TURNO QUE EL CARTEL ESTÁ PREGUNTANDO SI SE CANCELA, o `null` si el cartel
+// está cerrado.
 //
-// Cancelar va A DOS TOQUES —decidido por Juan el 1-oct-2026—: el primero
-// pregunta y el segundo cancela. El motivo es que el botón vive adentro de la
-// tarjeta, a un toque de distancia del dedo que recorre la pantalla, y
-// cancelar NO SE DESHACE: libera el horario, que alguien puede tomar en el
-// minuto siguiente, y dispara los tres correos.
+// 🔴 CANCELAR PREGUNTA ANTES, Y LA PREGUNTA LA HACE UN CARTEL FLOTANTE —lo
+// pidió Juan el 2-oct-2026—. Hasta ese día preguntaba el mismo botón cambiando
+// de rótulo a «¿Seguro? Sí, cancelar», y lo cortó: «no está bueno que se
+// transforme el botón». El motivo es medible: si el MISMO PÍXEL cambia de
+// significado, dos toques rápidos cancelan sin que nadie lea nada.
 //
-// Se guarda cuál está preguntando porque sólo puede haber uno: si el paciente
-// toca el de otra tarjeta, el primero tiene que volver a su rótulo en vez de
-// quedar armado y esperando.
-let botonPreguntando = null;
+// Y la pregunta no es una formalidad: cancelar NO SE DESHACE. Libera el
+// horario, que alguien puede tomar en el minuto siguiente, y dispara los tres
+// correos.
+//
+// 🔑 SE GUARDA EL TURNO ENTERO Y NO SÓLO SU `id` porque el cartel tiene que
+// DECIR CUÁL: flota encima de la lista y tapa la tarjeta que el paciente acaba
+// de tocar.
+let turnoDelCartel = null;
+
+
+const cartel = document.querySelector( '#cartel-cancelar' );
 
 
 // ══════════════════════════════════════════════════════════════════════
@@ -128,19 +136,14 @@ function tarjetaDeTurno( turno ) {
     datos.appendChild( cobertura );
   }
 
-  tarjeta.append( datos, botonDeCancelar( turno.id ) );
+  tarjeta.append( datos, botonDeCancelar( turno ) );
 
   return tarjeta;
 }
 
 
-/**
- * El botón de cancelar de una tarjeta, con sus dos toques.
- *
- * El PRIMER toque no cancela: cambia el rótulo a «¿Seguro? Sí, cancelar» y
- * queda armado. El SEGUNDO cancela. Tocar cualquier otro lado lo desarma.
- */
-function botonDeCancelar( turnoId ) {
+/** El botón de cancelar de una tarjeta. No cancela: abre el cartel. */
+function botonDeCancelar( turno ) {
 
   const boton = document.createElement( 'button' );
 
@@ -148,44 +151,77 @@ function botonDeCancelar( turnoId ) {
   boton.className = 'btn btn-2';
   boton.textContent = 'Cancelar turno';
 
-  boton.addEventListener( 'click', ( evento ) => {
-
-    // Sin esto, el clic sigue subiendo hasta el oyente del documento —el que
-    // desarma— y el botón se desarmaría a sí mismo en el mismo toque.
-    evento.stopPropagation();
-
-    if ( botonPreguntando === boton ) {
-      cancelar( turnoId );
-      return;
-    }
-
-    desarmarLaPregunta();
-
-    botonPreguntando = boton;
-    boton.textContent = '¿Seguro? Sí, cancelar';
+  boton.addEventListener( 'click', () => {
+    abrirElCartel( turno );
   } );
 
   return boton;
 }
 
 
-/** Devuelve el botón armado a su rótulo, si hay alguno. */
-function desarmarLaPregunta() {
+// ══════════════════════════════════════════════════════════════════════
+// EL CARTEL QUE PREGUNTA
+// ══════════════════════════════════════════════════════════════════════
 
-  if ( botonPreguntando === null ) {
-    return;
-  }
+/**
+ * Abre el cartel preguntando por ESTE turno.
+ *
+ * Los dos renglones del medio se escriben con las MISMAS funciones que la
+ * tarjeta —`turnoEnPalabras` y `queDiceElTurno`—, así que el cartel no puede
+ * decir una hora distinta de la que el paciente leyó un segundo antes.
+ *
+ * 🔑 `showModal()` Y NO `show()`: la versión «modal» es la que trae el fondo
+ * oscurecido, el foco atrapado adentro y la tecla Escape. Con `show()` el
+ * cartel se dibuja igual y la página de atrás sigue respondiendo — que es
+ * justo lo que no queremos mientras hay una pregunta sin contestar.
+ */
+function abrirElCartel( turno ) {
 
-  botonPreguntando.textContent = 'Cancelar turno';
-  botonPreguntando = null;
+  turnoDelCartel = turno;
+
+  document.querySelector( '#cartel-cuando' ).textContent = turnoEnPalabras( turno.inicio );
+  document.querySelector( '#cartel-que' ).textContent = queDiceElTurno( turno );
+
+  cartel.showModal();
 }
 
 
-// TOCAR AFUERA DESARMA LA PREGUNTA. Es lo que hace que el segundo toque sea una
-// decisión y no un reflejo: el que tocó sin querer sigue usando la pantalla y
-// el botón se desarma solo, sin pedirle que entienda que tiene que cancelar la
-// cancelación.
-document.addEventListener( 'click', desarmarLaPregunta );
+// LAS TRES SALIDAS SIN CANCELAR PASAN POR `close()`: el botón «No», la tecla
+// Escape y el toque en el fondo oscuro. Por eso el turno guardado se borra en
+// el evento `close` y no adentro del botón — así no queda un turno «elegido»
+// esperando a nadie si el cartel se cerró por cualquiera de los otros dos
+// caminos.
+cartel.addEventListener( 'close', () => {
+  turnoDelCartel = null;
+} );
+
+
+document.querySelector( '#cartel-no' ).addEventListener( 'click', () => {
+  cartel.close();
+} );
+
+
+document.querySelector( '#cartel-si' ).addEventListener( 'click', () => {
+
+  // El turno se agarra ANTES de cerrar, porque cerrar es lo que lo borra.
+  const turnoId = turnoDelCartel.id;
+
+  cartel.close();
+
+  cancelar( turnoId );
+} );
+
+
+// 🔑 TOCAR EL FONDO OSCURO CIERRA, y el navegador no lo hace solo: lo que
+// cuenta ese toque como propio es el `<dialog>`, así que el clic llega con el
+// cartel como destino. Un clic adentro llega con destino el botón o la caja —
+// nunca el cartel—, y por eso la comparación alcanza para distinguirlos.
+cartel.addEventListener( 'click', ( evento ) => {
+
+  if ( evento.target === cartel ) {
+    cartel.close();
+  }
+} );
 
 
 /**
@@ -201,7 +237,6 @@ function dibujarLosTurnos( turnos ) {
   const vacio = document.querySelector( '#turnos-vacio' );
 
   lista.textContent = '';
-  desarmarLaPregunta();
 
   const hay = turnos.length > 0;
 
@@ -362,8 +397,6 @@ const NOTICIAS = {
  * las separaba era la redacción del error.
  */
 async function cancelar( turnoId ) {
-
-  desarmarLaPregunta();
 
   let estado = 0;
   let contenido = {};

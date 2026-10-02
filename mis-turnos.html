@@ -129,6 +129,57 @@
 
     </section>
 
+    <!--
+      EL CARTEL FLOTANTE QUE PREGUNTA ANTES DE CANCELAR — lo pidió Juan el
+      2-oct-2026: «un cartel flotante que se abra después de tocar cancelar».
+      Antes la pregunta la hacía el mismo botón cambiando de rótulo, y eso lo
+      cortó él: «no está bueno que se transforme el botón».
+
+      🔑 POR QUÉ `<dialog>` Y NO UN `<div>` CON POSICIÓN FIJA: el elemento del
+      navegador trae gratis —y bien hechas— las cuatro cosas que un cartel
+      flotante necesita y que a mano se olvidan: el fondo oscurecido
+      (`::backdrop`), el foco que queda ATRAPADO adentro mientras está abierto,
+      la tecla Escape para salir, y el resto de la página marcado como inerte
+      para quien usa un lector de pantalla.
+
+      🔴 EL `autofocus` VA EN EL «No», Y ES LA MISMA DECISIÓN QUE EL ORDEN DE
+      LOS BOTONES: al abrirse, el foco cae en el botón que NO hace nada. Sin
+      eso cae en el primero —el «Sí»—, y un Enter de reflejo cancelaría un
+      turno. Es el equivalente de teclado del dedo que vuelve a tocar.
+
+      HAY UN SOLO CARTEL PARA TODA LA LISTA, no uno por tarjeta: lo que cambia
+      entre un turno y otro son los dos renglones de adentro, que los escribe
+      `js/mis-turnos.js` al abrirlo. Por eso el cartel DICE QUÉ TURNO — flotando
+      encima de la lista, tapa la tarjeta que el paciente acaba de tocar.
+    -->
+    <dialog class="cartel" id="cartel-cancelar" aria-labelledby="cartel-titulo">
+
+      <!--
+        LA CAJA DE ADENTRO LLEVA EL RELLENO Y EL CARTEL NO, y no es capricho:
+        tocar el fondo oscuro cierra, y el navegador cuenta ese toque como un
+        toque EN EL CARTEL. Con el relleno puesto en el cartel, tocar su borde
+        interior —que es cartel y se ve como cartel— lo cerraría.
+      -->
+      <div class="cartel-caja">
+
+        <h2 id="cartel-titulo">¿Cancelamos este turno?</h2>
+
+        <p class="cartel-cuando" id="cartel-cuando"></p>
+
+        <p class="cartel-que" id="cartel-que"></p>
+
+        <div class="acciones acciones-fila">
+
+          <button class="btn btn-2" type="button" id="cartel-si">Sí</button>
+
+          <button class="btn btn-2" type="button" id="cartel-no" autofocus>No</button>
+
+        </div>
+
+      </div>
+
+    </dialog>
+
   </main>
 
   <!--

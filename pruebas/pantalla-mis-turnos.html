@@ -90,6 +90,34 @@
       </div>
 
     </section>
+
+<dialog class="cartel" id="cartel-cancelar" aria-labelledby="cartel-titulo">
+
+      <!--
+        LA CAJA DE ADENTRO LLEVA EL RELLENO Y EL CARTEL NO, y no es capricho:
+        tocar el fondo oscuro cierra, y el navegador cuenta ese toque como un
+        toque EN EL CARTEL. Con el relleno puesto en el cartel, tocar su borde
+        interior —que es cartel y se ve como cartel— lo cerraría.
+      -->
+      <div class="cartel-caja">
+
+        <h2 id="cartel-titulo">¿Cancelamos este turno?</h2>
+
+        <p class="cartel-cuando" id="cartel-cuando"></p>
+
+        <p class="cartel-que" id="cartel-que"></p>
+
+        <div class="acciones acciones-fila">
+
+          <button class="btn btn-2" type="button" id="cartel-si">Sí</button>
+
+          <button class="btn btn-2" type="button" id="cartel-no" autofocus>No</button>
+
+        </div>
+
+      </div>
+
+    </dialog>
   </main>
 
 <script>
