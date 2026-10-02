@@ -8,6 +8,13 @@ gastar un peso.
 Esta guía sale del diseño ya hecho: **cada medida de acá abajo la pide una
 pantalla concreta**, no una preferencia.
 
+⏱ **Por qué conviene no demorarlas.** El sitio **ya está publicado y
+funcionando**, y hoy las fotos que se ven **no son del consultorio**: son fotos
+compradas de otros lugares, puestas para poder diseñar. Andan como provisorias
+porque el sitio todavía no se promocionó; **no andan como definitivas**, y el
+bloque «Nosotros» está directamente con el lugar de la foto vacío. **Las cinco
+de abajo son lo último que falta para que el sitio muestre el consultorio real.**
+
 ---
 
 ## Antes de sacar una sola foto
@@ -34,8 +41,11 @@ se ve más en la foto que en persona.
 
 ## Cómo se sostiene el teléfono
 
-- **VERTICAL, siempre.** El sitio es de teléfono: una foto apaisada no entra en
-  la portada y hay que recortarla, y ahí se pierde justo lo que importa.
+- **VERTICAL, salvo una.** El sitio es de teléfono: una foto apaisada no entra
+  en la portada y hay que recortarla, y ahí se pierde justo lo que importa.
+  **La única excepción es la foto 3 —la entrada—, que va HORIZONTAL** porque el
+  hueco que la recibe es apaisado. Está avisado en su ficha; para las otras
+  cuatro, vertical.
 - **Apoyado, no en el aire.** Contra una pared, sobre una mesa, sobre una pila
   de libros. Con poca luz, el pulso se nota.
 - **A la altura de los ojos de una persona sentada**, no desde arriba. Una foto
@@ -48,7 +58,12 @@ se ve más en la foto que en persona.
 
 ---
 
-## Las tres fotos que hacen falta, en orden de urgencia
+## Las cinco fotos que hacen falta, en orden de urgencia
+
+*(Hasta el 8-sep-2026 acá había tres. **Las que se sumaron son la 2 y la 3**:
+las pidieron dos pantallas que se maquetaron después, y cada una tiene una
+forma distinta. El orden es de urgencia real: las tres primeras están **en el
+aire ahora mismo** con una foto que no es del consultorio, o con un hueco.)*
 
 ### 1 · EL ESPACIO — es la que lanza el sitio
 
@@ -59,18 +74,52 @@ se ve más en la foto que en persona.
 - 🔴 **Lo importante va en el TERCIO DE ARRIBA de la foto.** Abajo, el sitio le
   apoya encima un velo oscuro con el título y los botones: **todo lo que quede
   en la mitad de abajo no se va a ver.**
+- ⚠️ **Y DEJÁ AIRE A LOS COSTADOS, no sólo arriba.** En una pantalla de
+  computadora esta foto no se ve entera: queda **una franja vertical angosta**,
+  o se recorta por los lados. Lo que esté pegado a un borde se va a perder.
 - Que se vea **la ventana o la luz que entra**, y algo de madera, planta o tela.
   Es lo que separa «consultorio» de «sala de hospital».
 - **Sacá diez, no una.** Desde la puerta, desde un rincón, más cerca, más lejos.
   Elegir después es gratis; volver a sacar, no.
 
-### 2 · EL DETALLE — para los bloques de adentro
+### 2 · EL RETRATO DE CECILIA — hoy hay un hueco vacío esperándola
 
-Objetos y rincones, en primer plano: una planta, la textura de una pared, una
-silla, un mate, una lámpara. **Son las fotos que rellenan las secciones sin
-tener que mostrar gente.** Verticales u horizontales, acá da igual.
+**Es la foto del bloque «Nosotros», al lado del nombre y la matrícula.** Hoy ese
+lugar está **vacío a propósito** y dice, en el sitio publicado, que la foto
+todavía no existe: **no se le pone una de banco, porque al lado de un nombre y
+una matrícula una foto de otra persona se lee como si fuera ella.**
 
-### 3 · EL GESTO — la que hay que producir, y no es una producción
+- **Cecilia sola, en el consultorio**, no en un fondo liso: el bloque tiene que
+  transmitir **el lugar** además de la persona.
+- **Vertical, y el hueco es 4:5** —un poco más alta que ancha, no un rectángulo
+  largo—. Conviene sacarla con aire de sobra y recortarla después.
+- **La cara en el tercio de arriba**, y si entra el cuerpo, **que el corte caiga
+  por el antebrazo y no por las manos**: un corte por las manos se lee como un
+  error de encuadre.
+- **Ropa lisa**, sin logos ni estampados. Mirando a la cámara, acá sí.
+- **Sacá quince**, cambiando de lugar y de gesto. **Un retrato no sale a la
+  primera ni le sale a nadie**, y es la única de las cinco que no se puede
+  reemplazar por otra cosa: es ella.
+
+### 3 · LA ENTRADA — la única HORIZONTAL de las cinco
+
+**Es la foto de las dos pantallas de turnos** —la de reservar y la de «mis
+turnos»—. Quien llega ahí **ya decidió sacar turno**: lo que necesita ver es
+**dónde va a ir**, no el sillón.
+
+- 🔴 **HORIZONTAL, y el hueco es 16:9** (apaisado, como la pantalla de un
+  televisor). **Es la excepción a la regla del vertical**, y si sale vertical no
+  se puede usar: se recortaría hasta perder la escena.
+- **La sala de espera o la entrada**, con **luz cálida**.
+- ⚠️ **Sin equipamiento clínico a la vista** —ni sillón, ni instrumental, ni
+  aparatos—: esta foto es para tranquilizar, no para mostrar la práctica.
+- **Sin texto ni marcas en el encuadre:** carteles, folletos, logos de otras
+  marcas, pizarras escritas. El sitio ya tiene su propia tipografía y un cartel
+  ajeno adentro de la foto pelea con ella.
+- **Sacá ocho**, desde distintas distancias. **Y acordate de girar el teléfono**:
+  es la única de la lista que va acostada.
+
+### 4 · EL GESTO — la que hay que producir, y no es una producción
 
 **Cecilia y alguien haciendo de paciente, sentados, conversando.** Sin
 instrumental en la boca, sin guantes en primer plano, sin nadie acostado en el
@@ -81,6 +130,17 @@ sillón.
 - **Ropa lisa**, sin logos ni estampados.
 - La misma regla de la portada: **vertical, lo importante arriba**.
 - Sacá **veinte**. De veinte, tres van a servir; de tres, ninguna.
+
+### 5 · EL DETALLE — todavía no tiene lugar en el sitio, y se piden igual
+
+Objetos y rincones, en primer plano: una planta, la textura de una pared, una
+silla, un mate, una lámpara. Verticales u horizontales, acá da igual.
+
+⚠️ **Se dicen las cosas como son: hoy ninguna sección del sitio lleva una foto
+de detalle** —las secciones de adentro van con íconos dibujados, no con fotos—.
+**Se piden porque es la misma salida de cámara** y porque el Instagram y las
+páginas por tratamiento que vienen después sí las van a necesitar. **Son las
+últimas de la lista: si el tiempo alcanza para cuatro, ésta es la que se cae.**
 
 ---
 
