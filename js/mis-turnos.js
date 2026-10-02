@@ -349,7 +349,7 @@ const NOTICIAS = {
     accion: {
       rotulo: 'Volver al inicio',
       clase: 'btn-1',
-      hacer: () => { window.location.href = 'index.html'; }
+      hacer: () => { window.location.href = '/'; }
     }
   },
 

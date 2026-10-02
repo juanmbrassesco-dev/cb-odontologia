@@ -73,6 +73,31 @@ class Lector( HTMLParser ):
                 self.destinos.append( ( etiqueta, nombre, valor ) )
 
 
+def existe( destino ):
+    """Si ese destino se puede servir, con las reglas del sitio publicado.
+
+    🔴 SON TRES FORMAS DE NOMBRAR UN ARCHIVO Y LAS TRES VALEN, porque así lo
+    publica Cloudflare: `/reservar` sirve `reservar.html`, y `/` sirve
+    `index.html`. Los enlaces del sitio usan la forma sin extensión desde el
+    2-oct-2026 — con el `.html` cada navegación interna pagaba un 307 de más.
+
+    ⚠️ Sin esta función, el verificador cantaría como ROTOS todos los enlaces
+    internos del sitio, que es peor que no verificar: un chequeo que falla
+    siempre se empieza a ignorar.
+    """
+    # La barra del principio es de la raíz del sitio, que acá es la del repo.
+    relativo = destino.lstrip( "/" )
+
+    if not relativo:
+        relativo = "index.html"
+
+    if ( RAIZ / relativo ).exists():
+        return True
+
+    # La forma sin extensión: `/reservar` es el archivo `reservar.html`.
+    return ( RAIZ / ( relativo + ".html" ) ).exists()
+
+
 def revisar( pagina ):
     """Devuelve (rotos, externos) de una página."""
 
@@ -112,7 +137,7 @@ def revisar( pagina ):
         if not archivo:
             continue
 
-        if not ( RAIZ / archivo ).exists():
+        if not existe( archivo ):
             rotos.append(
                 f"<{ etiqueta } { atributo }=\"{ destino }\"> — "
                 f"no existe el archivo { archivo }"

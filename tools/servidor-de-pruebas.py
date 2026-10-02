@@ -15,7 +15,7 @@ CÓMO SE USA, siempre desde la raíz del repo:
 
     python3 tools/servidor-de-pruebas.py
 
-    Y después se abre http://localhost:8000/reservar.html
+    Y después se abre http://localhost:8000/reservar
 
 EL PUERTO ES EL 8000 Y NO SE CAMBIA A LA LIGERA: es el que está registrado en
 la consola de Google como origen autorizado de JavaScript. Con otro número el
@@ -23,6 +23,7 @@ login rebota con `origin_mismatch`.
 """
 
 import http.server
+import os
 import socketserver
 
 
@@ -30,7 +31,28 @@ PUERTO = 8000
 
 
 class Servidor( http.server.SimpleHTTPRequestHandler ):
-    """El servidor de archivos de siempre, con dos encabezados agregados."""
+    """El servidor de archivos de siempre, con dos encabezados y una regla de
+    direcciones agregados."""
+
+    def translate_path( self, path ):
+        """Resuelve `/reservar` al archivo `reservar.html`, como el sitio.
+
+        🔴 POR QUÉ EXISTE ESTO, Y NO ES UN CAPRICHO DEL LOCAL: Cloudflare
+        publica las páginas SIN la extensión —`/mis-turnos.html` contesta un
+        307 y redirige a `/mis-turnos`—, así que los enlaces del sitio ya no
+        dicen `.html`. El servidor de Python sirve archivos tal cual: sin esta
+        regla, los mismos enlaces que andan publicados darían 404 acá.
+
+        ⚠️ EL PELIGRO QUE EVITA ES EL DE SIEMPRE: que lo que se prueba en la
+        máquina no sea lo que se publica. Un local que se comporta distinto no
+        avisa que miente — deja pasar lo roto y rompe lo sano.
+        """
+        ruta = super().translate_path( path )
+
+        if not os.path.exists( ruta ) and os.path.exists( ruta + '.html' ):
+            return ruta + '.html'
+
+        return ruta
 
     def end_headers( self ):
 

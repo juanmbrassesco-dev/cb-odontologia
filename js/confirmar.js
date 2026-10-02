@@ -299,7 +299,7 @@ const NOTICIAS = {
     accion: {
       rotulo: 'Volver al inicio',
       clase: 'btn-1',
-      hacer: () => { window.location.href = 'index.html'; }
+      hacer: () => { window.location.href = '/'; }
     },
 
     // 🔴 EL SEGUNDO BOTÓN, pedido por Juan el 1-oct-2026 probando el sitio
@@ -312,7 +312,7 @@ const NOTICIAS = {
     accion2: {
       rotulo: 'Ir a mis turnos',
       clase: 'btn-2',
-      hacer: () => { window.location.href = 'mis-turnos.html'; }
+      hacer: () => { window.location.href = '/mis-turnos'; }
     }
   },
 
@@ -326,7 +326,7 @@ const NOTICIAS = {
     accion: {
       rotulo: 'Ver mis turnos',
       clase: 'btn-2',
-      hacer: () => { window.location.href = 'mis-turnos.html'; }
+      hacer: () => { window.location.href = '/mis-turnos'; }
     }
   },
 
