@@ -56,6 +56,23 @@ se ve más en la foto que en persona.
 - **Modo retrato: NO** para el ambiente. El desenfoque falso se come los bordes
   de los muebles. Sí se puede usar para un detalle.
 
+### Cuatro ajustes que conviene tocar antes, si es un iPhone
+
+- 🔴 **Ajustes → Cámara → Formatos → «Más compatible».** Por defecto el iPhone
+  guarda en **HEIC**, un formato de Apple que **los navegadores no muestran** y
+  que habría que convertir foto por foto. Con «Más compatible» sale **JPEG**,
+  que es lo que el sitio usa. **La diferencia de calidad no se ve; la de trabajo
+  sí.**
+- **Ajustes → Cámara → Cuadrícula: encendida.** Divide la pantalla en tercios, y
+  es justo lo que pide la regla de «lo importante arriba»: deja de ser una idea
+  y pasa a ser una línea en la pantalla.
+- **Live Photos: apagado** *(el círculo de arriba, tachado)*. Guarda un archivo
+  doble y al compartirlo puede llegar un fotograma movido en vez de la foto.
+- **Apple ProRAW: apagado**, si el modelo lo tiene. Son archivos enormes que
+  necesitan revelado y no aportan nada acá.
+
+*La resolución y el HDR no se tocan: vienen bien de fábrica.*
+
 ---
 
 ## Las cinco fotos que hacen falta, en orden de urgencia
