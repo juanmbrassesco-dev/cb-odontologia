@@ -33,6 +33,31 @@
     "directory": "./dist"
   },
 
+  // EL DOMINIO PROPIO, enganchado acá y no en el panel (4-oct-2026).
+  //
+  // Cada entrada con `custom_domain` le dice a Cloudflare: este nombre sirve
+  // este sitio. Cloudflare crea solo el registro de DNS y emite el
+  // certificado; no hay nada que cargar a mano.
+  //
+  // 🔑 POR QUÉ ACÁ Y NO EN EL FORMULARIO, que es lo que ofrece el panel: por
+  // el mismo motivo que está escrito más abajo para los dos interruptores —
+  // una decisión que vive sólo en un panel no es una decisión, es un estado
+  // que alguien puede pisar sin enterarse. Acá queda versionada, y si el
+  // proyecto se rehace en otra cuenta se reconstruye sola.
+  //
+  // Van los DOS nombres: sin la entrada de `www`, quien lo escriba ve un
+  // error en vez del sitio.
+  "routes": [
+    {
+      "pattern": "cbodontologiayestetica.com.ar",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.cbodontologiayestetica.com.ar",
+      "custom_domain": true
+    }
+  ],
+
   // La dirección `…workers.dev`, que hoy es la ÚNICA que tiene el sitio.
   // ⏱ Pasa a `false` el día que el dominio propio esté andando: dos
   // direcciones para el mismo sitio es contenido duplicado para Google y una
