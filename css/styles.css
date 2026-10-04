@@ -3128,6 +3128,25 @@ textarea.caja {
    ⚠ EL MARGEN DE LA SECCIÓN, EL h1 Y LA AYUDA NO ESTÁN ACÁ: son de la pieza
    `paso`. Y LA TARJETA TAMPOCO: es la pieza `tarjeta`, la misma que usa la
    pantalla ⑤. Acá queda sólo lo que es de ESTA pantalla y de ninguna otra. */
+/* 🔴 EL ESTADO VACÍO SE CENTRA PORQUE SE LE PONE UN TECHO DE ANCHO, y el techo
+   no es un adorno: es lo único que le devuelve el eje.
+
+   La pieza `paso` centra a sus HIJOS DIRECTOS con `margin-left/right: auto`, y
+   un margen `auto` sólo corre algo si ese algo mide MENOS que su caja: lo que
+   reparte es el sobrante. Este `<div>` existe para encender de una sola vez los
+   dos pedazos del aviso —el texto y el botón—, y al nacer sin techo medía los
+   1100 px de la página: no había sobrante, el `auto` no lo movió, y adentro el
+   texto y el botón se centraban respecto de SUS 640 px pegados a la izquierda.
+
+   MEDIDO a 1280, antes del arreglo: el h1 centrado en 640 y el aviso en 410 —
+   230 px de distancia entre dos cosas de la misma pantalla. A 390 y a 768 no
+   pasaba nada, y no es suerte: ahí `--columna` vale 100%, así que no hay
+   sobrante que repartir y el bloque ya ocupaba todo el ancho disponible. */
+.turnos-vacio {
+  max-width: var(--columna);
+}
+
+
 /* La cobertura es el renglón MÁS callado de la tarjeta: es un dato de control,
    no lo que el paciente vino a mirar. Mismo tamaño que «Paciente: …». */
 .turno .cobertura {
