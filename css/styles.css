@@ -1877,6 +1877,26 @@ textarea.caja {
   text-underline-offset: 3px;
 }
 
+/* EL CORREO ES UNA PALABRA SOLA DE 38 CARACTERES, y sin esto se sale de su caja.
+
+   `contacto@cbodontologiayestetica.com.ar` no tiene ningún espacio ni guion, y
+   el navegador sólo corta una línea donde hay uno de los dos. Sin permiso para
+   cortar la palabra, la deja pasar el borde derecho en silencio: no hay error,
+   hay texto afuera de la tarjeta.
+
+   Medido el 6-oct-2026 en un viewport real de 390 (ver el marco de captura:
+   Chrome miente abajo de 500 de ancho): a 390 el texto termina 8 px ADENTRO y
+   no hacía falta nada. A 360 se pasaba 22 px y a 320, 62 — y 360 es un ancho
+   común en Android.
+
+   🔑 `anywhere` Y NO `break-word`, y la diferencia no es cosmética: las dos
+   parten la palabra, pero sólo `anywhere` deja que la caja se ENCOJA por abajo
+   del ancho de esa palabra. Con `break-word`, una caja flexible sigue
+   reservando el ancho de la palabra entera y el desborde no se arregla. */
+.dato-contacto .enlace {
+  overflow-wrap: anywhere;
+}
+
 .como-llegar {
   display: inline-block;
   margin-top: 8px;
