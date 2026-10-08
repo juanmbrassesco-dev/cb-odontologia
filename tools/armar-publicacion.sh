@@ -46,7 +46,7 @@ cd "$( dirname "$0" )/.."
 rm -rf dist
 mkdir -p dist/css dist/js dist/brand/fotos dist/brand/logo/curvas dist/brand/fonts
 
-cp index.html reservar.html mis-turnos.html dist/
+cp index.html reservar.html mis-turnos.html panel.html dist/
 
 cp css/tokens.css css/styles.css dist/css/
 cp js/*.js dist/js/

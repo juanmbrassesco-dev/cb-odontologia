@@ -11,7 +11,7 @@
 // deja un poco más vieja, y una foto vencida es peor que no tenerla porque se
 // lee como un hecho verificado.
 //
-// GENERADA EL 18-sep-2026, contra la base real, con:
+// GENERADA EL 8-oct-2026, contra la base real, con:
 //
 //   supabase gen types typescript --linked --schema public
 //
@@ -19,6 +19,7 @@
 // encabezado: al regenerar hay que volver a pegarlo arriba.
 //
 // SE REGENERA al aplicar cualquier migración que toque tablas o columnas.
+
 export type Json =
   | string
   | number
@@ -219,6 +220,8 @@ export type Database = {
           apellido: string
           created_at: string
           email: string
+          email_de_acceso: string | null
+          es_admin: boolean
           fecha_baja: string | null
           id: number
           nombre: string
@@ -228,6 +231,8 @@ export type Database = {
           apellido: string
           created_at?: string
           email: string
+          email_de_acceso?: string | null
+          es_admin?: boolean
           fecha_baja?: string | null
           id?: number
           nombre: string
@@ -237,6 +242,8 @@ export type Database = {
           apellido?: string
           created_at?: string
           email?: string
+          email_de_acceso?: string | null
+          es_admin?: boolean
           fecha_baja?: string | null
           id?: number
           nombre?: string

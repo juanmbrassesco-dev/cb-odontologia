@@ -3334,3 +3334,228 @@ textarea.caja {
 .ico-brief {
   background-image: url("../brand/fotos/iconos-del-brief.png");
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   EL PANEL
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* LA BARRA DE DÍAS — tres cosas en una fila: flecha, almanaque, flecha.
+
+   🔴 NO REUSA `.acciones-fila`, y el intento de reusarla fue el error del
+   8-oct-2026 que levantó Juan mirando la pantalla: esa clase define DOS
+   columnas (`max-content max-content`) y acá hay TRES hijos, así que la
+   segunda flecha se caía sola a un renglón de abajo. El nombre decía «fila» y
+   el contenido decía «dos» — la etiqueta no es el contenido.
+
+   `align-items: end` y no `center`: el campo lleva su etiqueta ARRIBA, así que
+   centrar verticalmente dejaría las flechas más altas que el almanaque. Lo que
+   tiene que quedar alineado es la base de las tres cajas. */
+.barra-dia {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* 🔴 EL CAMPO SE ENCOGE, Y SIN ESTO LA PÁGINA ENTERA SCROLLEA DE COSTADO A 390.
+   Medido el 8-oct-2026: el `.campo` trae `max-width: var(--columna)`, que en
+   móvil es 100%, y el almanaque del navegador tiene un ancho propio que no
+   cede. Entre las dos flechas y él, la fila pedía más de 390 y ENSANCHABA AL
+   CONTENEDOR — así que las tarjetas, que miden 100%, se dibujaban más anchas
+   que la pantalla. El síntoma se veía en la lista y la causa estaba acá.
+
+   `min-width: 0` es lo que le saca a un hijo de flex el piso de ancho de su
+   contenido; sin él, `flex: 1 1 auto` no alcanza para que se encoja. */
+.barra-dia .campo {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 200px;
+
+  /* El campo trae 18 px de aire arriba, pensados para cuando va apilado en un
+     formulario. Acá ese aire es justamente lo que desalinea. */
+  margin-top: 0;
+}
+
+.barra-dia .caja {
+  width: 100%;
+}
+
+.barra-dia .btn {
+  width: auto;
+  margin: 0;
+}
+
+
+/* LA LISTA DE LA AGENDA — y es ella la que lleva el ANCHO y el CENTRADO, no
+   cada renglón.
+
+   🔴 EL ERROR DEL 8-OCT-2026, que Juan vio dos veces seguidas: primero la lista
+   quedó corrida a la izquierda debajo de un título centrado, y al "arreglarlo"
+   poniéndole `margin: auto` a CADA renglón quedó peor — adentro de un grid eso
+   encoge cada caja al ancho de su contenido y las centra una por una, así que
+   el borde izquierdo queda en zigzag.
+
+   LA REGLA QUE DEJA: en una lista, el ancho y el centrado son del CONTENEDOR;
+   los renglones se estiran solos, que es lo que un grid hace por defecto. */
+.lista-agenda {
+  display: grid;
+  gap: 10px;
+  max-width: var(--columna-lista);
+  margin: 28px auto 0;
+}
+
+
+/* EL RENGLÓN DE LA AGENDA — y NO reusa `.turno`, que fue el otro error del
+   8-oct-2026 que levantó Juan: «todo mal centrado para arrancar».
+
+   🔴 POR QUÉ LA PIEZA DEL PACIENTE NO SIRVE ACÁ, aunque las dos muestren un
+   turno. `.turno` está hecha para quien mira UNO: centrada, con aire, con la
+   fecha de título. Quien atiende mira DIEZ seguidos y hace otra cosa — los
+   barre con la vista buscando uno. Para barrer hace falta un borde izquierdo
+   fijo del que arrancar, y centrado no hay ninguno: cada renglón empieza en un
+   lugar distinto.
+
+   Y la jerarquía también cambia con el lector: el paciente vino a ver CUÁNDO,
+   así que su título es la fecha. Quien atiende ya sabe qué día es y lo que
+   busca es A QUIÉN atiende — por eso acá el nombre sube al renglón fuerte y el
+   tratamiento baja al callado.
+
+   🔴 TODAS LAS CLASES LLEVAN EL PREFIJO `agenda-`, Y NO ES VERBOSIDAD. El
+   primer intento usó `.hora`, `.datos` y `.paciente` a secas, y las tres YA
+   EXISTEN en este archivo con otro significado: `.hora` es el botón del
+   selector de horarios del paciente, y le pintó un recuadro alrededor de cada
+   hora de la agenda. En una hoja de 3.400 líneas un nombre genérico ya está
+   tomado — y la colisión no falla, decora de más. */
+.turno-agenda {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  text-align: left;
+}
+
+/* ANCHO FIJO, no `min-width`, y es la diferencia entre una columna y un
+   amontonamiento: con mínimo, un «09:00» y un «10:30» miden distinto —la
+   tipografía no es monoespaciada— y cada nombre arranca en una vertical
+   propia. Fijo, los seis arrancan en la misma. */
+.turno-agenda .agenda-hora {
+  flex: 0 0 76px;
+  width: 76px;
+}
+
+.turno-agenda .agenda-numero {
+  display: block;
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h3);
+  line-height: 1.1;
+  color: var(--grafito);
+}
+
+.turno-agenda .agenda-dura {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.turno-agenda .agenda-datos {
+  /* 🔴 `flex-basis: 0` Y NO `auto`, y la diferencia se ve a 390: con `auto` la
+     base es el ancho del CONTENIDO, así que un renglón con nombre largo no
+     entraba al lado de la hora y bajaba solo — dos turnos seguidos quedaban
+     maquetados distinto. Con base 0, la columna de la hora manda siempre y los
+     datos ocupan lo que sobra. */
+  flex: 1 1 0;
+
+  /* Sin esto, un nombre largo ensancha el renglón en vez de partirse, y la
+     columna de la hora se corre. `min-width: 0` es lo que le saca a un hijo de
+     flex el ancho mínimo de su contenido. */
+  min-width: 0;
+}
+
+.turno-agenda .agenda-paciente {
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+.turno-agenda .agenda-detalle {
+  /* Que un detalle largo se parta en vez de empujar el renglón. */
+  overflow-wrap: anywhere;
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+
+/* LOS DOS BOTONES DEL RENGLÓN — a la derecha, pedido de Juan el 8-oct-2026:
+   «algún botón de modificar por si llegase a surgir algo y otro de borrar por
+   si alguien le cancela, a los costados nomás».
+
+   🔑 LA FILA SE PARTE A 768 PARA ABAJO y los botones bajan a su propio
+   renglón. No es el mismo caso que `.turno.con-accion`, que apila la tarjeta
+   entera: acá lo que se conserva es la columna de la hora pegada a los datos
+   —que es lo que deja barrer la lista— y lo único que se muda es el par de
+   botones. A 390 no hay ancho para cuatro cosas en una línea. */
+.turno-agenda {
+  flex-wrap: wrap;
+}
+
+.turno-agenda .agenda-acciones {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Los botones de un renglón son más chicos que los de una pantalla: acá hay
+   uno por turno y la lista tiene diez. Con el tamaño de pantalla, los botones
+   pesarían más que los turnos. */
+.turno-agenda .agenda-acciones .btn {
+  margin-top: 0;
+  padding: 7px 14px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  width: auto;
+}
+
+@media (max-width: 767px) {
+
+  /* El par de botones ocupa el ancho entero del renglón de abajo, y arranca a
+     la izquierda: alineado con el nombre del paciente, no con el borde. */
+  .turno-agenda .agenda-acciones {
+    flex: 1 0 100%;
+    margin-left: 0;
+    margin-top: 10px;
+  }
+}
+
+
+/* 🔴 EL BOTÓN DE RENGLÓN NO SIGUE LA ESCALA DE ESCRITORIO, y hay que decir
+   contra qué se escribe: a 1280 `.btn` sube a 22 px de tipografía, 16/32 de
+   relleno y 56 px de alto mínimo. Esa escala es correcta donde un botón es la
+   acción de la pantalla —«Reservar turno»—, y es la que hacía que cada renglón
+   de la agenda midiera el doble que su contenido.
+
+   Acá hay DIEZ botones por pantalla y ninguno es la acción principal: la
+   acción principal es LEER la lista. Medido con el valor computado el
+   8-oct-2026, no leído del archivo.
+
+   ⚠️ Y el piso de 19 px que `.btn` declara más arriba NO aplica acá: ese piso
+   existe por el CONTRASTE del texto blanco sobre el dorado del brief, que lo
+   obliga a ser texto grande. Estos botones no llevan ese fondo. */
+@media (min-width: 1280px) {
+
+  .turno-agenda .agenda-acciones .btn {
+    font-size: var(--tipo-chico);
+    padding: 8px 16px;
+    min-height: 0;
+  }
+}

@@ -129,8 +129,10 @@ export default {
         .gte( 'inicio', desde )
         .lt( 'inicio', hasta )
 
+      // `Number( … )` y no el texto pelado: la columna es `bigint` y el
+      // parámetro de la URL siempre llega como string. Lo cazó `deno check`.
       if ( filtroProfesional ) {
-        consulta = consulta.eq( 'profesional_id', filtroProfesional )
+        consulta = consulta.eq( 'profesional_id', Number( filtroProfesional ) )
       }
 
       const turnos = await consulta.order( 'inicio' )

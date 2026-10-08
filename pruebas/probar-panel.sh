@@ -193,11 +193,15 @@ echo "▶ es_admin restaurado — la salida va CRUDA, a propósito:"
 # true` encuentra cero.
 #
 # Era un chequeo que no chequeaba y no avisaba de que no chequeaba — el modo de
-# falla más caro que hay. Se deja la salida cruda: dos renglones de más valen
-# menos que un verde falso.
-supabase db query --linked \
+# falla más caro que hay.
+#
+# ✅ LA SALIDA: `--output csv`, que es la ÚNICA forma estable. El CLI tiene tres
+# formatos y elige solo; con csv contesta lo mismo en cualquier máquina. Volvió
+# a morder una tercera vez el mismo día, en el caso 8 de más abajo, que se
+# declaró «no medible» con el turno a la vista dos pruebas más arriba.
+supabase db query --linked --output csv \
   "select nombre, es_admin from public.profesionales where email_de_acceso = '$SOPORTE_EMAIL';" \
-  2>&1 | grep -iv "initialising\|boundary\|untrusted data"
+  2>/dev/null | tail -2
 
 echo
 echo "   ✅ es_admin tiene que decir TRUE. Si dice false, el script se cortó"
@@ -205,10 +209,90 @@ echo "      antes de restaurarlo: el comando para arreglarlo está comentado"
 echo "      arriba, en el bloque del caso 6."
 
 
+# ── 7 y 8. CANCELAR DESDE EL PANEL ───────────────────────────────────────────
+#
+# 🔴 EL CASO 8 ES EL QUE IMPORTA Y ES EL IDOR DE ESCRITURA: un profesional que
+# NO es admin mandando el id de un turno que no es suyo. Si eso cancela, el
+# paciente de otro se entera por el correo de cancelación.
+
+echo
+echo "▶ 7. Cancelar un turno que no existe — 403, no 404"
+echo "     (el id inventado se contesta igual que el ajeno: dos respuestas"
+echo "      distintas le dirían al que prueba ids cuáles existen)"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/cancelar-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d '{ "turno_id": 999999 }'
+
+echo
+echo "▶ 8. IDOR de ESCRITURA: un NO-admin cancelando un turno ajeno"
+echo "     (se le baja es_admin a la cuenta de soporte y se le devuelve al final)"
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = false where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+# El turno activo más próximo, que es de Cecilia y NO de la cuenta de soporte.
+#
+# 🔴 TERCER INTENTO DE ESTE RENGLÓN, y las dos veces anteriores fallaron igual:
+# el caso se saltó solo con el turno 428 activo y a la vista dos pruebas más
+# arriba. Primero por buscar JSON donde el CLI contestaba una tabla; después
+# por tomar la última línea con `tail -1`, que agarra una línea vacía si la
+# salida termina con una.
+#
+# ✅ LO QUE QUEDA: `--output csv` para que el formato no dependa de la máquina,
+# y `grep '^[0-9]+$'` para quedarse con el renglón que ES un número, haya
+# encabezado, líneas vacías o avisos del CLI alrededor.
+SALIDA_AJENO=$(
+  supabase db query --linked --output csv \
+    "select id from public.turnos where activo = true order by inicio desc limit 1;" \
+    2>/dev/null
+)
+
+AJENO=$( echo "$SALIDA_AJENO" | grep -oE '^[0-9]+$' | tail -1 )
+
+echo "   turno ajeno elegido: ${AJENO:-ninguno}"
+
+if [ -n "$AJENO" ]; then
+
+  curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+    -X POST "$FUNCIONES/cancelar-del-panel" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    -H 'Content-Type: application/json' \
+    -d "{ \"turno_id\": $AJENO }"
+
+else
+  echo "   ❌ NO SE PUDO MEDIR EL CASO MÁS IMPORTANTE DE ESTA BATERÍA."
+  echo "      No es un aviso: es una prueba que no corrió, y una prueba que no"
+  echo "      corre se lee como verde. La salida cruda del CLI, para arreglarlo:"
+  echo "$SALIDA_AJENO" | sed 's/^/      | /'
+fi
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = true where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+echo
+echo "   🔴 TIENE QUE DAR 403. Si da 200, el turno se canceló y la paciente"
+echo "      recibió el correo: eso es el IDOR de escritura, y no se sigue"
+echo "      construyendo nada arriba de eso."
+
+echo
+echo "▶ ¿sigue activo el turno ajeno? (tiene que decir TRUE)"
+
+supabase db query --linked --output csv \
+  "select id, activo from public.turnos where id = ${AJENO:-0};" \
+  2>/dev/null | tail -2
+
+
 # ── Qué mirar ────────────────────────────────────────────────────────────────
 
 echo
-echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400, en ese orden."
+echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400 · 403 · 403, en ese orden."
 echo
 echo "   Y el cuerpo del caso 3 tiene que traer \"esAdmin\": true. Si trae"
 echo "   false, la fila existe pero el update del es_admin no entró: la puerta"

@@ -95,3 +95,29 @@ function turnoEnPalabras( inicio ) {
 
   return diaEnPalabras( dia ) + ', ' + dato.hour + ':' + dato.minute;
 }
+
+
+/**
+ * Sólo la hora de un turno, en la zona del consultorio: «15:30».
+ *
+ * La usa el PANEL, donde la fecha ya está escrita arriba de la lista y
+ * repetirla en cada tarjeta sería decir treinta veces lo mismo.
+ *
+ * 🔴 CONVIERTE, NO CORTA, y es la misma trampa que explica `turnoEnPalabras`
+ * acá arriba: la base devuelve el instante en UTC
+ * ('2026-10-08T18:00:00+00:00' son las 15:00 en Santa Fe). Cortar el texto y
+ * mostrar «18:00» pondría en la agenda una hora a la que no hay nadie citado,
+ * y el error no se ve: es una hora válida, bien escrita, tres horas corrida.
+ *
+ * Vive acá y no en `panel.js` para que la zona del consultorio siga teniendo
+ * UN solo lugar en todo el front.
+ */
+function horaDelTurno( inicio ) {
+
+  return new Intl.DateTimeFormat( 'es-AR', {
+    timeZone: ZONA_DEL_CONSULTORIO,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  } ).format( new Date( inicio ) );
+}

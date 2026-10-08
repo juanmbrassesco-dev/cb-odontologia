@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Panel — CB Odontología y Estética</title>
+
+  <!--
+    🔴 ESTA PÁGINA NO SE INDEXA, y acá pesa más que en `mis-turnos`: lo que
+    muestra son los turnos de TODOS los pacientes del día, con sus nombres. No
+    hay nada que alguien pueda estar buscando acá.
+
+    ⚠️ Y el `noindex` NO ES LA CERRADURA, es higiene: lo que impide que un
+    extraño vea esto es el 403 del portero, que se verifica contra la base en
+    cada pedido. Una página oculta sin cerradura sigue abierta para el que
+    adivine la dirección — es `security by obscurity` y no cuenta como defensa.
+  -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- El mismo encabezado que las otras páginas: sólo el logo. -->
+  <header class="barra">
+    <a class="barra-logo" href="/" aria-label="CB Odontología y Estética, ir al inicio">
+      <img src="brand/logo/curvas/cb-wordmark-curvas.svg"
+           alt="CB Odontología y Estética"
+           width="247" height="40">
+    </a>
+  </header>
+
+  <main>
+
+    <!--
+      ENTRAR. Es la pieza del paciente con dos textos cambiados: el título y la
+      línea de para qué se entra. La foto, el botón de Google y la salida al
+      sitio son los aprobados el 24-sep-2026.
+
+      ⚠️ NO LLEVA el WhatsApp de «¿tenés una consulta antes de reservar?»: acá no
+      entra un paciente, entra quien atiende.
+    -->
+    <section id="paso-entrar">
+
+      <img class="entrar-foto" src="brand/fotos/entrar-ejemplo.jpg"
+           alt="Sala de espera de CB Odontología y Estética">
+
+      <div class="entrar">
+        <h1>Panel</h1>
+
+        <p class="porque">Entrá con Google para ver la agenda del día.</p>
+
+        <div class="entrar-acciones">
+          <div id="boton-google"></div>
+
+          <a class="btn btn-2" href="/">Ir al sitio</a>
+        </div>
+
+        <p class="entrar-aviso" id="aviso-entrar" hidden></p>
+      </div>
+
+    </section>
+
+    <!--
+      SIN ACCESO — la pantalla del 403, y existe en vez de dejar la agenda
+      vacía. Un paciente que llegue acá con su sesión puesta tiene que entender
+      que el problema no es que no haya turnos: es que esta página no es para
+      él. Sin esta pantalla vería «No hay turnos» y pensaría que el sistema se
+      rompió.
+
+      🔑 NO DICE POR QUÉ no tiene acceso, ni nombra la tabla, ni le ofrece
+      pedirlo. Es el mismo criterio del mensaje genérico del portero: un texto
+      que describe el estado interno es divulgación de información.
+    -->
+    <section class="paso" id="paso-sin-acceso" hidden>
+
+      <h1>Esta página no es para pacientes</h1>
+
+      <p class="ayuda-pantalla">Si querés ver tus turnos, entrá por
+      la página de pacientes.</p>
+
+      <div class="acciones">
+        <a class="btn btn-1" href="/mis-turnos">Mis turnos</a>
+
+        <a class="btn btn-2" href="/">Ir al sitio</a>
+      </div>
+
+    </section>
+
+    <!-- LA AGENDA DEL DÍA. -->
+    <section class="paso" id="paso-agenda" hidden>
+
+      <h1 id="agenda-titulo">Agenda</h1>
+
+      <!--
+        LA NAVEGACIÓN DE DÍAS. Las dos flechas y el almanaque hacen lo mismo
+        por dos caminos a propósito: mirar el día siguiente es un toque, y
+        saltar a la semana que viene no son siete.
+
+        🔑 EL `type="date"` ES EL DEL NAVEGADOR, no un almanaque propio. En el
+        teléfono abre el selector nativo, que es el que la persona ya sabe usar,
+        y no hay nada que mantener. Es la misma decisión que ya tomó el flujo
+        del paciente.
+      -->
+      <div class="barra-dia">
+
+        <button class="btn btn-2" type="button" id="dia-anterior"
+                aria-label="Día anterior">←</button>
+
+        <div class="campo">
+          <label class="etiqueta" for="agenda-fecha">Día</label>
+          <input class="caja" id="agenda-fecha" type="date">
+        </div>
+
+        <button class="btn btn-2" type="button" id="dia-siguiente"
+                aria-label="Día siguiente">→</button>
+
+      </div>
+
+      <!--
+        EL DÍA VACÍO NO ES UN ERROR: es el domingo, o el feriado. El portero lo
+        contesta con un 200 y una lista de cero.
+      -->
+      <div class="turnos-vacio" id="agenda-vacia" hidden>
+        <p class="ayuda-pantalla">No hay turnos agendados para este día.</p>
+      </div>
+
+      <!-- Las tarjetas las cuelga `js/panel.js`. -->
+      <div class="lista-agenda" id="agenda-lista" hidden></div>
+
+      <p class="entrar-aviso" id="agenda-aviso" hidden></p>
+
+    </section>
+
+    <!--
+      EL CARTEL QUE PREGUNTA ANTES DE CANCELAR — la misma pieza que
+      `mis-turnos.html`, y por los mismos motivos, que no se repiten acá: están
+      escritos allá y son una decisión, no dos.
+
+      LO QUE SÍ CAMBIA, y es la mitad que importa en el panel: el cartel dice
+      QUÉ TURNO y DE QUIÉN. En la pantalla del paciente todos los turnos son
+      suyos; acá la lista puede tener diez de diez personas distintas, así que
+      el renglón del nombre no es un adorno — es lo que evita cancelarle a la
+      paciente equivocada.
+
+      🔴 EL `autofocus` VA EN EL «No»: al abrirse, el foco cae en el botón que
+      NO hace nada. Sin eso cae en el primero —el «Sí»— y un Enter de reflejo
+      cancela un turno.
+    -->
+    <dialog class="cartel" id="cartel-cancelar" aria-labelledby="cartel-titulo">
+
+      <div class="cartel-caja">
+
+        <h2 id="cartel-titulo">¿Cancelamos este turno?</h2>
+
+        <p class="cartel-cuando" id="cartel-cuando"></p>
+
+        <p class="cartel-que" id="cartel-que"></p>
+
+        <div class="acciones acciones-fila">
+
+          <button class="btn btn-2" type="button" id="cartel-si">Sí</button>
+
+          <button class="btn btn-2" type="button" id="cartel-no" autofocus>No</button>
+
+        </div>
+
+      </div>
+
+    </dialog>
+
+  </main>
+
+  <!--
+    EL MISMO ORDEN DE DEPENDENCIA QUE LAS OTRAS PÁGINAS: `auth.js` habla con
+    Google y con Supabase, `fechas.js` convierte instantes a la zona del
+    consultorio, `pasos.js` enciende una pantalla y apaga las otras, y
+    `panel.js` es el que sabe qué hay adentro de ésta.
+  -->
+  <script src="https://accounts.google.com/gsi/client"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/fechas.js"></script>
+  <script src="js/pasos.js"></script>
+  <script src="js/panel.js"></script>
+</body>
+</html>
