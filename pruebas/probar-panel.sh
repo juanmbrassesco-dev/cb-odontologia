@@ -116,10 +116,99 @@ echo "   obtenido: $CODIGO"
 echo "   cuerpo:   $CUERPO"
 
 
+# ── La agenda del día ────────────────────────────────────────────────────────
+
+HOY=$( date +%F )
+
+echo
+echo "▶ 4. La agenda de hoy, como ADMIN — 200"
+
+AGENDA=$(
+  curl -s -w '\n%{http_code}' \
+    "$FUNCIONES/agenda-del-dia?fecha=$HOY" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE"
+)
+
+echo "   obtenido: $( echo "$AGENDA" | tail -1 )"
+echo "   cuerpo:   $( echo "$AGENDA" | sed '$d' | head -c 300 )"
+
+echo
+echo "▶ 5. Sin fecha — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/agenda-del-dia" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE"
+
+
+# ── 6. EL CASO IDOR, y es el que mide la regla que escribimos ────────────────
+#
+# Un no-admin que manda `?profesional_id=` de OTRO tiene que recibir SU propia
+# agenda, no la del otro. Para probarlo hace falta un no-admin, y la cuenta de
+# soporte es admin: se le baja el permiso, se mide, y se le devuelve.
+#
+# 🔴 SI ESTE SCRIPT SE CORTA EN EL MEDIO, la cuenta queda sin es_admin. El
+# comando para devolverlo está escrito abajo y es el mismo que corre solo:
+#
+#   supabase db query --linked "update public.profesionales set es_admin = true
+#   where email_de_acceso = '$SOPORTE_EMAIL';"
+
+echo
+echo "▶ 6. IDOR: un NO-admin pidiendo la agenda de otro"
+echo "     (se le baja es_admin a la cuenta de soporte y se le devuelve al final)"
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = false where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+# El token viejo sigue sirviendo: el permiso se lee de la BASE en cada pedido,
+# no del token. Que esto funcione sin volver a loguearse ES la prueba de que la
+# revocación es inmediata, que es el motivo por el que el rol no viaja firmado.
+AJENA=$(
+  curl -s \
+    "$FUNCIONES/agenda-del-dia?fecha=$HOY&profesional_id=1" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE"
+)
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = true where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+echo "   cuerpo:   $( echo "$AJENA" | head -c 300 )"
+
+echo
+echo "   ✅ Tiene que decir \"esAdmin\": false Y no traer NI UN turno del"
+echo "      profesional 1. Si trae turnos ajenos, el parámetro se obedeció sin"
+echo "      preguntar quién pide: eso es IDOR."
+
+echo
+echo "▶ es_admin restaurado — la salida va CRUDA, a propósito:"
+
+# 🔴 Acá había un `grep -o '"es_admin": [a-z]*'` y NO IMPRIMIÓ NADA en la
+# terminal de Juan, aunque la restauración sí había ocurrido. El motivo es que
+# `supabase db query` NO devuelve el mismo formato en las dos máquinas: en una
+# contesta JSON y en la otra una tabla, así que un grep que busca `"es_admin":
+# true` encuentra cero.
+#
+# Era un chequeo que no chequeaba y no avisaba de que no chequeaba — el modo de
+# falla más caro que hay. Se deja la salida cruda: dos renglones de más valen
+# menos que un verde falso.
+supabase db query --linked \
+  "select nombre, es_admin from public.profesionales where email_de_acceso = '$SOPORTE_EMAIL';" \
+  2>&1 | grep -iv "initialising\|boundary\|untrusted data"
+
+echo
+echo "   ✅ es_admin tiene que decir TRUE. Si dice false, el script se cortó"
+echo "      antes de restaurarlo: el comando para arreglarlo está comentado"
+echo "      arriba, en el bloque del caso 6."
+
+
 # ── Qué mirar ────────────────────────────────────────────────────────────────
 
 echo
-echo "✅ EN VERDE ES: 401 · 403 · 200, en ese orden."
+echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400, en ese orden."
 echo
 echo "   Y el cuerpo del caso 3 tiene que traer \"esAdmin\": true. Si trae"
 echo "   false, la fila existe pero el update del es_admin no entró: la puerta"
