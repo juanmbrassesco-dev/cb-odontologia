@@ -375,6 +375,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      buscar_pacientes: {
+        Args: { termino: string }
+        Returns: {
+          apellido: string
+          email: string | null
+          id: number
+          nombre: string
+          telefono: string | null
+        }[]
+      }
       fin_del_turno: {
         Args: { inicio: string; minutos: number }
         Returns: string

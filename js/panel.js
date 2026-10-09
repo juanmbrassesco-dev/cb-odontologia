@@ -1059,6 +1059,23 @@ document.querySelector( '#turno-guardar' ).addEventListener(
 // tecla y recién dispara cuando pasaron 300 ms sin ninguna.
 let relojDeLaBusqueda = null;
 
+// 🔴 EL NÚMERO DE PEDIDO — y esto NO es precaución teórica, es el segundo bug
+// que apareció el 9-oct-2026 pegado al primero.
+//
+// `clearTimeout` cancela el pedido que todavía NO SALIÓ; al que ya está en
+// vuelo no lo alcanza. Así que si se escribe una letra más mientras la
+// respuesta viene en camino, hay DOS pedidos vivos y **vuelven en el orden que
+// quieran** — el de la red, no el del teclado. Si el viejo llega último, pisa
+// los resultados buenos con los suyos.
+//
+// Y pisarlos no es sólo mostrar de más: si el viejo trae CERO, la pantalla
+// esconde la lista y abre el alta de ficha. Desde afuera se ve como lo
+// describió Juan: «aparece un momento, desaparece, no te deja clickearlo».
+//
+// Cada búsqueda se lleva un número. Al volver, la que no sea la última se
+// DESCARTA sin tocar nada.
+let ultimaBusqueda = 0;
+
 document.querySelector( '#buscar-paciente' ).addEventListener( 'input', ( evento ) => {
 
   clearTimeout( relojDeLaBusqueda );
@@ -1081,7 +1098,17 @@ document.querySelector( '#buscar-paciente' ).addEventListener( 'input', ( evento
 
   relojDeLaBusqueda = setTimeout( async () => {
 
+    ultimaBusqueda = ultimaBusqueda + 1;
+
+    const mia = ultimaBusqueda;
+
     const pacientes = await buscarPacientes( termino );
+
+    // Llegó tarde: mientras venía, se escribió otra letra y salió otro pedido.
+    // Lo que esta respuesta dice ya no es lo que hay en el campo.
+    if ( mia !== ultimaBusqueda ) {
+      return;
+    }
 
     if ( pacientes === null ) {
       avisarEnLaCarga( 'No pudimos buscar. Probá de nuevo.' );

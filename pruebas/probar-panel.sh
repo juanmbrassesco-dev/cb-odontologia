@@ -331,9 +331,29 @@ INYECCION=$(
 
 echo "   cuerpo:   $( echo "$INYECCION" | head -c 200 )"
 echo
-echo "   ✅ Tiene que venir la lista VACÍA. La coma se saneó, así que el"
-echo "      término quedó en 'zzz id.gte.0' y no coincide con nadie. Si trae"
-echo "      pacientes, el filtro se obedeció: eso es inyección de filtro."
+
+# 🔴 ESTE `if` LO PAGÓ UNA CORRIDA ENTERA, el 9-oct-2026. El endpoint contestó
+# `{"error":"No se pudo buscar"}` —porque la migración del RPC no se había
+# aplicado— y el renglón de abajo seguía diciendo «tiene que venir la lista
+# vacía», que es verdad y no era lo que había pasado.
+#
+# Un error y una lista vacía se leen parecido de un vistazo y significan cosas
+# OPUESTAS: una es la defensa funcionando, la otra es el endpoint roto. El
+# chequeo tiene que decir cuál de las dos.
+if echo "$INYECCION" | grep -q '"error"'; then
+
+  echo "   ❌ ESTO NO ES UNA LISTA VACÍA: EL ENDPOINT CONTESTÓ UN ERROR."
+  echo "      Lo más probable es que falte aplicar una migración —el portero"
+  echo "      llama a una función de la base que todavía no existe—. Corré"
+  echo "      'supabase db push' y volvé a probar. Este caso NO se midió."
+
+else
+
+  echo "   ✅ Tiene que venir la lista VACÍA. La coma se saneó, así que el"
+  echo "      término quedó en 'zzz id.gte.0' y no coincide con nadie. Si trae"
+  echo "      pacientes, el filtro se obedeció: eso es inyección de filtro."
+
+fi
 
 
 # ── 12 a 14. EL ALTA DE PACIENTE Y EL TURNO A MANO ───────────────────────────
@@ -576,13 +596,81 @@ else
 fi
 
 
+# ── 20. BUSCAR POR NOMBRE Y APELLIDO JUNTOS ──────────────────────────────────
+#
+# 🔴 EL CASO QUE FALTABA, Y NO LO ENCONTRÓ NINGUNA PRUEBA: lo encontró Juan
+# usando el panel. El buscador comparaba el término contra cada columna POR
+# SEPARADO, así que «rafa b» no coincidía con nadie aunque «rafa» sí.
+#
+# Y el síntoma era peor que un cero: la pantalla abre el alta de ficha cuando
+# no hay coincidencias, así que al terminar de escribir el apellido los
+# resultados desaparecían y salía el formulario para crear un paciente que ya
+# existía — el agujero exacto que el buscador existe para tapar.
+#
+# Las ocho pruebas anteriores del buscador medían PERMISOS —quién puede
+# buscar— y ninguna medía QUÉ ENCUENTRA. Son dos preguntas distintas.
+
+echo
+echo "▶ 20. El mismo paciente, buscado de tres maneras"
+
+NOMBRE_REAL=$(
+  supabase db query --linked --output csv \
+    "select nombre from public.pacientes where nombre is not null and apellido is not null order by id desc limit 1;" \
+    2>/dev/null | tail -1 | tr -d '\r'
+)
+
+APELLIDO_REAL=$(
+  supabase db query --linked --output csv \
+    "select apellido from public.pacientes where nombre is not null and apellido is not null order by id desc limit 1;" \
+    2>/dev/null | tail -1 | tr -d '\r'
+)
+
+if [ -z "$NOMBRE_REAL" ] || [ -z "$APELLIDO_REAL" ]; then
+
+  echo "   ❌ NO SE PUDO MEDIR: no hay un paciente con nombre y apellido."
+
+else
+
+  echo "   paciente elegido: $NOMBRE_REAL $APELLIDO_REAL"
+  echo
+
+  for Q in "$NOMBRE_REAL" "$NOMBRE_REAL $APELLIDO_REAL" "$APELLIDO_REAL $NOMBRE_REAL"; do
+
+    RESPUESTA_BUSQUEDA=$(
+      curl -s -G "$FUNCIONES/buscar-pacientes" \
+        --data-urlencode "q=$Q" \
+        -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+        -H "Authorization: Bearer $TOKEN_SOPORTE"
+    )
+
+    # Mismo motivo que el `if` del caso 11: contando `"id"`, un error contesta
+    # CERO y se lee igual que «no encontró a nadie».
+    if echo "$RESPUESTA_BUSQUEDA" | grep -q '"error"'; then
+      printf '   q="%s" → ❌ EL ENDPOINT FALLÓ: %s\n' "$Q" "$RESPUESTA_BUSQUEDA"
+      continue
+    fi
+
+    CUANTOS=$( echo "$RESPUESTA_BUSQUEDA" | grep -o '"id"' | wc -l | tr -d ' ' )
+
+    printf '   q="%s" → %s resultado(s)\n' "$Q" "$CUANTOS"
+  done
+
+  echo
+  echo "   🔴 LOS TRES tienen que traer al menos UNO. Un cero en el segundo o"
+  echo "      el tercero es el bug del 9-oct: buscar «nombre apellido» junto"
+  echo "      no encontraba a nadie, y la pantalla ofrecía crear la ficha de"
+  echo "      alguien que ya estaba en la base."
+fi
+
+
 # ── Qué mirar ────────────────────────────────────────────────────────────────
 
 echo
 echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400 · 403 · 403 · 401 · 403 · 400 · 201 · 201 · 400 ·"
 echo "   401 · 403 · 400, en ese orden."
-echo "   Y TRES casos se leen por el CUERPO, no por el código: el 11 (lista vacía),"
-echo "   el 14 (el profesional de la respuesta) y el 19 (dos conteos distintos)."
+echo "   Y CUATRO casos se leen por el CUERPO, no por el código: el 11 (lista vacía),"
+echo "   el 14 (el profesional de la respuesta), el 19 (dos conteos distintos) y"
+echo "   el 20 (los tres tienen que encontrar a alguien)."
 echo
 echo "   Y el cuerpo del caso 3 tiene que traer \"esAdmin\": true. Si trae"
 echo "   false, la fila existe pero el update del es_admin no entró: la puerta"

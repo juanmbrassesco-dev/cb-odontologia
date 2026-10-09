@@ -40,12 +40,6 @@ import { quienPide } from '../_shared/quien-pide.ts'
 // lista es tan larga como buscar a ojo.
 const MINIMO_DE_LETRAS = 2
 
-// El tope existe para que una búsqueda floja no se traiga la tabla entera a
-// una pantalla donde no entra. Si lo que busca está más abajo, se tipea otra
-// letra: es más barato que paginar.
-const TOPE_DE_RESULTADOS = 20
-
-
 function falloDeBase(): Response {
 
   return Response.json(
@@ -71,6 +65,12 @@ function falloDeBase(): Response {
 // Se SACAN en vez de escaparse: no hay ningún nombre de paciente que los
 // necesite, y una lista de lo que se permite es más corta de auditar que una
 // de lo que se escapa.
+//
+// ⚠ DESDE EL 9-oct-2026 LA INYECCIÓN DE FILTRO YA NO ES POSIBLE: la búsqueda
+// pasó a una función de la base y el término viaja como PARÁMETRO, que no se
+// puede confundir con la consulta que lo lleva. Esto se queda igual porque
+// `%` y `_` SIGUEN siendo comodines de `ilike` adentro de la función — y
+// porque una defensa que ya está probada no se saca cuando aparece otra.
 function limpiarTermino( crudo: string ): string {
 
   return crudo
@@ -118,20 +118,24 @@ export default {
 
       // ── 3. La consulta ────────────────────────────────────────────────────
 
-      // Los tres campos con `or` porque Cecilia busca por lo que recuerda: a
-      // veces el apellido, a veces el correo que le dictaron por teléfono.
-      const patron = `%${ termino }%`
-
+      // 🔴 LA BÚSQUEDA LA HACE LA BASE, no un filtro armado acá, y el motivo se
+      // midió: el filtro comparaba el término contra CADA COLUMNA POR
+      // SEPARADO, así que «rafa b» no coincidía con nadie —nadie tiene ese
+      // texto adentro de su nombre ni adentro de su apellido— aunque «rafa»
+      // devolviera a esa misma persona.
+      //
+      // El síntoma era peor que un cero: la pantalla abre el alta de ficha
+      // cuando no hay coincidencias, así que al escribir el apellido los
+      // resultados buenos desaparecían y aparecía el formulario para crear un
+      // paciente que ya existía. Exactamente el agujero que este buscador
+      // existe para tapar. Lo levantó Juan probándolo.
+      //
+      // `nombre || ' ' || apellido` no se puede expresar en un filtro de
+      // PostgREST —comparan columnas contra valores, no saben concatenar—, y
+      // en una función de la base es una línea. Detalle en la migración
+      // 20261009160141.
       const pacientes = await ctx.supabaseAdmin
-        .from( 'pacientes' )
-        .select( 'id, nombre, apellido, email, telefono' )
-        .or( [
-          `nombre.ilike.${ patron }`,
-          `apellido.ilike.${ patron }`,
-          `email.ilike.${ patron }`,
-        ].join( ',' ) )
-        .order( 'apellido' )
-        .limit( TOPE_DE_RESULTADOS )
+        .rpc( 'buscar_pacientes', { termino: termino } )
 
       if ( pacientes.error ) {
         return falloDeBase()
