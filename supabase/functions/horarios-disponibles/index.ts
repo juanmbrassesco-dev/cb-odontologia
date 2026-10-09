@@ -43,22 +43,16 @@ import type { Database } from '../_shared/tipos-de-la-base.ts'
 import {
   esFechaValida,
   listarDias,
-  diaSemanaISO,
-  desfaseDeSantaFe,
-  bloquesDelTramo,
-  diaTapado,
-  sumarDias,
   sumarMeses,
   fechaEnSantaFe,
-  fueraDePlazo,
-  bloqueOcupado,
-  unificarBloques,
   MESES_DE_HORIZONTE,
 } from '../_shared/disponibilidad.ts'
 
 import { estadoDeLaPareja } from '../_shared/parejas.ts'
 
 import { conQueArranca } from '../_shared/arranque.ts'
+
+import { armarLaGrilla } from '../_shared/grilla.ts'
 
 // Techo de días por pedido. Dos meses de calendario más un resto, que es el
 // horizonte máximo de reserva que fijó el consultorio. No es una regla de
@@ -153,9 +147,14 @@ export default {
       //
       // Las fechas se comparan como texto, y es correcto por lo mismo de
       // siempre: AAAA-MM-DD ordena igual alfabéticamente que en el almanaque.
-      const dias = diasPedidos.filter(
-        ( fecha ) => fecha <= ultimoDiaReservable,
-      )
+      //
+      // 🔑 EL RECORTE SE HACE SOBRE EL `hasta`, no sobre la lista ya armada:
+      // el cálculo de la grilla vive en `_shared/grilla.ts` desde el
+      // 9-oct-2026 y recibe un rango, no una lista de días. El resultado es el
+      // mismo y el techo sigue siendo de este endpoint — el panel no lo tiene.
+      const hastaReservable = hasta <= ultimoDiaReservable
+        ? hasta
+        : ultimoDiaReservable
 
       // ── Lo que hay que ir a preguntarle a la base ─────────────────────────
       //
@@ -224,144 +223,29 @@ export default {
         return pedidoInvalido( 'Ese profesional no hace ese tratamiento' )
       }
 
-      // La agenda semanal entera, de una sola vez. Son pocas filas —siete, hoy—
-      // y volver a preguntar por cada día del rango serían sesenta consultas
-      // para el mismo dato.
-      const agenda = await ctx.supabaseAdmin
-        .from( 'horarios_base' )
-        .select( 'dia_semana, inicio, fin, fin_maximo' )
-        .eq( 'profesional_id', profesionalId )
-        .order( 'dia_semana' )
-        .order( 'inicio' )
-
-      if ( agenda.error ) {
-        return falloDeBase()
-      }
-
-      // Las excepciones que pueden tapar un día de este profesional son de dos
-      // dueños: las de la CLÍNICA, que no tienen profesional y tapan a todos
-      // (feriados, cierres), y las de ÉL. Las de otro profesional no se piden.
-      //
-      // `activa` es el interruptor: una excepción terminada se apaga, no se
-      // borra. Una fila borrada no deja rastro de por qué esa semana estuvo
-      // cerrada durante meses.
-      //
-      // El filtro se arma pegando el número del profesional adentro del texto,
-      // y eso es seguro acá porque `profesionalId` ya pasó por `Number.isInteger`
-      // más arriba: lo que llega es un número, no lo que haya escrito el que
-      // arma la dirección.
-      const excepciones = await ctx.supabaseAdmin
-        .from( 'excepciones' )
-        .select( 'tipo, fecha_desde, fecha_hasta, semana_del_mes' )
-        .eq( 'activa', true )
-        .or( `profesional_id.is.null,profesional_id.eq.${ profesionalId }` )
-
-      if ( excepciones.error ) {
-        return falloDeBase()
-      }
-
-      // Los turnos que ya tiene tomados este profesional en el rango.
-      //
-      // `activo` es el filtro que hace que un turno cancelado no ocupe nada: la
-      // fila sigue existiendo —acá no se borra— pero el hueco vuelve entero a
-      // la grilla (§ 9.3).
-      //
-      // El rango se pide con UN DÍA DE MARGEN para atrás. Un turno que arrancó
-      // el día anterior y se estiró hasta hoy igual ocupa, y la consulta filtra
-      // por el ARRANQUE. Hoy ningún tramo cruza la medianoche, así que no puede
-      // pasar; el margen está para que la respuesta no dependa de eso.
-      //
-      // Se piden dos columnas y nada más. `observaciones_paciente` puede tener
-      // datos de salud: lo que no se lee no se puede publicar por accidente.
-      const primerDia = sumarDias( desde, -1 )
-      const diaSiguiente = sumarDias( hasta, 1 )
-
-      const turnos = await ctx.supabaseAdmin
-        .from( 'turnos' )
-        .select( 'inicio, duracion_min' )
-        .eq( 'profesional_id', profesionalId )
-        .eq( 'activo', true )
-        .gte( 'inicio', `${ primerDia }T00:00:00${ desfaseDeSantaFe( primerDia ) }` )
-        .lt( 'inicio', `${ diaSiguiente }T00:00:00${ desfaseDeSantaFe( diaSiguiente ) }` )
-
-      if ( turnos.error ) {
-        return falloDeBase()
-      }
-
       // ── La grilla ─────────────────────────────────────────────────────────
-
-      // Cuánto dura el turno que se está buscando. Es lo que decide si un
-      // bloque se pisa con lo ya tomado: no alcanza con mirar la media hora del
-      // bloque, porque una limpieza de 60 minutos que empieza a las 12:00 se
-      // pisa con un turno de las 12:30.
-      const duracion = arranque.duracionMin
-
-      const respuesta = dias.map( ( fecha ) => {
-
-        // Un día tapado no devuelve bloques, y es una distinción que el
-        // paciente necesita ver: "acá no se atiende" no es lo mismo que "acá
-        // está todo tomado", que sí devuelve sus bloques y se pinta rojo.
-        if ( diaTapado( fecha, excepciones.data ) ) {
-          return {
-            fecha: fecha,
-            bloques: [],
-          }
-        }
-
-        const desfase = desfaseDeSantaFe( fecha )
-        const dia = diaSemanaISO( fecha )
-
-        const tramosDelDia = agenda.data.filter(
-          ( tramo ) => tramo.dia_semana === dia,
-        )
-
-        // El tramo entero entra a la función porque su `fin_maximo` es lo que
-        // decide si el tratamiento cabe: `fin` corta la grilla, el techo dice
-        // hasta dónde puede terminar lo que arrancó adentro.
-        const bloquesDelDia = unificarBloques(
-          tramosDelDia.flatMap(
-            ( tramo ) => bloquesDelTramo( fecha, tramo, duracion, desfase ),
-          ),
-        )
-
-        // Ningún bloque se saca: se MARCA. Es la decisión del 6-ago — un día
-        // con todo tomado tiene que verse distinto de un día en que no se
-        // atiende, y esconder lo que no se puede reservar los deja iguales.
-        //
-        // 🔴 El ORDEN de estos tres `if` es la regla, no una casualidad: se
-        // informa el motivo que el paciente NO puede destrabar. Decir "ocupado"
-        // en un bloque que además ya venció insinúa que si alguien cancela se
-        // libera, y es falso: aunque se libere, sigue siendo tarde.
-        const bloques = bloquesDelDia.map( ( bloque ) => {
-
-          if ( fueraDePlazo( bloque.inicio, ahora ) ) {
-            return {
-              inicio: bloque.inicio,
-              estado: 'fuera_de_plazo',
-            }
-          }
-
-          // `no_entra` ya viene decidido desde el tramo: es el único de los
-          // tres que no depende de nada de afuera.
-          if ( bloque.estado === 'no_entra' ) {
-            return bloque
-          }
-
-          if ( bloqueOcupado( bloque.inicio, duracion, turnos.data ) ) {
-            return {
-              inicio: bloque.inicio,
-              estado: 'ocupado',
-            }
-          }
-
-          return bloque
-        } )
-
-        return {
-          fecha: fecha,
-          bloques: bloques,
-        }
+      //
+      // 🔑 EL CÁLCULO NO VIVE ACÁ DESDE EL 9-oct-2026: está en
+      // `_shared/grilla.ts`, que lo comparte con el panel. Lo que queda en
+      // este archivo es lo que SÍ es de este canal — la duración deducida del
+      // tratamiento, la pareja profesional-tratamiento, el techo de dos meses
+      // y el piso de doce horas.
+      //
+      // `conPisoDeHoras: true` es la regla del formulario: un paciente no saca
+      // un turno para dentro de veinte minutos. El panel la apaga, porque
+      // Cecilia sí tiene que poder agendar para esta tarde.
+      const respuesta = await armarLaGrilla( ctx, {
+        profesionalId: profesionalId,
+        duracionMin: arranque.duracionMin,
+        desde: desde,
+        hasta: hastaReservable,
+        ahora: ahora,
+        conPisoDeHoras: true,
       } )
+
+      if ( respuesta === 'error-de-base' ) {
+        return falloDeBase()
+      }
 
       // El día sin agenda viaja igual, con la lista vacía. Así la pantalla
       // distingue "ese día no atiende" de "ese día no vino en la respuesta",

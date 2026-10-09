@@ -475,12 +475,74 @@ curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
         \"inicio\": \"${LEJOS}T16:00:00-03:00\" }"
 
 
+# ── 16 a 19. LA GRILLA DE HORAS DEL PANEL ────────────────────────────────────
+
+echo
+echo "▶ 16. La grilla sin token — 401"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/horarios-del-panel?fecha=$HOY&duracion=30" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY"
+
+echo
+echo "▶ 17. La grilla como PACIENTE — 403"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/horarios-del-panel?fecha=$HOY&duracion=30" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_PACIENTE"
+
+echo
+echo "▶ 18. Duración fuera de los bloques de 30 — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/horarios-del-panel?fecha=$HOY&duracion=45" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE"
+
+# 🔴 EL CASO 19 ES EL QUE JUSTIFICA QUE ESTE ENDPOINT EXISTA, y no se mide por
+# el código de respuesta: se mide comparando DOS respuestas.
+#
+# La misma fecha, el mismo profesional, dos duraciones. Si los bloques libres
+# salen iguales, la duración no se está usando para nada — que es exactamente
+# el bug que esta etapa vino a arreglar: un hueco de media hora no sirve para
+# una ortodoncia de tres horas.
+
+echo
+echo "▶ 19. La MISMA fecha con dos duraciones — tienen que dar distinto"
+
+LEJOS_GRILLA=$( date -v+30d +%F 2>/dev/null || date -d '+30 days' +%F )
+
+for DURA in 30 180; do
+
+  CUERPO=$(
+    curl -s \
+      "$FUNCIONES/horarios-del-panel?fecha=$LEJOS_GRILLA&duracion=$DURA" \
+      -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+      -H "Authorization: Bearer $TOKEN_SOPORTE"
+  )
+
+  LIBRES=$( echo "$CUERPO" | grep -o '"libre"' | wc -l | tr -d ' ' )
+  TOTAL=$(  echo "$CUERPO" | grep -o '"inicio"' | wc -l | tr -d ' ' )
+
+  echo "   duración $DURA min → $LIBRES libre(s) de $TOTAL bloque(s)"
+done
+
+echo
+echo "   ✅ Los dos números de LIBRES tienen que ser DISTINTOS, y el de 180"
+echo "      menor. Si son iguales, la duración no llegó al cálculo."
+echo "   ⚠ Si los dos dan 0 de 0, el profesional de la cuenta de soporte no"
+echo "      tiene agenda cargada ese día: no es un fallo del endpoint, pero"
+echo "      tampoco una prueba — es un caso que no corrió."
+
+
 # ── Qué mirar ────────────────────────────────────────────────────────────────
 
 echo
-echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400 · 403 · 403 · 401 · 403 · 400 · 201 · 201 · 400,"
-echo "   en ese orden, más los dos casos que se leen por el CUERPO y no por el código:"
-echo "   el 11 (lista vacía) y el 14 (el profesional de la respuesta)."
+echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400 · 403 · 403 · 401 · 403 · 400 · 201 · 201 · 400 ·"
+echo "   401 · 403 · 400, en ese orden."
+echo "   Y TRES casos se leen por el CUERPO, no por el código: el 11 (lista vacía),"
+echo "   el 14 (el profesional de la respuesta) y el 19 (dos conteos distintos)."
 echo
 echo "   Y el cuerpo del caso 3 tiene que traer \"esAdmin\": true. Si trae"
 echo "   false, la fila existe pero el update del es_admin no entró: la puerta"

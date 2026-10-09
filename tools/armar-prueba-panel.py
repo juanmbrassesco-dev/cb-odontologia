@@ -280,6 +280,68 @@ CUERPO_JS = r'''
       };
     }
 
+    // 🔴 LA GRILLA SE ARMA ACÁ ADENTRO EN VEZ DE DEVOLVER UNA LISTA FIJA, y
+    // es lo que hace que esta prueba valga: lo que hay que poder juzgar es
+    // que al cambiar la duración CAMBIE qué entra. Con bloques fijos la
+    // pantalla se vería igual siempre y la prueba no mediría nada.
+    //
+    // El día inventado: se atiende de 08:00 a 12:00, hay un turno tomado de
+    // 09:30 a 10:30, y lo que no llega al cierre sale como `no_entra`.
+    if ( String( direccion ).includes( 'horarios-del-panel' ) ) {
+
+      const parametros = new URL( direccion, location.origin ).searchParams;
+
+      const dura = Number( parametros.get( 'duracion' ) );
+      const dia  = parametros.get( 'fecha' );
+
+      const ABRE   = 8 * 60;
+      const CIERRA = 12 * 60;
+
+      const TOMADO_DESDE = 9 * 60 + 30;
+      const TOMADO_HASTA = 10 * 60 + 30;
+
+      const bloques = [];
+
+      for ( let minuto = ABRE; minuto < CIERRA; minuto += 30 ) {
+
+        const hh = String( Math.floor( minuto / 60 ) ).padStart( 2, '0' );
+        const mm = String( minuto % 60 ).padStart( 2, '0' );
+
+        // Se pisa con lo tomado si los dos rangos se cruzan — la misma cuenta
+        // que hace `bloqueOcupado` del lado del portero.
+        const sePisa = minuto < TOMADO_HASTA && ( minuto + dura ) > TOMADO_DESDE;
+
+        // No entra si lo que arranca acá termina después del cierre.
+        const noEntra = ( minuto + dura ) > CIERRA;
+
+        let estado = 'libre';
+
+        if ( noEntra ) { estado = 'no_entra'; }
+        if ( sePisa )  { estado = 'ocupado'; }
+
+        bloques.push( {
+          inicio: dia + 'T' + hh + ':' + mm + ':00-03:00',
+          estado: estado
+        } );
+      }
+
+      const libres = bloques.filter( ( b ) => b.estado === 'libre' ).length;
+
+      avisar( 'GET /horarios-del-panel?fecha=' + dia + '&duracion=' + dura +
+              ' → 200, ' + libres + ' libre(s) de ' + bloques.length );
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ( {
+          fecha: dia,
+          profesional: 1,
+          duracion_min: dura,
+          bloques: bloques
+        } )
+      };
+    }
+
     if ( String( direccion ).includes( 'profesionales-del-panel' ) ) {
 
       // `?admin=no` apaga el desplegable de profesional, que es la mitad de
@@ -474,19 +536,39 @@ def armar():
     //   alta     → la ficha nueva, que sólo aparece si no hay coincidencias
     const con = new URLSearchParams( location.search ).get( 'con' );
 
-    if ( con === 'buscando' || con === 'elegido' ) {{
-      elegirPaciente( PACIENTES_PUESTOS[ 0 ] );
-    }}
+    // ⚠ EL RETARDO NO ES UN ADORNO: el oyente de «Cargar un turno» es `async`
+    // y llena los desplegables con un `await`, así que lo de abajo correría
+    // ANTES de que estén puestos. Con la grilla de horas eso se vio enseguida
+    // —salía el texto «elegí día y duración» con el día ya en pantalla—, y es
+    // el modo de falla típico de una prueba que simula clics: no da error,
+    // fotografía un estado intermedio.
+    setTimeout( () => {{
 
-    if ( con === 'buscando' ) {{
-      volverAlBuscador();
-      dibujarResultados( PACIENTES_PUESTOS );
-      document.querySelector( '#buscar-resultados' ).hidden = false;
-    }}
+      if ( con === 'buscando' || con === 'elegido' ) {{
+        elegirPaciente( PACIENTES_PUESTOS[ 0 ] );
+      }}
 
-    if ( con === 'alta' ) {{
-      mostrarElAlta( true );
-    }}
+      if ( con === 'buscando' ) {{
+        volverAlBuscador();
+        dibujarResultados( PACIENTES_PUESTOS );
+        document.querySelector( '#buscar-resultados' ).hidden = false;
+      }}
+
+      if ( con === 'alta' ) {{
+        mostrarElAlta( true );
+      }}
+
+      // La duración se puede fijar desde la dirección: es lo que deja mirar
+      // en una captura que con 90 minutos entran muchos menos bloques.
+      const dura = new URLSearchParams( location.search ).get( 'dura' );
+
+      if ( dura ) {{
+        const campo = document.querySelector( '#turno-duracion' );
+        campo.value = dura;
+        campo.dispatchEvent( new Event( 'change' ) );
+      }}
+
+    }}, 150 );
   }}
 </script>
 </body>

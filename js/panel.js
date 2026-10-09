@@ -444,6 +444,8 @@ const DIRECCION_DEL_TURNO = SUPABASE_URL + '/functions/v1/turno-del-panel';
 
 const DIRECCION_DEL_STAFF = SUPABASE_URL + '/functions/v1/profesionales-del-panel';
 
+const DIRECCION_DE_LAS_HORAS = SUPABASE_URL + '/functions/v1/horarios-del-panel';
+
 const DIRECCION_DE_TRATAMIENTOS = SUPABASE_URL + '/functions/v1/tratamientos';
 
 const DIRECCION_DE_COBERTURAS = SUPABASE_URL + '/functions/v1/obras-sociales';
@@ -452,6 +454,15 @@ const DIRECCION_DE_COBERTURAS = SUPABASE_URL + '/functions/v1/obras-sociales';
 // A quién se le está cargando el turno. Vacío mientras no se haya elegido, y
 // es lo que decide si el bloque de abajo se ve o no.
 let pacienteElegido = null;
+
+// El instante elegido en la grilla, tal cual lo mandó el portero
+// ('2026-10-15T09:00:00-03:00'). Vacío mientras no se haya tocado ninguno.
+//
+// 🔑 SE GUARDA EL TEXTO DEL PORTERO, NO UNA FECHA. El dato ya viene con el
+// desfase de acá puesto; pasarlo por `new Date()` para volver a escribirlo es
+// abrir la puerta a que se corra una hora sin que nadie lo note. Es la misma
+// decisión que tomó la grilla del paciente.
+let horaElegida = null;
 
 // Los desplegables se llenan UNA sola vez por visita a la pantalla. Sin esta
 // marca, entrar y salir dos veces duplicaría las opciones.
@@ -585,12 +596,17 @@ function elegirPaciente( paciente ) {
   document.querySelector( '#datos-del-turno' ).hidden = false;
 
   avisarEnLaCarga( '' );
+
+  // El bloque del turno recién aparece acá, así que éste es el primer momento
+  // en que la grilla tiene sentido.
+  dibujarLasHoras();
 }
 
 
 function volverAlBuscador() {
 
   pacienteElegido = null;
+  horaElegida = null;
 
   document.querySelector( '#paciente-elegido' ).hidden = true;
   document.querySelector( '#datos-del-turno' ).hidden = true;
@@ -730,24 +746,179 @@ async function crearLaFicha() {
 }
 
 
+// ── LA GRILLA DE HORAS ────────────────────────────────────────────────
+
+/**
+ * Le pide al portero los bloques de ese día, con ESA duración.
+ *
+ * Devuelve la lista de bloques, o `null` si el pedido falló.
+ */
+async function pedirLasHoras( fecha, duracion, profesionalId ) {
+
+  let direccion = DIRECCION_DE_LAS_HORAS
+    + '?fecha=' + fecha
+    + '&duracion=' + duracion;
+
+  // Sólo viaja si hay desplegable de profesional, o sea si quien entró es
+  // admin. El portero lo ignora igual cuando no corresponde.
+  if ( profesionalId ) {
+    direccion = direccion + '&profesional=' + profesionalId;
+  }
+
+  const respuesta = await fetch( direccion, { headers: cabecerasConSesion() } );
+
+  if ( !respuesta.ok ) {
+    console.error( 'No se pudieron leer las horas. Estado:', respuesta.status );
+    return null;
+  }
+
+  const datos = await respuesta.json();
+
+  return datos.bloques;
+}
+
+
+/**
+ * Una casilla de la grilla.
+ *
+ * 🔑 LOS BLOQUES QUE NO SE PUEDEN ELEGIR SE DIBUJAN IGUAL, APAGADOS. Es la
+ * decisión del 6-ago: un día con todo tomado tiene que verse distinto de un
+ * día en que no se atiende, y escondiendo lo que no sirve los dos quedan
+ * iguales. Acá además importa más que en la web — lo que quien atiende
+ * necesita ver es DÓNDE se pisa, no sólo dónde entra.
+ */
+function casillaDeLaHora( bloque ) {
+
+  const hora = document.createElement( 'button' );
+
+  hora.type = 'button';
+  hora.className = 'hora';
+
+  // La hora se lee del texto que mandó el portero y NO se convierte a fecha:
+  // el dato ya viene con el desfase de acá puesto.
+  hora.textContent = bloque.inicio.slice( 11, 16 );
+
+  if ( bloque.estado !== 'libre' ) {
+
+    hora.className = 'hora hora-apagada';
+    hora.disabled = true;
+
+    // ⚠️ EL MOTIVO VA EN EL `title` Y NO A LA VISTA. En la grilla del paciente
+    // los tres motivos se pintan con el mismo gris a propósito; acá quien
+    // atiende sí necesita distinguirlos —«ocupado» se destraba cancelando, «no
+    // entra» no—, pero ponerlo en cada casilla llenaría la grilla de texto.
+    hora.title = bloque.estado === 'ocupado'
+      ? 'Ya hay un turno en ese horario'
+      : 'No entra un turno de esa duración';
+
+    return hora;
+  }
+
+  if ( bloque.inicio === horaElegida ) {
+    hora.classList.add( 'hora-elegida' );
+  }
+
+  hora.addEventListener( 'click', () => {
+    horaElegida = bloque.inicio;
+    dibujarLasHoras();
+  } );
+
+  return hora;
+}
+
+
+/**
+ * Vuelve a pedir y a dibujar la grilla.
+ *
+ * 🔴 SE LLAMA CADA VEZ QUE CAMBIA EL DÍA, LA DURACIÓN O EL PROFESIONAL, y los
+ * tres importan: la grilla contesta «qué entra», y esa respuesta cambia con
+ * los tres. Volver a pedirla sólo al cambiar el día dejaría los bloques
+ * dibujados para una duración que ya no es la elegida — y se vería bien.
+ */
+async function dibujarLasHoras() {
+
+  const caja = document.querySelector( '#turno-horas' );
+
+  const ayuda = document.querySelector( '#horas-ayuda' );
+
+  const fecha = document.querySelector( '#turno-fecha' ).value;
+
+  const duracion = document.querySelector( '#turno-duracion' ).value;
+
+  if ( !fecha ) {
+
+    caja.hidden = true;
+    ayuda.hidden = false;
+    ayuda.textContent = 'Elegí día y duración para ver los horarios.';
+
+    return;
+  }
+
+  const campoProfesional = document.querySelector( '#campo-profesional' );
+
+  const profesionalId = campoProfesional.hidden
+    ? null
+    : document.querySelector( '#turno-profesional' ).value;
+
+  const bloques = await pedirLasHoras( fecha, duracion, profesionalId );
+
+  if ( bloques === null ) {
+
+    caja.hidden = true;
+    ayuda.hidden = false;
+    ayuda.textContent = 'No pudimos leer los horarios. Probá de nuevo.';
+
+    return;
+  }
+
+  // Un día sin bloques es el domingo, o el feriado, o una ausencia cargada.
+  // No es un error y se dice con sus palabras.
+  if ( bloques.length === 0 ) {
+
+    caja.hidden = true;
+    ayuda.hidden = false;
+    ayuda.textContent = 'Ese día no se atiende.';
+
+    return;
+  }
+
+  caja.textContent = '';
+
+  bloques.forEach( ( bloque ) => {
+    caja.appendChild( casillaDeLaHora( bloque ) );
+  } );
+
+  caja.hidden = false;
+
+  // ⚠️ SI TODO ESTÁ APAGADO SE DICE, aunque la grilla se vea. Una pantalla
+  // llena de casillas grises sin una línea que lo explique se lee como un
+  // error de carga.
+  const hayAlguno = bloques.some( ( bloque ) => bloque.estado === 'libre' );
+
+  ayuda.hidden = hayAlguno;
+
+  if ( !hayAlguno ) {
+    ayuda.textContent = 'Con esa duración no entra ningún turno ese día.';
+  }
+}
+
+
 // ── AGENDAR ───────────────────────────────────────────────────────────
 
 async function agendarElTurno() {
 
   const dia = document.querySelector( '#turno-fecha' ).value;
 
-  const hora = document.querySelector( '#turno-hora' ).value;
-
-  if ( !dia || !hora ) {
-    avisarEnLaCarga( 'Falta el día o la hora.' );
+  if ( !horaElegida ) {
+    avisarEnLaCarga( 'Elegí un horario de la grilla.' );
     return;
   }
 
-  // 🔴 EL DESFASE DE SANTA FE SE PONE ACÁ Y NO SE DEDUCE. Un `date` y un `time`
-  // del navegador no traen zona horaria: pegados a secas, el servidor los lee
-  // como UTC y el turno de las 09:00 se guarda tres horas corrido. Es el mismo
-  // error que el resto del proyecto ya resuelve en `fechas.js`.
-  const inicio = dia + 'T' + hora + ':00' + desfaseDeSantaFe( dia );
+  // 🔑 EL INSTANTE ES EL QUE MANDÓ EL PORTERO, tal cual, con su desfase ya
+  // puesto. No se arma pegando el día y la hora: ese camino —el del campo de
+  // hora que esta pantalla tenía antes— obliga a calcular la zona horaria acá,
+  // y cualquier error ahí corre el turno sin que nada falle.
+  const inicio = horaElegida;
 
   const cuerpo = {
     paciente_id: pacienteElegido.id,
@@ -821,12 +992,17 @@ document.querySelector( '#ir-a-cargar' ).addEventListener( 'click', async () => 
 
   volverAlBuscador();
 
-  await llenarLosDesplegables();
-
+  // 🔴 EL DÍA SE PONE ANTES DEL `await`, y el orden importa. La grilla de
+  // horas se dibuja al elegir el paciente, y si para entonces este campo
+  // todavía estuviera vacío, saldría el texto «elegí día y duración» con el
+  // día ya puesto en pantalla. Nada falla: la grilla simplemente no aparece.
+  //
   // El día arranca en el que se está mirando: lo más probable es que el turno
   // sea para ese día, que es el que Cecilia tiene delante.
   document.querySelector( '#turno-fecha' ).value =
     campoFecha.value || hoyEnSantaFe();
+
+  await llenarLosDesplegables();
 } );
 
 
@@ -857,6 +1033,25 @@ document.querySelector( '#turno-guardar' ).addEventListener(
   'click',
   agendarElTurno
 );
+
+
+// 🔴 LOS TRES CAMPOS QUE CAMBIAN LA RESPUESTA DE LA GRILLA, y los tres tienen
+// que volver a pedirla. Es el punto de toda esta pantalla: con qué duración se
+// mira cambia qué entra, y un hueco de media hora no sirve para una ortodoncia
+// de 90.
+//
+// ⚠️ LA HORA ELEGIDA SE BORRA al cambiar cualquiera de los tres. Dejarla
+// puesta es el modo de falla silencioso de esta pieza: se elige un bloque con
+// 30 minutos, se cambia la duración a 90, y el bloque sigue marcado aunque ya
+// no entre. El turno se mandaría contra un horario que la grilla nueva no
+// ofrece — y la base lo rebotaría con un 409 que parece un bug.
+[ '#turno-fecha', '#turno-duracion', '#turno-profesional' ].forEach( ( cual ) => {
+
+  document.querySelector( cual ).addEventListener( 'change', () => {
+    horaElegida = null;
+    dibujarLasHoras();
+  } );
+} );
 
 
 // 🔑 EL BUSCADOR ESPERA A QUE LA PERSONA DEJE DE TIPEAR, y sin esto cada tecla

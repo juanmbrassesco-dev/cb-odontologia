@@ -309,10 +309,31 @@
           <input class="caja" id="turno-fecha" type="date">
         </div>
 
-        <div class="campo">
-          <label class="etiqueta" for="turno-hora">Hora</label>
-          <input class="caja" id="turno-hora" type="time" step="900">
-        </div>
+        <!--
+          LA HORA SE ELIGE DE LA GRILLA, NO SE TIPEA.
+
+          🔴 ACÁ HABÍA UN `<input type="time">` HASTA EL 9-oct-2026, y lo
+          levantó Juan mirando la pantalla: es un campo CIEGO. Deja escribir
+          las 15:00 sin saber que a las 15:30 hay otro turno, así que el único
+          aviso llega cuando la base rebota con un 409 — después de haber
+          cargado todo lo demás.
+
+          🔑 Y LA SEGUNDA MITAD ES LA QUE LO HACE SERIO: con qué duración se
+          mira cambia qué entra. Un hueco de media hora libre no sirve para una
+          ortodoncia de 90, y con un campo de hora eso no se ve en ningún lado.
+          La grilla se vuelve a pedir cada vez que cambia el día, la duración o
+          el profesional.
+
+          Es la MISMA pieza que ve el paciente —las clases `.grilla` y `.hora`
+          son las suyas, sin tocar—, con las reglas del consultorio: sin piso
+          de doce horas y con la duración que se eligió arriba.
+        -->
+        <p class="etiqueta">Hora</p>
+
+        <p class="ayuda-pantalla" id="horas-ayuda">Elegí día y duración para
+        ver los horarios.</p>
+
+        <div class="grilla" id="turno-horas" hidden></div>
 
         <!--
           🔒 PUEDE CONTENER DATOS DE SALUD. Es una propiedad del campo, no un
