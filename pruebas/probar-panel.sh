@@ -289,10 +289,198 @@ supabase db query --linked --output csv \
   2>/dev/null | tail -2
 
 
+# ── 9 a 11. EL BUSCADOR DE PACIENTES ─────────────────────────────────────────
+
+echo
+echo "▶ 9. Buscar pacientes sin token — 401"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/buscar-pacientes?q=bra" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY"
+
+echo
+echo "▶ 10. Buscar pacientes como PACIENTE — 403"
+echo "      (un paciente no puede listar la tabla de pacientes)"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/buscar-pacientes?q=bra" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_PACIENTE"
+
+# 🔴 EL CASO 11 ES EL DE SEGURIDAD DE ESTE ENDPOINT, y no se parece a los
+# otros: no mide quién entra, mide QUÉ SE PUEDE ESCRIBIR ADENTRO del filtro.
+#
+# El `.or( … )` de PostgREST recibe los filtros como un solo texto separado por
+# comas. Si el término de búsqueda viaja ahí con una coma adentro, deja de ser
+# un valor y pasa a ser un SEPARADOR: el que busca escribe filtros propios. Es
+# la misma familia que una inyección SQL, sobre la sintaxis de PostgREST.
+#
+# `id.gte.0` matchea TODAS las filas. Si el saneado no estuviera, esta llamada
+# devolvería la tabla de pacientes entera hasta el tope de 20.
+
+echo
+echo "▶ 11. INYECCIÓN DE FILTRO: un término con una coma y un filtro adentro"
+
+INYECCION=$(
+  curl -s -G \
+    "$FUNCIONES/buscar-pacientes" \
+    --data-urlencode "q=zzz,id.gte.0" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE"
+)
+
+echo "   cuerpo:   $( echo "$INYECCION" | head -c 200 )"
+echo
+echo "   ✅ Tiene que venir la lista VACÍA. La coma se saneó, así que el"
+echo "      término quedó en 'zzz id.gte.0' y no coincide con nadie. Si trae"
+echo "      pacientes, el filtro se obedeció: eso es inyección de filtro."
+
+
+# ── 12 a 14. EL ALTA DE PACIENTE Y EL TURNO A MANO ───────────────────────────
+
+echo
+echo "▶ 12. Alta de paciente con los dos correos DISTINTOS — 400"
+echo "      (es la defensa contra el correo válido pero ajeno)"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/paciente-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d '{ "nombre": "Prueba", "apellido": "Bateria", "email": "juana@ejemplo.test", "email_repetido": "juan@ejemplo.test" }'
+
+# El paciente de la batería se crea SIN CORREO a propósito: así el turno del
+# caso 14 no dispara ningún aviso y la casilla de prueba no se llena de correos
+# en cada corrida. De paso prueba que una ficha sin correo es válida.
+echo
+echo "▶ 13. Alta de un paciente SIN correo — 201"
+echo "      (Cecilia carga gente que sólo dejó un teléfono; es un caso real)"
+
+ALTA=$(
+  curl -s -w '\n%{http_code}' \
+    -X POST "$FUNCIONES/paciente-del-panel" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    -H 'Content-Type: application/json' \
+    -d '{ "nombre": "Sin Correo", "apellido": "Bateria", "telefono": "3420000000" }'
+)
+
+echo "   obtenido: $( echo "$ALTA" | tail -1 )"
+
+PACIENTE_ID=$(
+  echo "$ALTA" | sed '$d' | grep -oE '"id":[0-9]+' | head -1 | grep -oE '[0-9]+'
+)
+
+echo "   paciente creado: ${PACIENTE_ID:-ninguno}"
+
+# 🔴 EL CASO 14 ES EL IDOR DE ESCRITURA DE ESTE ENDPOINT, y es peor que el de
+# la agenda: no lee la agenda de otro, le LLENA la agenda a otro.
+#
+# Un no-admin manda `profesional_id` de otra persona. La regla dice que ese
+# campo se ignora y el turno se crea a su nombre. Lo que se mide es el
+# `profesional` de la RESPUESTA: tiene que ser el id de la cuenta de soporte,
+# nunca el 1 que se mandó.
+
+echo
+echo "▶ 14. IDOR de ESCRITURA: un NO-admin cargando un turno a nombre de otro"
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = false where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+SOPORTE_ID=$(
+  supabase db query --linked --output csv \
+    "select id from public.profesionales where email_de_acceso = '$SOPORTE_EMAIL';" \
+    2>/dev/null | grep -oE '^[0-9]+$' | tail -1
+)
+
+# Una fecha lejana y fija: no se pisa con nada real y la corrida de mañana cae
+# en el mismo lugar, así que el choque 23P01 sería una señal de que el turno
+# anterior no se apagó.
+LEJOS=$( date -v+400d +%F 2>/dev/null || date -d '+400 days' +%F )
+
+PARTICULAR=$(
+  supabase db query --linked --output csv \
+    "select id from public.obras_sociales where nombre = 'Particular';" \
+    2>/dev/null | grep -oE '^[0-9]+$' | tail -1
+)
+
+TRATAMIENTO=$(
+  supabase db query --linked --output csv \
+    "select id from public.tratamientos limit 1;" \
+    2>/dev/null | grep -oE '^[0-9]+$' | tail -1
+)
+
+if [ -n "$PACIENTE_ID" ] && [ -n "$PARTICULAR" ] && [ -n "$TRATAMIENTO" ]; then
+
+  TURNO=$(
+    curl -s -w '\n%{http_code}' \
+      -X POST "$FUNCIONES/turno-del-panel" \
+      -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+      -H "Authorization: Bearer $TOKEN_SOPORTE" \
+      -H 'Content-Type: application/json' \
+      -d "{ \"paciente_id\": $PACIENTE_ID,
+            \"profesional_id\": 1,
+            \"tratamiento_id\": $TRATAMIENTO,
+            \"obra_social_id\": $PARTICULAR,
+            \"duracion_min\": 30,
+            \"inicio\": \"${LEJOS}T14:00:00-03:00\" }"
+  )
+
+  echo "   obtenido: $( echo "$TURNO" | tail -1 )"
+  echo "   cuerpo:   $( echo "$TURNO" | sed '$d' | head -c 300 )"
+  echo
+  echo "   🔴 Tiene que dar 201 Y el \"profesional\" de la respuesta tiene que"
+  echo "      ser $SOPORTE_ID, NO el 1 que se mandó. Si dice 1, el campo se"
+  echo "      obedeció sin preguntar quién pide: eso es el IDOR de escritura."
+
+  TURNO_ID=$(
+    echo "$TURNO" | sed '$d' | grep -oE '"id":[0-9]+' | head -1 | grep -oE '[0-9]+'
+  )
+
+else
+  echo "   ❌ NO SE PUDO MEDIR: falta el paciente, la cobertura o el"
+  echo "      tratamiento. Una prueba que no corre se lee como verde."
+fi
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = true where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+# El turno de la batería se APAGA, no se borra: es la regla del proyecto. Y se
+# apaga con `aviso_estado` vacío, así que la repesca no manda ninguna
+# cancelación — nadie se enteró nunca de ese turno.
+if [ -n "${TURNO_ID:-}" ]; then
+
+  supabase db query --linked \
+    "update public.turnos set activo = false where id = $TURNO_ID;" \
+    > /dev/null 2>&1
+
+  echo
+  echo "   turno de prueba $TURNO_ID apagado (no borrado)"
+fi
+
+echo
+echo "▶ 15. Duración fuera de los bloques de 30 — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/turno-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d "{ \"paciente_id\": ${PACIENTE_ID:-1},
+        \"tratamiento_id\": ${TRATAMIENTO:-1},
+        \"obra_social_id\": ${PARTICULAR:-1},
+        \"duracion_min\": 45,
+        \"inicio\": \"${LEJOS}T16:00:00-03:00\" }"
+
+
 # ── Qué mirar ────────────────────────────────────────────────────────────────
 
 echo
-echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400 · 403 · 403, en ese orden."
+echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400 · 403 · 403 · 401 · 403 · 400 · 201 · 201 · 400,"
+echo "   en ese orden, más los dos casos que se leen por el CUERPO y no por el código:"
+echo "   el 11 (lista vacía) y el 14 (el profesional de la respuesta)."
 echo
 echo "   Y el cuerpo del caso 3 tiene que traer \"esAdmin\": true. Si trae"
 echo "   false, la fila existe pero el update del es_admin no entró: la puerta"

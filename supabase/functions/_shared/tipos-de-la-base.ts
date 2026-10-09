@@ -280,6 +280,7 @@ export type Database = {
           aviso_at: string | null
           aviso_estado: string | null
           canal: string
+          confirmado_en: string | null
           created_at: string
           duracion_min: number
           id: number
@@ -298,6 +299,7 @@ export type Database = {
           aviso_at?: string | null
           aviso_estado?: string | null
           canal: string
+          confirmado_en?: string | null
           created_at?: string
           duracion_min?: number
           id?: number
@@ -316,6 +318,7 @@ export type Database = {
           aviso_at?: string | null
           aviso_estado?: string | null
           canal?: string
+          confirmado_en?: string | null
           created_at?: string
           duracion_min?: number
           id?: number

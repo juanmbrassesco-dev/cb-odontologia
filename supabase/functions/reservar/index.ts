@@ -57,6 +57,17 @@ import { conQueArranca } from '../_shared/arranque.ts'
 
 import { enviarAvisos } from '../_shared/avisos.ts'
 
+// El saneado de lo que escribe una persona vive en `_shared` desde el
+// 9-oct-2026: lo usa también el alta de paciente del panel, y dos copias de
+// una validación se desincronizan.
+import {
+  LARGO_MAXIMO_DNI,
+  LARGO_MAXIMO_NOMBRE,
+  LARGO_MAXIMO_OBSERVACIONES,
+  LARGO_MAXIMO_TELEFONO,
+  textoLimpio,
+} from '../_shared/texto.ts'
+
 // El error que devuelve Postgres cuando la fila nueva se pisa con una que ya
 // está. Es el código de "violación de exclusión", y en esta base sólo lo puede
 // producir `turnos_sin_solapar`: no hay otra restricción de ese tipo.
@@ -75,10 +86,6 @@ const LIMITE_DE_TURNOS = 'CB001'
 // Topes de largo para lo que escribe una persona. No son reglas del
 // consultorio: son el freno para que un pedido armado a mano no meta un texto
 // de un megabyte en una columna que no tiene límite.
-const LARGO_MAXIMO_NOMBRE = 60
-const LARGO_MAXIMO_TELEFONO = 30
-const LARGO_MAXIMO_DNI = 20
-const LARGO_MAXIMO_OBSERVACIONES = 500
 
 // Un pedido mal armado se contesta con el motivo: lo escribió quien está
 // construyendo la pantalla y necesita saber qué corregir.
@@ -161,30 +168,6 @@ function limiteAlcanzado(): Response {
     },
     { status: 409 },
   )
-}
-
-// Un texto que escribió una persona, o `null` si no sirve.
-//
-// Las tres preguntas son distintas y las tres hacen falta: que sea un texto y
-// no un número ni una lista disfrazada, que no esté vacío después de sacarle
-// los espacios (' ' no es un apellido), y que no pase del tope.
-function textoLimpio( valor: unknown, largoMaximo: number ): string | null {
-
-  if ( typeof valor !== 'string' ) {
-    return null
-  }
-
-  const limpio = valor.trim()
-
-  if ( limpio.length === 0 ) {
-    return null
-  }
-
-  if ( limpio.length > largoMaximo ) {
-    return null
-  }
-
-  return limpio
 }
 
 export default {
@@ -637,6 +620,16 @@ export default {
           obra_social_id: obraSocialId,
           canal: 'web',
           activo: true,
+          // 🔑 UN TURNO WEB ESTÁ CONFIRMADO POR CONSTRUCCIÓN: lo acaba de
+          // sacar el paciente, con su sesión iniciada. No hay nada que
+          // preguntarle. El que nace vacío es el turno que carga el
+          // consultorio a mano, y esa diferencia es toda la columna.
+          //
+          // La hora sale de acá y no de `now()` de la base porque un insert de
+          // supabase-js manda valores, no expresiones SQL. La diferencia entre
+          // las dos son milisegundos, y lo que este dato responde es «qué día
+          // confirmó», no a qué microsegundo.
+          confirmado_en: new Date().toISOString(),
           observaciones_paciente: observaciones,
         } )
         .select( 'id, inicio, duracion_min' )
