@@ -493,7 +493,9 @@ curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
   -H "Authorization: Bearer $TOKEN_PACIENTE"
 
 echo
-echo "▶ 18. Duración fuera de los bloques de 30 — 400"
+echo "▶ 18. La grilla con una duración fuera de los bloques de 30 — 400"
+echo "      (el mismo tope que valida turno-del-panel, y a propósito está en"
+echo "       los dos: una duración absurda armaría una grilla absurda)"
 
 curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
   "$FUNCIONES/horarios-del-panel?fecha=$HOY&duracion=45" \
@@ -511,29 +513,67 @@ curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
 echo
 echo "▶ 19. La MISMA fecha con dos duraciones — tienen que dar distinto"
 
-LEJOS_GRILLA=$( date -v+30d +%F 2>/dev/null || date -d '+30 days' +%F )
+# 🔴 DOS COSAS QUE LA PRIMERA VERSIÓN DE ESTE CASO HIZO MAL, y las dos lo
+# dejaron en «0 de 0» — o sea, sin medir nada:
+#
+#   1. Preguntaba por la agenda de la CUENTA DE SOPORTE, que no tiene ninguna
+#      cargada en `horarios_base`. Se pregunta por la de Cecilia, con
+#      `?profesional=1`, y eso sólo lo puede hacer un admin: de paso queda
+#      probado que el parámetro SÍ se obedece cuando quien pide lo es.
+#   2. Clavaba un día a 30 vista, que puede caer domingo. Ahora se prueban
+#      varios hasta dar con uno que tenga agenda.
+#
+# ⚠ Lo que salvó al caso fue el aviso que tenía escrito abajo. Sin esa línea,
+# «0 de 0» se habría leído como verde.
+DIA_GRILLA=""
 
-for DURA in 30 180; do
+for SALTO in 30 31 32 33 34 35 36; do
 
-  CUERPO=$(
+  CANDIDATO=$( date -v+${SALTO}d +%F 2>/dev/null || date -d "+$SALTO days" +%F )
+
+  CUANTOS=$(
     curl -s \
-      "$FUNCIONES/horarios-del-panel?fecha=$LEJOS_GRILLA&duracion=$DURA" \
+      "$FUNCIONES/horarios-del-panel?fecha=$CANDIDATO&duracion=30&profesional=1" \
       -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
-      -H "Authorization: Bearer $TOKEN_SOPORTE"
+      -H "Authorization: Bearer $TOKEN_SOPORTE" \
+      | grep -o '"inicio"' | wc -l | tr -d ' '
   )
 
-  LIBRES=$( echo "$CUERPO" | grep -o '"libre"' | wc -l | tr -d ' ' )
-  TOTAL=$(  echo "$CUERPO" | grep -o '"inicio"' | wc -l | tr -d ' ' )
-
-  echo "   duración $DURA min → $LIBRES libre(s) de $TOTAL bloque(s)"
+  if [ "$CUANTOS" != "0" ]; then
+    DIA_GRILLA="$CANDIDATO"
+    break
+  fi
 done
 
-echo
-echo "   ✅ Los dos números de LIBRES tienen que ser DISTINTOS, y el de 180"
-echo "      menor. Si son iguales, la duración no llegó al cálculo."
-echo "   ⚠ Si los dos dan 0 de 0, el profesional de la cuenta de soporte no"
-echo "      tiene agenda cargada ese día: no es un fallo del endpoint, pero"
-echo "      tampoco una prueba — es un caso que no corrió."
+if [ -z "$DIA_GRILLA" ]; then
+
+  echo "   ❌ NO SE PUDO MEDIR: ningún día de la semana probada tiene agenda."
+  echo "      Una prueba que no corre se lee como verde."
+
+else
+
+  echo "   día con agenda encontrado: $DIA_GRILLA"
+  echo
+
+  for DURA in 30 180; do
+
+    CUERPO=$(
+      curl -s \
+        "$FUNCIONES/horarios-del-panel?fecha=$DIA_GRILLA&duracion=$DURA&profesional=1" \
+        -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+        -H "Authorization: Bearer $TOKEN_SOPORTE"
+    )
+
+    LIBRES=$( echo "$CUERPO" | grep -o '"libre"' | wc -l | tr -d ' ' )
+    TOTAL=$(  echo "$CUERPO" | grep -o '"inicio"' | wc -l | tr -d ' ' )
+
+    echo "   duración $DURA min → $LIBRES libre(s) de $TOTAL bloque(s)"
+  done
+
+  echo
+  echo "   ✅ Los dos números de LIBRES tienen que ser DISTINTOS, y el de 180"
+  echo "      menor. Si son iguales, la duración no llegó al cálculo."
+fi
 
 
 # ── Qué mirar ────────────────────────────────────────────────────────────────
