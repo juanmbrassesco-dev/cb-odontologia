@@ -170,6 +170,16 @@ export default {
           profesionalNombre: turno.profesional_nombre,
           profesionalApellido: turno.profesional_apellido,
           profesionalCorreo: turno.profesional_email,
+          // Con qué cobertura se sacó el turno. Sale del nombre que tiene la
+          // tabla `obras_sociales`, traído por la función del reclamo desde la
+          // migración 20261009114610.
+          //
+          // 🔴 HASTA ESA MIGRACIÓN ESTE RENGLÓN NO EXISTÍA, y el correo salía
+          // sin cobertura SIN FALLAR: `avisos.ts` pregunta por el dato con un
+          // `if`, no lo encontraba, y armaba el cuerpo sin esa línea. El aviso
+          // de `POST /reservar` la traía y el de la repesca no — el mismo
+          // consultorio recibía dos correos distintos para el mismo turno.
+          obraSocial: turno.obra_social_nombre,
           tieneObservaciones: turno.tiene_observaciones,
         },
         motivo )

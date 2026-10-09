@@ -380,6 +380,7 @@ export type Database = {
         Args: { tope: number }
         Returns: {
           motivo_nombre: string
+          obra_social_nombre: string
           paciente_apellido: string
           paciente_email: string
           paciente_nombre: string

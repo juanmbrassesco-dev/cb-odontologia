@@ -246,9 +246,12 @@ export type DatosDelAviso = {
   // Cecilia tuviera que ir a buscarlo a una pantalla, el campo no estaría
   // cumpliendo para lo que se creó.
   //
-  // Opcional porque la cancelación no lo manda —ahí lo que importa es el hueco
-  // que se libera— y porque un turno cargado a mano puede no tenerlo mientras
-  // la columna siga siendo anulable.
+  // Opcional porque la CANCELACIÓN no lo manda: ahí lo que importa es el hueco
+  // que se libera, no bajo qué cobertura estaba tomado.
+  //
+  // ⚠ Y NO es opcional porque el dato pueda faltar en la base: `obra_social_id`
+  // es `not null` desde la migración 20260918163840. Lo opcional es que quien
+  // arma el aviso lo mande, no que exista.
   obraSocial?: string | null
   pacienteNombre: string
   pacienteApellido: string
@@ -569,8 +572,10 @@ function avisoOperativo(
   // el que saben bajo qué concepto viene la persona. El paciente lo ve en su
   // pantalla, con la sesión iniciada, que es otro canal.
   //
-  // El `if` no es cosmético: un turno sin cobertura existe hoy —la columna es
-  // anulable hasta que el formulario esté en la calle— y un renglón que dijera
+  // El `if` no es cosmético, y lo que lo justifica cambió: la cobertura es
+  // obligatoria en la base desde el 18-sep-2026, así que ningún turno la tiene
+  // vacía. Lo que sí falta es el dato en la MANO de quien arma el aviso — la
+  // cancelación no lo manda a propósito—, y un renglón que dijera
   // «Cobertura: null» sería peor que no estar.
   const coberturaAnotada: string[] = []
 

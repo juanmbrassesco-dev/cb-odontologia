@@ -357,6 +357,23 @@ select 44,
  where v.turno_id = ( select turno from ids );
 
 
+-- C15 · LA COBERTURA. El turno del escenario se carga con `Particular`, así que
+-- es ese nombre el que tiene que volver, no el id ni un vacío.
+--
+-- 🔴 POR QUÉ ESTE CASO VALE LO QUE VALE: el agujero que tapa no fallaba. Entre
+-- el 18-sep y el 9-oct-2026 el reclamo no devolvía la cobertura, `avisos.ts`
+-- preguntaba por ella con un `if`, no la encontraba, y el correo salía sin ese
+-- renglón — sin error y sin rastro. Lo único que lo delata es pedir el dato y
+-- compararlo, que es lo que hace este renglón.
+insert into resultados
+select 45,
+       'C15 · el reclamo devuelve la cobertura',
+       coalesce( v.obra_social_nombre, '(vacio)' ),
+       'Particular'
+  from vueltos v
+ where v.turno_id = ( select turno from ids );
+
+
 -- ═══ D · EL MARCADO CONDICIONADO ═════════════════════════════════════════════
 
 do $$
