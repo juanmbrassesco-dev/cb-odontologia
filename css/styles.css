@@ -3513,6 +3513,18 @@ textarea.caja {
   display: flex;
   gap: 8px;
   margin-left: auto;
+
+  /* 🔑 `align-self` PISA AL `align-items: baseline` DEL RENGLÓN, Y SÓLO PARA
+     ESTE HIJO. Sin esta línea los botones se alinean por la base del PRIMER
+     renglón de texto —el nombre del paciente—, así que quedan arriba y debajo
+     de ellos sobra el alto del renglón del tratamiento: a 1280 el par queda
+     unos 10 px más alto que el centro de la tarjeta. Lo levantó Juan mirando
+     la pantalla el 9-oct-2026.
+
+     Lo que NO se puede hacer es cambiar el `align-items` del renglón entero:
+     la base compartida entre la hora y el nombre es justo lo que deja barrer
+     la lista con la vista. Se mueve UN hijo, no la fila. */
+  align-self: center;
 }
 
 /* Los botones de un renglón son más chicos que los de una pantalla: acá hay
