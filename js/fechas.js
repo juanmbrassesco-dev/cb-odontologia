@@ -121,3 +121,44 @@ function horaDelTurno( inicio ) {
     hour12: false
   } ).format( new Date( inicio ) );
 }
+
+
+/**
+ * El desfase horario del consultorio ese día, como '-03:00'.
+ *
+ * PARA QUÉ: un `<input type="date">` y un `<input type="time">` devuelven
+ * '2026-10-12' y '09:00' PELADOS, sin ninguna zona horaria. Pegados a secas y
+ * mandados al portero, el servidor los lee como UTC y el turno de las nueve de
+ * la mañana queda guardado tres horas corrido, sin que nada falle.
+ *
+ * 🔑 POR QUÉ SE CALCULA Y NO SE ESCRIBE '-03:00' A MANO. Hoy Argentina no
+ * mueve el reloj, así que el número sería correcto — y sería un número
+ * congelado en el código. Si algún día vuelve el horario de verano, un texto
+ * tipeado sigue diciendo lo mismo y los turnos de medio año se guardan mal, en
+ * silencio. Preguntándole al sistema operativo por el NOMBRE de la zona, la
+ * respuesta cambia sola.
+ *
+ * Es la misma función que el portero tiene en `_shared/disponibilidad.ts`.
+ * ⚠️ Están las dos escritas, y no es un descuido: una corre en Deno y la otra
+ * en el navegador, y entre las dos no hay forma de compartir un archivo. Lo
+ * que SÍ se comparte es la constante de la zona, que es el dato que podría
+ * desincronizarse.
+ */
+function desfaseDeSantaFe( fecha ) {
+
+  const formato = new Intl.DateTimeFormat(
+    'en-US',
+    {
+      timeZone: ZONA_DEL_CONSULTORIO,
+      timeZoneName: 'longOffset'
+    }
+  );
+
+  const partes = formato.formatToParts( new Date( fecha + 'T12:00:00Z' ) );
+
+  const zona = partes.find( ( parte ) => parte.type === 'timeZoneName' );
+
+  // 'longOffset' devuelve 'GMT-03:00'. Sacado el prefijo queda lo que va
+  // pegado al final de la fecha.
+  return zona.value.replace( 'GMT', '' );
+}

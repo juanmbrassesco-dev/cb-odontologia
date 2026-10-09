@@ -39,6 +39,10 @@
   <a href="?caso=vacio">ninguno</a> ·
   <a href="?caso=ajeno">403 no es staff</a> ·
   <a href="?caso=fallo">500</a>
+  <br>
+  cargar un turno:
+  <a href="?caso=cargar">como Cecilia (admin)</a> ·
+  <a href="?caso=cargar&amp;admin=no">como un profesional</a>
 </div>
 <pre id="registro"></pre>
 
@@ -91,6 +95,17 @@
 
       <p class="entrar-aviso" id="agenda-aviso" hidden></p>
 
+      <!--
+        🔑 EL BOTÓN VA AL FINAL Y NO ARRIBA, a propósito. La acción principal
+        de esta pantalla es LEER el día; cargar un turno es lo que se hace
+        después de haber mirado. Arriba competiría con la lista, que es lo que
+        se vino a ver.
+      -->
+      <div class="acciones">
+        <button class="btn btn-1" type="button" id="ir-a-cargar">
+          Cargar un turno</button>
+      </div>
+
     </section>
 
 <section class="paso" id="paso-sin-acceso" hidden>
@@ -104,6 +119,176 @@
         <a class="btn btn-1" href="/mis-turnos">Mis turnos</a>
 
         <a class="btn btn-2" href="/">Ir al sitio</a>
+      </div>
+
+    </section>
+
+<section class="paso" id="paso-cargar" hidden>
+
+      <h1>Cargar un turno</h1>
+
+      <!-- ── BLOQUE 1 · DE QUIÉN ES ─────────────────────────────────────── -->
+
+      <!--
+        🔒 EL PACIENTE SE ELIGE DE UNA LISTA, NUNCA SE TIPEA SU CORREO. Tipearlo
+        crea una ficha duplicada, y el paciente deja de ver sus turnos porque
+        están colgados de la otra. Es el agujero que este buscador existe para
+        tapar.
+      -->
+      <div class="campo">
+        <label class="etiqueta" for="buscar-paciente">Paciente</label>
+        <input class="caja" id="buscar-paciente" type="search"
+               placeholder="Apellido, nombre o correo"
+               autocomplete="off">
+      </div>
+
+      <p class="ayuda-pantalla" id="buscar-ayuda">Escribí al menos dos letras.</p>
+
+      <div class="lista-pacientes" id="buscar-resultados" hidden></div>
+
+      <!-- El paciente ya elegido, con la salida para cambiarlo. -->
+      <div class="paciente-elegido" id="paciente-elegido" hidden>
+        <p class="elegido-quien" id="elegido-quien"></p>
+        <p class="elegido-contacto" id="elegido-contacto"></p>
+
+        <button class="btn btn-2" type="button" id="cambiar-paciente">
+          Cambiar</button>
+      </div>
+
+      <!-- ── EL ALTA EN EL ACTO ─────────────────────────────────────────── -->
+
+      <!--
+        Se abre desde el buscador cuando no aparece nadie. Va plegado y no
+        suelto en la pantalla: el caso normal es que el paciente YA esté, y un
+        formulario de alta siempre visible invita a crear la ficha duplicada
+        que el buscador vino a evitar.
+      -->
+      <div class="alta-paciente" id="alta-paciente" hidden>
+
+        <h2>Ficha nueva</h2>
+
+        <div class="campo">
+          <label class="etiqueta" for="alta-nombre">Nombre</label>
+          <input class="caja" id="alta-nombre" type="text" autocomplete="off">
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="alta-apellido">Apellido</label>
+          <input class="caja" id="alta-apellido" type="text" autocomplete="off">
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="alta-telefono">Teléfono</label>
+          <input class="caja" id="alta-telefono" type="tel" autocomplete="off">
+        </div>
+
+        <!--
+          🔒 EL CORREO VA DOS VECES, Y ES LA ÚNICA DEFENSA QUE HAY ACÁ. En el
+          formulario del paciente la dirección sale de su sesión de Google y
+          nadie la tipea. Acá la tipea quien atiende, escuchando un teléfono, y
+          una letra de más da una dirección que EXISTE, no rebota y pasa
+          cualquier validación de formato: los avisos de esa persona le llegan
+          a un desconocido y nadie se entera.
+        -->
+        <div class="campo">
+          <label class="etiqueta" for="alta-correo">Correo <span
+            class="opcional">(si tiene)</span></label>
+          <input class="caja" id="alta-correo" type="email" autocomplete="off">
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="alta-correo-2">Repetí el correo</label>
+          <input class="caja" id="alta-correo-2" type="email"
+                 autocomplete="off">
+        </div>
+
+        <div class="acciones">
+          <button class="btn btn-1" type="button" id="alta-guardar">
+            Crear ficha</button>
+
+          <button class="btn btn-2" type="button" id="alta-cancelar">
+            Volver al buscador</button>
+        </div>
+
+      </div>
+
+      <!-- ── BLOQUE 2 · EL TURNO ────────────────────────────────────────── -->
+
+      <div class="datos-del-turno" id="datos-del-turno" hidden>
+
+        <!--
+          ⚠️ SÓLO LO VE UN ADMIN. Un profesional que no lo sea carga turnos
+          para sí mismo y nada más — y eso no se defiende acá: el portero
+          ignora este campo si quien pide no es admin. La pantalla lo esconde
+          para no ofrecer lo que después va a rebotar.
+        -->
+        <div class="campo" id="campo-profesional" hidden>
+          <label class="etiqueta" for="turno-profesional">Profesional</label>
+          <select class="caja" id="turno-profesional"></select>
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="turno-tratamiento">Tratamiento</label>
+          <select class="caja" id="turno-tratamiento"></select>
+        </div>
+
+        <!--
+          🔑 LA DURACIÓN LA ELIGE QUIEN ATIENDE, y es la diferencia de fondo con
+          la reserva por web: allá el sistema la decide (una consulta de 30), acá
+          la ortodoncia dura lo que el profesional sabe que dura. Los bloques de
+          30 son la unidad con la que piensa el consultorio.
+        -->
+        <div class="campo">
+          <label class="etiqueta" for="turno-duracion">Duración</label>
+          <select class="caja" id="turno-duracion">
+            <option value="30">30 minutos</option>
+            <option value="60">1 hora</option>
+            <option value="90">1 hora y media</option>
+            <option value="120">2 horas</option>
+            <option value="150">2 horas y media</option>
+            <option value="180">3 horas</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="turno-cobertura">Cobertura</label>
+          <select class="caja" id="turno-cobertura"></select>
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="turno-fecha">Día</label>
+          <input class="caja" id="turno-fecha" type="date">
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="turno-hora">Hora</label>
+          <input class="caja" id="turno-hora" type="time" step="900">
+        </div>
+
+        <!--
+          🔒 PUEDE CONTENER DATOS DE SALUD. Es una propiedad del campo, no un
+          pendiente: lo que se escriba acá viaja a `observaciones_paciente` y
+          esa columna está bajo el frente de la Ley 25.326. El aviso NO manda
+          el texto — sólo dice que hay una nota.
+        -->
+        <div class="campo">
+          <label class="etiqueta" for="turno-nota">Observaciones <span
+            class="opcional">(opcional)</span></label>
+          <textarea class="caja" id="turno-nota" rows="3"></textarea>
+        </div>
+
+        <div class="acciones">
+          <button class="btn btn-1" type="button" id="turno-guardar">
+            Agendar</button>
+        </div>
+
+      </div>
+
+      <p class="entrar-aviso" id="cargar-aviso" hidden></p>
+
+      <div class="acciones">
+        <button class="btn btn-2" type="button" id="volver-a-agenda">
+          Volver a la agenda</button>
       </div>
 
     </section>
@@ -169,6 +354,11 @@
   const TURNOS = [{"id": 1, "inicio": "2026-10-15T12:00:00+00:00", "duracion_min": 30, "canal": "web", "paciente": {"id": 1, "nombre": "Marta", "apellido": "Giménez"}, "profesional": {"id": 1, "nombre": "Cecilia", "apellido": "Brassesco"}, "tratamiento": {"nombre": "consulta"}, "motivo": {"nombre": "ortodoncia"}, "obra_social": {"nombre": "Particular"}}, {"id": 2, "inicio": "2026-10-15T12:30:00+00:00", "duracion_min": 60, "canal": "web", "paciente": {"id": 2, "nombre": "Rodrigo", "apellido": "Paz"}, "profesional": {"id": 1, "nombre": "Cecilia", "apellido": "Brassesco"}, "tratamiento": {"nombre": "limpieza"}, "motivo": null, "obra_social": {"nombre": "OSDE"}}, {"id": 3, "inicio": "2026-10-15T13:30:00+00:00", "duracion_min": 30, "canal": "web", "paciente": {"id": 3, "nombre": "Valentina", "apellido": "Ruiz"}, "profesional": {"id": 1, "nombre": "Cecilia", "apellido": "Brassesco"}, "tratamiento": {"nombre": "consulta"}, "motivo": {"nombre": "bruxismo"}, "obra_social": {"nombre": "A.M.U.R."}}, {"id": 4, "inicio": "2026-10-15T16:00:00+00:00", "duracion_min": 90, "canal": "web", "paciente": {"id": 4, "nombre": "Esteban", "apellido": "Molina"}, "profesional": {"id": 1, "nombre": "Cecilia", "apellido": "Brassesco"}, "tratamiento": {"nombre": "consulta"}, "motivo": {"nombre": "prótesis"}, "obra_social": {"nombre": "Particular"}}, {"id": 5, "inicio": "2026-10-15T17:30:00+00:00", "duracion_min": 30, "canal": "web", "paciente": {"id": 5, "nombre": "Lucía", "apellido": "Ferreyra"}, "profesional": {"id": 1, "nombre": "Cecilia", "apellido": "Brassesco"}, "tratamiento": {"nombre": "blanqueamiento"}, "motivo": null, "obra_social": {"nombre": "Particular"}}, {"id": 6, "inicio": "2026-10-15T18:00:00+00:00", "duracion_min": 60, "canal": "web", "paciente": {"id": 6, "nombre": "Joaquín", "apellido": "Sosa"}, "profesional": {"id": 1, "nombre": "Martín", "apellido": "Brassesco"}, "tratamiento": {"nombre": "limpieza"}, "motivo": null, "obra_social": {"nombre": "IAPOS"}}];
   const CASOS  = {"lleno": {"estado": 200, "cuantos": 6}, "uno": {"estado": 200, "cuantos": 1}, "vacio": {"estado": 200, "cuantos": 0}, "ajeno": {"estado": 403, "cuantos": 0}, "fallo": {"estado": 500, "cuantos": 0}};
 
+  const PACIENTES_INVENTADOS     = [{"id": 101, "nombre": "Marta", "apellido": "Brassesco", "email": "marta.brassesco@ejemplo.test", "telefono": "3425550101"}, {"id": 102, "nombre": "Rodrigo", "apellido": "Brassesco", "email": "rodri.brassesco@ejemplo.test", "telefono": null}, {"id": 103, "nombre": "Valentina", "apellido": "Bravo", "email": null, "telefono": "3425550103"}];
+  const PROFESIONALES_INVENTADOS = [{"id": 1, "nombre": "Cecilia", "apellido": "Brassesco", "es_admin": true}, {"id": 2, "nombre": "Martín", "apellido": "Brassesco", "es_admin": false}];
+  const TRATAMIENTOS_DE_PRUEBA   = [{"id": 1, "nombre": "consulta"}, {"id": 2, "nombre": "limpieza"}, {"id": 3, "nombre": "ortodoncia"}, {"id": 4, "nombre": "blanqueamiento"}];
+  const COBERTURAS_INVENTADAS    = [{"id": 1, "nombre": "Particular"}, {"id": 2, "nombre": "OSDE"}, {"id": 3, "nombre": "IAPOS"}];
+
   const fetchDeVerdad = window.fetch;
 
   window.fetch = async function ( direccion, opciones ) {
@@ -196,6 +386,102 @@
       };
     }
 
+    // ── LOS ENDPOINTS DE LA ⑤.3 ──
+    //
+    // El buscador filtra DE VERDAD sobre la lista inventada, en vez de
+    // devolverla entera: así la pantalla se prueba con el caso que importa —
+    // escribir algo que no está y que se abra el alta.
+    if ( String( direccion ).includes( 'buscar-pacientes' ) ) {
+
+      const q = new URL( direccion, location.origin )
+        .searchParams.get( 'q' ).toLowerCase();
+
+      const encontrados = PACIENTES_INVENTADOS.filter( ( p ) =>
+        ( p.nombre + ' ' + p.apellido + ' ' + ( p.email || '' ) )
+          .toLowerCase()
+          .includes( q )
+      );
+
+      avisar( 'GET /buscar-pacientes?q=' + q +
+              ' → 200, ' + encontrados.length + ' paciente(s)' );
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ( { pacientes: encontrados } )
+      };
+    }
+
+    if ( String( direccion ).includes( 'profesionales-del-panel' ) ) {
+
+      // `?admin=no` apaga el desplegable de profesional, que es la mitad de
+      // esta pantalla que sólo ve Cecilia. Sin este interruptor, la vista del
+      // no-admin no se puede mirar nunca.
+      const esAdmin = new URLSearchParams( location.search )
+        .get( 'admin' ) !== 'no';
+
+      avisar( 'GET /profesionales-del-panel → 200, esAdmin: ' + esAdmin );
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ( {
+          esAdmin: esAdmin,
+          yo: 2,
+          profesionales: PROFESIONALES_INVENTADOS
+        } )
+      };
+    }
+
+    if ( String( direccion ).includes( 'obras-sociales' ) ) {
+      return { ok: true, status: 200, json: async () => COBERTURAS_INVENTADAS };
+    }
+
+    if ( String( direccion ).includes( 'tratamientos' ) ) {
+      return { ok: true, status: 200, json: async () => TRATAMIENTOS_DE_PRUEBA };
+    }
+
+    if ( String( direccion ).includes( 'paciente-del-panel' ) ) {
+
+      const enviado = JSON.parse( opciones.body );
+
+      avisar( 'POST /paciente-del-panel → 201' );
+
+      return {
+        ok: true,
+        status: 201,
+        json: async () => ( {
+          paciente: {
+            id: 999,
+            nombre: enviado.nombre,
+            apellido: enviado.apellido,
+            email: enviado.email || null,
+            telefono: enviado.telefono || null
+          }
+        } )
+      };
+    }
+
+    if ( String( direccion ).includes( 'turno-del-panel' ) ) {
+
+      const enviado = JSON.parse( opciones.body );
+
+      avisar( 'POST /turno-del-panel → 201, inicio ' + enviado.inicio +
+              ', ' + enviado.duracion_min + ' min' );
+
+      return {
+        ok: true,
+        status: 201,
+        json: async () => ( {
+          id: 500,
+          inicio: enviado.inicio,
+          duracion_min: enviado.duracion_min,
+          profesional: enviado.profesional_id || 2,
+          avisadoAlPaciente: true
+        } )
+      };
+    }
+
     return fetchDeVerdad( direccion, opciones );
   };
 
@@ -216,8 +502,39 @@
 </script>
 <script src="../js/panel.js"></script>
 <script>
+  const PACIENTES_PUESTOS = [{"id": 101, "nombre": "Marta", "apellido": "Brassesco", "email": "marta.brassesco@ejemplo.test", "telefono": "3425550101"}, {"id": 102, "nombre": "Rodrigo", "apellido": "Brassesco", "email": "rodri.brassesco@ejemplo.test", "telefono": null}, {"id": 103, "nombre": "Valentina", "apellido": "Bravo", "email": null, "telefono": "3425550103"}];
+
   // Arranca la pantalla como lo haría el login.
   irAlDia( '2026-10-15' );
+
+  // El caso `cargar` entra directo a la pantalla de la ⑤.3, que de otro modo
+  // sólo se alcanza tocando el botón — y una captura no toca botones.
+  if ( new URLSearchParams( location.search ).get( 'caso' ) === 'cargar' ) {
+
+    document.querySelector( '#ir-a-cargar' ).click();
+
+    // 🔴 LOS TRES ESTADOS DE ESTA PANTALLA NO SE ALCANZAN SIN TOCAR NADA, y
+    // una captura no toca nada. `?con=` los enciende:
+    //
+    //   buscando → la lista de resultados a la vista
+    //   elegido  → el formulario del turno, que es el estado largo
+    //   alta     → la ficha nueva, que sólo aparece si no hay coincidencias
+    const con = new URLSearchParams( location.search ).get( 'con' );
+
+    if ( con === 'buscando' || con === 'elegido' ) {
+      elegirPaciente( PACIENTES_PUESTOS[ 0 ] );
+    }
+
+    if ( con === 'buscando' ) {
+      volverAlBuscador();
+      dibujarResultados( PACIENTES_PUESTOS );
+      document.querySelector( '#buscar-resultados' ).hidden = false;
+    }
+
+    if ( con === 'alta' ) {
+      mostrarElAlta( true );
+    }
+  }
 </script>
 </body>
 </html>

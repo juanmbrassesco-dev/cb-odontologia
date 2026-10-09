@@ -131,6 +131,17 @@
 
       <p class="entrar-aviso" id="agenda-aviso" hidden></p>
 
+      <!--
+        🔑 EL BOTÓN VA AL FINAL Y NO ARRIBA, a propósito. La acción principal
+        de esta pantalla es LEER el día; cargar un turno es lo que se hace
+        después de haber mirado. Arriba competiría con la lista, que es lo que
+        se vino a ver.
+      -->
+      <div class="acciones">
+        <button class="btn btn-1" type="button" id="ir-a-cargar">
+          Cargar un turno</button>
+      </div>
+
     </section>
 
     <!--
@@ -148,6 +159,189 @@
       NO hace nada. Sin eso cae en el primero —el «Sí»— y un Enter de reflejo
       cancela un turno.
     -->
+    <!--
+      CARGAR UN TURNO A MANO — la etapa ⑤.3.
+
+      🔑 ES UN PASO Y NO UN `<dialog>`, a diferencia del cartel de cancelar que
+      está abajo. El cartel pregunta UNA cosa y se va; acá hay un buscador, un
+      alta de ficha y siete campos. A 390 px eso es una pantalla, no un
+      cartelito con scroll propio adentro de otra pantalla.
+
+      🔑 Y ES UN SOLO PASO CON DOS BLOQUES, no dos pantallas encadenadas: el
+      bloque del turno aparece recién cuando hay un paciente elegido. Así no se
+      ve todo de golpe, pero tampoco hay un «siguiente» que cruzar para
+      corregir a quién se le está cargando.
+    -->
+    <section class="paso" id="paso-cargar" hidden>
+
+      <h1>Cargar un turno</h1>
+
+      <!-- ── BLOQUE 1 · DE QUIÉN ES ─────────────────────────────────────── -->
+
+      <!--
+        🔒 EL PACIENTE SE ELIGE DE UNA LISTA, NUNCA SE TIPEA SU CORREO. Tipearlo
+        crea una ficha duplicada, y el paciente deja de ver sus turnos porque
+        están colgados de la otra. Es el agujero que este buscador existe para
+        tapar.
+      -->
+      <div class="campo">
+        <label class="etiqueta" for="buscar-paciente">Paciente</label>
+        <input class="caja" id="buscar-paciente" type="search"
+               placeholder="Apellido, nombre o correo"
+               autocomplete="off">
+      </div>
+
+      <p class="ayuda-pantalla" id="buscar-ayuda">Escribí al menos dos letras.</p>
+
+      <div class="lista-pacientes" id="buscar-resultados" hidden></div>
+
+      <!-- El paciente ya elegido, con la salida para cambiarlo. -->
+      <div class="paciente-elegido" id="paciente-elegido" hidden>
+        <p class="elegido-quien" id="elegido-quien"></p>
+        <p class="elegido-contacto" id="elegido-contacto"></p>
+
+        <button class="btn btn-2" type="button" id="cambiar-paciente">
+          Cambiar</button>
+      </div>
+
+      <!-- ── EL ALTA EN EL ACTO ─────────────────────────────────────────── -->
+
+      <!--
+        Se abre desde el buscador cuando no aparece nadie. Va plegado y no
+        suelto en la pantalla: el caso normal es que el paciente YA esté, y un
+        formulario de alta siempre visible invita a crear la ficha duplicada
+        que el buscador vino a evitar.
+      -->
+      <div class="alta-paciente" id="alta-paciente" hidden>
+
+        <h2>Ficha nueva</h2>
+
+        <div class="campo">
+          <label class="etiqueta" for="alta-nombre">Nombre</label>
+          <input class="caja" id="alta-nombre" type="text" autocomplete="off">
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="alta-apellido">Apellido</label>
+          <input class="caja" id="alta-apellido" type="text" autocomplete="off">
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="alta-telefono">Teléfono</label>
+          <input class="caja" id="alta-telefono" type="tel" autocomplete="off">
+        </div>
+
+        <!--
+          🔒 EL CORREO VA DOS VECES, Y ES LA ÚNICA DEFENSA QUE HAY ACÁ. En el
+          formulario del paciente la dirección sale de su sesión de Google y
+          nadie la tipea. Acá la tipea quien atiende, escuchando un teléfono, y
+          una letra de más da una dirección que EXISTE, no rebota y pasa
+          cualquier validación de formato: los avisos de esa persona le llegan
+          a un desconocido y nadie se entera.
+        -->
+        <div class="campo">
+          <label class="etiqueta" for="alta-correo">Correo <span
+            class="opcional">(si tiene)</span></label>
+          <input class="caja" id="alta-correo" type="email" autocomplete="off">
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="alta-correo-2">Repetí el correo</label>
+          <input class="caja" id="alta-correo-2" type="email"
+                 autocomplete="off">
+        </div>
+
+        <div class="acciones">
+          <button class="btn btn-1" type="button" id="alta-guardar">
+            Crear ficha</button>
+
+          <button class="btn btn-2" type="button" id="alta-cancelar">
+            Volver al buscador</button>
+        </div>
+
+      </div>
+
+      <!-- ── BLOQUE 2 · EL TURNO ────────────────────────────────────────── -->
+
+      <div class="datos-del-turno" id="datos-del-turno" hidden>
+
+        <!--
+          ⚠️ SÓLO LO VE UN ADMIN. Un profesional que no lo sea carga turnos
+          para sí mismo y nada más — y eso no se defiende acá: el portero
+          ignora este campo si quien pide no es admin. La pantalla lo esconde
+          para no ofrecer lo que después va a rebotar.
+        -->
+        <div class="campo" id="campo-profesional" hidden>
+          <label class="etiqueta" for="turno-profesional">Profesional</label>
+          <select class="caja" id="turno-profesional"></select>
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="turno-tratamiento">Tratamiento</label>
+          <select class="caja" id="turno-tratamiento"></select>
+        </div>
+
+        <!--
+          🔑 LA DURACIÓN LA ELIGE QUIEN ATIENDE, y es la diferencia de fondo con
+          la reserva por web: allá el sistema la decide (una consulta de 30), acá
+          la ortodoncia dura lo que el profesional sabe que dura. Los bloques de
+          30 son la unidad con la que piensa el consultorio.
+        -->
+        <div class="campo">
+          <label class="etiqueta" for="turno-duracion">Duración</label>
+          <select class="caja" id="turno-duracion">
+            <option value="30">30 minutos</option>
+            <option value="60">1 hora</option>
+            <option value="90">1 hora y media</option>
+            <option value="120">2 horas</option>
+            <option value="150">2 horas y media</option>
+            <option value="180">3 horas</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="turno-cobertura">Cobertura</label>
+          <select class="caja" id="turno-cobertura"></select>
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="turno-fecha">Día</label>
+          <input class="caja" id="turno-fecha" type="date">
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="turno-hora">Hora</label>
+          <input class="caja" id="turno-hora" type="time" step="900">
+        </div>
+
+        <!--
+          🔒 PUEDE CONTENER DATOS DE SALUD. Es una propiedad del campo, no un
+          pendiente: lo que se escriba acá viaja a `observaciones_paciente` y
+          esa columna está bajo el frente de la Ley 25.326. El aviso NO manda
+          el texto — sólo dice que hay una nota.
+        -->
+        <div class="campo">
+          <label class="etiqueta" for="turno-nota">Observaciones <span
+            class="opcional">(opcional)</span></label>
+          <textarea class="caja" id="turno-nota" rows="3"></textarea>
+        </div>
+
+        <div class="acciones">
+          <button class="btn btn-1" type="button" id="turno-guardar">
+            Agendar</button>
+        </div>
+
+      </div>
+
+      <p class="entrar-aviso" id="cargar-aviso" hidden></p>
+
+      <div class="acciones">
+        <button class="btn btn-2" type="button" id="volver-a-agenda">
+          Volver a la agenda</button>
+      </div>
+
+    </section>
+
     <dialog class="cartel" id="cartel-cancelar" aria-labelledby="cartel-titulo">
 
       <div class="cartel-caja">

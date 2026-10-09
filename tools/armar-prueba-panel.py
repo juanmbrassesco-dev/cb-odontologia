@@ -151,6 +151,40 @@ def sin_hidden( pantalla ):
     return pantalla.replace( " hidden>", ">", 1 )
 
 
+# ── LO QUE CONTESTAN LOS ENDPOINTS DE LA ⑤.3 ────────────────────────────────
+#
+# Tres apellidos que se parecen a propósito: así se ve si la lista de
+# resultados se puede recorrer con la vista o si hay que leer renglón por
+# renglón. Y uno SIN CORREO, que es el caso que la pantalla tiene que decir en
+# voz alta — es el que no va a recibir ningún aviso.
+PACIENTES = [
+    { "id": 101, "nombre": "Marta",     "apellido": "Brassesco",
+      "email": "marta.brassesco@ejemplo.test", "telefono": "3425550101" },
+    { "id": 102, "nombre": "Rodrigo",   "apellido": "Brassesco",
+      "email": "rodri.brassesco@ejemplo.test", "telefono": None },
+    { "id": 103, "nombre": "Valentina", "apellido": "Bravo",
+      "email": None, "telefono": "3425550103" },
+]
+
+PROFESIONALES = [
+    { "id": 1,  "nombre": "Cecilia", "apellido": "Brassesco", "es_admin": True },
+    { "id": 2,  "nombre": "Martín",  "apellido": "Brassesco", "es_admin": False },
+]
+
+TRATAMIENTOS_INVENTADOS = [
+    { "id": 1, "nombre": "consulta" },
+    { "id": 2, "nombre": "limpieza" },
+    { "id": 3, "nombre": "ortodoncia" },
+    { "id": 4, "nombre": "blanqueamiento" },
+]
+
+COBERTURAS = [
+    { "id": 1, "nombre": "Particular" },
+    { "id": 2, "nombre": "OSDE" },
+    { "id": 3, "nombre": "IAPOS" },
+]
+
+
 CUERPO_JS = r'''
   // ── LO QUE NORMALMENTE PONE `auth.js` ──
   //
@@ -188,6 +222,11 @@ CUERPO_JS = r'''
   const TURNOS = TURNOS_INVENTADOS;
   const CASOS  = CASOS_INVENTADOS;
 
+  const PACIENTES_INVENTADOS     = PACIENTES_DE_PRUEBA;
+  const PROFESIONALES_INVENTADOS = PROFESIONALES_DE_PRUEBA;
+  const TRATAMIENTOS_DE_PRUEBA   = TRATAMIENTOS_PUESTOS;
+  const COBERTURAS_INVENTADAS    = COBERTURAS_PUESTAS;
+
   const fetchDeVerdad = window.fetch;
 
   window.fetch = async function ( direccion, opciones ) {
@@ -215,6 +254,102 @@ CUERPO_JS = r'''
       };
     }
 
+    // ── LOS ENDPOINTS DE LA ⑤.3 ──
+    //
+    // El buscador filtra DE VERDAD sobre la lista inventada, en vez de
+    // devolverla entera: así la pantalla se prueba con el caso que importa —
+    // escribir algo que no está y que se abra el alta.
+    if ( String( direccion ).includes( 'buscar-pacientes' ) ) {
+
+      const q = new URL( direccion, location.origin )
+        .searchParams.get( 'q' ).toLowerCase();
+
+      const encontrados = PACIENTES_INVENTADOS.filter( ( p ) =>
+        ( p.nombre + ' ' + p.apellido + ' ' + ( p.email || '' ) )
+          .toLowerCase()
+          .includes( q )
+      );
+
+      avisar( 'GET /buscar-pacientes?q=' + q +
+              ' → 200, ' + encontrados.length + ' paciente(s)' );
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ( { pacientes: encontrados } )
+      };
+    }
+
+    if ( String( direccion ).includes( 'profesionales-del-panel' ) ) {
+
+      // `?admin=no` apaga el desplegable de profesional, que es la mitad de
+      // esta pantalla que sólo ve Cecilia. Sin este interruptor, la vista del
+      // no-admin no se puede mirar nunca.
+      const esAdmin = new URLSearchParams( location.search )
+        .get( 'admin' ) !== 'no';
+
+      avisar( 'GET /profesionales-del-panel → 200, esAdmin: ' + esAdmin );
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ( {
+          esAdmin: esAdmin,
+          yo: 2,
+          profesionales: PROFESIONALES_INVENTADOS
+        } )
+      };
+    }
+
+    if ( String( direccion ).includes( 'obras-sociales' ) ) {
+      return { ok: true, status: 200, json: async () => COBERTURAS_INVENTADAS };
+    }
+
+    if ( String( direccion ).includes( 'tratamientos' ) ) {
+      return { ok: true, status: 200, json: async () => TRATAMIENTOS_DE_PRUEBA };
+    }
+
+    if ( String( direccion ).includes( 'paciente-del-panel' ) ) {
+
+      const enviado = JSON.parse( opciones.body );
+
+      avisar( 'POST /paciente-del-panel → 201' );
+
+      return {
+        ok: true,
+        status: 201,
+        json: async () => ( {
+          paciente: {
+            id: 999,
+            nombre: enviado.nombre,
+            apellido: enviado.apellido,
+            email: enviado.email || null,
+            telefono: enviado.telefono || null
+          }
+        } )
+      };
+    }
+
+    if ( String( direccion ).includes( 'turno-del-panel' ) ) {
+
+      const enviado = JSON.parse( opciones.body );
+
+      avisar( 'POST /turno-del-panel → 201, inicio ' + enviado.inicio +
+              ', ' + enviado.duracion_min + ' min' );
+
+      return {
+        ok: true,
+        status: 201,
+        json: async () => ( {
+          id: 500,
+          inicio: enviado.inicio,
+          duracion_min: enviado.duracion_min,
+          profesional: enviado.profesional_id || 2,
+          avisadoAlPaciente: true
+        } )
+      };
+    }
+
     return fetchDeVerdad( direccion, opciones );
   };
 
@@ -228,9 +363,18 @@ CUERPO_JS = r'''
 
 def armar():
 
+    def comoJs( datos ):
+        return json.dumps( datos, ensure_ascii = False )
+
     cuerpo = CUERPO_JS \
-        .replace( "TURNOS_INVENTADOS", json.dumps( TURNOS, ensure_ascii = False ) ) \
-        .replace( "CASOS_INVENTADOS", json.dumps( CASOS, ensure_ascii = False ) )
+        .replace( "TURNOS_INVENTADOS", comoJs( TURNOS ) ) \
+        .replace( "CASOS_INVENTADOS", comoJs( CASOS ) ) \
+        .replace( "PACIENTES_DE_PRUEBA", comoJs( PACIENTES ) ) \
+        .replace( "PROFESIONALES_DE_PRUEBA", comoJs( PROFESIONALES ) ) \
+        .replace( "TRATAMIENTOS_PUESTOS", comoJs( TRATAMIENTOS_INVENTADOS ) ) \
+        .replace( "COBERTURAS_PUESTAS", comoJs( COBERTURAS ) )
+
+    pacientes_json = comoJs( PACIENTES )
 
     DESTINO.parent.mkdir( exist_ok = True )
 
@@ -275,6 +419,10 @@ def armar():
   <a href="?caso=vacio">ninguno</a> ·
   <a href="?caso=ajeno">403 no es staff</a> ·
   <a href="?caso=fallo">500</a>
+  <br>
+  cargar un turno:
+  <a href="?caso=cargar">como Cecilia (admin)</a> ·
+  <a href="?caso=cargar&amp;admin=no">como un profesional</a>
 </div>
 <pre id="registro"></pre>
 
@@ -288,6 +436,8 @@ def armar():
 { sin_hidden( recortar( "paso-agenda" ) ) }
 
 { recortar( "paso-sin-acceso" ) }
+
+{ recortar( "paso-cargar" ) }
 
 { recortar_el_cartel() }
   </main>
@@ -305,8 +455,39 @@ def armar():
 </script>
 <script src="{ SUBIR }js/panel.js"></script>
 <script>
+  const PACIENTES_PUESTOS = { pacientes_json };
+
   // Arranca la pantalla como lo haría el login.
   irAlDia( '{ DIA }' );
+
+  // El caso `cargar` entra directo a la pantalla de la ⑤.3, que de otro modo
+  // sólo se alcanza tocando el botón — y una captura no toca botones.
+  if ( new URLSearchParams( location.search ).get( 'caso' ) === 'cargar' ) {{
+
+    document.querySelector( '#ir-a-cargar' ).click();
+
+    // 🔴 LOS TRES ESTADOS DE ESTA PANTALLA NO SE ALCANZAN SIN TOCAR NADA, y
+    // una captura no toca nada. `?con=` los enciende:
+    //
+    //   buscando → la lista de resultados a la vista
+    //   elegido  → el formulario del turno, que es el estado largo
+    //   alta     → la ficha nueva, que sólo aparece si no hay coincidencias
+    const con = new URLSearchParams( location.search ).get( 'con' );
+
+    if ( con === 'buscando' || con === 'elegido' ) {{
+      elegirPaciente( PACIENTES_PUESTOS[ 0 ] );
+    }}
+
+    if ( con === 'buscando' ) {{
+      volverAlBuscador();
+      dibujarResultados( PACIENTES_PUESTOS );
+      document.querySelector( '#buscar-resultados' ).hidden = false;
+    }}
+
+    if ( con === 'alta' ) {{
+      mostrarElAlta( true );
+    }}
+  }}
 </script>
 </body>
 </html>

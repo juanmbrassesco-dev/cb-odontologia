@@ -3571,3 +3571,132 @@ textarea.caja {
     min-height: 0;
   }
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   CARGAR UN TURNO A MANO — etapa ⑤.3
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* LOS RESULTADOS DE LA BÚSQUEDA — una lista de botones, no de textos.
+
+   🔑 SON `<button>` Y NO RENGLONES CON UN `click` ENCIMA, y la diferencia no
+   es estética: un botón lo alcanza el tabulador, lo anuncia el lector de
+   pantalla como algo que se puede apretar, y responde a la barra espaciadora.
+   Un `<div>` con un oyente de click no hace nada de eso y se ve igual.
+
+   🔴 Y NO REUSA `.turno-agenda`, aunque las dos sean listas de renglones. Esa
+   clase está hecha para BARRER diez turnos con la vista —columna de hora fija,
+   borde izquierdo parejo—; acá hay que ELEGIR uno, que es otra tarea: lo que
+   importa es que cada opción se vea tocable. */
+.lista-pacientes {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.resultado-paciente {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  text-align: left;
+  cursor: pointer;
+}
+
+.resultado-paciente:hover {
+  border-color: var(--grafito);
+}
+
+.resultado-quien {
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+.resultado-contacto {
+  /* Que un correo largo se parta en vez de ensanchar la caja. */
+  overflow-wrap: anywhere;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+
+/* EL PACIENTE YA ELEGIDO — ocupa el lugar del buscador, no se suma a él.
+
+   🔑 El buscador se ESCONDE cuando hay alguien elegido. Dejarlo a la vista con
+   la ficha al lado deja dos cosas diciendo de quién es el turno, y la pantalla
+   no contesta cuál manda. */
+.paciente-elegido {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+.elegido-quien {
+  margin: 0;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+.elegido-contacto {
+  overflow-wrap: anywhere;
+  margin: 4px 0 0;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+/* El botón de cambiar es chico a propósito: cambiar de paciente es la salida,
+   no la acción. La acción de esta pantalla es agendar.
+
+   🔑 `margin-left: 0` PISA EL CENTRADO QUE TRAE `.btn`. El formato único del
+   proyecto manda un botón centrado en su caja, y eso vale donde el botón es
+   la acción de la PANTALLA. Acá vive adentro de una tarjeta cuyo texto está
+   todo alineado a la izquierda: centrado queda flotando, sin ninguna vertical
+   a la que pertenezca. Es el mismo caso que los dos botones del renglón de la
+   agenda, que tampoco van centrados. */
+.paciente-elegido .btn {
+  width: auto;
+  margin-top: 12px;
+  margin-left: 0;
+  padding: 7px 14px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+}
+
+
+/* EL ALTA DE FICHA — plegada, y se abre sola cuando la búsqueda no trae a
+   nadie. Nunca es la primera opción: el caso normal es que el paciente ya
+   esté, y un formulario de alta siempre visible invita a crear la ficha
+   duplicada que el buscador existe para evitar. */
+.alta-paciente {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--borde);
+}
+
+.alta-paciente h2 {
+  margin: 0 0 4px;
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h3);
+  line-height: 1.2;
+  color: var(--grafito);
+}
+
+
+/* EL BLOQUE DEL TURNO — aparece recién con un paciente elegido. */
+.datos-del-turno {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--borde);
+}
