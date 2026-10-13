@@ -597,6 +597,48 @@ fi
 
 
 # ── 20. BUSCAR POR NOMBRE Y APELLIDO JUNTOS ──────────────────────────────────
+# ── 19.b LA GRILLA SIN ?profesional= — el bug del 13-oct, del lado del vecino ─
+#
+# 🔴 QUÉ MIDE, y no lo medía ninguno de los cuatro casos de la grilla: que un
+# ADMIN que NO manda el parámetro reciba SU PROPIA agenda. `Number( null )` da
+# CERO, así que antes del arreglo la respuesta venía con `"profesional": 0` —
+# una agenda vacía, sin error, para un profesional que no existe.
+#
+# 🔑 POR QUÉ ESTE CASO SÍ SE PUEDE MEDIR Y EL PRIMER INTENTO NO: comparar la
+# grilla «sin parámetro» contra la grilla «con un 0» da lo mismo en los dos
+# mundos, porque las dos caen en el default. Lo que distingue es que la
+# respuesta DICE de quién es la grilla, en el campo `profesional`.
+
+echo
+echo "▶ 19.b La grilla como ADMIN sin ?profesional= — tiene que decir SU id"
+
+DIA_PROPIO=$( date -v+30d +%F 2>/dev/null || date -d "+30 days" +%F )
+
+DE_QUIEN=$(
+  curl -s \
+    "$FUNCIONES/horarios-del-panel?fecha=$DIA_PROPIO&duracion=30" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  | jq -r '.profesional' 2>/dev/null
+)
+
+DE_QUIEN_CERO=$(
+  curl -s \
+    "$FUNCIONES/horarios-del-panel?fecha=$DIA_PROPIO&duracion=30&profesional=0" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  | jq -r '.profesional' 2>/dev/null
+)
+
+printf '   sin parámetro → profesional %s\n' "$DE_QUIEN"
+printf '   con un 0      → profesional %s\n' "$DE_QUIEN_CERO"
+
+echo
+echo "   🔴 LOS DOS tienen que traer el id de la CUENTA DE SOPORTE (el que"
+echo "      imprimió el caso 3), nunca un 0. Un 0 ahí es el bug del 13-oct:"
+echo "      el default seguro no se aplicó y la grilla es de nadie."
+
+
 #
 # 🔴 EL CASO QUE FALTABA, Y NO LO ENCONTRÓ NINGUNA PRUEBA: lo encontró Juan
 # usando el panel. El buscador comparaba el término contra cada columna POR
@@ -663,14 +705,158 @@ else
 fi
 
 
+# ── 21 a 27. LA SOLAPA DEL PLANTEL Y LA LUPA — etapa ⑤.6, rebanada A ─────────
+#
+# 🔴 LO QUE ESTOS CASOS MIDEN Y NINGUNO DE LOS 20 ANTERIORES MIDE: el chequeo de
+# NIVEL. Hasta acá la pregunta del panel era «¿este turno es tuyo?»
+# (propiedad); estos dos endpoints preguntan «¿sos admin?». Un profesional con
+# sesión válida tiene que recibir 403 AUNQUE PIDA SU PROPIA FILA.
+#
+# 🔴 Y EL 26 ES EL MÁS CARO DE TODA LA BATERÍA: `turnos-del-profesional` es el
+# único endpoint del proyecto que devuelve `observaciones_paciente`, que puede
+# traer datos de salud. Si ese caso da 200, cualquier profesional logueado lee
+# el motivo de consulta de los pacientes de todos los demás.
+
+echo
+echo "▶ 21. El plantel sin token — 401"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/plantel-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY"
+
+echo
+echo "▶ 22. El plantel como PACIENTE — 403"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/plantel-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_PACIENTE"
+
+echo
+echo "▶ 23. El plantel como ADMIN — 200"
+
+PLANTEL=$(
+  curl -s -w '\n%{http_code}' \
+    "$FUNCIONES/plantel-del-panel" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE"
+)
+
+CODIGO_PLANTEL=$( echo "$PLANTEL" | tail -1 )
+CUERPO_PLANTEL=$( echo "$PLANTEL" | sed '$d' )
+
+echo "   obtenido: $CODIGO_PLANTEL"
+echo "   cuerpo:   $( echo "$CUERPO_PLANTEL" | head -c 400 )"
+
+echo
+echo "   ✅ Tienen que venir TODOS, los de baja incluidos, y cada fila con su"
+echo "      turnosPendientes. Es la diferencia con profesionales-del-panel,"
+echo "      que filtra activo = true."
+
+echo
+echo "▶ 24. La lupa sin ?profesional= — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/turnos-del-profesional" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE"
+
+echo
+echo "▶ 24.b La lupa con ?profesional=0 — 400"
+echo "       (los id de la base arrancan en 1: un 0 es un pedido mal"
+echo "        formado, no un profesional que no está)"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/turnos-del-profesional?profesional=0" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE"
+
+echo
+echo "▶ 25. La lupa como ADMIN — 200, y el conteo tiene que COINCIDIR"
+
+PRIMERO=$( echo "$CUERPO_PLANTEL" | jq -r '.plantel[0].id' 2>/dev/null )
+ESPERADOS=$( echo "$CUERPO_PLANTEL" | jq -r '.plantel[0].turnosPendientes' 2>/dev/null )
+
+if [ -z "$PRIMERO" ] || [ "$PRIMERO" = "null" ]; then
+  echo "   ⚠ No se pudo leer un id del plantel: el caso 23 no devolvió filas."
+else
+
+  LUPA=$(
+    curl -s -w '\n%{http_code}' \
+      "$FUNCIONES/turnos-del-profesional?profesional=$PRIMERO" \
+      -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+      -H "Authorization: Bearer $TOKEN_SOPORTE"
+  )
+
+  echo "   obtenido: $( echo "$LUPA" | tail -1 )"
+
+  TRAIDOS=$( echo "$LUPA" | sed '$d' | jq -r '.turnos | length' 2>/dev/null )
+
+  printf '   profesional %s → el plantel dice %s, la lupa trae %s\n' \
+    "$PRIMERO" "$ESPERADOS" "$TRAIDOS"
+
+  echo
+  echo "   🔴 LOS DOS NÚMEROS TIENEN QUE SER IGUALES. Si no, los dos filtros se"
+  echo "      desincronizaron y la lupa desmiente a la fila que se clickeó para"
+  echo "      abrirla — una pantalla que se contradice sola, sin dar error."
+fi
+
+
+# ── 26 y 27. LOS DOS DE NIVEL, con es_admin bajado una sola vez ──────────────
+#
+# 🔴 SI EL SCRIPT SE CORTA ACÁ, la cuenta queda sin es_admin. El comando para
+# devolverlo es el mismo que corre solo cinco líneas más abajo:
+#
+#   supabase db query --linked "update public.profesionales set es_admin = true
+#   where email_de_acceso = '$SOPORTE_EMAIL';"
+
+echo
+echo "▶ 26 y 27. Los dos endpoints como NO-admin — los dos tienen que dar 403"
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = false where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+echo "   26. el plantel:"
+
+curl -s -o /dev/null -w "       obtenido: %{http_code}\n" \
+  "$FUNCIONES/plantel-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE"
+
+echo "   27. la lupa (la que trae observaciones_paciente):"
+
+curl -s -o /dev/null -w "       obtenido: %{http_code}\n" \
+  "$FUNCIONES/turnos-del-profesional?profesional=$PRIMERO" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE"
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = true where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+echo
+echo "▶ es_admin restaurado — la salida va CRUDA y en csv, por el motivo del caso 6:"
+
+supabase db query --linked --output csv \
+  "select nombre, es_admin from public.profesionales where email_de_acceso = '$SOPORTE_EMAIL';" \
+  2>/dev/null | tail -2
+
+echo
+echo "   ✅ es_admin tiene que decir TRUE. Si dice false, el script se cortó"
+echo "      antes de restaurarlo: el comando está comentado arriba."
+
+
 # ── Qué mirar ────────────────────────────────────────────────────────────────
 
 echo
 echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400 · 403 · 403 · 401 · 403 · 400 · 201 · 201 · 400 ·"
-echo "   401 · 403 · 400, en ese orden."
-echo "   Y CUATRO casos se leen por el CUERPO, no por el código: el 11 (lista vacía),"
-echo "   el 14 (el profesional de la respuesta), el 19 (dos conteos distintos) y"
-echo "   el 20 (los tres tienen que encontrar a alguien)."
+echo "   401 · 403 · 400 · 401 · 403 · 200 · 400 · 400 · 200 · 403 · 403, en ese orden."
+echo "   Y SEIS casos se leen por el CUERPO, no por el código: el 11 (lista vacía),"
+echo "   el 14 (el profesional de la respuesta), el 19 (dos conteos distintos),"
+echo "   el 19.b (la grilla tiene que decir el id del que pide, nunca 0),"
+echo "   el 20 (los tres tienen que encontrar a alguien) y el 25 (los dos conteos"
+echo "   IGUALES: el del plantel y el de la lupa)."
 echo
 echo "   Y el cuerpo del caso 3 tiene que traer \"esAdmin\": true. Si trae"
 echo "   false, la fila existe pero el update del es_admin no entró: la puerta"

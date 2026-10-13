@@ -120,11 +120,39 @@ export default {
       // profesional cualquiera leería la agenda libre y ocupada de otro — que
       // es exactamente lo que `horarios-disponibles` dejó de publicar el
       // 24-sep cuando se le puso sesión.
-      const pedido = Number( url.searchParams.get( 'profesional' ) )
+      // 🔴 EL PEDIDO SE GUARDA CRUDO ANTES DE CONVERTIRLO, y lo que lo
+      // justifica es un bug medido el 13-oct-2026 en `turnos-del-profesional`
+      // —el caso 24 de la batería— que estaba igual acá:
+      //
+      // `searchParams.get( … )` devuelve `null` cuando el parámetro no vino, y
+      // `Number( null )` NO da NaN: DA CERO. Un `Number.isInteger( … )` solo
+      // contesta `true`, así que un ADMIN que llamaba sin `?profesional=`
+      // armaba la grilla del profesional 0 —que no existe— y recibía una
+      // agenda vacía en lugar de la suya. El código pretendía caer en
+      // `quien.id` y no caía.
+      //
+      // ⚠ NO ERA UN AGUJERO DE PERMISOS: un no-admin caía igual en su propio
+      // id, porque lo tapa el `quien.esAdmin` de abajo. Lo que hacía era
+      // contestarle mal al admin, sin dar error.
+      //
+      // 🔑 Y EL ORDEN DE ABAJO ES EL ARREGLO, no un cambio de estilo: la
+      // variable ARRANCA en la agenda propia y sólo se mueve si el pedido pasa
+      // las tres condiciones. Un valor raro no desvía nada: cae en el default,
+      // que es el seguro.
+      const crudo = url.searchParams.get( 'profesional' )
 
-      const profesionalId = quien.esAdmin && Number.isInteger( pedido )
-        ? pedido
-        : quien.id
+      const pedido = Number( crudo )
+
+      let profesionalId = quien.id
+
+      if (
+        quien.esAdmin
+        && crudo
+        && Number.isInteger( pedido )
+        && pedido >= 1
+      ) {
+        profesionalId = pedido
+      }
 
       // ── 3. La grilla ──────────────────────────────────────────────────────
 
