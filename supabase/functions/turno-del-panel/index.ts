@@ -48,6 +48,8 @@ import type { Database } from '../_shared/tipos-de-la-base.ts'
 
 import { quienPide } from '../_shared/quien-pide.ts'
 
+import { duracionValida, porQueNoVale } from '../_shared/duracion.ts'
+
 import { enviarAvisos } from '../_shared/avisos.ts'
 
 import {
@@ -60,12 +62,10 @@ import {
 // restricción `turnos_sin_solapar`, no nuestro código.
 const CHOQUE_DE_TURNOS = '23P01'
 
-// La duración va en minutos y en bloques de 30, que es la unidad con la que
-// piensa el consultorio (§ 6). El tope existe para que un cero de más no
-// bloquee la agenda de un día entero.
-const DURACION_MINIMA = 30
-const DURACION_MAXIMA = 300
-const BLOQUE          = 30
+// 🔀 LAS TRES CONSTANTES Y LA REGLA SE MUDARON A `_shared/duracion.ts` el
+// 13-oct-2026, al construir `mover-turno`: dos endpoints que ESCRIBEN la
+// duración no pueden tener cada uno su copia de los números. Dos copias no
+// fallan el día que se escriben, fallan el día que alguien cambia una.
 
 
 function falloDeBase(): Response {
@@ -163,16 +163,8 @@ export default {
 
       const duracion = unNumero( cuerpo.duracion_min )
 
-      if (
-        !duracion
-        || duracion < DURACION_MINIMA
-        || duracion > DURACION_MAXIMA
-        || duracion % BLOQUE !== 0
-      ) {
-        return pedidoInvalido(
-          `La duración va en bloques de ${ BLOQUE } minutos, `
-          + `entre ${ DURACION_MINIMA } y ${ DURACION_MAXIMA }`,
-        )
+      if ( !duracion || !duracionValida( duracion ) ) {
+        return pedidoInvalido( porQueNoVale() )
       }
 
       // El instante del turno llega armado desde la pantalla, con el desfase
