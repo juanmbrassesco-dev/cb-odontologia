@@ -3978,3 +3978,69 @@ textarea.caja {
 .campo-tilde .ayuda-campo {
   grid-column: 2;
 }
+
+
+/* ── QUÉ HACE CADA PROFESIONAL — etapa ⑤.6, rebanada C ──────────────────────
+
+   Mismo mecanismo de lista que el plantel y la lupa: el ancho y el centrado
+   son del contenedor. */
+.lista-tratamientos {
+  display: grid;
+  gap: 8px;
+  max-width: var(--columna-lista);
+  margin: 20px auto 0;
+}
+
+
+/* EL RENGLÓN DE UN TRATAMIENTO — el tilde adelante y el nombre al lado.
+
+   🔑 TODA LA FILA ES CLICKEABLE, no sólo la casilla de 20 px: el nombre está
+   dentro de un `<label>` enganchado al tilde. Con once renglones seguidos,
+   apuntarle a un cuadradito chico con el pulgar es donde se prende el
+   tratamiento equivocado.
+
+   🔴 Y NO REUSA `.campo-tilde`, que es casi igual: aquélla es un campo de un
+   formulario, con su ayuda debajo y aire alrededor. Acá son once seguidos y lo
+   que manda es que se barran con la vista — fondo propio, borde y poco aire.
+   Dos piezas con la misma forma y dos lectores distintos. */
+.fila-tratamiento {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  text-align: left;
+  cursor: pointer;
+}
+
+.fila-tratamiento input {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--grafito);
+  cursor: pointer;
+}
+
+.fila-tratamiento .tratamiento-nombre {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  color: var(--grafito);
+  cursor: pointer;
+}
+
+/* El que no está prendido se dice más apagado — en una lista de once, lo que
+   se busca de un vistazo es qué SÍ hace esta persona. */
+.fila-tratamiento input:not(:checked) + .tratamiento-nombre {
+  color: var(--apagado);
+}
+
+/* Mientras el pedido viaja, la fila no acepta otro clic: un doble toque
+   mandaría dos pedidos cruzados sobre la misma pareja. */
+.fila-tratamiento.tratamiento-esperando {
+  opacity: 0.55;
+  pointer-events: none;
+}

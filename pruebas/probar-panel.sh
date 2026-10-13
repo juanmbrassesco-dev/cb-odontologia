@@ -989,18 +989,153 @@ supabase db query --linked \
   "update public.profesionales set es_admin = true where email_de_acceso = '$SOPORTE_EMAIL';" \
   > /dev/null 2>&1
 
+# ── 36 a 43. LOS TRATAMIENTOS DE CADA UNO — etapa ⑤.6, rebanada C ────────────
+#
+# 🔴 QUÉ MIDE ESTE BLOQUE Y NO MIDE NINGÚN OTRO: el interruptor de tratamientos
+# es el ÚNICO permiso del panel que rompe la simetría — un profesional no puede
+# apagar NI EL SUYO PROPIO. En todo lo demás cada uno manda sobre lo suyo. El
+# caso 41 es el que prueba que esa excepción está escrita en el portero y no
+# sólo en la pantalla.
+#
+# 🔑 SE TRABAJA SOBRE EL PROFESIONAL DE PRUEBA, no sobre Cecilia, y el motivo
+# es que esto ESCRIBE: apagarle un tratamiento a ella lo sacaría del sitio real
+# hasta que alguien lo volviera a prender.
+
+echo
+echo "▶ 36. Sus tratamientos sin token — 401"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/tratamientos-del-profesional?profesional=$NUEVO_ID" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY"
+
+echo
+echo "▶ 37. Sus tratamientos como PACIENTE — 403"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/tratamientos-del-profesional?profesional=$NUEVO_ID" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_PACIENTE"
+
+echo
+echo "▶ 38. Sus tratamientos como ADMIN — 200, y el CATÁLOGO ENTERO"
+
+CUALES=$(
+  curl -s -w '\n%{http_code}' \
+    "$FUNCIONES/tratamientos-del-profesional?profesional=$NUEVO_ID" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE"
+)
+
+echo "   obtenido: $( echo "$CUALES" | tail -1 )"
+
+CUANTOS_HAY=$( echo "$CUALES" | sed '$d' | jq -r '.tratamientos | length' 2>/dev/null )
+CUANTOS_HACE=$( echo "$CUALES" | sed '$d' | jq -r '[ .tratamientos[] | select( .loHace ) ] | length' 2>/dev/null )
+
+printf '   catálogo: %s tratamiento(s) · los hace: %s\n' "$CUANTOS_HAY" "$CUANTOS_HACE"
+
+echo
+echo "   🔴 El catálogo tiene que venir ENTERO y «los hace» tiene que ser 0:"
+echo "      un profesional recién dado de alta no tiene ninguna pareja, así"
+echo "      que no aparece para reservar con nadie. Ese es el estado que esta"
+echo "      pantalla existe para arreglar."
+
+# El primer tratamiento del catálogo, para prenderlo y apagarlo.
+UN_TRATAMIENTO=$( echo "$CUALES" | sed '$d' | jq -r '.tratamientos[0].id' 2>/dev/null )
+
+echo
+echo "▶ 39. Prender un tratamiento — 200, y CREA la pareja"
+echo "      (no existía: prenderlo necesita un insert, no un update)"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/pareja-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d "{ \"profesional_id\": $NUEVO_ID, \"tratamiento_id\": $UN_TRATAMIENTO,
+        \"activo\": true }"
+
+echo
+echo "▶ 40. Volver a pedirlo — tiene que decir que ahora lo hace"
+
+AHORA=$(
+  curl -s "$FUNCIONES/tratamientos-del-profesional?profesional=$NUEVO_ID" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  | jq -r '[ .tratamientos[] | select( .loHace ) ] | length' 2>/dev/null
+)
+
+echo "   los hace ahora: $AHORA"
+
+echo
+echo "   🔴 TIENE QUE SER 1. Si sigue en 0, el pedido contestó 200 y no"
+echo "      escribió nada — el modo de falla que no se ve."
+
+echo
+echo "▶ 41. El interruptor como NO-admin — 403   ← la excepción del panel"
+echo "      (es el único permiso que un profesional NO tiene ni sobre lo suyo)"
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = false where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/pareja-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d "{ \"profesional_id\": $NUEVO_ID, \"tratamiento_id\": $UN_TRATAMIENTO,
+        \"activo\": false }"
+
+echo "   41.b la lectura, también como NO-admin — 403:"
+
+curl -s -o /dev/null -w "       obtenido: %{http_code}\n" \
+  "$FUNCIONES/tratamientos-del-profesional?profesional=$NUEVO_ID" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE"
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = true where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+echo
+echo "▶ 42. Apagarlo, ya como ADMIN — 200, y ahora SÍ es un update"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/pareja-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d "{ \"profesional_id\": $NUEVO_ID, \"tratamiento_id\": $UN_TRATAMIENTO,
+        \"activo\": false }"
+
+echo
+echo "▶ 43. Sin tratamiento_id — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/pareja-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d "{ \"profesional_id\": $NUEVO_ID, \"activo\": true }"
+
+
 echo
 echo "▶ limpieza: se borra el profesional de prueba y se restaura es_admin"
 
+# 🔴 LAS PAREJAS SE BORRAN PRIMERO, y no es un detalle de orden: la fila de
+# `profesional_tratamientos` apunta al profesional con `on delete restrict`, así
+# que la base RECHAZA borrarlo mientras tenga una. Es la misma protección que
+# obliga a apagar en vez de borrar en todo el proyecto, funcionando.
 supabase db query --linked --output csv \
-  "delete from public.profesionales where email like 'bateria-%';
+  "delete from public.profesional_tratamientos
+     where profesional_id in (
+       select id from public.profesionales where email like 'bateria-%' );
+   delete from public.profesionales where email like 'bateria-%';
    select nombre, es_admin from public.profesionales where email_de_acceso = '$SOPORTE_EMAIL';" \
   2>/dev/null | tail -2
 
 echo
-echo "   ✅ Tiene que decir TRUE, y la fila de prueba ya no está. Se puede"
-echo "      borrar porque un profesional recién creado no tiene turnos: la"
-echo "      foreign key restrict no lo retiene."
+echo "   ✅ Tiene que decir TRUE, y la fila de prueba ya no está."
 
 
 # ── Qué mirar ────────────────────────────────────────────────────────────────
@@ -1008,7 +1143,8 @@ echo "      foreign key restrict no lo retiene."
 echo
 echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400 · 403 · 403 · 401 · 403 · 400 · 201 · 201 · 400 ·"
 echo "   401 · 403 · 400 · 401 · 403 · 200 · 400 · 400 · 200 · 403 · 403 ·"
-echo "   401 · 403 · 400 · 201 · 409 · 409 · 200 · 403 · 403, en ese orden."
+echo "   401 · 403 · 400 · 201 · 409 · 409 · 200 · 403 · 403 ·"
+echo "   401 · 403 · 200 · 200 · 403 · 403 · 200 · 400, en ese orden."
 echo "   Y SEIS casos se leen por el CUERPO, no por el código: el 11 (lista vacía),"
 echo "   el 14 (el profesional de la respuesta), el 19 (dos conteos distintos),"
 echo "   el 19.b (la grilla tiene que decir el id del que pide, nunca 0),"

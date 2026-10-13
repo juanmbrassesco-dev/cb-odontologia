@@ -315,6 +315,43 @@
     </section>
 
     <!--
+      QUÉ HACE CADA PROFESIONAL — la etapa ⑤.6, rebanada C.
+
+      🔑 ES UN PASO Y NO UN BLOQUE DESPLEGABLE, por el mismo criterio de
+      siempre: son once tilde con sus nombres, y a 390 px eso es una pantalla.
+
+      🔴 MUESTRA EL CATÁLOGO ENTERO, no sólo lo que esa persona ya hace. Una
+      lista de lo que hace sirve para mirar; para DECIDIR hace falta ver
+      también lo que NO hace, que es justamente lo que se va a querer prender.
+    -->
+    <section class="paso" id="paso-tratamientos" hidden>
+
+      <h1 id="tratamientos-titulo">Tratamientos</h1>
+
+      <p class="ayuda-pantalla" id="tratamientos-ayuda">Cargando…</p>
+
+      <!--
+        🔑 LO QUE ESTA LÍNEA EVITA: que alguien crea que apagar un tratamiento
+        cancela lo que ya está agendado. No lo hace, y a propósito — un tilde
+        que cancelara turnos sería una bomba escondida.
+      -->
+      <p class="lupa-para-que" id="tratamientos-para-que" hidden>
+        Apagar un tratamiento no toca los turnos ya agendados. Cambia qué se
+        puede reservar de acá en adelante.</p>
+
+      <!-- Los tilde los cuelga `js/panel.js`. -->
+      <div class="lista-tratamientos" id="tratamientos-lista" hidden></div>
+
+      <p class="entrar-aviso" id="tratamientos-aviso" hidden></p>
+
+      <div class="acciones">
+        <button class="btn btn-2" type="button" id="volver-de-tratamientos">
+          Volver al plantel</button>
+      </div>
+
+    </section>
+
+    <!--
       CARGAR UN TURNO A MANO — la etapa ⑤.3.
 
       🔑 ES UN PASO Y NO UN `<dialog>`, a diferencia del cartel de cancelar que

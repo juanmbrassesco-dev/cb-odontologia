@@ -1361,6 +1361,32 @@ function renglonDelPlantel( fila ) {
     acciones.appendChild( estado );
   }
 
+  // 🔑 EL BOTÓN DE TRATAMIENTOS SÓLO PARA QUIEN ESTÁ EN ACTIVIDAD, y no es una
+  // regla del portero: a alguien que no atiende, qué tratamientos tenía
+  // prendidos no le cambia nada a nadie. Ofrecerlo sumaría un tercer botón en
+  // la fila donde menos sirve.
+  //
+  // ⚠ Esta fila SÍ lo lleva cuando es la propia: el interruptor es de Cecilia
+  // sobre el suyo Y sobre el de todos.
+  if ( fila.activo ) {
+
+    const cuales = document.createElement( 'button' );
+    cuales.type = 'button';
+    cuales.className = 'btn btn-2';
+    cuales.textContent = 'Tratamientos';
+
+    cuales.setAttribute(
+      'aria-label',
+      'Qué tratamientos hace ' + fila.nombre + ' ' + fila.apellido
+    );
+
+    cuales.addEventListener( 'click', () => {
+      irALosTratamientos( fila );
+    } );
+
+    acciones.appendChild( cuales );
+  }
+
   if ( acciones.childElementCount > 0 ) {
     renglon.appendChild( acciones );
   }
@@ -1886,3 +1912,180 @@ document.querySelector( '#baja-si' ).addEventListener( 'click', () => {
     cambiarElEstado( fila, false )
   }
 } )
+
+
+// ── QUÉ HACE CADA PROFESIONAL — etapa ⑤.6, rebanada C ─────────────────────
+
+const DIRECCION_DE_SUS_TRATAMIENTOS =
+  SUPABASE_URL + '/functions/v1/tratamientos-del-profesional'
+
+const DIRECCION_DE_LA_PAREJA = SUPABASE_URL + '/functions/v1/pareja-del-panel'
+
+
+/**
+ * Arma UN renglón con su tilde.
+ *
+ * 🔑 EL `<label>` ENVUELVE TODO y por eso la fila entera prende el tilde. Con
+ * once renglones seguidos, apuntarle a un cuadrado de 20 px con el pulgar es
+ * donde se prende el tratamiento equivocado.
+ *
+ * 🔴 NO HAY BOTÓN DE GUARDAR, y es una decisión: cada tilde manda su propio
+ * pedido. Un «guardar» al final obligaría a juntar once cambios y a decidir
+ * qué pasa si uno falla y los otros no. Así, lo que falla es uno solo y la
+ * fila vuelve a donde estaba.
+ */
+function renglonDeTratamiento( fila, profesionalId ) {
+
+  const renglon = document.createElement( 'label' )
+  renglon.className = 'fila-tratamiento'
+
+  const tilde = document.createElement( 'input' )
+  tilde.type = 'checkbox'
+  tilde.checked = fila.loHace
+
+  const nombre = document.createElement( 'span' )
+  nombre.className = 'tratamiento-nombre'
+  nombre.textContent = fila.nombre
+
+  tilde.addEventListener( 'change', () => {
+    cambiarLaPareja( renglon, tilde, profesionalId, fila.id )
+  } )
+
+  renglon.append( tilde, nombre )
+
+  return renglon
+}
+
+
+/**
+ * Prende o apaga un tratamiento.
+ *
+ * 🔴 SI EL PEDIDO FALLA, EL TILDE VUELVE SOLO. Sin esto, la pantalla queda
+ * mostrando prendido algo que la base tiene apagado, y es el peor resultado
+ * posible: nadie vuelve a mirar una pantalla que ya dice lo que quería ver.
+ */
+async function cambiarLaPareja( renglon, tilde, profesionalId, tratamientoId ) {
+
+  const aviso = document.querySelector( '#tratamientos-aviso' )
+  const comoEstaba = !tilde.checked
+
+  aviso.hidden = true
+
+  // Mientras el pedido viaja, la fila no acepta otro clic: dos toques rápidos
+  // mandarían dos pedidos cruzados sobre la misma pareja.
+  renglon.classList.add( 'tratamiento-esperando' )
+
+  let respuesta
+
+  try {
+
+    respuesta = await fetch( DIRECCION_DE_LA_PAREJA, {
+      method: 'POST',
+      headers: {
+        ...cabecerasConSesion(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify( {
+        profesional_id: profesionalId,
+        tratamiento_id: tratamientoId,
+        activo: tilde.checked
+      } )
+    } )
+  }
+  catch {
+
+    tilde.checked = comoEstaba
+    renglon.classList.remove( 'tratamiento-esperando' )
+    aviso.hidden = false
+    aviso.textContent = 'No pudimos conectarnos. Probá de nuevo.'
+    return
+  }
+
+  renglon.classList.remove( 'tratamiento-esperando' )
+
+  if ( !respuesta.ok ) {
+
+    tilde.checked = comoEstaba
+    aviso.hidden = false
+    aviso.textContent = 'No pudimos cambiar ese tratamiento. Probá de nuevo.'
+  }
+}
+
+
+/** Pide qué hace un profesional. Devuelve los datos, 'sin-acceso' o null. */
+async function pedirSusTratamientos( profesionalId ) {
+
+  const respuesta = await fetch(
+    DIRECCION_DE_SUS_TRATAMIENTOS + '?profesional=' + profesionalId,
+    { headers: cabecerasConSesion() }
+  )
+
+  if ( respuesta.status === 403 ) {
+    return 'sin-acceso'
+  }
+
+  if ( !respuesta.ok ) {
+    console.error( 'No se pudo leer los tratamientos:', respuesta.status )
+    return null
+  }
+
+  return await respuesta.json()
+}
+
+
+async function irALosTratamientos( fila ) {
+
+  const titulo = document.querySelector( '#tratamientos-titulo' )
+  const ayuda = document.querySelector( '#tratamientos-ayuda' )
+  const paraQue = document.querySelector( '#tratamientos-para-que' )
+  const lista = document.querySelector( '#tratamientos-lista' )
+  const aviso = document.querySelector( '#tratamientos-aviso' )
+
+  titulo.textContent = 'Qué hace ' + fila.nombre + ' ' + fila.apellido
+
+  aviso.hidden = true
+  lista.hidden = true
+  paraQue.hidden = true
+  ayuda.hidden = false
+  ayuda.textContent = 'Cargando…'
+
+  avanzarA( '#paso-tratamientos' )
+
+  const datos = await pedirSusTratamientos( fila.id )
+
+  if ( datos === 'sin-acceso' ) {
+    ayuda.hidden = true
+    aviso.hidden = false
+    aviso.textContent = 'Esta solapa es sólo para quien administra.'
+    return
+  }
+
+  if ( !datos ) {
+    ayuda.hidden = true
+    aviso.hidden = false
+    aviso.textContent = 'No pudimos cargar los tratamientos. Probá de nuevo.'
+    return
+  }
+
+  lista.replaceChildren()
+
+  for ( const tratamiento of datos.tratamientos ) {
+    lista.appendChild( renglonDeTratamiento( tratamiento, fila.id ) )
+  }
+
+  ayuda.hidden = true
+  lista.hidden = false
+  paraQue.hidden = false
+}
+
+
+document.querySelector( '#volver-de-tratamientos' ).addEventListener(
+  'click',
+  () => {
+    // Se vuelve al plantel REDIBUJÁNDOLO: apagar todos los tratamientos de
+    // alguien no cambia su fila, pero volver con la lista vieja puesta es como
+    // se cuela un renglón que quedó diciendo lo de antes.
+    reemplazarPor( '#paso-plantel' )
+    mostrarElPlantel()
+  }
+)

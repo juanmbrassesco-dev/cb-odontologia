@@ -428,11 +428,60 @@ CUERPO_JS = r'''
   }
 
 
+  // ── EL CATÁLOGO Y QUÉ HACE CADA UNO ──
+  //
+  // Once tratamientos, que es lo que hay en la base real: con tres no se ve si
+  // una lista de tilde se puede barrer con la vista o si hay que leerla
+  // renglón por renglón.
+  const CATALOGO = [
+    { id: 1, nombre: 'consulta' },
+    { id: 2, nombre: 'limpieza' },
+    { id: 3, nombre: 'arreglo' },
+    { id: 4, nombre: 'extracción' },
+    { id: 5, nombre: 'conducto' },
+    { id: 6, nombre: 'blanqueamiento' },
+    { id: 7, nombre: 'ortodoncia' },
+    { id: 8, nombre: 'prótesis' },
+    { id: 9, nombre: 'implante' },
+    { id: 10, nombre: 'ATM y bruxismo' },
+    { id: 11, nombre: 'ortopedia' }
+  ];
+
+  // Cecilia los hace casi todos; los demás, unos pocos. Y el 2 —Martín Sosa—
+  // NO TIENE NINGUNO, que es el caso del profesional recién dado de alta: su
+  // fila existe y no aparece para reservar con nadie hasta que se le prenda
+  // algo. Es el estado que esta pantalla existe para arreglar.
+  const QUE_HACE_CADA_UNO = {
+    1: [ 1, 2, 3, 4, 6, 7, 8, 10 ],
+    2: [],
+    3: [ 1, 2, 6 ],
+    4: [ 1, 2, 7 ],
+    5: [ 1, 5 ],
+    6: [ 1, 8, 9 ],
+    7: [ 1, 2, 3, 11 ]
+  };
+
+
   const fetchDeVerdad = window.fetch;
 
   window.fetch = async function ( direccion, opciones ) {
 
-    if ( String( direccion ).includes( 'agenda-del-dia' ) ) {
+    // 🔴 EL ENDPOINT SE COMPARA POR SU NOMBRE EXACTO, NO CON `includes` —
+    // 13-oct-2026, y lo encontró Juan: tocaba «Tratamientos» y la pantalla
+    // quedaba en «Cargando…» para siempre.
+    //
+    // La causa es de NOMBRES: `tratamientos-del-profesional` CONTIENE la
+    // palabra `tratamientos`, así que lo atrapaba el simulador del catálogo
+    // público, que está más arriba. Devolvía una lista con la forma
+    // equivocada, la pantalla explotaba al recorrerla y el error cortaba la
+    // función a la mitad. **No falló con un error visible: se quedó quieta.**
+    //
+    // 🔑 Es la misma trampa que el CSS de este proyecto ya tiene escrita —un
+    // nombre genérico en una lista larga ya está tomado— y la salida es la
+    // misma: no preguntar si el texto APARECE, sino si el nombre ES.
+    const QUE = String( direccion ).split( '?' )[ 0 ].split( '/' ).pop();
+
+    if ( QUE === 'agenda-del-dia' ) {
 
       const caso = CASOS[ CASO ];
 
@@ -460,7 +509,7 @@ CUERPO_JS = r'''
     // El buscador filtra DE VERDAD sobre la lista inventada, en vez de
     // devolverla entera: así la pantalla se prueba con el caso que importa —
     // escribir algo que no está y que se abra el alta.
-    if ( String( direccion ).includes( 'buscar-pacientes' ) ) {
+    if ( QUE === 'buscar-pacientes' ) {
 
       const q = new URL( direccion, location.origin )
         .searchParams.get( 'q' ).toLowerCase();
@@ -488,7 +537,7 @@ CUERPO_JS = r'''
     //
     // El día inventado: se atiende de 08:00 a 12:00, hay un turno tomado de
     // 09:30 a 10:30, y lo que no llega al cierre sale como `no_entra`.
-    if ( String( direccion ).includes( 'horarios-del-panel' ) ) {
+    if ( QUE === 'horarios-del-panel' ) {
 
       const parametros = new URL( direccion, location.origin ).searchParams;
 
@@ -543,7 +592,7 @@ CUERPO_JS = r'''
       };
     }
 
-    if ( String( direccion ).includes( 'profesionales-del-panel' ) ) {
+    if ( QUE === 'profesionales-del-panel' ) {
 
       // `?admin=no` apaga el desplegable de profesional, que es la mitad de
       // esta pantalla que sólo ve Cecilia. Sin este interruptor, la vista del
@@ -564,15 +613,15 @@ CUERPO_JS = r'''
       };
     }
 
-    if ( String( direccion ).includes( 'obras-sociales' ) ) {
+    if ( QUE === 'obras-sociales' ) {
       return { ok: true, status: 200, json: async () => COBERTURAS_INVENTADAS };
     }
 
-    if ( String( direccion ).includes( 'tratamientos' ) ) {
+    if ( QUE === 'tratamientos' ) {
       return { ok: true, status: 200, json: async () => TRATAMIENTOS_DE_PRUEBA };
     }
 
-    if ( String( direccion ).includes( 'paciente-del-panel' ) ) {
+    if ( QUE === 'paciente-del-panel' ) {
 
       const enviado = JSON.parse( opciones.body );
 
@@ -593,7 +642,7 @@ CUERPO_JS = r'''
       };
     }
 
-    if ( String( direccion ).includes( 'turno-del-panel' ) ) {
+    if ( QUE === 'turno-del-panel' ) {
 
       const enviado = JSON.parse( opciones.body );
 
@@ -621,7 +670,40 @@ CUERPO_JS = r'''
     // la fila apagada del que no tiene nada que atender, ni qué le pasa al
     // ancho con un apellido compuesto. Es el mismo motivo por el que esta
     // herramienta nació el 8-oct.
-    if ( String( direccion ).includes( 'plantel-del-panel' ) ) {
+    // 🔴 EL HUECO QUE ESTE BLOQUE TAPA, y es anterior a la ⑤.6: `panel.js`
+    // llama a QUINCE endpoints y esta prueba simulaba catorce. El que faltaba
+    // era justo el del cartel de cancelar, así que al confirmar salía
+    // «No pudimos cancelar ese turno» — un error que no existe en el sistema
+    // real y que hace perder el tiempo buscándolo en el código.
+    //
+    // 🔑 Se encontró comparando la lista de endpoints que el panel llama
+    // contra la lista que la prueba simula. Es un chequeo de dos listas, no de
+    // pantalla: mirando la pantalla sólo se ve un mensaje de error creíble.
+    if ( QUE === 'cancelar-del-panel' ) {
+
+      const pedido = JSON.parse( opciones.body );
+
+      // Se saca de la lista para que la agenda quede como quedaría de verdad:
+      // un cartel que dice que sí y deja el turno puesto no prueba nada.
+      const donde = TURNOS.findIndex( ( uno ) => uno.id === pedido.turno_id );
+
+      if ( donde !== -1 ) {
+        TURNOS.splice( donde, 1 );
+      }
+
+      avisar( 'POST /cancelar-del-panel → 200, turno ' + pedido.turno_id );
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ( {
+          cancelado: pedido.turno_id,
+          avisadoAlPaciente: true
+        } )
+      };
+    }
+
+    if ( QUE === 'plantel-del-panel' ) {
 
       avisar( 'GET /plantel-del-panel → 200, ' + PLANTEL.length + ' fila(s)' );
 
@@ -632,7 +714,7 @@ CUERPO_JS = r'''
       };
     }
 
-    if ( String( direccion ).includes( 'turnos-del-profesional' ) ) {
+    if ( QUE === 'turnos-del-profesional' ) {
 
       const deQuien = Number(
         new URL( direccion, location.origin ).searchParams.get( 'profesional' )
@@ -659,7 +741,7 @@ CUERPO_JS = r'''
     // pantalla: lo que hay que poder ver es que la fila CAMBIA —de «en
     // actividad» a «de baja el …», con el botón dado vuelta— y eso sólo pasa
     // si el dato se modifica y la lista se vuelve a dibujar.
-    if ( String( direccion ).includes( 'baja-de-profesional' ) ) {
+    if ( QUE === 'baja-de-profesional' ) {
 
       const pedido = JSON.parse( opciones.body );
 
@@ -691,7 +773,7 @@ CUERPO_JS = r'''
       return { ok: true, status: 200, json: async () => ( { yaEstaba: false } ) };
     }
 
-    if ( String( direccion ).includes( 'alta-de-profesional' ) ) {
+    if ( QUE === 'alta-de-profesional' ) {
 
       const pedido = JSON.parse( opciones.body );
 
@@ -730,6 +812,70 @@ CUERPO_JS = r'''
       avisar( 'POST /alta-de-profesional → 201, id ' + nuevo.id );
 
       return { ok: true, status: 201, json: async () => ( { alta: nuevo } ) };
+    }
+
+    // ── LOS DOS DE LA ⑤.6 REBANADA C ──
+    //
+    // 🔑 LAS PAREJAS SE GUARDAN COMO UN MAPA `profesional -> [tratamientos]`,
+    // que es la forma en que la pantalla las consulta. La base las guarda como
+    // filas con `activo`, y la diferencia está a propósito: lo que esta prueba
+    // tiene que imitar es la RESPUESTA del portero, no cómo la calcula.
+    if ( QUE === 'tratamientos-del-profesional' ) {
+
+      const deQuien = Number(
+        new URL( direccion, location.origin ).searchParams.get( 'profesional' )
+      );
+
+      const suyos = QUE_HACE_CADA_UNO[ deQuien ] || [];
+
+      avisar( 'GET /tratamientos-del-profesional?profesional=' + deQuien +
+              ' → 200, ' + suyos.length + ' prendido(s) de ' +
+              CATALOGO.length );
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ( {
+          profesional: deQuien,
+          tratamientos: CATALOGO.map( ( uno ) => ( {
+            id: uno.id,
+            nombre: uno.nombre,
+            tienePareja: suyos.includes( uno.id ),
+            loHace: suyos.includes( uno.id )
+          } ) )
+        } )
+      };
+    }
+
+    if ( QUE === 'pareja-del-panel' ) {
+
+      const pedido = JSON.parse( opciones.body );
+
+      // 🔴 ESCRIBE DE VERDAD sobre el mapa, para que al volver a entrar a la
+      // pantalla los tilde estén como quedaron. Un simulador que contesta 200
+      // y no guarda nada deja pasar el bug de «se prendió y al volver estaba
+      // apagado», que es el que de verdad arruina esta pantalla.
+      if ( !QUE_HACE_CADA_UNO[ pedido.profesional_id ] ) {
+        QUE_HACE_CADA_UNO[ pedido.profesional_id ] = [];
+      }
+
+      const suyos = QUE_HACE_CADA_UNO[ pedido.profesional_id ];
+
+      const donde = suyos.indexOf( pedido.tratamiento_id );
+
+      if ( pedido.activo === true && donde === -1 ) {
+        suyos.push( pedido.tratamiento_id );
+      }
+
+      if ( pedido.activo !== true && donde !== -1 ) {
+        suyos.splice( donde, 1 );
+      }
+
+      avisar( 'POST /pareja-del-panel → 200, tratamiento ' +
+              pedido.tratamiento_id +
+              ( pedido.activo ? ' prendido' : ' apagado' ) );
+
+      return { ok: true, status: 200, json: async () => ( { activo: pedido.activo } ) };
     }
 
     return fetchDeVerdad( direccion, opciones );
@@ -849,6 +995,8 @@ def armar():
 { recortar( "paso-plantel" ) }
 
 { recortar( "paso-lupa" ) }
+
+{ recortar( "paso-tratamientos" ) }
 
 { recortar_el_cartel() }
 
