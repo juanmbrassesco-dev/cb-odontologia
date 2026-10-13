@@ -60,6 +60,16 @@ export type PedidoDeGrilla = {
   // minutos; Cecilia tiene que poder agendar para esta tarde. Con esto en
   // `false`, ningún bloque sale como `fuera_de_plazo`.
   conPisoDeHoras: boolean
+
+  // 🔑 UN TURNO QUE NO CUENTA COMO OCUPADO, y existe por la pantalla de MOVER.
+  // Al mover un turno la pregunta no es «qué horarios están libres» sino «qué
+  // horarios habría si ESTE turno no existiera»: sin esto el turno se tapa a sí
+  // mismo, y dejarlo a la misma hora con otra duración —el caso más común— no
+  // se puede ni elegir.
+  //
+  // ⚠ OPCIONAL A PROPÓSITO. El camino del paciente no lo manda, así que para
+  // él no cambia nada: `undefined` no agrega ningún filtro.
+  exceptoTurnoId?: number
 }
 
 
@@ -81,7 +91,7 @@ export async function armarLaGrilla(
   pedido: PedidoDeGrilla,
 ): Promise< DiaDeLaGrilla[] | 'error-de-base' > {
 
-  const { profesionalId, duracionMin, desde, hasta, ahora } = pedido
+  const { profesionalId, duracionMin, desde, hasta, ahora, exceptoTurnoId } = pedido
 
   // La agenda semanal entera, de una sola vez. Son pocas filas —siete, hoy— y
   // volver a preguntar por cada día del rango serían sesenta consultas para el
@@ -133,13 +143,25 @@ export async function armarLaGrilla(
   const primerDia = sumarDias( desde, -1 )
   const diaSiguiente = sumarDias( hasta, 1 )
 
-  const turnos = await ctx.supabaseAdmin
+  let consulta = ctx.supabaseAdmin
     .from( 'turnos' )
     .select( 'inicio, duracion_min' )
     .eq( 'profesional_id', profesionalId )
     .eq( 'activo', true )
     .gte( 'inicio', `${ primerDia }T00:00:00${ desfaseDeSantaFe( primerDia ) }` )
     .lt( 'inicio', `${ diaSiguiente }T00:00:00${ desfaseDeSantaFe( diaSiguiente ) }` )
+
+  // 🔴 EL TURNO QUE SE ESTÁ MOVIENDO SE SACA ACÁ, EN LA CONSULTA, y no de la
+  // lista después de leerla. La fila que nunca llegó no se puede olvidar de
+  // descontar más abajo; la que llega y hay que ignorar, sí.
+  //
+  // Se filtra por una columna que el `select` no pide, y se puede: el filtro lo
+  // aplica la base, no esta función.
+  if ( exceptoTurnoId ) {
+    consulta = consulta.neq( 'id', exceptoTurnoId )
+  }
+
+  const turnos = await consulta
 
   if ( turnos.error ) {
     return 'error-de-base'

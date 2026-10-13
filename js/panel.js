@@ -215,13 +215,14 @@ function accionesDelTurno( turno ) {
   modificar.className = 'btn btn-2';
   modificar.textContent = 'Modificar';
 
-  // ⏳ TODAVÍA NO HAY A DÓNDE MANDARLO: mover un turno de hora choca contra el
-  // constraint de no-solapamiento, que rebota con 409, y eso es una pantalla
-  // con su propia conversación. Queda APAGADO y no escondido, a propósito: el
-  // botón dice que la acción va a existir, y apagado no miente sobre hoy.
-  modificar.disabled = true;
-  modificar.classList.add( 'btn-apagado' );
-  modificar.title = 'Todavía no disponible';
+  // 🔑 ESTE BOTÓN NO PREGUNTA NADA Y EL DE AL LADO SÍ, y la diferencia es de
+  // fondo: mover lleva a una pantalla donde se elige el horario nuevo y recién
+  // ahí se confirma —el paso de la grilla ES la pregunta—, mientras cancelar
+  // pasa de un toque a un turno liberado y tres correos. Un cartel acá sería
+  // preguntar «¿seguro?» antes de mostrar lo que se va a decidir.
+  modificar.addEventListener( 'click', () => {
+    irAMover( turno );
+  } );
 
   const cancelar = document.createElement( 'button' );
   cancelar.type = 'button';
@@ -464,14 +465,37 @@ const DIRECCION_DE_COBERTURAS = SUPABASE_URL + '/functions/v1/obras-sociales';
 // es lo que decide si el bloque de abajo se ve o no.
 let pacienteElegido = null;
 
-// El instante elegido en la grilla, tal cual lo mandó el portero
-// ('2026-10-15T09:00:00-03:00'). Vacío mientras no se haya tocado ninguno.
+// LA GRILLA DE ESTA PANTALLA, descrita en un objeto.
 //
-// 🔑 SE GUARDA EL TEXTO DEL PORTERO, NO UNA FECHA. El dato ya viene con el
-// desfase de acá puesto; pasarlo por `new Date()` para volver a escribirlo es
-// abrir la puerta a que se corra una hora sin que nadie lo note. Es la misma
-// decisión que tomó la grilla del paciente.
-let horaElegida = null;
+// 🔑 HAY DOS PANTALLAS QUE ELIGEN HORA —cargar un turno y moverlo— Y LA GRILLA
+// ES UNA SOLA PIEZA, dibujada por una sola función. Lo que cambia de una a la
+// otra es DATO, no lógica: en qué ids dibuja, de qué profesional es, qué turno
+// no cuenta como ocupado, y qué hora está elegida. Por eso viaja en un objeto
+// en vez de duplicar las tres funciones. *(Es el mismo criterio con el que la
+// ⑤.3 extrajo el cálculo a `_shared/grilla.ts`: el cálculo se comparte.)*
+//
+// 🔑 LA HORA ELEGIDA SE GUARDA COMO EL TEXTO QUE MANDÓ EL PORTERO, NO COMO UNA
+// FECHA ('2026-10-15T09:00:00-03:00'). El dato ya viene con el desfase de acá
+// puesto; pasarlo por `new Date()` para volver a escribirlo es abrir la puerta
+// a que se corra una hora sin que nadie lo note. Es la misma decisión que tomó
+// la grilla del paciente.
+const grillaDeCarga = {
+
+  caja: '#turno-horas',
+  ayuda: '#horas-ayuda',
+  fecha: '#turno-fecha',
+  duracion: '#turno-duracion',
+
+  // Lo pone quien pide el dibujado y no se lee adentro de la función: en esta
+  // pantalla sale del desplegable, y en la de mover sale del turno.
+  profesionalId: null,
+
+  // El turno que no cuenta como ocupado. Acá no hay ninguno: en esta pantalla
+  // el turno todavía no existe.
+  excepto: null,
+
+  elegida: null
+};
 
 // Los desplegables se llenan UNA sola vez por visita a la pantalla. Sin esta
 // marca, entrar y salir dos veces duplicaría las opciones.
@@ -608,14 +632,14 @@ function elegirPaciente( paciente ) {
 
   // El bloque del turno recién aparece acá, así que éste es el primer momento
   // en que la grilla tiene sentido.
-  dibujarLasHoras();
+  refrescarLaCarga();
 }
 
 
 function volverAlBuscador() {
 
   pacienteElegido = null;
-  horaElegida = null;
+  grillaDeCarga.elegida = null;
 
   document.querySelector( '#paciente-elegido' ).hidden = true;
   document.querySelector( '#datos-del-turno' ).hidden = true;
@@ -762,7 +786,7 @@ async function crearLaFicha() {
  *
  * Devuelve la lista de bloques, o `null` si el pedido falló.
  */
-async function pedirLasHoras( fecha, duracion, profesionalId ) {
+async function pedirLasHoras( fecha, duracion, profesionalId, excepto ) {
 
   let direccion = DIRECCION_DE_LAS_HORAS
     + '?fecha=' + fecha
@@ -772,6 +796,13 @@ async function pedirLasHoras( fecha, duracion, profesionalId ) {
   // admin. El portero lo ignora igual cuando no corresponde.
   if ( profesionalId ) {
     direccion = direccion + '&profesional=' + profesionalId;
+  }
+
+  // 🔑 SÓLO LO MANDA LA PANTALLA DE MOVER: dice qué turno NO cuenta como
+  // ocupado. Sin esto el turno que se está moviendo se tapa a sí mismo y no se
+  // lo puede dejar a la misma hora con otra duración.
+  if ( excepto ) {
+    direccion = direccion + '&excepto=' + excepto;
   }
 
   const respuesta = await fetch( direccion, { headers: cabecerasConSesion() } );
@@ -796,7 +827,7 @@ async function pedirLasHoras( fecha, duracion, profesionalId ) {
  * iguales. Acá además importa más que en la web — lo que quien atiende
  * necesita ver es DÓNDE se pisa, no sólo dónde entra.
  */
-function casillaDeLaHora( bloque ) {
+function casillaDeLaHora( bloque, grilla ) {
 
   const hora = document.createElement( 'button' );
 
@@ -823,13 +854,13 @@ function casillaDeLaHora( bloque ) {
     return hora;
   }
 
-  if ( bloque.inicio === horaElegida ) {
+  if ( bloque.inicio === grilla.elegida ) {
     hora.classList.add( 'hora-elegida' );
   }
 
   hora.addEventListener( 'click', () => {
-    horaElegida = bloque.inicio;
-    dibujarLasHoras();
+    grilla.elegida = bloque.inicio;
+    dibujarLasHoras( grilla );
   } );
 
   return hora;
@@ -837,22 +868,32 @@ function casillaDeLaHora( bloque ) {
 
 
 /**
- * Vuelve a pedir y a dibujar la grilla.
+ * Vuelve a pedir y a dibujar UNA grilla — la de cargar o la de mover.
+ *
+ * `grilla` es uno de los dos objetos descriptores (`grillaDeCarga`,
+ * `grillaDeMover`): de ahí salen los ids donde dibujar, de qué profesional es
+ * y qué turno no cuenta como ocupado.
  *
  * 🔴 SE LLAMA CADA VEZ QUE CAMBIA EL DÍA, LA DURACIÓN O EL PROFESIONAL, y los
  * tres importan: la grilla contesta «qué entra», y esa respuesta cambia con
  * los tres. Volver a pedirla sólo al cambiar el día dejaría los bloques
  * dibujados para una duración que ya no es la elegida — y se vería bien.
+ *
+ * 🔑 NO LEE NINGÚN ID A MANO, y es lo que la deja servir a las dos pantallas.
+ * Hasta el 13-oct-2026 nombraba adentro los cinco ids de la pantalla de cargar
+ * un turno; la alternativa era copiarla con otros cinco, y entonces el día que
+ * se arregle un modo de falla de la grilla habría que acordarse de arreglarlo
+ * dos veces.
  */
-async function dibujarLasHoras() {
+async function dibujarLasHoras( grilla ) {
 
-  const caja = document.querySelector( '#turno-horas' );
+  const caja = document.querySelector( grilla.caja );
 
-  const ayuda = document.querySelector( '#horas-ayuda' );
+  const ayuda = document.querySelector( grilla.ayuda );
 
-  const fecha = document.querySelector( '#turno-fecha' ).value;
+  const fecha = document.querySelector( grilla.fecha ).value;
 
-  const duracion = document.querySelector( '#turno-duracion' ).value;
+  const duracion = document.querySelector( grilla.duracion ).value;
 
   if ( !fecha ) {
 
@@ -863,13 +904,12 @@ async function dibujarLasHoras() {
     return;
   }
 
-  const campoProfesional = document.querySelector( '#campo-profesional' );
-
-  const profesionalId = campoProfesional.hidden
-    ? null
-    : document.querySelector( '#turno-profesional' ).value;
-
-  const bloques = await pedirLasHoras( fecha, duracion, profesionalId );
+  const bloques = await pedirLasHoras(
+    fecha,
+    duracion,
+    grilla.profesionalId,
+    grilla.excepto
+  );
 
   if ( bloques === null ) {
 
@@ -894,7 +934,7 @@ async function dibujarLasHoras() {
   caja.textContent = '';
 
   bloques.forEach( ( bloque ) => {
-    caja.appendChild( casillaDeLaHora( bloque ) );
+    caja.appendChild( casillaDeLaHora( bloque, grilla ) );
   } );
 
   caja.hidden = false;
@@ -912,13 +952,33 @@ async function dibujarLasHoras() {
 }
 
 
+/**
+ * Pone al día de quién es la grilla de CARGA y la vuelve a dibujar.
+ *
+ * 🔑 EL PROFESIONAL SE LEE ACÁ Y NO ADENTRO DE `dibujarLasHoras`, porque de
+ * dónde sale es justamente lo que distingue a las dos pantallas: en ésta sale
+ * del desplegable —y sólo hay desplegable si quien entró es admin—, y en la de
+ * mover sale del turno que se está moviendo.
+ */
+function refrescarLaCarga() {
+
+  const campoProfesional = document.querySelector( '#campo-profesional' );
+
+  grillaDeCarga.profesionalId = campoProfesional.hidden
+    ? null
+    : document.querySelector( '#turno-profesional' ).value;
+
+  dibujarLasHoras( grillaDeCarga );
+}
+
+
 // ── AGENDAR ───────────────────────────────────────────────────────────
 
 async function agendarElTurno() {
 
   const dia = document.querySelector( '#turno-fecha' ).value;
 
-  if ( !horaElegida ) {
+  if ( !grillaDeCarga.elegida ) {
     avisarEnLaCarga( 'Elegí un horario de la grilla.' );
     return;
   }
@@ -927,7 +987,7 @@ async function agendarElTurno() {
   // puesto. No se arma pegando el día y la hora: ese camino —el del campo de
   // hora que esta pantalla tenía antes— obliga a calcular la zona horaria acá,
   // y cualquier error ahí corre el turno sin que nada falle.
-  const inicio = horaElegida;
+  const inicio = grillaDeCarga.elegida;
 
   const cuerpo = {
     paciente_id: pacienteElegido.id,
@@ -1057,8 +1117,8 @@ document.querySelector( '#turno-guardar' ).addEventListener(
 [ '#turno-fecha', '#turno-duracion', '#turno-profesional' ].forEach( ( cual ) => {
 
   document.querySelector( cual ).addEventListener( 'change', () => {
-    horaElegida = null;
-    dibujarLasHoras();
+    grillaDeCarga.elegida = null;
+    refrescarLaCarga();
   } );
 } );
 
@@ -2089,3 +2149,317 @@ document.querySelector( '#volver-de-tratamientos' ).addEventListener(
     mostrarElPlantel()
   }
 )
+
+
+// ══════════════════════════════════════════════════════════════════════
+// LAS DURACIONES — UNA sola lista para las dos pantallas que la eligen
+// ══════════════════════════════════════════════════════════════════════
+//
+// 🔑 ESTABAN ESCRITAS A MANO EN EL HTML y se mudaron acá el 13-oct-2026, al
+// sumar la pantalla de MOVER: con dos listas escritas a mano, agregar una
+// duración en una y no en la otra no falla con error — deja dos pantallas del
+// mismo panel ofreciendo cosas distintas, y eso se descubre usándolas.
+//
+// ⚠️ EL TECHO DE VERDAD NO ESTÁ ACÁ: lo pone `_shared/duracion.ts` en el
+// portero (30 a 300, en bloques de 30). Esta lista ofrece hasta 3 horas porque
+// es lo que el consultorio usa; si hiciera falta más, el portero ya lo acepta.
+const DURACIONES_DEL_PANEL = [
+  { minutos: 30, comoSeLee: '30 minutos' },
+  { minutos: 60, comoSeLee: '1 hora' },
+  { minutos: 90, comoSeLee: '1 hora y media' },
+  { minutos: 120, comoSeLee: '2 horas' },
+  { minutos: 150, comoSeLee: '2 horas y media' },
+  { minutos: 180, comoSeLee: '3 horas' }
+];
+
+
+function llenarLasDuraciones( select ) {
+
+  select.textContent = '';
+
+  DURACIONES_DEL_PANEL.forEach( ( cuanto ) => {
+
+    const opcion = document.createElement( 'option' );
+
+    opcion.value = cuanto.minutos;
+    opcion.textContent = cuanto.comoSeLee;
+
+    select.appendChild( opcion );
+  } );
+}
+
+
+// Los dos desplegables se llenan al cargar la página y no al entrar a cada
+// pantalla: la lista no viene de la base, así que no hay nada que esperar ni
+// nada que pueda fallar en el camino.
+llenarLasDuraciones( document.querySelector( '#turno-duracion' ) );
+
+llenarLasDuraciones( document.querySelector( '#mover-duracion' ) );
+
+
+// ══════════════════════════════════════════════════════════════════════
+// MOVER UN TURNO DE HORA — etapa ⑤.4
+// ══════════════════════════════════════════════════════════════════════
+//
+// QUÉ HACE: cambia a qué hora es un turno y cuánto dura. Nada más — ni de
+// paciente, ni de profesional, ni de tratamiento. Eso no es una decisión de
+// esta pantalla: el portero tiene permiso de escritura sobre `inicio` y
+// `duracion_min` Y NADA MÁS, así que ofrecer el resto sería prometer algo que
+// la base rechaza.
+//
+// 🔴 LA PANTALLA NO DEFIENDE NADA, igual que las otras tres del panel. Quien
+// mueve un turno que no es suyo recibe 403 del portero, y eso no depende de
+// que este archivo esconda un botón.
+
+const DIRECCION_DE_MOVER = SUPABASE_URL + '/functions/v1/mover-turno';
+
+
+// El turno que se está moviendo, tal cual lo mandó la agenda. Vacío fuera de
+// esta pantalla.
+let turnoQueSeMueve = null;
+
+
+// La grilla de ESTA pantalla. Es la misma pieza que la de cargar un turno —la
+// dibuja `dibujarLasHoras`— y se diferencia en tres datos.
+const grillaDeMover = {
+
+  caja: '#mover-horas',
+  ayuda: '#mover-horas-ayuda',
+  fecha: '#mover-fecha',
+  duracion: '#mover-duracion',
+
+  // Los tres se ponen al abrir la pantalla, en `irAMover`.
+  profesionalId: null,
+  excepto: null,
+  elegida: null
+};
+
+
+/**
+ * Se asegura de que el desplegable de duración OFREZCA la del turno.
+ *
+ * 🔴 EL MODO DE FALLA QUE TAPA ES SILENCIOSO: el portero acepta hasta 300
+ * minutos y esta lista ofrece hasta 180, así que un turno de 240 —cargado
+ * antes, o desde el Table Editor— deja el desplegable sin ninguna opción
+ * elegida. Y entonces `value` es el texto vacío, la grilla pide
+ * `?duracion=` sin número, el portero contesta 400 y la pantalla se abre muda
+ * sin decir por qué. Agregar la opción que falta cuesta cuatro líneas; ésta
+ * cuesta un rato de buscar el bug en el lugar equivocado.
+ *
+ * Y de paso evita duplicarla: se pregunta por el `<option>`, no por la lista.
+ */
+function asegurarLaDuracion( minutos ) {
+
+  const select = document.querySelector( '#mover-duracion' );
+
+  if ( select.querySelector( 'option[value="' + minutos + '"]' ) ) {
+    return;
+  }
+
+  const opcion = document.createElement( 'option' );
+
+  opcion.value = minutos;
+  opcion.textContent = minutos + ' minutos';
+
+  select.appendChild( opcion );
+}
+
+
+function avisarEnMover( texto ) {
+
+  const cartel = document.querySelector( '#mover-aviso' );
+
+  cartel.hidden = !texto;
+  cartel.textContent = texto || '';
+}
+
+
+/**
+ * Abre la pantalla de mover con un turno puesto.
+ *
+ * 🔴 EL DÍA SE SACA CON `diaDeUnInstante` Y NO CORTANDO EL TEXTO. La base
+ * devuelve el instante en UTC ('2026-10-15T12:00:00+00:00' son las 09:00 de
+ * Santa Fe), así que `inicio.slice( 0, 10 )` da el día correcto casi siempre y
+ * el equivocado para todo turno de las 21 en adelante. Es una fecha válida,
+ * bien escrita, un día corrida.
+ *
+ * 🔑 LA GRILLA ARRANCA SIN NINGUNA HORA ELEGIDA, a propósito, aunque el turno
+ * ya tenga una. Dejar marcado el bloque de ahora ahorraría un toque en el caso
+ * de cambiar sólo la duración, y a cambio el botón «Guardar» quedaría activo
+ * sin que nadie haya elegido nada: un toque de más en el lugar equivocado
+ * mandaría un turno a la hora que ya tenía. La hora de hoy se LEE en la
+ * tarjeta de arriba; la de la grilla se ELIGE.
+ */
+function irAMover( turno ) {
+
+  turnoQueSeMueve = turno;
+
+  document.querySelector( '#mover-quien' ).textContent =
+    turno.paciente.nombre + ' ' + turno.paciente.apellido
+    + ' — ' + queDiceElTurno( turno );
+
+  document.querySelector( '#mover-ahora' ).textContent =
+    'Ahora: ' + turnoEnPalabras( turno.inicio )
+    + ' · ' + turno.duracion_min + ' min';
+
+  document.querySelector( '#mover-fecha' ).value = diaDeUnInstante( turno.inicio );
+
+  asegurarLaDuracion( turno.duracion_min );
+
+  document.querySelector( '#mover-duracion' ).value = turno.duracion_min;
+
+  // 🔑 DE QUIÉN ES LA AGENDA QUE SE MIRA SALE DEL TURNO, no de un desplegable:
+  // un turno no se le puede pasar a otro profesional desde acá, así que la
+  // grilla que importa es la de su dueño. Para un admin que mira el turno de
+  // otra persona, esto es lo que hace que vea los huecos correctos.
+  grillaDeMover.profesionalId = turno.profesional.id;
+
+  // Y el turno no se cuenta a sí mismo como ocupado.
+  grillaDeMover.excepto = turno.id;
+
+  grillaDeMover.elegida = null;
+
+  avisarEnMover( '' );
+
+  avanzarA( '#paso-mover' );
+
+  dibujarLasHoras( grillaDeMover );
+}
+
+
+/**
+ * Manda el cambio.
+ *
+ * 🔑 LOS DOS CHEQUEOS DE ACÁ NO DEFIENDEN LA BASE —eso es del portero—, evitan
+ * dos cosas que confunden: mandar sin haber elegido hora, y mandar un cambio
+ * que no cambia nada. Lo segundo no es inofensivo: el portero movería el turno
+ * a la hora que ya tenía y le escribiría a la paciente un correo diciéndole que
+ * su turno cambió.
+ */
+async function guardarElCambio() {
+
+  if ( !grillaDeMover.elegida ) {
+    avisarEnMover( 'Elegí un horario nuevo de la grilla.' );
+    return;
+  }
+
+  const duracion = Number( document.querySelector( '#mover-duracion' ).value );
+
+  // 🔴 SE COMPARAN INSTANTES, NO TEXTOS. El portero manda la hora con el desfase
+  // de Santa Fe puesto ('…T09:00:00-03:00') y la base guarda el mismo instante
+  // en UTC ('…T12:00:00+00:00'): son dos escrituras distintas de la misma hora,
+  // así que compararlas como texto diría «cambió» siempre.
+  const mismaHora =
+    Date.parse( grillaDeMover.elegida ) === Date.parse( turnoQueSeMueve.inicio );
+
+  if ( mismaHora && duracion === turnoQueSeMueve.duracion_min ) {
+    avisarEnMover( 'Ese es el horario que ya tiene. No hay nada que cambiar.' );
+    return;
+  }
+
+  const boton = document.querySelector( '#mover-guardar' );
+
+  // El botón se apaga mientras viaja el pedido, igual que en el cartel de
+  // cancelar: dos toques mandan dos movimientos y dos correos.
+  boton.disabled = true;
+
+  let respuesta;
+
+  try {
+    respuesta = await fetch(
+      DIRECCION_DE_MOVER,
+      {
+        method: 'POST',
+        headers: {
+          ...cabecerasConSesion(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify( {
+          turno_id: turnoQueSeMueve.id,
+          inicio: grillaDeMover.elegida,
+          duracion_min: duracion
+        } )
+      }
+    );
+  }
+  catch {
+    respuesta = null;
+  }
+
+  boton.disabled = false;
+
+  if ( !respuesta ) {
+    avisarEnMover( 'No pudimos conectar. Probá de nuevo.' );
+    return;
+  }
+
+  // 🔑 EL 409 SE DICE CON SUS PALABRAS Y NO COMO UN ERROR DEL SISTEMA: significa
+  // que ese horario se pisa con otro turno, que es información útil. Nadie se
+  // equivocó, y el que rebota es el constraint `turnos_sin_solapar` haciendo su
+  // trabajo. La grilla se vuelve a dibujar porque el choque puede ser con un
+  // turno que entró después de que esta pantalla pidió los horarios.
+  if ( respuesta.status === 409 ) {
+
+    avisarEnMover( 'Ese horario se pisa con otro turno. Elegí otro.' );
+
+    grillaDeMover.elegida = null;
+
+    dibujarLasHoras( grillaDeMover );
+
+    return;
+  }
+
+  if ( !respuesta.ok ) {
+    avisarEnMover( 'No pudimos mover el turno. Probá de nuevo.' );
+    return;
+  }
+
+  const datos = await respuesta.json();
+
+  // Se vuelve al día NUEVO del turno y no al que se estaba mirando: si el
+  // turno se movió de día, la agenda del día viejo ya no lo tiene, y quien
+  // acaba de moverlo se queda sin ver el resultado de lo que hizo.
+  const diaNuevo = document.querySelector( '#mover-fecha' ).value;
+
+  await irAlDia( diaNuevo );
+
+  reemplazarPor( '#paso-agenda' );
+
+  aviso.hidden = false;
+
+  // ⚠️ LO QUE SE DICE CAMBIA SEGÚN SI EL AVISO SALIÓ, igual que al agendar. Un
+  // turno movido del que la paciente no se enteró es peor que no haberlo
+  // movido: va a venir a la hora vieja, y alguien tiene que llamarla.
+  aviso.textContent = datos.avisadoAlPaciente
+    ? 'Turno movido y avisado por correo.'
+    : 'Turno movido. ⚠️ NO se le pudo avisar a la paciente: hay que llamarla.';
+}
+
+
+document.querySelector( '#mover-guardar' ).addEventListener(
+  'click',
+  guardarElCambio
+);
+
+
+document.querySelector( '#volver-de-mover' ).addEventListener( 'click', () => {
+  reemplazarPor( '#paso-agenda' );
+} );
+
+
+// LOS DOS CAMPOS QUE CAMBIAN LA RESPUESTA DE LA GRILLA. El profesional no está
+// en la lista porque acá no se puede cambiar: es el dueño del turno.
+//
+// ⚠️ LA HORA ELEGIDA SE BORRA al cambiar cualquiera de los dos, por el mismo
+// modo de falla silencioso que en cargar un turno: se elige un bloque con 30
+// minutos, se pasa la duración a 90, y el bloque sigue marcado aunque ya no
+// entre.
+[ '#mover-fecha', '#mover-duracion' ].forEach( ( cual ) => {
+
+  document.querySelector( cual ).addEventListener( 'change', () => {
+
+    grillaDeMover.elegida = null;
+
+    dibujarLasHoras( grillaDeMover );
+  } );
+} );

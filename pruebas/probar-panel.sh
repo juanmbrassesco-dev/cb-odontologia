@@ -1138,18 +1138,366 @@ echo
 echo "   ✅ Tiene que decir TRUE, y la fila de prueba ya no está."
 
 
+# ── 44 a 51. MOVER UN TURNO DE HORA — etapa ⑤.4 ──────────────────────────────
+#
+# 🔴 TRES CASOS SON LOS QUE VALEN, y los otros cinco son la forma:
+#   · el 44 mide `?excepto=`, que es lo que hace usable la pantalla: el turno
+#     que se está moviendo NO tiene que contarse a sí mismo como ocupado.
+#   · el 50 mide el 409 del constraint `turnos_sin_solapar`, que es la defensa
+#     contra pisar un turno existente. Tiene que dar 409 y NO 500.
+#   · el 51 es el IDOR de ESCRITURA, el mismo del caso 8 pero sobre mover: un
+#     profesional que manda el id de un turno ajeno no puede cambiarle la hora.
+#
+# Los dos turnos de prueba se crean acá —A el que se mueve, B el obstáculo— en
+# la misma fecha lejana que usa el caso 14, y al final se APAGAN, no se borran.
+
+echo
+echo "── 44 a 51 · MOVER UN TURNO ────────────────────────────────────────"
+
+crear_turno_de_prueba() {
+
+  curl -s \
+    -X POST "$FUNCIONES/turno-del-panel" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    -H 'Content-Type: application/json' \
+    -d "{ \"paciente_id\": ${PACIENTE_ID:-1},
+          \"tratamiento_id\": ${TRATAMIENTO:-1},
+          \"obra_social_id\": ${PARTICULAR:-1},
+          \"duracion_min\": 30,
+          \"inicio\": \"${LEJOS}T$1:00-03:00\" }" \
+    | grep -oE '"id":[0-9]+' | head -1 | grep -oE '[0-9]+'
+}
+
+# Sin `profesional_id`: así los dos turnos quedan a nombre de la cuenta de
+# soporte, que es la que después los mueve. Un turno ajeno daría 403 y el caso
+# 49 mediría la propiedad en vez del movimiento.
+MOVER_A=$( crear_turno_de_prueba '14:00' )
+
+MOVER_B=$( crear_turno_de_prueba '16:00' )
+
+echo "   turno A (el que se mueve): ${MOVER_A:-ninguno}"
+echo "   turno B (el obstáculo):    ${MOVER_B:-ninguno}"
+
+if [ -z "${MOVER_A:-}" ] || [ -z "${MOVER_B:-}" ]; then
+  echo "   ❌ NO SE PUDIERON CREAR LOS DOS TURNOS DE PRUEBA, así que los ocho"
+  echo "      casos de abajo no miden nada. Una prueba que no corre se lee"
+  echo "      como verde: esto es un ROJO."
+fi
+
+# ── 44. La grilla con y sin `?excepto=` ──────────────────────────────────────
+#
+# 🔑 QUÉ MIDE, Y NO LO MEDÍA NINGUNO DE LOS CINCO CASOS DE LA GRILLA: que el
+# turno que se está moviendo deje de contar como ocupado cuando se lo nombra.
+# Sin esto, la pantalla de mover no puede dejar un turno a la misma hora con
+# otra duración — el turno se tapa a sí mismo.
+#
+# Se lee por el CUERPO y no por el código: los dos pedidos dan 200. Lo que
+# tiene que cambiar es CUÁNTOS bloques salen libres.
+#
+# 🔴 POR QUÉ ESTE CASO NO USA LOS TURNOS A Y B, Y ES EL MISMO ERROR QUE YA
+# DEJÓ AL CASO 19 EN «0 de 0» la primera vez: la CUENTA DE SOPORTE NO TIENE
+# AGENDA en `horarios_base`, así que cualquier día suyo devuelve cero bloques y
+# los dos conteos salen iguales — en 0. Eso no es rojo ni verde: es no medir.
+# Y la fecha lejana que usan los otros casos tampoco sirve, porque está más
+# allá de los días que la búsqueda del 19 recorre.
+#
+# ✅ LO QUE SE HACE EN SU LUGAR: se reusa `$DIA_GRILLA` —el día con agenda que
+# el caso 19 ya encontró— sobre la agenda de CECILIA (`?profesional=1`, que un
+# admin puede pedir), se carga un turno de prueba en el primer bloque LIBRE de
+# ese día, y se cuenta. El turno se apaga enseguida.
+
+echo
+echo "▶ 44. La grilla de un día CON AGENDA, sin y con ?excepto= — 200 las dos"
+
+if [ -z "${DIA_GRILLA:-}" ]; then
+
+  echo "   ❌ NO SE PUDO MEDIR: el caso 19 no encontró ningún día con agenda,"
+  echo "      así que no hay dónde poner el turno de prueba."
+
+else
+
+  GRILLA_ANTES=$(
+    curl -s "$FUNCIONES/horarios-del-panel?fecha=$DIA_GRILLA&duracion=30&profesional=1" \
+      -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+      -H "Authorization: Bearer $TOKEN_SOPORTE"
+  )
+
+  # El primer bloque libre, tal cual lo manda el portero —con su desfase—. Se
+  # saca del JSON y no se arma a mano: una hora inventada puede caer fuera de
+  # la agenda y el turno se crearía donde la grilla no lo muestra.
+  HORA_LIBRE=$(
+    echo "$GRILLA_ANTES" \
+      | grep -o '"inicio":"[^"]*","estado":"libre"' \
+      | head -1 \
+      | sed 's/"inicio":"//; s/","estado":"libre"//'
+  )
+
+  echo "   día con agenda: $DIA_GRILLA · primer bloque libre: ${HORA_LIBRE:-ninguno}"
+
+  if [ -z "$HORA_LIBRE" ]; then
+
+    echo "   ❌ NO SE PUDO MEDIR: ese día no tiene ni un bloque libre."
+
+  else
+
+    # A nombre de CECILIA (profesional 1), que es de quien es la agenda que se
+    # está mirando. El paciente es el de la batería, que no tiene correo: así
+    # este turno no le manda un aviso a nadie.
+    GRILLA_TURNO=$(
+      curl -s \
+        -X POST "$FUNCIONES/turno-del-panel" \
+        -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+        -H "Authorization: Bearer $TOKEN_SOPORTE" \
+        -H 'Content-Type: application/json' \
+        -d "{ \"paciente_id\": ${PACIENTE_ID:-1},
+              \"profesional_id\": 1,
+              \"tratamiento_id\": ${TRATAMIENTO:-1},
+              \"obra_social_id\": ${PARTICULAR:-1},
+              \"duracion_min\": 30,
+              \"inicio\": \"$HORA_LIBRE\" }" \
+        | grep -oE '"id":[0-9]+' | head -1 | grep -oE '[0-9]+'
+    )
+
+    echo "   turno de prueba cargado en ese bloque: ${GRILLA_TURNO:-ninguno}"
+
+    if [ -z "${GRILLA_TURNO:-}" ]; then
+
+      echo "   ❌ NO SE PUDO MEDIR: el turno de prueba no se creó."
+
+    else
+
+      LIBRES_SIN=$(
+        curl -s "$FUNCIONES/horarios-del-panel?fecha=$DIA_GRILLA&duracion=30&profesional=1" \
+          -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+          -H "Authorization: Bearer $TOKEN_SOPORTE" \
+          | grep -o '"estado":"libre"' | wc -l | tr -d ' '
+      )
+
+      LIBRES_CON=$(
+        curl -s "$FUNCIONES/horarios-del-panel?fecha=$DIA_GRILLA&duracion=30&profesional=1&excepto=$GRILLA_TURNO" \
+          -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+          -H "Authorization: Bearer $TOKEN_SOPORTE" \
+          | grep -o '"estado":"libre"' | wc -l | tr -d ' '
+      )
+
+      echo
+      echo "   bloques libres SIN excepto: $LIBRES_SIN"
+      echo "   bloques libres CON excepto: $LIBRES_CON"
+      echo
+      echo "   🔴 CON tiene que ser MAYOR que SIN — y eso es el turno dejando"
+      echo "      de taparse a sí mismo. Si son IGUALES, el parámetro no se"
+      echo "      obedece y la pantalla de mover no sirve."
+      echo "   ⚠ Si los dos dan 0, el caso no midió: avisá antes de leerlo"
+      echo "      como verde."
+
+      supabase db query --linked \
+        "update public.turnos set activo = false where id = $GRILLA_TURNO;" \
+        > /dev/null 2>&1
+
+      echo
+      echo "   turno de prueba $GRILLA_TURNO apagado (no borrado)"
+    fi
+  fi
+fi
+
+# ── 45 a 48. La forma ────────────────────────────────────────────────────────
+
+echo
+echo "▶ 45. Mover sin token — 401   (lo contesta la plataforma)"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/mover-turno" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{ "turno_id": 1, "inicio": "2027-01-01T10:00:00-03:00", "duracion_min": 30 }'
+
+echo
+echo "▶ 46. Mover como PACIENTE — 403   ← la cerradura del panel"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/mover-turno" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_PACIENTE" \
+  -H 'Content-Type: application/json' \
+  -d '{ "turno_id": 1, "inicio": "2027-01-01T10:00:00-03:00", "duracion_min": 30 }'
+
+echo
+echo "▶ 47. Sin turno_id — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/mover-turno" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d '{ "inicio": "2027-01-01T10:00:00-03:00", "duracion_min": 30 }'
+
+echo
+echo "▶ 48. Duración fuera de los bloques de 30 — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/mover-turno" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d "{ \"turno_id\": ${MOVER_A:-1}, \"inicio\": \"${LEJOS}T15:00:00-03:00\", \"duracion_min\": 45 }"
+
+# ── 49. El movimiento que SÍ entra ───────────────────────────────────────────
+
+echo
+echo "▶ 49. Mover el turno A de las 14:00 a las 15:00 — 200"
+
+if [ -n "${MOVER_A:-}" ]; then
+
+  curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+    -X POST "$FUNCIONES/mover-turno" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    -H 'Content-Type: application/json' \
+    -d "{ \"turno_id\": $MOVER_A, \"inicio\": \"${LEJOS}T15:00:00-03:00\", \"duracion_min\": 60 }"
+
+  # 🔑 SE PREGUNTA A LA BASE Y NO SE LE CREE A LA RESPUESTA. Un 200 dice que el
+  # portero contestó bien, no que la fila quedó cambiada.
+  echo
+  echo "▶ ¿qué hora tiene ahora el turno A? (tiene que decir 15:00 y 60)"
+
+  supabase db query --linked --output csv \
+    "select to_char( inicio at time zone 'America/Argentina/Cordoba', 'HH24:MI' ) as hora,
+            duracion_min
+       from public.turnos where id = $MOVER_A;" \
+    2>/dev/null | tail -2
+fi
+
+# ── 50. EL 409 DEL CONSTRAINT ────────────────────────────────────────────────
+#
+# 🔴 LO QUE SE MIDE ACÁ NO ES QUE FALLE: es que falle BIEN. 409 significa «ese
+# horario está tomado» y es información para quien atiende; un 500 significaría
+# que el error se escapó sin que nadie lo tradujera, y la pantalla no tendría
+# qué decirle.
+
+echo
+echo "▶ 50. Mover el turno A ENCIMA del turno B — 409, no 500   ← el que vale"
+
+if [ -n "${MOVER_A:-}" ] && [ -n "${MOVER_B:-}" ]; then
+
+  CHOQUE=$(
+    curl -s -w '\n%{http_code}' \
+      -X POST "$FUNCIONES/mover-turno" \
+      -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+      -H "Authorization: Bearer $TOKEN_SOPORTE" \
+      -H 'Content-Type: application/json' \
+      -d "{ \"turno_id\": $MOVER_A, \"inicio\": \"${LEJOS}T16:00:00-03:00\", \"duracion_min\": 30 }"
+  )
+
+  echo "   obtenido: $( echo "$CHOQUE" | tail -1 )"
+  echo "   cuerpo:   $( echo "$CHOQUE" | sed '$d' | head -c 200 )"
+  echo
+  echo "   🔴 Tiene que decir 409 Y traer \"codigo\": \"HORARIO_OCUPADO\". Ese"
+  echo "      código es lo que la pantalla usa para decirlo con sus palabras en"
+  echo "      vez de mostrar un error genérico."
+
+  echo
+  echo "▶ ¿se quedó el turno A donde estaba? (tiene que decir 15:00)"
+
+  supabase db query --linked --output csv \
+    "select to_char( inicio at time zone 'America/Argentina/Cordoba', 'HH24:MI' ) as hora
+       from public.turnos where id = $MOVER_A;" \
+    2>/dev/null | tail -2
+fi
+
+# ── 51. EL IDOR DE ESCRITURA ─────────────────────────────────────────────────
+
+echo
+echo "▶ 51. IDOR de ESCRITURA: un NO-admin moviendo un turno ajeno — 403"
+echo "      (se le baja es_admin a la cuenta de soporte y se le devuelve al final)"
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = false where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+# Un turno activo que NO sea de la cuenta de soporte ni los dos de esta prueba.
+SALIDA_AJENO_MOVER=$(
+  supabase db query --linked --output csv \
+    "select id from public.turnos
+       where activo = true
+         and profesional_id <> ${SOPORTE_ID:-0}
+       order by inicio desc limit 1;" \
+    2>/dev/null
+)
+
+AJENO_MOVER=$( echo "$SALIDA_AJENO_MOVER" | grep -oE '^[0-9]+$' | tail -1 )
+
+echo "   turno ajeno elegido: ${AJENO_MOVER:-ninguno}"
+
+if [ -n "$AJENO_MOVER" ]; then
+
+  HORA_ANTES=$(
+    supabase db query --linked --output csv \
+      "select to_char( inicio at time zone 'America/Argentina/Cordoba', 'HH24:MI' )
+         from public.turnos where id = $AJENO_MOVER;" \
+      2>/dev/null | tail -1
+  )
+
+  curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+    -X POST "$FUNCIONES/mover-turno" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    -H 'Content-Type: application/json' \
+    -d "{ \"turno_id\": $AJENO_MOVER, \"inicio\": \"${LEJOS}T19:00:00-03:00\", \"duracion_min\": 30 }"
+
+  echo
+  echo "   🔴 TIENE QUE DAR 403. Si da 200, el turno de otro profesional se"
+  echo "      movió y a su paciente le llegó un correo diciendo que su turno"
+  echo "      cambió de hora: eso es el IDOR de escritura."
+
+  echo
+  echo "▶ ¿quedó el turno ajeno en su hora? (antes decía $HORA_ANTES)"
+
+  supabase db query --linked --output csv \
+    "select to_char( inicio at time zone 'America/Argentina/Cordoba', 'HH24:MI' ) as hora
+       from public.turnos where id = $AJENO_MOVER;" \
+    2>/dev/null | tail -2
+
+else
+  echo "   ❌ NO SE PUDO MEDIR EL CASO MÁS IMPORTANTE DE ESTE BLOQUE: no hay"
+  echo "      ningún turno activo de otro profesional."
+fi
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = true where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+# Los dos turnos de prueba se APAGAN, no se borran — la regla del proyecto. Y
+# con `aviso_estado` vacío, así que la repesca no le manda ninguna cancelación
+# a nadie.
+for TURNO_DE_PRUEBA in "${MOVER_A:-}" "${MOVER_B:-}"; do
+
+  if [ -n "$TURNO_DE_PRUEBA" ]; then
+
+    supabase db query --linked \
+      "update public.turnos set activo = false where id = $TURNO_DE_PRUEBA;" \
+      > /dev/null 2>&1
+
+    echo
+    echo "   turno de prueba $TURNO_DE_PRUEBA apagado (no borrado)"
+  fi
+done
+
+
 # ── Qué mirar ────────────────────────────────────────────────────────────────
 
 echo
 echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400 · 403 · 403 · 401 · 403 · 400 · 201 · 201 · 400 ·"
 echo "   401 · 403 · 400 · 401 · 403 · 200 · 400 · 400 · 200 · 403 · 403 ·"
 echo "   401 · 403 · 400 · 201 · 409 · 409 · 200 · 403 · 403 ·"
-echo "   401 · 403 · 200 · 200 · 403 · 403 · 200 · 400, en ese orden."
-echo "   Y SEIS casos se leen por el CUERPO, no por el código: el 11 (lista vacía),"
+echo "   401 · 403 · 200 · 200 · 403 · 403 · 200 · 400 ·"
+echo "   401 · 403 · 400 · 400 · 200 · 409 · 403, en ese orden."
+echo "   Y SIETE casos se leen por el CUERPO, no por el código: el 11 (lista vacía),"
 echo "   el 14 (el profesional de la respuesta), el 19 (dos conteos distintos),"
 echo "   el 19.b (la grilla tiene que decir el id del que pide, nunca 0),"
 echo "   el 20 (los tres tienen que encontrar a alguien) y el 25 (los dos conteos"
-echo "   IGUALES: el del plantel y el de la lupa)."
+echo "   IGUALES: el del plantel y el de la lupa) y el 44 (más bloques libres CON"
+echo "   ?excepto= que sin él: si son iguales, el parámetro no se obedece)."
 echo
 echo "   Y el cuerpo del caso 3 tiene que traer \"esAdmin\": true. Si trae"
 echo "   false, la fila existe pero el update del es_admin no entró: la puerta"

@@ -1,6 +1,9 @@
 // Portero de CB Odontología — endpoint GET /horarios-del-panel
 //
-//   ?profesional=1&fecha=2026-10-15&duracion=90
+//   ?profesional=1&fecha=2026-10-15&duracion=90&excepto=428
+//
+// `excepto` es opcional y lo manda SÓLO la pantalla de mover: dice qué turno no
+// cuenta como ocupado. Ver el bloque 2.b de abajo.
 //
 // La misma grilla que ve el paciente, con las reglas del CONSULTORIO.
 //
@@ -154,6 +157,30 @@ export default {
         profesionalId = pedido
       }
 
+      // ── 2.b El turno que no cuenta como ocupado ───────────────────────────
+      //
+      // 🔑 LO MANDA LA PANTALLA DE MOVER, y sin él esa pantalla no sirve: el
+      // turno que se está moviendo es uno de los turnos activos del
+      // profesional, así que se tapa a sí mismo. Dejarlo a la misma hora con
+      // otra duración —el caso más común— no se podría ni elegir.
+      //
+      // ⚠ NO ES UN HUECO DE PERMISOS, y conviene tenerlo medido para no
+      // volver a razonarlo: lo único que este parámetro puede hacer es dejar de
+      // contar un turno DEL MISMO PROFESIONAL cuya agenda quien pide ya tiene
+      // derecho a ver —la consulta filtra por `profesional_id` antes—, así que
+      // el id de un turno ajeno no saca nada de la lista. Y si alguien destapa
+      // un bloque que en realidad está tomado, el movimiento lo rebota el
+      // constraint de la base con 409. No hay information disclosure
+      // (divulgación de información) ni permiso ganado por acá.
+      //
+      // Un valor que no sea un número entero ≥ 1 se ignora: el default es NO
+      // excluir nada, que es el seguro.
+      const exceptoCrudo = Number( url.searchParams.get( 'excepto' ) )
+
+      const excepto = Number.isInteger( exceptoCrudo ) && exceptoCrudo >= 1
+        ? exceptoCrudo
+        : undefined
+
       // ── 3. La grilla ──────────────────────────────────────────────────────
 
       const dias = await armarLaGrilla( ctx, {
@@ -165,6 +192,8 @@ export default {
 
         // Acá está la diferencia con el canal del paciente, en una línea.
         conPisoDeHoras: false,
+
+        exceptoTurnoId: excepto,
       } )
 
       if ( dias === 'error-de-base' ) {

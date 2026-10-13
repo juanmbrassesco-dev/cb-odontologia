@@ -479,16 +479,17 @@
           la ortodoncia dura lo que el profesional sabe que dura. Los bloques de
           30 son la unidad con la que piensa el consultorio.
         -->
+        <!--
+          ⚠️ LAS OPCIONES LAS CUELGA `js/panel.js`, de la lista
+          `DURACIONES_DEL_PANEL`. Estaban escritas acá hasta el 13-oct-2026 y
+          se mudaron al sumar la pantalla de MOVER, que elige la misma
+          duración: con las dos listas escritas a mano, agregar «3 horas y
+          media» en una y no en la otra no falla — deja dos pantallas del
+          mismo panel ofreciendo cosas distintas.
+        -->
         <div class="campo">
           <label class="etiqueta" for="turno-duracion">Duración</label>
-          <select class="caja" id="turno-duracion">
-            <option value="30">30 minutos</option>
-            <option value="60">1 hora</option>
-            <option value="90">1 hora y media</option>
-            <option value="120">2 horas</option>
-            <option value="150">2 horas y media</option>
-            <option value="180">3 horas</option>
-          </select>
+          <select class="caja" id="turno-duracion"></select>
         </div>
 
         <div class="campo">
@@ -550,6 +551,82 @@
 
       <div class="acciones">
         <button class="btn btn-2" type="button" id="volver-a-agenda">
+          Volver a la agenda</button>
+      </div>
+
+    </section>
+
+    <!--
+      MOVER UN TURNO DE HORA — la etapa ⑤.4, la mitad de adelante.
+
+      🔑 ES UN PASO Y NO UN `<dialog>`, igual que cargar un turno: hay una
+      grilla de horas adentro, y una grilla no entra en un cartelito con scroll
+      propio a 390 px.
+
+      🔴 LO QUE ESTA PANTALLA NO OFRECE, y no es un olvido: paciente,
+      profesional, tratamiento y cobertura NO se pueden cambiar acá. La
+      migración `permitir_mover_turnos` le dio al portero permiso de escritura
+      sobre `inicio` y `duracion_min` Y NADA MÁS, así que ofrecerlos sería
+      prometer algo que la base rechaza. Lo que se cambia es CUÁNDO y CUÁNTO
+      DURA; para el resto se cancela y se carga de nuevo.
+    -->
+    <section class="paso" id="paso-mover" hidden>
+
+      <h1>Modificar el turno</h1>
+
+      <!--
+        🔴 DE QUIÉN ES EL TURNO Y A QUÉ HORA ESTÁ HOY, fijo y arriba. Es el
+        mismo motivo por el que el cartel de cancelar lleva el nombre: la
+        agenda puede tener diez turnos de diez personas distintas, y este
+        renglón es lo único que separa mover el turno correcto de moverle la
+        hora a otra paciente.
+
+        Y la hora de HOY tiene que estar a la vista mientras se elige la nueva:
+        sin ella, quien mira la grilla no tiene contra qué comparar.
+      -->
+      <div class="turno-que-se-mueve">
+        <p class="mueve-quien" id="mover-quien"></p>
+        <p class="mueve-ahora" id="mover-ahora"></p>
+      </div>
+
+      <!--
+        🔑 LA DURACIÓN VA ARRIBA DE LA GRILLA Y NO ABAJO, porque es la que
+        decide qué bloques entran. Debajo se leería como un detalle que se
+        ajusta al final, y es justo al revés.
+      -->
+      <div class="campo">
+        <label class="etiqueta" for="mover-duracion">Duración</label>
+        <select class="caja" id="mover-duracion"></select>
+      </div>
+
+      <div class="campo">
+        <label class="etiqueta" for="mover-fecha">Día</label>
+        <input class="caja" id="mover-fecha" type="date">
+      </div>
+
+      <!--
+        🔑 EL HORARIO QUE EL TURNO OCUPA HOY SALE ELEGIBLE EN LA GRILLA, y eso
+        lo resuelve el portero, no esta pantalla: `horarios-del-panel` recibe
+        `?excepto=<id del turno>` y no lo cuenta como ocupado. Sin eso el turno
+        se tapa a sí mismo y no se lo puede dejar a la misma hora con otra
+        duración, que es el caso más común de esta pantalla.
+      -->
+      <p class="etiqueta">Hora nueva</p>
+
+      <p class="ayuda-pantalla" id="mover-horas-ayuda">Elegí día y duración
+      para ver los horarios.</p>
+
+      <div class="grilla" id="mover-horas" hidden></div>
+
+      <p class="entrar-aviso" id="mover-aviso" hidden></p>
+
+      <div class="acciones">
+        <button class="btn btn-1" type="button" id="mover-guardar">
+          Guardar el cambio</button>
+      </div>
+
+      <div class="acciones">
+        <button class="btn btn-2" type="button" id="volver-de-mover">
           Volver a la agenda</button>
       </div>
 

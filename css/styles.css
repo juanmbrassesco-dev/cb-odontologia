@@ -4044,3 +4044,46 @@ textarea.caja {
   opacity: 0.55;
   pointer-events: none;
 }
+
+
+/* ════════════════════════════════════════════════════════════════════════════
+   MOVER UN TURNO DE HORA — etapa ⑤.4
+   ════════════════════════════════════════════════════════════════════════════
+
+   LA TARJETA QUE DICE QUÉ TURNO SE ESTÁ MOVIENDO.
+
+   🔑 POR QUÉ ES UNA CLASE PROPIA Y NO `.paciente-elegido`, QUE TIENE LA MISMA
+   FORMA: aquélla dice «éste es el paciente que elegí» y lleva adentro un botón
+   para cambiarlo —su regla `.paciente-elegido .btn` existe para eso—. Ésta dice
+   «éste es el turno que estás por mover» y NO se puede cambiar desde acá: es un
+   dato fijo, no una elección. Reusar la clase por el parecido de la caja ataría
+   las dos a la misma regla, y el día que una necesite un botón adentro se lo
+   estaría dando a la otra sin que nada falle.
+   ⬜ SI APARECE UNA TERCERA tarjeta de dato fijo, ahí sí conviene extraer la
+   forma a `.tarjeta-dato` y que las tres la usen. Con dos no paga. */
+.turno-que-se-mueve {
+  margin-top: 16px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+.mueve-quien {
+  overflow-wrap: anywhere;
+  margin: 0;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+/* LA HORA DE HOY, y se dice más fuerte que el resto del renglón: es el dato
+   contra el que se compara lo que se elige en la grilla de abajo. */
+.mueve-ahora {
+  margin: 6px 0 0;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}

@@ -28,6 +28,13 @@ CÓMO SE USA, desde la raíz del repo:
 Y después, con el servidor levantado:
 
     http://localhost:8000/pruebas/pantalla-panel.html?caso=lleno
+
+LOS INTERRUPTORES DE LA URL:
+
+    ?caso=lleno · uno · vacio · ajeno · fallo     qué agenda se dibuja
+    ?admin=no                                    la vista del que NO administra
+    ?mover=choque                                mover contesta 409
+    ?mover=sin-correo                            se movió y nadie le avisó
 """
 
 import time
@@ -544,40 +551,91 @@ CUERPO_JS = r'''
       const dura = Number( parametros.get( 'duracion' ) );
       const dia  = parametros.get( 'fecha' );
 
-      const ABRE   = 8 * 60;
-      const CIERRA = 12 * 60;
+      // 🔑 `excepto` ES LO QUE HACE USABLE LA PANTALLA DE MOVER, así que la
+      // prueba lo obedece: el turno que se está moviendo no se cuenta como
+      // ocupado. Acá se simula de la forma más directa — el único turno tomado
+      // del día inventado ES el que se mueve, así que con `excepto` puesto el
+      // día sale entero libre. Sin esto, al abrir «Modificar» la grilla saldría
+      // con su propio horario en gris y la prueba mostraría el bug que el
+      // portero ya no tiene.
+      const sinContarlo = parametros.get( 'excepto' ) !== null;
 
-      const TOMADO_DESDE = 9 * 60 + 30;
-      const TOMADO_HASTA = 10 * 60 + 30;
+      // 🔴 EL DÍA INVENTADO TIENE DOS TRAMOS Y DOS LÍMITES DISTINTOS, y eso
+      // NO es adorno: hasta el 13-oct-2026 este simulador tenía un solo
+      // `CIERRA` que hacía de las dos cosas, y por eso apagaba bloques que el
+      // portero de verdad deja elegir. **Lo cazó Juan mirando la pantalla**,
+      // no una prueba: «tiene que dejar exceder media hora».
+      //
+      // LOS DOS LÍMITES, como los tiene `horarios_base` y los aplica
+      // `bloquesDelTramo`:
+      //   · `cierra` (la columna `fin`) corta la GRILLA — un turno no puede
+      //     EMPEZAR después del cierre.
+      //   · `techo` (la columna `fin_maximo`) dice hasta dónde puede TERMINAR
+      //     uno que empezó adentro. Con techo en nulo, el límite es el cierre.
+      //
+      // La forma copia al martes real, medido en la base el 13-oct-2026:
+      // 11:00–12:30 con techo 13:00 (media hora de exceso) y 13:00–17:00 sin
+      // techo. Así la prueba muestra las DOS reglas, que es lo que una sola
+      // ventana de 08:00 a 12:00 no podía mostrar.
+      const TRAMOS = [
+        { abre: 11 * 60, cierra: 12 * 60 + 30, techo: 13 * 60 },
+        { abre: 13 * 60, cierra: 17 * 60,      techo: null }
+      ];
+
+      // El turno ya tomado del día, dentro del segundo tramo.
+      const TOMADO_DESDE = 14 * 60;
+      const TOMADO_HASTA = 15 * 60;
 
       const bloques = [];
 
-      for ( let minuto = ABRE; minuto < CIERRA; minuto += 30 ) {
+      TRAMOS.forEach( ( tramo ) => {
 
-        const hh = String( Math.floor( minuto / 60 ) ).padStart( 2, '0' );
-        const mm = String( minuto % 60 ).padStart( 2, '0' );
+        // Hasta dónde puede terminar lo que arranca en este tramo. Sin
+        // `fin_maximo` cargado, el límite es la hora de cierre — la misma
+        // línea que tiene el portero.
+        const techo = tramo.techo === null
+          ? tramo.cierra
+          : tramo.techo;
 
-        // Se pisa con lo tomado si los dos rangos se cruzan — la misma cuenta
-        // que hace `bloqueOcupado` del lado del portero.
-        const sePisa = minuto < TOMADO_HASTA && ( minuto + dura ) > TOMADO_DESDE;
+        // `minuto + 30 <= cierra` y no `minuto < cierra`: el corte de la
+        // grilla es por BLOQUE entero, como en `bloquesDelTramo`.
+        for ( let minuto = tramo.abre; minuto + 30 <= tramo.cierra; minuto += 30 ) {
 
-        // No entra si lo que arranca acá termina después del cierre.
-        const noEntra = ( minuto + dura ) > CIERRA;
+          const hh = String( Math.floor( minuto / 60 ) ).padStart( 2, '0' );
+          const mm = String( minuto % 60 ).padStart( 2, '0' );
 
-        let estado = 'libre';
+          // Se pisa con lo tomado si los dos rangos se cruzan — la misma
+          // cuenta que hace `bloqueOcupado` del lado del portero.
+          const sePisa = !sinContarlo
+            && minuto < TOMADO_HASTA
+            && ( minuto + dura ) > TOMADO_DESDE;
 
-        if ( noEntra ) { estado = 'no_entra'; }
-        if ( sePisa )  { estado = 'ocupado'; }
+          // No entra si lo que arranca acá termina después del TECHO. Con el
+          // cierre en su lugar, un turno de 90 a las 11:30 saldría apagado
+          // aunque el consultorio lo acepta.
+          const noEntra = ( minuto + dura ) > techo;
 
-        bloques.push( {
-          inicio: dia + 'T' + hh + ':' + mm + ':00-03:00',
-          estado: estado
-        } );
-      }
+          let estado = 'libre';
+
+          if ( noEntra ) {
+            estado = 'no_entra';
+          }
+
+          if ( sePisa ) {
+            estado = 'ocupado';
+          }
+
+          bloques.push( {
+            inicio: dia + 'T' + hh + ':' + mm + ':00-03:00',
+            estado: estado
+          } );
+        }
+      } );
 
       const libres = bloques.filter( ( b ) => b.estado === 'libre' ).length;
 
       avisar( 'GET /horarios-del-panel?fecha=' + dia + '&duracion=' + dura +
+              ( sinContarlo ? '&excepto=' + parametros.get( 'excepto' ) : '' ) +
               ' → 200, ' + libres + ' libre(s) de ' + bloques.length );
 
       return {
@@ -658,6 +716,63 @@ CUERPO_JS = r'''
           duracion_min: enviado.duracion_min,
           profesional: enviado.profesional_id || 2,
           avisadoAlPaciente: true
+        } )
+      };
+    }
+
+    // ── MOVER UN TURNO — la ⑤.4 ──
+    //
+    // 🔑 EL 409 SE PIDE POR LA URL (`&mover=choque`) Y NO SE DEJA AL AZAR. Es
+    // el estado que más importa mirar de esta pantalla —el mensaje tiene que
+    // decir «se pisa con otro turno» y no un error genérico— y es justamente
+    // el que no se puede provocar a mano: haría falta tener en la base otro
+    // turno exactamente en el horario de destino.
+    if ( QUE === 'mover-turno' ) {
+
+      const pedido = JSON.parse( opciones.body );
+
+      const queSalga = new URLSearchParams( location.search ).get( 'mover' );
+
+      if ( queSalga === 'choque' ) {
+
+        avisar( 'POST /mover-turno → 409, turno ' + pedido.turno_id );
+
+        return {
+          ok: false,
+          status: 409,
+          json: async () => ( {
+            error: 'Ese horario se pisa con otro turno',
+            codigo: 'HORARIO_OCUPADO'
+          } )
+        };
+      }
+
+      // La fila de la agenda se mueve de verdad, así que al volver se ve el
+      // resultado. Una pantalla que dice «movido» y deja el renglón en la hora
+      // vieja no prueba nada.
+      const cual = TURNOS.find( ( uno ) => uno.id === pedido.turno_id );
+
+      if ( cual ) {
+        cual.inicio = pedido.inicio;
+        cual.duracion_min = pedido.duracion_min;
+      }
+
+      // `?mover=sin-correo` es el otro estado que hay que poder ver: el turno
+      // se movió y la paciente NO se enteró. Es el caso en que alguien tiene
+      // que llamarla.
+      const avisado = queSalga !== 'sin-correo';
+
+      avisar( 'POST /mover-turno → 200, turno ' + pedido.turno_id +
+              ' a ' + pedido.inicio + ', ' + pedido.duracion_min + ' min' +
+              ( avisado ? '' : ' (sin aviso al paciente)' ) );
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ( {
+          movido: pedido.turno_id,
+          inicio: pedido.inicio,
+          avisadoAlPaciente: avisado
         } )
       };
     }
@@ -991,6 +1106,8 @@ def armar():
 { recortar( "paso-sin-acceso" ) }
 
 { recortar( "paso-cargar" ) }
+
+{ recortar( "paso-mover" ) }
 
 { recortar( "paso-plantel" ) }
 
