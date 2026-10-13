@@ -1201,7 +1201,16 @@ prepararElBoton( {
 const DIRECCION_DEL_PLANTEL = SUPABASE_URL + '/functions/v1/plantel-del-panel';
 
 const DIRECCION_DE_LA_LUPA =
-  SUPABASE_URL + '/functions/v1/turnos-del-profesional';
+  SUPABASE_URL + '/functions/v1/turnos-del-profesional'
+
+const DIRECCION_DEL_ALTA = SUPABASE_URL + '/functions/v1/alta-de-profesional'
+
+const DIRECCION_DE_LA_BAJA = SUPABASE_URL + '/functions/v1/baja-de-profesional'
+
+
+// Quién está mirando. Lo contesta el portero junto con el plantel, y se guarda
+// para una sola cosa: no dibujarle el botón de darse de baja a sí mismo.
+let yoSoy = null;
 
 
 /**
@@ -1284,10 +1293,10 @@ function renglonDelPlantel( fila ) {
 
   renglon.appendChild( datos );
 
-  if ( fila.turnosPendientes > 0 ) {
+  const acciones = document.createElement( 'div' );
+  acciones.className = 'plantel-acciones';
 
-    const acciones = document.createElement( 'div' );
-    acciones.className = 'plantel-acciones';
+  if ( fila.turnosPendientes > 0 ) {
 
     const ver = document.createElement( 'button' );
     ver.type = 'button';
@@ -1306,7 +1315,53 @@ function renglonDelPlantel( fila ) {
     } );
 
     acciones.appendChild( ver );
+  }
 
+  // 🔴 LA PROPIA FILA NO LLEVA BOTÓN DE BAJA, y el `yo` que lo decide sale del
+  // portero, no de nada que el navegador sepa por su cuenta. Apagarse a sí
+  // mismo hace perder el acceso al panel en el pedido siguiente, y si era el
+  // único admin ya no queda nadie que pueda devolverlo desde acá.
+  //
+  // ⚠ Esconder el botón NO es la cerradura: `baja-de-profesional` contesta 409
+  // a ese pedido aunque llegue. Esto sólo evita ofrecer una puerta que no abre.
+  if ( fila.id !== yoSoy ) {
+
+    const estado = document.createElement( 'button' );
+    estado.type = 'button';
+    estado.className = 'btn btn-2';
+
+    const quien = fila.nombre + ' ' + fila.apellido;
+
+    if ( fila.activo ) {
+
+      estado.textContent = 'Dar de baja';
+      estado.setAttribute( 'aria-label', 'Dar de baja a ' + quien );
+
+      // 🔴 EL BOTÓN NO APAGA NADA SOLO: abre el cartel que pregunta. Dar de
+      // baja deja gente esperando un turno con alguien que ya no está, así que
+      // la pregunta no es una formalidad.
+      estado.addEventListener( 'click', () => {
+        abrirElCartelDeBaja( fila );
+      } );
+    }
+    else {
+
+      estado.textContent = 'Volver a activar';
+      estado.setAttribute( 'aria-label', 'Volver a activar a ' + quien );
+
+      // 🔑 ÉSTE SÍ VA DIRECTO, Y NO ES UNA INCONSISTENCIA: prender a alguien no
+      // le saca nada a nadie y se deshace con el botón de al lado. Preguntar
+      // en los dos lados enseñaría a contestar que sí sin leer, que es lo que
+      // hace inútil la pregunta del lado que importa.
+      estado.addEventListener( 'click', () => {
+        cambiarElEstado( fila, true );
+      } );
+    }
+
+    acciones.appendChild( estado );
+  }
+
+  if ( acciones.childElementCount > 0 ) {
     renglon.appendChild( acciones );
   }
 
@@ -1361,6 +1416,8 @@ async function mostrarElPlantel() {
     aviso.textContent = 'No pudimos cargar el plantel. Probá de nuevo.';
     return;
   }
+
+  yoSoy = datos.yo;
 
   // Se vacía antes de colgar: sin esto, entrar dos veces a la solapa APILA el
   // plantel debajo del anterior. No falla con error — muestra el doble.
@@ -1563,3 +1620,269 @@ document.querySelector( '#volver-de-plantel' ).addEventListener(
 document.querySelector( '#volver-de-lupa' ).addEventListener( 'click', () => {
   reemplazarPor( '#paso-plantel' );
 } );
+
+
+// ── DAR DE BAJA Y VOLVER A ACTIVAR ────────────────────────────────────────
+
+// A quién apunta el cartel abierto. Se guarda acá y no en el botón porque el
+// que confirma es un botón FIJO del cartel, no el de la fila: cuando se toca
+// «Sí», la fila ya no está en ninguna parte de la pantalla.
+let elDeLaBaja = null
+
+
+function abrirElCartelDeBaja( fila ) {
+
+  elDeLaBaja = fila
+
+  const quien = fila.nombre + ' ' + fila.apellido
+
+  document.querySelector( '#baja-quien' ).textContent = quien
+
+  // 🔴 EL CARTEL DICE CUÁNTA GENTE QUEDA COLGADA, y ése es el dato que hace
+  // contestable la pregunta. Apagar a alguien NO cancela sus turnos ni le
+  // avisa a ningún paciente: un cartel que sólo dijera «¿seguro?» escondería
+  // justo la consecuencia.
+  const cuantos = fila.turnosPendientes
+
+  let que = 'No tiene turnos sin atender.'
+
+  if ( cuantos === 1 ) {
+    que = 'Tiene 1 turno sin atender. Darlo de baja no lo cancela ni le avisa'
+      + ' a esa persona: hay que llamarla.'
+  }
+
+  if ( cuantos > 1 ) {
+    que = 'Tiene ' + cuantos + ' turnos sin atender. Darlo de baja no los'
+      + ' cancela ni le avisa a nadie: hay que llamar a cada paciente.'
+  }
+
+  document.querySelector( '#baja-que' ).textContent = que
+
+  document.querySelector( '#cartel-baja' ).showModal()
+}
+
+
+function cerrarElCartelDeBaja() {
+
+  document.querySelector( '#cartel-baja' ).close()
+
+  elDeLaBaja = null
+}
+
+
+/**
+ * Apaga o prende a alguien y vuelve a dibujar el plantel.
+ *
+ * 🔑 SE REDIBUJA ENTERO EN VEZ DE TOCAR EL RENGLÓN: la fila cambia de estado,
+ * de texto, de botón y de orden en la lista. Parchear cuatro cosas a mano es
+ * donde se cuela el renglón que quedó diciendo lo viejo, y la lista son siete
+ * filas — volver a pedirla cuesta un viaje y no deja nada desincronizado.
+ */
+async function cambiarElEstado( fila, prender ) {
+
+  const aviso = document.querySelector( '#plantel-aviso' )
+
+  aviso.hidden = true
+
+  let respuesta
+
+  try {
+
+    respuesta = await fetch( DIRECCION_DE_LA_BAJA, {
+      method: 'POST',
+      headers: {
+        ...cabecerasConSesion(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify( {
+        profesional_id: fila.id,
+        activo: prender
+      } )
+    } )
+  }
+  catch {
+
+    aviso.hidden = false
+    aviso.textContent = 'No pudimos conectarnos. Probá de nuevo.'
+    return
+  }
+
+  if ( !respuesta.ok ) {
+
+    // El 409 trae un texto escrito para que lo lea una persona —«no podés
+    // darte de baja a vos mismo»— y por eso se muestra tal cual en vez de
+    // taparlo con un mensaje genérico. Los demás códigos sí van con uno
+    // propio: el detalle de un 500 no le sirve a nadie de este lado.
+    let texto = 'No pudimos cambiar el estado. Probá de nuevo.'
+
+    if ( respuesta.status === 409 ) {
+
+      const cuerpo = await respuesta.json()
+
+      texto = cuerpo.error
+    }
+
+    aviso.hidden = false
+    aviso.textContent = texto
+    return
+  }
+
+  await mostrarElPlantel()
+
+  // 🔑 DESPUÉS DE LA BAJA SE ABRE LA LUPA SOLA, y es la mitad que resuelve el
+  // problema: la lista de a quién llamar aparece sin que nadie tenga que
+  // acordarse de buscarla. Es la solución de Juan del 6-ago-2026 —«que se
+  // resuelva en pantalla y no por correo»— y sin esto el cartel avisa de seis
+  // personas colgadas y después las esconde.
+  if ( !prender && fila.turnosPendientes > 0 ) {
+    irALaLupa( fila )
+  }
+}
+
+
+// ── EL ALTA DE UN PROFESIONAL ─────────────────────────────────────────────
+
+/** Abre o cierra el alta, y esconde las salidas de la pantalla mientras está abierta. */
+function mostrarElAltaDeProfesional( abierta ) {
+
+  document.querySelector( '#alta-profesional' ).hidden = !abierta
+
+  // Mismo criterio que la ficha nueva de un paciente: con el alta abierta, la
+  // única salida visible es la del alta. Dos botones de salir uno debajo del
+  // otro no dicen a dónde va cada uno.
+  document.querySelector( '#abrir-alta-profesional' ).hidden = abierta
+  document.querySelector( '#volver-de-plantel' ).hidden = abierta
+
+  if ( abierta ) {
+    document.querySelector( '#nuevo-nombre' ).focus()
+  }
+}
+
+
+function vaciarElAlta() {
+
+  for ( const id of [ 'nuevo-nombre', 'nuevo-apellido', 'nuevo-email',
+                      'nuevo-acceso' ] ) {
+
+    document.querySelector( '#' + id ).value = ''
+  }
+
+  document.querySelector( '#nuevo-admin' ).checked = false
+}
+
+
+async function darDeAlta() {
+
+  const aviso = document.querySelector( '#plantel-aviso' )
+
+  aviso.hidden = true
+
+  const nombre = document.querySelector( '#nuevo-nombre' ).value.trim()
+  const apellido = document.querySelector( '#nuevo-apellido' ).value.trim()
+  const email = document.querySelector( '#nuevo-email' ).value.trim()
+  const acceso = document.querySelector( '#nuevo-acceso' ).value.trim()
+
+  // 🔑 LOS TRES OBLIGATORIOS SE CHEQUEAN ACÁ Y TAMBIÉN EN EL PORTERO, y no es
+  // una duplicación por desconfianza: acá es para no hacer viajar un pedido
+  // que ya se sabe incompleto, allá es la validación DE VERDAD. La de este
+  // lado se saltea escribiendo el pedido a mano; la del portero no.
+  if ( !nombre || !apellido || !email ) {
+
+    aviso.hidden = false
+    aviso.textContent = 'Faltan el nombre, el apellido o el correo.'
+    return
+  }
+
+  let respuesta
+
+  try {
+
+    respuesta = await fetch( DIRECCION_DEL_ALTA, {
+      method: 'POST',
+      headers: {
+        ...cabecerasConSesion(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify( {
+        nombre: nombre,
+        apellido: apellido,
+        email: email,
+        email_de_acceso: acceso,
+        es_admin: document.querySelector( '#nuevo-admin' ).checked
+      } )
+    } )
+  }
+  catch {
+
+    aviso.hidden = false
+    aviso.textContent = 'No pudimos conectarnos. Probá de nuevo.'
+    return
+  }
+
+  if ( !respuesta.ok ) {
+
+    // El 409 es «ya hay alguien con ese correo», que no es un error del
+    // sistema sino una persona que ya está cargada. Se muestra su texto.
+    let texto = 'No pudimos dar de alta. Probá de nuevo.'
+
+    if ( respuesta.status === 409 || respuesta.status === 400 ) {
+
+      const cuerpo = await respuesta.json()
+
+      texto = cuerpo.error
+    }
+
+    aviso.hidden = false
+    aviso.textContent = texto
+    return
+  }
+
+  vaciarElAlta()
+
+  mostrarElAltaDeProfesional( false )
+
+  await mostrarElPlantel()
+}
+
+
+// ── LOS OYENTES DEL ALTA Y LA BAJA ────────────────────────────────────────
+
+document.querySelector( '#abrir-alta-profesional' ).addEventListener(
+  'click',
+  () => {
+    mostrarElAltaDeProfesional( true )
+  }
+)
+
+
+document.querySelector( '#alta-profesional-cancelar' ).addEventListener(
+  'click',
+  () => {
+    vaciarElAlta()
+    mostrarElAltaDeProfesional( false )
+  }
+)
+
+
+document.querySelector( '#alta-profesional-guardar' ).addEventListener(
+  'click',
+  darDeAlta
+)
+
+
+document.querySelector( '#baja-no' ).addEventListener(
+  'click',
+  cerrarElCartelDeBaja
+)
+
+
+document.querySelector( '#baja-si' ).addEventListener( 'click', () => {
+
+  const fila = elDeLaBaja
+
+  cerrarElCartelDeBaja()
+
+  if ( fila ) {
+    cambiarElEstado( fila, false )
+  }
+} )

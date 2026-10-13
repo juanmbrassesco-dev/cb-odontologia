@@ -3905,3 +3905,76 @@ textarea.caja {
     align-self: stretch;
   }
 }
+
+
+/* ── EL ALTA DE UN PROFESIONAL — etapa ⑤.6, rebanada B ──────────────────────
+
+   Mismo mecanismo que `.alta-paciente`: un bloque que se despliega dentro de
+   la pantalla, separado del resto por una línea. No es una pieza reusada sino
+   el mismo tratamiento aplicado a otro formulario — los dos son «algo nuevo
+   que se carga sin salir de donde estabas». */
+.alta-profesional {
+  max-width: var(--columna-lista);
+  margin: 24px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--borde);
+  text-align: left;
+}
+
+.alta-profesional h2 {
+  margin: 0 0 4px;
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h3);
+  line-height: 1.2;
+  color: var(--grafito);
+}
+
+
+/* LA AYUDA DE UN CAMPO — debajo del campo, no arriba.
+
+   🔑 POR QUÉ ES UNA CLASE NUEVA Y NO `.ayuda-pantalla`, que ya existe: aquélla
+   explica QUÉ HACER en la pantalla y vive suelta entre bloques. Ésta explica
+   QUÉ SIGNIFICA un campo y vive pegada a él, así que es más chica y arranca
+   alineada con su caja. Dos textos de ayuda no son la misma pieza por decir
+   los dos «ayuda».
+
+   ⚠ Y hace falta justo acá por una razón concreta: esta pantalla tiene DOS
+   campos de correo seguidos, y sin una línea que diga para qué es cada uno el
+   formulario parece tener un campo repetido por error. */
+.ayuda-campo {
+  margin-top: 4px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+
+/* EL CAMPO CON TILDE — la casilla y su texto en una línea, y la ayuda abajo.
+
+   🔴 EL TILDE NO SE ACHICA. Los 20 px de lado lo dejan arriba del mínimo
+   táctil cuando se suma el área de la etiqueta, que también activa la casilla
+   por el `for`. Un tilde de 13 px es el que no se puede tocar con el pulgar. */
+.campo-tilde {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.campo-tilde input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--grafito);
+  cursor: pointer;
+}
+
+.campo-tilde .etiqueta {
+  margin: 0;
+  cursor: pointer;
+}
+
+/* La ayuda salta a su propio renglón y se alinea con el TEXTO, no con el
+   tilde: sangrada bajo la casilla se leería como parte de ella. */
+.campo-tilde .ayuda-campo {
+  grid-column: 2;
+}

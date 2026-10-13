@@ -192,11 +192,82 @@
       <!-- Los renglones los cuelga `js/panel.js`. -->
       <div class="lista-plantel" id="plantel-lista" hidden></div>
 
+      <!--
+        EL ALTA — un bloque que se despliega, no una pantalla aparte.
+
+        🔑 MISMO CRITERIO QUE LA FICHA NUEVA DE UN PACIENTE, que está más
+        abajo: son cuatro campos, no una conversación. Lo que sí se copia de
+        allá es que mientras el alta está abierta, el botón de salir de la
+        pantalla se esconde — dos salidas visibles a la vez no dicen a dónde
+        va cada una.
+      -->
+      <div class="alta-profesional" id="alta-profesional" hidden>
+
+        <h2>Profesional nuevo</h2>
+
+        <div class="campo">
+          <label class="etiqueta" for="nuevo-nombre">Nombre</label>
+          <input class="caja" id="nuevo-nombre" type="text" autocomplete="off">
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="nuevo-apellido">Apellido</label>
+          <input class="caja" id="nuevo-apellido" type="text" autocomplete="off">
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="nuevo-email">Correo de contacto</label>
+          <input class="caja" id="nuevo-email" type="email" autocomplete="off">
+          <p class="ayuda-campo">A esta dirección le llegan los avisos de sus
+            turnos.</p>
+        </div>
+
+        <!--
+          🔒 LA SEGUNDA DIRECCIÓN NO ES UN DUPLICADO DEL CAMPO DE ARRIBA, y la
+          ayuda lo dice porque sin eso parece un error del formulario: una es a
+          dónde se le avisa y la otra es la cuenta de Google con la que entra
+          al panel. Pueden ser la misma, y muchas veces lo son; lo que no
+          pueden es ser el mismo DATO, porque tienen ciclos de vida distintos.
+        -->
+        <div class="campo">
+          <label class="etiqueta" for="nuevo-acceso">Cuenta para entrar al
+            panel</label>
+          <input class="caja" id="nuevo-acceso" type="email" autocomplete="off">
+          <p class="ayuda-campo">Tiene que ser una cuenta de Google. Se puede
+            dejar vacía y cargarla después: sin esto la persona existe en la
+            agenda pero no entra al panel.</p>
+        </div>
+
+        <div class="campo campo-tilde">
+          <input id="nuevo-admin" type="checkbox">
+          <label class="etiqueta" for="nuevo-admin">Puede administrar</label>
+          <p class="ayuda-campo">Ve y gestiona los turnos de todos, carga
+            feriados, y da de alta y de baja. Sin el tilde sólo maneja lo
+            suyo.</p>
+        </div>
+
+        <div class="acciones">
+
+          <button class="btn btn-1" type="button" id="alta-profesional-guardar">
+            Dar de alta</button>
+
+          <button class="btn btn-2" type="button" id="alta-profesional-cancelar">
+            Cancelar</button>
+
+        </div>
+
+      </div>
+
       <p class="entrar-aviso" id="plantel-aviso" hidden></p>
 
       <div class="acciones">
+
+        <button class="btn btn-1" type="button" id="abrir-alta-profesional">
+          Dar de alta a alguien</button>
+
         <button class="btn btn-2" type="button" id="volver-de-plantel">
           Volver a la agenda</button>
+
       </div>
 
     </section>
@@ -462,6 +533,42 @@
           <button class="btn btn-2" type="button" id="cartel-si">Sí</button>
 
           <button class="btn btn-2" type="button" id="cartel-no" autofocus>No</button>
+
+        </div>
+
+      </div>
+
+    </dialog>
+
+    <!--
+      EL CARTEL QUE PREGUNTA ANTES DE DAR DE BAJA — la misma pieza que el de
+      cancelar un turno, y por los mismos motivos.
+
+      🔴 LO QUE CAMBIA, Y ES LA MITAD QUE IMPORTA: este cartel DICE CUÁNTA
+      GENTE QUEDA COLGADA. Dar de baja a alguien con seis turnos reservados no
+      cancela ninguno ni le avisa a nadie, así que el número no es un detalle
+      —es la consecuencia—. Un cartel que sólo preguntara «¿seguro?» escondería
+      justo el dato que hace falta para contestar.
+
+      🔴 EL `autofocus` VA EN EL «No»: al abrirse, el foco cae en el botón que
+      no hace nada. Sin eso cae en el primero y un Enter de reflejo apaga a un
+      profesional.
+    -->
+    <dialog class="cartel" id="cartel-baja" aria-labelledby="baja-titulo">
+
+      <div class="cartel-caja">
+
+        <h2 id="baja-titulo">¿Damos de baja?</h2>
+
+        <p class="cartel-cuando" id="baja-quien"></p>
+
+        <p class="cartel-que" id="baja-que"></p>
+
+        <div class="acciones acciones-fila">
+
+          <button class="btn btn-2" type="button" id="baja-si">Sí</button>
+
+          <button class="btn btn-2" type="button" id="baja-no" autofocus>No</button>
 
         </div>
 

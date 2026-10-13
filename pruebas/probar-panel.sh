@@ -847,11 +847,168 @@ echo "   ✅ es_admin tiene que decir TRUE. Si dice false, el script se cortó"
 echo "      antes de restaurarlo: el comando está comentado arriba."
 
 
+# ── 28 a 35. EL ALTA Y LA BAJA — etapa ⑤.6, rebanada B ───────────────────────
+#
+# 🔴 ESTOS DOS ENDPOINTS ESCRIBEN, así que lo que miden estos casos no es que
+# anden: es que NO anden para quien no corresponde. El de alta es la puerta más
+# cara de toda la fase — quien puede dar de alta puede crearse una fila con
+# es_admin y repartirse permisos.
+#
+# ⏰ La fila que crea el caso 31 se BORRA al final de este bloque. Es la única
+# de toda la batería que se limpia sola, y se puede: un profesional recién
+# creado no tiene turnos, así que la foreign key `restrict` no lo retiene.
+
+CORREO_BATERIA="bateria-$( date +%s )@ejemplo.invalido"
+
+echo
+echo "▶ 28. Alta sin token — 401"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/alta-de-profesional" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{ "nombre": "x", "apellido": "x", "email": "x@x.com" }'
+
+echo
+echo "▶ 29. Alta como PACIENTE — 403"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/alta-de-profesional" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_PACIENTE" \
+  -H 'Content-Type: application/json' \
+  -d '{ "nombre": "x", "apellido": "x", "email": "x@x.com" }'
+
+echo
+echo "▶ 30. Alta sin el correo — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/alta-de-profesional" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d '{ "nombre": "Sin", "apellido": "Correo" }'
+
+echo
+echo "▶ 31. Alta como ADMIN — 201"
+
+ALTA=$(
+  curl -s -w '\n%{http_code}' \
+    -X POST "$FUNCIONES/alta-de-profesional" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    -H 'Content-Type: application/json' \
+    -d "{ \"nombre\": \"Batería\", \"apellido\": \"De Prueba\",
+          \"email\": \"$CORREO_BATERIA\" }"
+)
+
+echo "   obtenido: $( echo "$ALTA" | tail -1 )"
+
+NUEVO_ID=$( echo "$ALTA" | sed '$d' | jq -r '.alta.id' 2>/dev/null )
+
+echo "   profesional creado: $NUEVO_ID"
+
+# 🔴 EL CUERPO SE IMPRIME, y esto se arregló el 13-oct apenas se corrió la
+# batería: el aviso de abajo decía «el cuerpo tiene que traer es_admin: false»
+# y el cuerpo NO SE MOSTRABA. Era un chequeo que no chequeaba y no avisaba de
+# que no chequeaba — el mismo modo de falla que ya mordió tres veces en el
+# caso 6, con el formato de `supabase db query`.
+echo "   cuerpo:   $( echo "$ALTA" | sed '$d' | head -c 200 )"
+
+echo
+echo "   ✅ El cuerpo tiene que traer \"es_admin\": false aunque no se haya"
+echo "      mandado: el alta nace SIN permisos de administrador."
+
+echo
+echo "▶ 32. El MISMO correo otra vez — 409, no 500"
+echo "      (choca contra el unique de la tabla: nadie se equivocó)"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/alta-de-profesional" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d "{ \"nombre\": \"Otro\", \"apellido\": \"Igual\",
+        \"email\": \"$CORREO_BATERIA\" }"
+
+echo
+echo "▶ 33. BAJA DE SÍ MISMO — 409   ← el caso que evita el bloqueo total"
+echo "      (un admin que se apaga pierde el panel en el pedido siguiente,"
+echo "       y si era el único no queda quien pueda devolvérselo)"
+
+AUTOBAJA=$(
+  curl -s -w '\n%{http_code}' \
+    -X POST "$FUNCIONES/baja-de-profesional" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    -H 'Content-Type: application/json' \
+    -d '{ "profesional_id": 16 }'
+)
+
+echo "   obtenido: $( echo "$AUTOBAJA" | tail -1 )"
+echo "   cuerpo:   $( echo "$AUTOBAJA" | sed '$d' | head -c 200 )"
+
+echo
+echo "   🔴 TIENE QUE DAR 409. Si da 200, la cuenta de soporte quedó apagada"
+echo "      y el resto de esta batería va a dar 403 de acá en adelante."
+
+echo
+echo "▶ 34. Baja del profesional de prueba, como ADMIN — 200"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/baja-de-profesional" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d "{ \"profesional_id\": $NUEVO_ID }"
+
+echo
+echo "▶ 35. Baja como NO-admin — 403   ← el que justifica el chequeo de nivel"
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = false where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/baja-de-profesional" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d "{ \"profesional_id\": $NUEVO_ID, \"activo\": true }"
+
+echo "   35.b el alta, también como NO-admin — 403:"
+
+curl -s -o /dev/null -w "       obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/alta-de-profesional" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H 'Content-Type: application/json' \
+  -d '{ "nombre": "No", "apellido": "Debería", "email": "no@ejemplo.invalido" }'
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = true where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+echo
+echo "▶ limpieza: se borra el profesional de prueba y se restaura es_admin"
+
+supabase db query --linked --output csv \
+  "delete from public.profesionales where email like 'bateria-%';
+   select nombre, es_admin from public.profesionales where email_de_acceso = '$SOPORTE_EMAIL';" \
+  2>/dev/null | tail -2
+
+echo
+echo "   ✅ Tiene que decir TRUE, y la fila de prueba ya no está. Se puede"
+echo "      borrar porque un profesional recién creado no tiene turnos: la"
+echo "      foreign key restrict no lo retiene."
+
+
 # ── Qué mirar ────────────────────────────────────────────────────────────────
 
 echo
 echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400 · 403 · 403 · 401 · 403 · 400 · 201 · 201 · 400 ·"
-echo "   401 · 403 · 400 · 401 · 403 · 200 · 400 · 400 · 200 · 403 · 403, en ese orden."
+echo "   401 · 403 · 400 · 401 · 403 · 200 · 400 · 400 · 200 · 403 · 403 ·"
+echo "   401 · 403 · 400 · 201 · 409 · 409 · 200 · 403 · 403, en ese orden."
 echo "   Y SEIS casos se leen por el CUERPO, no por el código: el 11 (lista vacía),"
 echo "   el 14 (el profesional de la respuesta), el 19 (dos conteos distintos),"
 echo "   el 19.b (la grilla tiene que decir el id del que pide, nunca 0),"

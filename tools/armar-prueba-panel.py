@@ -128,20 +128,28 @@ def recortar( id_de_la_pantalla ):
     return pagina[ arranque : cierre ]
 
 
-def recortar_el_cartel():
-    """El `<dialog>` de la pregunta, tal cual está en `panel.html`.
+def recortar_el_cartel( id_del_cartel = "cartel-cancelar" ):
+    """Un `<dialog>` de la página, tal cual está en `panel.html`.
 
-    🔴 VA APARTE DEL RECORTE DE PANTALLAS porque no es una `<section>`, y sin
-    esta función la prueba se quedaba sin el cartel: `panel.js` lo busca por
-    `id` al cargar y se cae sobre `null` antes de dibujar un solo turno.
+    🔴 RECIBE EL `id` DESDE EL 13-oct-2026, Y EL PORQUÉ ES UN MODO DE FALLA
+    CARO: antes buscaba `cartel-cancelar` clavado en el código, así que al
+    sumar el cartel de la baja la prueba salió SIN ÉL. Y eso no se ve como un
+    cartel que falta: `panel.js` busca sus botones por `id` al cargar, no los
+    encuentra, y el error corta el script ENTERO — la página queda en blanco,
+    sin agenda, sin plantel y sin decir por qué.
 
-    Se busca desde el `id` HACIA ATRÁS y no con el primer `"<dialog"` del
-    archivo: el comentario que está arriba del cartel nombra la etiqueta, así
-    que el recorte simple arrancaría adentro del comentario y lo partiría.
+    Lo cazó el chequeo de «¿están las piezas en el HTML generado?», no la
+    pantalla: cuando se mira la pantalla, ya no hay nada que mirar.
     """
+
+    # VA APARTE DEL RECORTE DE PANTALLAS porque no es una `<section>`.
+    #
+    # Se busca desde el `id` HACIA ATRÁS y no con el primer `"<dialog"` del
+    # archivo: el comentario que está arriba del cartel nombra la etiqueta, así
+    # que el recorte simple arrancaría adentro del comentario y lo partiría.
     pagina = PAGINA.read_text( encoding = "utf-8" )
 
-    ancla    = pagina.index( 'id="cartel-cancelar"' )
+    ancla    = pagina.index( f'id="{ id_del_cartel }"' )
     arranque = pagina.rindex( "<dialog", 0, ancla )
     cierre   = pagina.index( "</dialog>", ancla ) + len( "</dialog>" )
 
@@ -229,42 +237,47 @@ CUERPO_JS = r'''
   const TRATAMIENTOS_DE_PRUEBA   = TRATAMIENTOS_PUESTOS;
   const COBERTURAS_INVENTADAS    = COBERTURAS_PUESTAS;
 
+  // Quién mira la pantalla. Es Cecilia, así que su propia fila no tiene que
+  // llevar botón de baja — y si el pedido llegara igual, se contesta 409.
+  const YO_SOY = 1;
+
+
   // ── EL PLANTEL INVENTADO — siete filas elegidas por lo que cada una PRUEBA ──
   const PLANTEL = [
     // La que administra y además atiende: tiene que decir las dos cosas.
-    { id: 1, nombre: 'Cecilia', apellido: 'Brassesco',
+    { id: 1, nombre: 'Cecilia', apellido: 'Brassesco', email: 'cecilia@ejemplo.com',
       esAdmin: true, activo: true, fechaBaja: null },
 
     // Activo y sin nada que atender: es la fila que se apaga, porque no pide
     // ninguna acción. Y sin botón, que es lo que hay que poder ver.
-    { id: 2, nombre: 'Martín', apellido: 'Sosa',
+    { id: 2, nombre: 'Martín', apellido: 'Sosa', email: 'martin@ejemplo.com',
       esAdmin: false, activo: true, fechaBaja: null },
 
     // UN solo turno: el singular del renglón, que con un plural automático
     // diría «1 turnos».
-    { id: 3, nombre: 'Lucía', apellido: 'Ferreyra',
+    { id: 3, nombre: 'Lucía', apellido: 'Ferreyra', email: 'lucia.f@ejemplo.com',
       esAdmin: false, activo: true, fechaBaja: null },
 
     // 🔴 EL CASO CRÍTICO DE LA PANTALLA: de baja Y con gente esperándolo. Son
     // seis personas que van a viajar al consultorio a ver a alguien que no
     // está, y esta fila es lo único que lo dice.
-    { id: 4, nombre: 'Rodrigo', apellido: 'Paz Etchegoyen',
+    { id: 4, nombre: 'Rodrigo', apellido: 'Paz Etchegoyen', email: 'rodrigo@ejemplo.com',
       esAdmin: false, activo: false,
       fechaBaja: '2026-08-12T18:30:00+00:00' },
 
     // De baja y ya resuelto: no queda nada que hacer con esta fila.
-    { id: 5, nombre: 'Valentina', apellido: 'Ruiz',
+    { id: 5, nombre: 'Valentina', apellido: 'Ruiz', email: 'valen@ejemplo.com',
       esAdmin: false, activo: false,
       fechaBaja: '2026-05-03T14:00:00+00:00' },
 
     // ⚠ APAGADO SIN FECHA: pasa con lo que se apagó a mano desde el Table
     // Editor, antes de que esta pantalla existiera. La fila no inventa una
     // fecha, dice «de baja» y nada más.
-    { id: 6, nombre: 'Esteban', apellido: 'Molina',
+    { id: 6, nombre: 'Esteban', apellido: 'Molina', email: 'esteban@ejemplo.com',
       esAdmin: false, activo: false, fechaBaja: null },
 
     // Un nombre largo de verdad, para ver qué le pasa al ancho a 390.
-    { id: 7, nombre: 'María de los Ángeles', apellido: 'Giménez Taborda',
+    { id: 7, nombre: 'María de los Ángeles', apellido: 'Giménez Taborda', email: 'maria@ejemplo.com',
       esAdmin: false, activo: true, fechaBaja: null }
   ];
 
@@ -615,7 +628,7 @@ CUERPO_JS = r'''
       return {
         ok: true,
         status: 200,
-        json: async () => ( { yo: 1, plantel: PLANTEL } )
+        json: async () => ( { yo: YO_SOY, plantel: PLANTEL } )
       };
     }
 
@@ -637,6 +650,86 @@ CUERPO_JS = r'''
         status: 200,
         json: async () => ( { profesional: deQuien, turnos: suyos } )
       };
+    }
+
+    // ── EL ALTA Y LA BAJA — etapa ⑤.6, rebanada B ──
+    //
+    // 🔴 LOS DOS ESCRIBEN DE VERDAD SOBRE LAS LISTAS INVENTADAS, no contestan
+    // un 200 vacío. Un simulador que siempre dice que sí no prueba la
+    // pantalla: lo que hay que poder ver es que la fila CAMBIA —de «en
+    // actividad» a «de baja el …», con el botón dado vuelta— y eso sólo pasa
+    // si el dato se modifica y la lista se vuelve a dibujar.
+    if ( String( direccion ).includes( 'baja-de-profesional' ) ) {
+
+      const pedido = JSON.parse( opciones.body );
+
+      const fila = PLANTEL.find( ( uno ) => uno.id === pedido.profesional_id );
+
+      // El mismo 409 que contesta el portero. Vale la pena simularlo: es el
+      // único camino por el que esta pantalla muestra un aviso de error.
+      if ( !pedido.activo && fila && fila.id === YO_SOY ) {
+
+        avisar( 'POST /baja-de-profesional → 409, es la propia fila' );
+
+        return {
+          ok: false,
+          status: 409,
+          json: async () => ( {
+            error: 'No podés darte de baja a vos mismo'
+          } )
+        };
+      }
+
+      if ( fila ) {
+        fila.activo = pedido.activo === true;
+        fila.fechaBaja = fila.activo ? null : new Date().toISOString();
+      }
+
+      avisar( 'POST /baja-de-profesional → 200, ' +
+              ( pedido.activo ? 'prendido' : 'apagado' ) );
+
+      return { ok: true, status: 200, json: async () => ( { yaEstaba: false } ) };
+    }
+
+    if ( String( direccion ).includes( 'alta-de-profesional' ) ) {
+
+      const pedido = JSON.parse( opciones.body );
+
+      // El choque contra el `unique` del correo, que es el caso que la
+      // pantalla tiene que saber mostrar.
+      const repetido = PLANTEL.some(
+        ( uno ) => uno.email === pedido.email
+      );
+
+      if ( repetido ) {
+
+        avisar( 'POST /alta-de-profesional → 409, correo repetido' );
+
+        return {
+          ok: false,
+          status: 409,
+          json: async () => ( {
+            error: 'Ya hay alguien cargado con ese correo'
+          } )
+        };
+      }
+
+      const nuevo = {
+        id: Math.max( ...PLANTEL.map( ( uno ) => uno.id ) ) + 1,
+        nombre: pedido.nombre,
+        apellido: pedido.apellido,
+        email: pedido.email,
+        esAdmin: pedido.es_admin === true,
+        activo: true,
+        fechaBaja: null,
+        turnosPendientes: 0
+      };
+
+      PLANTEL.push( nuevo );
+
+      avisar( 'POST /alta-de-profesional → 201, id ' + nuevo.id );
+
+      return { ok: true, status: 201, json: async () => ( { alta: nuevo } ) };
     }
 
     return fetchDeVerdad( direccion, opciones );
@@ -758,6 +851,8 @@ def armar():
 { recortar( "paso-lupa" ) }
 
 { recortar_el_cartel() }
+
+{ recortar_el_cartel( "cartel-baja" ) }
   </main>
 
 <script>
