@@ -68,7 +68,7 @@ function diaEnPalabras( texto ) {
  * ⚠️ Y SE CONVIERTE A LA ZONA DEL CONSULTORIO, no a la del navegador: el turno
  * es a las 15:30 en Santa Fe aunque el que mire la pantalla esté de viaje.
  */
-function turnoEnPalabras( inicio ) {
+function turnoEnPalabras( inicio, conAnio = false ) {
 
   const instante = new Date( inicio );
 
@@ -93,7 +93,16 @@ function turnoEnPalabras( inicio ) {
 
   const dia = dato.year + '-' + dato.month + '-' + dato.day;
 
-  return diaEnPalabras( dia ) + ', ' + dato.hour + ':' + dato.minute;
+  // EL AÑO VA SÓLO SI LO PIDEN, y el que lo pide es quien muestra una lista
+  // que cruza años: la lupa del plantel tiene turnos de noviembre y de marzo
+  // juntos, y ahí «9 de marzo» no dice si falta un mes o trece. La agenda del
+  // día no lo necesita porque todos sus turnos son del mismo día, que además
+  // está escrito arriba de la lista.
+  const cuando = conAnio
+    ? diaEnPalabras( dia ) + ' de ' + dato.year
+    : diaEnPalabras( dia );
+
+  return cuando + ', ' + dato.hour + ':' + dato.minute;
 }
 
 
@@ -161,4 +170,53 @@ function desfaseDeSantaFe( fecha ) {
   // 'longOffset' devuelve 'GMT-03:00'. Sacado el prefijo queda lo que va
   // pegado al final de la fecha.
   return zona.value.replace( 'GMT', '' );
+}
+
+
+/**
+ * Sólo el DÍA de un instante, en palabras y en la zona del consultorio:
+ * «martes 12 de agosto de 2026».
+ *
+ * PARA QUÉ: las fechas que guarda la base como instante y que se muestran sin
+ * hora, como `profesionales.fecha_baja`. La hora a la que alguien apagó una
+ * ficha no le sirve a nadie, y en una lista que se barre con la vista es ruido.
+ *
+ * 🔴 CONVIERTE, NO CORTA, por la misma trampa que ya explica `horaDelTurno`:
+ * un instante guardado como '2026-08-13T02:00:00+00:00' son las 23:00 del DÍA
+ * ANTERIOR en Santa Fe. Cortar el texto a diez caracteres mostraría el 13
+ * cuando la baja fue el 12 — una fecha válida, bien escrita, un día corrida.
+ *
+ * Vive acá y no en `panel.js` para que la zona del consultorio siga teniendo
+ * UN solo lugar en todo el front.
+ */
+function diaDeUnInstante( instante ) {
+
+  const pedazos = new Intl.DateTimeFormat( 'es-AR', {
+    timeZone: ZONA_DEL_CONSULTORIO,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  } ).formatToParts( new Date( instante ) );
+
+  const dato = {};
+
+  for ( const pedazo of pedazos ) {
+    dato[ pedazo.type ] = pedazo.value;
+  }
+
+  // 🔴 NO REUSA `diaEnPalabras`, y lo levantó Juan mirando la pantalla el
+  // 13-oct-2026: esa función escribe para un TÍTULO —«Jueves 8 de octubre»—,
+  // con el día de la semana en mayúscula. Metido dentro de una frase daba «de
+  // baja el Miércoles 12 de agosto», con una mayúscula en el medio de la
+  // oración que en español no va.
+  //
+  // 🔑 Y DE PASO SE CAE EL DÍA DE LA SEMANA ENTERO, que tampoco corresponde:
+  // saber que una baja fue un miércoles no le sirve a nadie. En un turno ayuda
+  // a ubicarse; en un hecho administrativo del pasado es ruido.
+  //
+  // ⚠ EL AÑO SÍ VA, y es el otro dato que faltaba: «12 de agosto» no distingue
+  // una baja del año pasado de una de hace tres.
+  return Number( dato.day ) + ' de ' +
+    NOMBRES_DE_MES[ Number( dato.month ) - 1 ].toLowerCase() +
+    ' de ' + dato.year;
 }

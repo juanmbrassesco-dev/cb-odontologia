@@ -30,6 +30,8 @@ Y después, con el servidor levantado:
     http://localhost:8000/pruebas/pantalla-panel.html?caso=lleno
 """
 
+import time
+
 from pathlib import Path
 import json
 
@@ -227,6 +229,192 @@ CUERPO_JS = r'''
   const TRATAMIENTOS_DE_PRUEBA   = TRATAMIENTOS_PUESTOS;
   const COBERTURAS_INVENTADAS    = COBERTURAS_PUESTAS;
 
+  // ── EL PLANTEL INVENTADO — siete filas elegidas por lo que cada una PRUEBA ──
+  const PLANTEL = [
+    // La que administra y además atiende: tiene que decir las dos cosas.
+    { id: 1, nombre: 'Cecilia', apellido: 'Brassesco',
+      esAdmin: true, activo: true, fechaBaja: null },
+
+    // Activo y sin nada que atender: es la fila que se apaga, porque no pide
+    // ninguna acción. Y sin botón, que es lo que hay que poder ver.
+    { id: 2, nombre: 'Martín', apellido: 'Sosa',
+      esAdmin: false, activo: true, fechaBaja: null },
+
+    // UN solo turno: el singular del renglón, que con un plural automático
+    // diría «1 turnos».
+    { id: 3, nombre: 'Lucía', apellido: 'Ferreyra',
+      esAdmin: false, activo: true, fechaBaja: null },
+
+    // 🔴 EL CASO CRÍTICO DE LA PANTALLA: de baja Y con gente esperándolo. Son
+    // seis personas que van a viajar al consultorio a ver a alguien que no
+    // está, y esta fila es lo único que lo dice.
+    { id: 4, nombre: 'Rodrigo', apellido: 'Paz Etchegoyen',
+      esAdmin: false, activo: false,
+      fechaBaja: '2026-08-12T18:30:00+00:00' },
+
+    // De baja y ya resuelto: no queda nada que hacer con esta fila.
+    { id: 5, nombre: 'Valentina', apellido: 'Ruiz',
+      esAdmin: false, activo: false,
+      fechaBaja: '2026-05-03T14:00:00+00:00' },
+
+    // ⚠ APAGADO SIN FECHA: pasa con lo que se apagó a mano desde el Table
+    // Editor, antes de que esta pantalla existiera. La fila no inventa una
+    // fecha, dice «de baja» y nada más.
+    { id: 6, nombre: 'Esteban', apellido: 'Molina',
+      esAdmin: false, activo: false, fechaBaja: null },
+
+    // Un nombre largo de verdad, para ver qué le pasa al ancho a 390.
+    { id: 7, nombre: 'María de los Ángeles', apellido: 'Giménez Taborda',
+      esAdmin: false, activo: true, fechaBaja: null }
+  ];
+
+
+  // ── LOS TURNOS DE LA LUPA — `de` es de quién es cada uno ──
+  //
+  // Los seis del profesional 4 son el caso que importa: es el que está de baja
+  // con gente esperando. Cada uno prueba una variante del renglón.
+  const TURNOS_DE_LA_LUPA = [
+    { de: 4, id: 101, inicio: '2026-11-17T12:00:00+00:00', duracion_min: 30,
+      paciente: { nombre: 'Marta', apellido: 'Giménez',
+                  telefono: '342 155-4821', email: 'marta@ejemplo.com' },
+      tratamiento: { nombre: 'consulta' },
+      observaciones_paciente:
+        'Vengo con dolor fuerte del lado derecho desde el jueves, ' +
+        'no puedo morder. Tomo ibuprofeno cada ocho horas.' },
+
+    // Sólo correo: el teléfono es opcional en `pacientes`.
+    { de: 4, id: 102, inicio: '2026-11-18T13:30:00+00:00', duracion_min: 60,
+      paciente: { nombre: 'Joaquín', apellido: 'Sosa',
+                  telefono: null, email: 'joaquin.sosa@ejemplo.com' },
+      tratamiento: { nombre: 'limpieza' },
+      observaciones_paciente: null },
+
+    // 🔴 NI TELÉFONO NI CORREO: a esta persona no se la puede llamar, y la
+    // pantalla tiene que decirlo en voz alta en vez de mostrar un hueco.
+    { de: 4, id: 103, inicio: '2026-11-19T16:00:00+00:00', duracion_min: 30,
+      paciente: { nombre: 'Pedro', apellido: 'Sin Contacto',
+                  telefono: null, email: null },
+      tratamiento: { nombre: 'consulta' },
+      observaciones_paciente: 'Me da ansiedad la luz verde del aparato.' },
+
+    // ⚠ SIN TRATAMIENTO: `tratamiento_id` acepta nulo, así que un turno
+    // cargado a mano puede no tenerlo. Con `!inner` esta fila desaparecería.
+    { de: 4, id: 104, inicio: '2026-11-20T12:30:00+00:00', duracion_min: 90,
+      paciente: { nombre: 'Esteban', apellido: 'Molina',
+                  telefono: '342 154-0099', email: null },
+      tratamiento: null,
+      observaciones_paciente: null },
+
+    { de: 4, id: 105, inicio: '2026-12-02T17:30:00+00:00', duracion_min: 30,
+      paciente: { nombre: 'Valentina', apellido: 'Ruiz',
+                  telefono: '342 156-7731', email: 'vale.ruiz@ejemplo.com' },
+      tratamiento: { nombre: 'blanqueamiento' },
+      observaciones_paciente: 'Prefiero a la tarde.' },
+
+    { de: 4, id: 106, inicio: '2027-03-09T14:00:00+00:00', duracion_min: 60,
+      paciente: { nombre: 'Rodrigo', apellido: 'Paz',
+                  telefono: '342 155-1234', email: null },
+      tratamiento: { nombre: 'ortodoncia' },
+      observaciones_paciente: null },
+
+    // Los de otros, para que el filtro de la lupa se pueda ver funcionando.
+    { de: 1, id: 107, inicio: '2026-11-17T15:00:00+00:00', duracion_min: 30,
+      paciente: { nombre: 'Lucía', apellido: 'Ferreyra',
+                  telefono: '342 155-8080', email: 'lucia@ejemplo.com' },
+      tratamiento: { nombre: 'consulta' },
+      observaciones_paciente: null },
+
+    { de: 3, id: 108, inicio: '2026-11-21T12:00:00+00:00', duracion_min: 30,
+      paciente: { nombre: 'Ana', apellido: 'Vera',
+                  telefono: null, email: 'ana.vera@ejemplo.com' },
+      tratamiento: { nombre: 'limpieza' },
+      observaciones_paciente: null },
+
+    { de: 6, id: 109, inicio: '2026-11-24T13:00:00+00:00', duracion_min: 30,
+      paciente: { nombre: 'Carlos', apellido: 'Duarte',
+                  telefono: '342 155-3344', email: null },
+      tratamiento: { nombre: 'consulta' },
+      observaciones_paciente: null },
+
+    { de: 6, id: 110, inicio: '2026-12-15T16:30:00+00:00', duracion_min: 60,
+      paciente: { nombre: 'Silvia', apellido: 'Ponce',
+                  telefono: '342 154-7788', email: 'silvia@ejemplo.com' },
+      tratamiento: { nombre: 'limpieza' },
+      observaciones_paciente: null },
+
+    { de: 7, id: 111, inicio: '2026-11-25T14:00:00+00:00', duracion_min: 30,
+      paciente: { nombre: 'Nicolás', apellido: 'Ibarra',
+                  telefono: '342 156-2211', email: 'nico@ejemplo.com' },
+      tratamiento: { nombre: 'consulta' },
+      observaciones_paciente: null },
+
+    // 🔴 LOS SEIS DE ABAJO NO SON RELLENO — 13-oct-2026, lo levantó Juan: «los
+    // turnos parece que está trayendo lo que se le canta». La coherencia estaba
+    // bien (se midió fila por fila y las siete coincidían), pero el REPARTO era
+    // malo: seis de siete profesionales traían cero o un turno, así que tocabas
+    // tres botones seguidos y veías una tarjeta sola cada vez. Una pantalla que
+    // siempre muestra UNO no se puede juzgar, y es exactamente el motivo por el
+    // que esta herramienta existe desde el 8-oct.
+    //
+    // 🔑 El reparto que queda tiene sentido de consultorio: Cecilia 4 —es la
+    // que más atiende—, Rodrigo 6 —el que se fue y dejó gente colgada—, María 3,
+    // Lucía y Esteban 2, y dos en cero.
+    { de: 1, id: 112, inicio: '2026-11-17T16:30:00+00:00', duracion_min: 60,
+      paciente: { nombre: 'Gabriela', apellido: 'Lorenzo',
+                  telefono: '342 155-9012', email: 'gabi.lorenzo@ejemplo.com' },
+      tratamiento: { nombre: 'ortodoncia' },
+      observaciones_paciente: 'Se me soltó un bracket de abajo.' },
+
+    { de: 1, id: 113, inicio: '2026-11-19T13:00:00+00:00', duracion_min: 30,
+      paciente: { nombre: 'Tomás', apellido: 'Arriola',
+                  telefono: '342 154-5566', email: null },
+      tratamiento: { nombre: 'consulta' },
+      observaciones_paciente: null },
+
+    { de: 1, id: 114, inicio: '2026-12-04T12:30:00+00:00', duracion_min: 90,
+      paciente: { nombre: 'Elena', apellido: 'Quiroga',
+                  telefono: '342 156-4433', email: 'elena.q@ejemplo.com' },
+      tratamiento: { nombre: 'prótesis' },
+      observaciones_paciente: null },
+
+    { de: 3, id: 115, inicio: '2026-12-10T15:00:00+00:00', duracion_min: 30,
+      paciente: { nombre: 'Facundo', apellido: 'Rivas',
+                  telefono: '342 155-2020', email: null },
+      tratamiento: { nombre: 'blanqueamiento' },
+      observaciones_paciente: null },
+
+    { de: 7, id: 116, inicio: '2026-11-26T12:00:00+00:00', duracion_min: 60,
+      paciente: { nombre: 'Claudia', apellido: 'Benítez',
+                  telefono: '342 155-6677', email: 'claudia.b@ejemplo.com' },
+      tratamiento: { nombre: 'limpieza' },
+      observaciones_paciente: 'Soy alérgica a la penicilina.' },
+
+    { de: 7, id: 117, inicio: '2027-02-11T14:30:00+00:00', duracion_min: 30,
+      paciente: { nombre: 'Hernán', apellido: 'Vidal',
+                  telefono: null, email: 'hernan.vidal@ejemplo.com' },
+      tratamiento: null,
+      observaciones_paciente: null }
+  ];
+
+
+  // 🔴 EL CONTEO DE CADA FILA SE CALCULA DE LA LISTA DE ARRIBA, no se escribe a
+  // mano en el plantel. Y esto no es prolijidad: la primera versión los tenía
+  // tipeados y TRES DE SIETE no coincidían — la fila decía «4 turnos sin
+  // atender» y la lupa abría con uno solo.
+  //
+  // 🔑 Lo que importa es QUÉ ENSEÑABA ESA PRUEBA: exactamente la contradicción
+  // que el caso 25 de `probar-panel.sh` existe para cazar en el sistema real.
+  // Una página de prueba que muestra un bug inventado hace perder el tiempo
+  // buscándolo en el código, donde no está. Lo encontró Juan mirando la
+  // pantalla, el 13-oct-2026.
+  for ( const fila of PLANTEL ) {
+
+    fila.turnosPendientes = TURNOS_DE_LA_LUPA.filter(
+      ( turno ) => turno.de === fila.id
+    ).length;
+  }
+
+
   const fetchDeVerdad = window.fetch;
 
   window.fetch = async function ( direccion, opciones ) {
@@ -412,6 +600,45 @@ CUERPO_JS = r'''
       };
     }
 
+    // ── LOS DOS ENDPOINTS DE LA ⑤.6, REBANADA A ──
+    //
+    // 🔴 POR QUÉ HACEN FALTA SIETE FILAS INVENTADAS Y NO DOS: en la base real
+    // hay dos profesionales, los dos activos y los dos admin. Con eso no se
+    // puede juzgar esta lista — no se ve el renglón de una baja con fecha, ni
+    // la fila apagada del que no tiene nada que atender, ni qué le pasa al
+    // ancho con un apellido compuesto. Es el mismo motivo por el que esta
+    // herramienta nació el 8-oct.
+    if ( String( direccion ).includes( 'plantel-del-panel' ) ) {
+
+      avisar( 'GET /plantel-del-panel → 200, ' + PLANTEL.length + ' fila(s)' );
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ( { yo: 1, plantel: PLANTEL } )
+      };
+    }
+
+    if ( String( direccion ).includes( 'turnos-del-profesional' ) ) {
+
+      const deQuien = Number(
+        new URL( direccion, location.origin ).searchParams.get( 'profesional' )
+      );
+
+      const suyos = TURNOS_DE_LA_LUPA.filter(
+        ( turno ) => turno.de === deQuien
+      );
+
+      avisar( 'GET /turnos-del-profesional?profesional=' + deQuien +
+              ' → 200, ' + suyos.length + ' turno(s)' );
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ( { profesional: deQuien, turnos: suyos } )
+      };
+    }
+
     return fetchDeVerdad( direccion, opciones );
   };
 
@@ -421,6 +648,27 @@ CUERPO_JS = r'''
     registro.textContent = texto + '\n' + registro.textContent;
   }
 '''
+
+
+# 🔴 EL SELLO QUE LE SACA EL CACHÉ DE ENCIMA AL NAVEGADOR — 13-oct-2026.
+#
+# QUÉ PASÓ: se corrigieron `js/fechas.js` y `js/panel.js`, se rearmó esta
+# página, Juan recargó y seguía viendo la versión vieja. El HTML se regenera en
+# cada corrida y por eso llega siempre fresco; los `.js` y el `.css` NO se
+# regeneran, se enlazan — así que el navegador los sirve de su propia memoria.
+#
+# ⚠ Y NO ALCANZA CON QUE EL SERVIDOR MANDE `no-store`, que ya lo manda: esa
+# cabecera viaja con la RESPUESTA, y para un archivo que el navegador decidió
+# no volver a pedir no hay respuesta donde ponerla. El pedido nunca sale.
+#
+# 🔑 LA SALIDA ES CAMBIAR LA DIRECCIÓN, no pedir permiso: con `?v=<momento>`
+# pegado, cada armado produce una URL que el navegador nunca vio, así que no
+# tiene nada guardado que reusar. Es la misma idea que el `dist/` versionado
+# del sitio, aplicada a una página de prueba.
+#
+# Esto reemplaza al «acordate de hacer Cmd+Shift+R», que es trabajo manual para
+# algo que la herramienta puede garantizar.
+SELLO = str( int( time.time() ) )
 
 
 def armar():
@@ -449,8 +697,8 @@ def armar():
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
-  <link rel="stylesheet" href="{ SUBIR }css/tokens.css">
-  <link rel="stylesheet" href="{ SUBIR }css/styles.css">
+  <link rel="stylesheet" href="{ SUBIR }css/tokens.css?v={ SELLO }">
+  <link rel="stylesheet" href="{ SUBIR }css/styles.css?v={ SELLO }">
   <style>
     /* Lo de abajo NO es parte del sitio: es el tablero de mandos de la prueba. */
     .mandos {{
@@ -485,6 +733,10 @@ def armar():
   cargar un turno:
   <a href="?caso=cargar">como Cecilia (admin)</a> ·
   <a href="?caso=cargar&amp;admin=no">como un profesional</a>
+  <br>
+  altas y bajas:
+  <a href="?caso=plantel">el plantel</a> ·
+  <a href="?caso=plantel&amp;lupa=4">la lupa del que está de baja</a>
 </div>
 <pre id="registro"></pre>
 
@@ -501,26 +753,77 @@ def armar():
 
 { recortar( "paso-cargar" ) }
 
+{ recortar( "paso-plantel" ) }
+
+{ recortar( "paso-lupa" ) }
+
 { recortar_el_cartel() }
   </main>
 
 <script>
 { cuerpo }
 </script>
-<script src="{ SUBIR }js/fechas.js"></script>
-<script src="{ SUBIR }js/pasos.js"></script>
+<script src="{ SUBIR }js/fechas.js?v={ SELLO }"></script>
+<script src="{ SUBIR }js/pasos.js?v={ SELLO }"></script>
 <script>
   // `pasos.js` arranca guardando la pantalla que está a la vista, y en la
   // página de verdad ésa es la de entrar. Acá no está, así que la de la agenda
   // ocupa su lugar: sin esto, el primer cambio de pantalla se cae.
   pantallaALaVista = document.querySelector( '#paso-agenda' );
 </script>
-<script src="{ SUBIR }js/panel.js"></script>
+<script src="{ SUBIR }js/panel.js?v={ SELLO }"></script>
 <script>
   const PACIENTES_PUESTOS = { pacientes_json };
 
   // Arranca la pantalla como lo haría el login.
   irAlDia( '{ DIA }' );
+
+  // 🔴 EL AUTOCHEQUEO DE VERSIÓN — 13-oct-2026, y nació de una tarde perdida.
+  //
+  // QUÉ PASÓ: se corrigió el código, Juan recargó y seguía viendo lo viejo. Se
+  // verificó el código ejecutándolo —estaba bien—, se verificó el archivo en
+  // disco —estaba bien— y aun así la pantalla mostraba otra cosa. No había
+  // ninguna forma de saber QUÉ VERSIÓN estaba corriendo el navegador, así que
+  // las dos partes discutían sobre pantallas distintas.
+  //
+  // 🔑 LO QUE ESTA LÍNEA RESUELVE: la página se mide a sí misma y lo dice en
+  // voz alta. Si el renglón no aparece, el JS ni siquiera llegó hasta acá; si
+  // aparece con la fecha vieja, el navegador está sirviendo código viejo y el
+  // problema no está en el código. Un diagnóstico que antes costaba una ronda
+  // de mensajes ahora se lee de la pantalla.
+  avisar(
+    'versión ' + { SELLO } + ' · prueba de fecha: "' +
+    diaDeUnInstante( '2026-08-12T18:30:00+00:00' ) +
+    '" ← tiene que decir «12 de agosto de 2026»'
+  );
+
+  // El atajo a la solapa: `?caso=plantel` la abre sola, y `&lupa=<id>` entra
+  // directo a los turnos de ese profesional. Una captura no toca botones.
+  const atajo = new URLSearchParams( location.search );
+
+  if ( atajo.get( 'caso' ) === 'plantel' ) {{
+
+    document.querySelector( '#ir-al-plantel' ).click();
+
+    const deQuien = atajo.get( 'lupa' );
+
+    if ( deQuien ) {{
+
+      // El plantel se dibuja con un `await`, así que el renglón todavía no
+      // existe cuando esto corre. Mismo motivo y mismo remedio que el retardo
+      // de la pantalla de carga, unas líneas más abajo.
+      setTimeout( () => {{
+
+        const fila = PLANTEL.find(
+          ( uno ) => String( uno.id ) === deQuien
+        );
+
+        if ( fila ) {{
+          irALaLupa( fila );
+        }}
+      }}, 300 );
+    }}
+  }}
 
   // El caso `cargar` entra directo a la pantalla de la ⑤.3, que de otro modo
   // sólo se alcanza tocando el botón — y una captura no toca botones.

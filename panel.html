@@ -140,6 +140,16 @@
       <div class="acciones">
         <button class="btn btn-1" type="button" id="ir-a-cargar">
           Cargar un turno</button>
+
+        <!--
+          🔒 NACE ESCONDIDO Y LO DESTAPA `js/panel.js` SÓLO PARA UN ADMIN. Y el
+          `hidden` no es la cerradura: los dos endpoints de esta solapa
+          contestan 403 a un no-admin. Esto es para no ofrecer una puerta que
+          va a dar en la cara — la cerradura está en el portero, donde el que
+          manda el pedido no llega a tocarla.
+        -->
+        <button class="btn btn-2" type="button" id="ir-al-plantel" hidden>
+          Altas y bajas</button>
       </div>
 
     </section>
@@ -159,6 +169,80 @@
       NO hace nada. Sin eso cae en el primero —el «Sí»— y un Enter de reflejo
       cancela un turno.
     -->
+    <!--
+      LA SOLAPA DEL PLANTEL — la etapa ⑤.6, rebanada A.
+
+      🔑 POR QUÉ NO ES LA TABLA DE CUATRO COLUMNAS que propuso el documento de
+      estado. A 390 px una tabla de «Profesional · Estado · Pendientes · 🔍» no
+      entra: o se parte sola o pide scroll de costado. Acá va el mismo renglón
+      de flex que usa la agenda —el nombre fuerte arriba, el estado callado
+      abajo, el conteo a la derecha—, que es la pieza que este proyecto ya
+      midió para listas que se barren con la vista.
+
+      ⚠ Y NO REUSA `.turno-agenda`, por el motivo que ya está escrito en el
+      CSS: esa pieza está hecha para un turno —con su columna de hora de ancho
+      fijo— y acá lo que manda es un nombre. Mismo patrón, pieza propia.
+    -->
+    <section class="paso" id="paso-plantel" hidden>
+
+      <h1>Altas y bajas</h1>
+
+      <p class="ayuda-pantalla" id="plantel-ayuda">Cargando el plantel…</p>
+
+      <!-- Los renglones los cuelga `js/panel.js`. -->
+      <div class="lista-plantel" id="plantel-lista" hidden></div>
+
+      <p class="entrar-aviso" id="plantel-aviso" hidden></p>
+
+      <div class="acciones">
+        <button class="btn btn-2" type="button" id="volver-de-plantel">
+          Volver a la agenda</button>
+      </div>
+
+    </section>
+
+    <!--
+      LA LUPA — los turnos que ese profesional todavía no atendió.
+
+      🔑 ES UN PASO PROPIO Y NO UN BLOQUE QUE SE DESPLIEGA, por el mismo
+      criterio que ya decidió que cargar un turno fuera un paso: a 390 px una
+      lista de turnos con el motivo de consulta de cada uno es una pantalla, no
+      algo que entre debajo de un renglón.
+
+      🔒 ES LA ÚNICA PANTALLA DEL PROYECTO QUE MUESTRA
+      `observaciones_paciente`, que puede traer datos de salud. Sale acá
+      porque esta pantalla la USA —el motivo por el que alguien pidió el turno
+      es lo que decide a quién se llama primero— y lo que lo sostiene es el
+      chequeo de nivel del portero, no que el botón esté escondido.
+    -->
+    <section class="paso" id="paso-lupa" hidden>
+
+      <h1 id="lupa-titulo">Turnos sin atender</h1>
+
+      <p class="ayuda-pantalla" id="lupa-ayuda">Cargando los turnos…</p>
+
+      <!--
+        🔑 LA LÍNEA QUE EXPLICA PARA QUÉ ES ESTA PANTALLA, y no es decoración:
+        sin ella, una lista de turnos ajenos no dice qué se espera que haga
+        quien la mira. Apagar a un profesional NO cancela sus turnos ni avisa a
+        nadie — hay que llamar a cada uno.
+      -->
+      <p class="lupa-para-que" id="lupa-para-que" hidden>
+        Apagar a un profesional no cancela estos turnos ni le avisa a nadie.
+        Hay que llamar a cada paciente.</p>
+
+      <!-- Los renglones los cuelga `js/panel.js`. -->
+      <div class="lista-lupa" id="lupa-lista" hidden></div>
+
+      <p class="entrar-aviso" id="lupa-aviso" hidden></p>
+
+      <div class="acciones">
+        <button class="btn btn-2" type="button" id="volver-de-lupa">
+          Volver al plantel</button>
+      </div>
+
+    </section>
+
     <!--
       CARGAR UN TURNO A MANO — la etapa ⑤.3.
 

@@ -261,6 +261,15 @@ async function mostrarElDia( fecha ) {
 
   campoFecha.value = datos.fecha;
 
+  // 🔒 EL BOTÓN DE «ALTAS Y BAJAS» SE DESTAPA ACÁ y no en una función propia,
+  // porque este es el único lugar donde el front ya sabe si quien entró es
+  // admin: el dato viene en la respuesta de la agenda, que es el primer pedido
+  // que hace la pantalla. No hay una segunda consulta para preguntarlo.
+  //
+  // ⚠ Y ESCONDERLO NO ES LA CERRADURA: los dos endpoints de esa solapa
+  // contestan 403 a un no-admin. Esto sólo evita ofrecer una puerta cerrada.
+  document.querySelector( '#ir-al-plantel' ).hidden = !datos.esAdmin;
+
   // Se vacía antes de colgar: sin esto, cambiar de día APILA los turnos del
   // día nuevo debajo de los del anterior. No falla con error — muestra el
   // doble.
@@ -1184,4 +1193,373 @@ prepararElBoton( {
     avisoEntrar.hidden = false;
     avisoEntrar.textContent = 'No pudimos entrar. Probá de nuevo.';
   }
+} );
+
+
+// ── LA SOLAPA DEL PLANTEL Y LA LUPA — etapa ⑤.6, rebanada A ───────────────
+
+const DIRECCION_DEL_PLANTEL = SUPABASE_URL + '/functions/v1/plantel-del-panel';
+
+const DIRECCION_DE_LA_LUPA =
+  SUPABASE_URL + '/functions/v1/turnos-del-profesional';
+
+
+/**
+ * Qué dice el renglón callado de una fila del plantel.
+ *
+ * 🔑 EL ESTADO Y EL CONTEO VAN EN LA MISMA FRASE, no en dos columnas: «de baja
+ * el martes 12 de agosto de 2026 · 6 turnos sin atender» se lee de un tirón, y
+ * es exactamente la combinación que decide si hay que hacer algo. Partidos en
+ * dos columnas obligan a cruzar la vista para armar el sentido.
+ */
+function queDiceLaFila( fila ) {
+
+  const partes = [];
+
+  if ( fila.activo ) {
+    partes.push( 'en actividad' );
+  }
+  else if ( fila.fechaBaja ) {
+    partes.push( 'de baja el ' + diaDeUnInstante( fila.fechaBaja ) );
+  }
+  else {
+    // Apagado sin fecha: pasa con las filas que se apagaron antes de que
+    // existiera esta pantalla, o a mano desde el Table Editor. No se inventa
+    // una fecha.
+    partes.push( 'de baja' );
+  }
+
+  if ( fila.esAdmin ) {
+    partes.push( 'administra' );
+  }
+
+  if ( fila.turnosPendientes === 0 ) {
+    partes.push( 'sin turnos pendientes' );
+  }
+  else if ( fila.turnosPendientes === 1 ) {
+    partes.push( '1 turno sin atender' );
+  }
+  else {
+    partes.push( fila.turnosPendientes + ' turnos sin atender' );
+  }
+
+  return partes.join( ' · ' );
+}
+
+
+/**
+ * Arma UN renglón del plantel.
+ *
+ * 🔴 TODO LO QUE VIENE DE LA BASE VA CON `textContent`, nunca pegando HTML:
+ * son nombres que escribió una persona. Misma defensa contra XSS
+ * (Cross-Site Scripting) que el resto de las pantallas.
+ *
+ * 🔑 EL BOTÓN DE LOS TURNOS SÓLO APARECE SI HAY TURNOS. Un botón que abre una
+ * lista vacía no informa: hace que alguien toque, espere y no encuentre nada.
+ * Que esté o no esté ES el dato.
+ */
+function renglonDelPlantel( fila ) {
+
+  const renglon = document.createElement( 'div' );
+  renglon.className = 'fila-plantel';
+
+  const datos = document.createElement( 'div' );
+  datos.className = 'plantel-datos';
+
+  const quien = document.createElement( 'p' );
+  quien.className = 'plantel-quien';
+  quien.textContent = fila.nombre + ' ' + fila.apellido;
+
+  const estado = document.createElement( 'p' );
+  estado.className = 'plantel-estado';
+  estado.textContent = queDiceLaFila( fila );
+
+  // Las filas sobre las que no hay nada que hacer se dicen más apagadas. No es
+  // decoración: en una lista de diez, lo que se busca son las que piden algo.
+  if ( fila.activo && fila.turnosPendientes === 0 ) {
+    estado.classList.add( 'plantel-sin-nada' );
+  }
+
+  datos.append( quien, estado );
+
+  renglon.appendChild( datos );
+
+  if ( fila.turnosPendientes > 0 ) {
+
+    const acciones = document.createElement( 'div' );
+    acciones.className = 'plantel-acciones';
+
+    const ver = document.createElement( 'button' );
+    ver.type = 'button';
+    ver.className = 'btn btn-2';
+    ver.textContent = 'Ver turnos';
+
+    // El nombre entero va en la etiqueta accesible: «Ver turnos» repetido ocho
+    // veces no le dice a un lector de pantalla de quién es cada uno.
+    ver.setAttribute(
+      'aria-label',
+      'Ver los turnos sin atender de ' + fila.nombre + ' ' + fila.apellido
+    );
+
+    ver.addEventListener( 'click', () => {
+      irALaLupa( fila );
+    } );
+
+    acciones.appendChild( ver );
+
+    renglon.appendChild( acciones );
+  }
+
+  return renglon;
+}
+
+
+/** Pide el plantel. Devuelve los datos, 'sin-acceso' o null. */
+async function pedirElPlantel() {
+
+  const respuesta = await fetch(
+    DIRECCION_DEL_PLANTEL,
+    { headers: cabecerasConSesion() }
+  );
+
+  if ( respuesta.status === 403 ) {
+    return 'sin-acceso';
+  }
+
+  if ( !respuesta.ok ) {
+    console.error( 'No se pudo leer el plantel. Estado:', respuesta.status );
+    return null;
+  }
+
+  return await respuesta.json();
+}
+
+
+async function mostrarElPlantel() {
+
+  const ayuda = document.querySelector( '#plantel-ayuda' );
+  const lista = document.querySelector( '#plantel-lista' );
+  const aviso = document.querySelector( '#plantel-aviso' );
+
+  aviso.hidden = true;
+  lista.hidden = true;
+  ayuda.hidden = false;
+  ayuda.textContent = 'Cargando el plantel…';
+
+  const datos = await pedirElPlantel();
+
+  if ( datos === 'sin-acceso' ) {
+    ayuda.hidden = true;
+    aviso.hidden = false;
+    aviso.textContent = 'Esta solapa es sólo para quien administra.';
+    return;
+  }
+
+  if ( !datos ) {
+    ayuda.hidden = true;
+    aviso.hidden = false;
+    aviso.textContent = 'No pudimos cargar el plantel. Probá de nuevo.';
+    return;
+  }
+
+  // Se vacía antes de colgar: sin esto, entrar dos veces a la solapa APILA el
+  // plantel debajo del anterior. No falla con error — muestra el doble.
+  lista.replaceChildren();
+
+  for ( const fila of datos.plantel ) {
+    lista.appendChild( renglonDelPlantel( fila ) );
+  }
+
+  ayuda.hidden = true;
+  lista.hidden = false;
+}
+
+
+/**
+ * Arma UN renglón de la lupa.
+ *
+ * 🔒 ES EL ÚNICO LUGAR DEL FRONT QUE MUESTRA `observaciones_paciente`, que
+ * puede traer datos de salud. Va separado por una línea y al final del
+ * renglón: no se mezcla con el tratamiento, y quien llama lo lee último,
+ * cuando ya sabe a quién está llamando.
+ *
+ * 🔑 EL CONTACTO VA EN EL COLOR DE LECTURA Y NO EN EL CALLADO, al revés que en
+ * la agenda: acá el teléfono no es un detalle de la ficha, es LA ACCIÓN de
+ * esta pantalla.
+ */
+function renglonDeLaLupa( turno ) {
+
+  const renglon = document.createElement( 'div' );
+  renglon.className = 'fila-lupa';
+
+  const cuando = document.createElement( 'p' );
+  cuando.className = 'lupa-cuando';
+  // CON AÑO, al revés que la agenda: esta lista cruza años —hay turnos de
+  // noviembre y de marzo juntos— y sin el año no se sabe si uno falta un mes
+  // o trece. Es el dato que decide a quién se llama primero.
+  cuando.textContent = turnoEnPalabras( turno.inicio, true );
+
+  const quien = document.createElement( 'p' );
+  quien.className = 'lupa-quien';
+  quien.textContent = turno.paciente.nombre + ' ' + turno.paciente.apellido;
+
+  renglon.append( cuando, quien );
+
+  // 🔴 LOS DOS DATOS DE CONTACTO PUEDEN SER NULOS, y no es un caso raro: en
+  // `pacientes` las dos columnas son opcionales a propósito, porque Cecilia
+  // carga a mano gente que sólo dejó un teléfono. Si no hay ninguno, la
+  // pantalla LO DICE en vez de mostrar un renglón vacío: quien llama tiene que
+  // saber que a esa persona no la va a poder llamar.
+  const contacto = document.createElement( 'p' );
+  contacto.className = 'lupa-contacto';
+
+  const comoSeLoLlama = [];
+
+  if ( turno.paciente.telefono ) {
+    comoSeLoLlama.push( turno.paciente.telefono );
+  }
+
+  if ( turno.paciente.email ) {
+    comoSeLoLlama.push( turno.paciente.email );
+  }
+
+  if ( comoSeLoLlama.length > 0 ) {
+    contacto.textContent = comoSeLoLlama.join( ' · ' );
+  }
+  else {
+    contacto.textContent = 'Sin teléfono ni correo en la ficha';
+  }
+
+  renglon.appendChild( contacto );
+
+  const detalle = document.createElement( 'p' );
+  detalle.className = 'lupa-detalle';
+
+  const tratamiento = turno.tratamiento
+    ? turno.tratamiento.nombre
+    : 'Tratamiento sin cargar';
+
+  detalle.textContent = tratamiento + ' · ' + turno.duracion_min + ' min';
+
+  renglon.appendChild( detalle );
+
+  if ( turno.observaciones_paciente ) {
+
+    const motivo = document.createElement( 'p' );
+    motivo.className = 'lupa-motivo';
+    motivo.textContent = turno.observaciones_paciente;
+
+    renglon.appendChild( motivo );
+  }
+
+  return renglon;
+}
+
+
+/** Pide los turnos de uno. Devuelve los datos, 'sin-acceso' o null. */
+async function pedirLosTurnosDe( profesionalId ) {
+
+  const respuesta = await fetch(
+    DIRECCION_DE_LA_LUPA + '?profesional=' + profesionalId,
+    { headers: cabecerasConSesion() }
+  );
+
+  if ( respuesta.status === 403 ) {
+    return 'sin-acceso';
+  }
+
+  if ( !respuesta.ok ) {
+    console.error( 'No se pudo leer los turnos. Estado:', respuesta.status );
+    return null;
+  }
+
+  return await respuesta.json();
+}
+
+
+/**
+ * Abre la lupa de un profesional.
+ *
+ * Recibe la FILA entera y no sólo el id, porque el título de la pantalla lleva
+ * el nombre: pedirlo de nuevo al portero sería un viaje para un dato que el
+ * renglón que se acaba de tocar ya tenía.
+ */
+async function irALaLupa( fila ) {
+
+  const titulo = document.querySelector( '#lupa-titulo' );
+  const ayuda = document.querySelector( '#lupa-ayuda' );
+  const paraQue = document.querySelector( '#lupa-para-que' );
+  const lista = document.querySelector( '#lupa-lista' );
+  const aviso = document.querySelector( '#lupa-aviso' );
+
+  titulo.textContent = 'Turnos de ' + fila.nombre + ' ' + fila.apellido;
+
+  aviso.hidden = true;
+  lista.hidden = true;
+  paraQue.hidden = true;
+  ayuda.hidden = false;
+  ayuda.textContent = 'Cargando los turnos…';
+
+  avanzarA( '#paso-lupa' );
+
+  const datos = await pedirLosTurnosDe( fila.id );
+
+  if ( datos === 'sin-acceso' ) {
+    ayuda.hidden = true;
+    aviso.hidden = false;
+    aviso.textContent = 'Esta solapa es sólo para quien administra.';
+    return;
+  }
+
+  if ( !datos ) {
+    ayuda.hidden = true;
+    aviso.hidden = false;
+    aviso.textContent = 'No pudimos cargar los turnos. Probá de nuevo.';
+    return;
+  }
+
+  lista.replaceChildren();
+
+  for ( const turno of datos.turnos ) {
+    lista.appendChild( renglonDeLaLupa( turno ) );
+  }
+
+  ayuda.hidden = true;
+  lista.hidden = false;
+
+  // La advertencia aparece SÓLO con turnos en la lista: sin ninguno no hay a
+  // quién llamar, y un aviso sobre una lista vacía es ruido.
+  paraQue.hidden = datos.turnos.length === 0;
+
+  if ( datos.turnos.length === 0 ) {
+    ayuda.hidden = false;
+    ayuda.textContent = 'Este profesional no tiene turnos sin atender.';
+  }
+}
+
+
+// ── LOS OYENTES DE LA SOLAPA ──────────────────────────────────────────────
+
+document.querySelector( '#ir-al-plantel' ).addEventListener( 'click', () => {
+
+  // 🔑 `avanzarA` Y NO `reemplazarPor`, al revés que el paso de cargar: la
+  // solapa es un DESVÍO de la agenda y el «atrás» del navegador tiene que
+  // traer de vuelta a la agenda. En la carga de un turno el «atrás» no tenía
+  // sentido porque la pantalla tiene su propio botón de salida.
+  avanzarA( '#paso-plantel' );
+
+  mostrarElPlantel();
+} );
+
+
+document.querySelector( '#volver-de-plantel' ).addEventListener(
+  'click',
+  () => {
+    reemplazarPor( '#paso-agenda' );
+  }
+);
+
+
+document.querySelector( '#volver-de-lupa' ).addEventListener( 'click', () => {
+  reemplazarPor( '#paso-plantel' );
 } );

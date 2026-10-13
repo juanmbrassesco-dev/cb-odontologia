@@ -3700,3 +3700,208 @@ textarea.caja {
   padding-top: 20px;
   border-top: 1px solid var(--borde);
 }
+
+
+/* ════════════════════════════════════════════════════════════════════════════
+   LA SOLAPA DEL PLANTEL Y LA LUPA — etapa ⑤.6, rebanada A
+   ════════════════════════════════════════════════════════════════════════════
+
+   🔑 LAS DOS LISTAS COPIAN EL MECANISMO DE `.lista-agenda`, no su pieza: el
+   ancho y el centrado son del CONTENEDOR y los renglones se estiran solos.
+   Es la regla que dejó el zigzag del 8-oct, y no se vuelve a descubrir acá.
+
+   🔴 TODAS LAS CLASES LLEVAN PREFIJO —`plantel-` y `lupa-`— por el motivo que
+   ya está escrito arriba, en el renglón de la agenda: en una hoja de 3.700
+   líneas un nombre genérico ya está tomado, y la colisión no falla, decora de
+   más. `.estado`, `.quien` y `.motivo` a secas eran candidatos a chocar. */
+
+.lista-plantel,
+.lista-lupa {
+  display: grid;
+  gap: 10px;
+  max-width: var(--columna-lista);
+  margin: 20px auto 0;
+}
+
+
+/* ── EL RENGLÓN DEL PLANTEL ─────────────────────────────────────────────────
+
+   NO reusa `.turno-agenda` aunque la forma se parezca: esa pieza tiene una
+   columna de hora de ancho fijo que es su razón de ser —seis horas arrancando
+   en la misma vertical—, y acá no hay ninguna hora. Lo que manda es el nombre.
+   Mismo patrón de maquetado, pieza propia. */
+.fila-plantel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  text-align: left;
+}
+
+.fila-plantel .plantel-datos {
+  /* Base 0 y no `auto`, igual que en la agenda: con base automática un nombre
+     largo no entra al lado del botón y se maqueta distinto que el de arriba. */
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.fila-plantel .plantel-quien {
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+/* EL RENGLÓN CALLADO LLEVA DOS DATOS PEGADOS —el estado y el conteo— y no dos
+   elementos separados: son la misma frase. «de baja el 12-ago-2026 · 6 turnos
+   sin atender» se lee de un tirón; partido en dos columnas obliga a cruzar la
+   vista para armar el sentido. */
+.fila-plantel .plantel-estado {
+  overflow-wrap: anywhere;
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+/* El que no tiene nada que atender se dice en gris apagado, no en el color del
+   texto segundo: es la fila sobre la que NO hay nada que hacer. */
+.fila-plantel .plantel-estado.plantel-sin-nada {
+  color: var(--apagado);
+}
+
+.fila-plantel .plantel-acciones {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+
+  /* Pisa el `align-items: baseline` del renglón SÓLO para este hijo, por el
+     mismo motivo medido en la agenda el 9-oct: con la base compartida el botón
+     se alinea con el nombre y queda arriba del centro de la tarjeta. */
+  align-self: center;
+}
+
+/* Un botón por fila y la lista tiene varias: con el tamaño de pantalla, los
+   botones pesarían más que los profesionales. Mismo criterio que la agenda.
+
+   🔴 Y LOS MÁRGENES AUTOMÁTICOS SE PISAN, que es lo que la agenda NO necesita
+   hacer y acá sí. `.btn` declara `margin-left: auto` y `margin-right: auto`
+   —el formato único del proyecto: un botón del ancho de su texto, centrado en
+   su caja—. En el renglón de la agenda hay DOS botones, así que esos márgenes
+   se reparten entre los dos y el par queda cubriendo el renglón. Acá hay UNO
+   SOLO, y con los márgenes puestos se centraba en la tarjeta en vez de
+   arrancar alineado con el nombre.
+
+   Lo levantó Juan mirando la pantalla a 390 el 13-oct-2026. ⚠ Y era invisible
+   en escritorio: ahí el CONTENEDOR lleva `margin-left: auto` y empuja el botón
+   a la derecha, así que el centrado del botón dentro de su propia caja no se
+   nota. El bug sólo existía en el ancho en el que el contenedor ocupa toda la
+   fila. */
+.fila-plantel .plantel-acciones .btn {
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 7px 14px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  width: auto;
+}
+
+
+/* ── LA LÍNEA QUE DICE PARA QUÉ SIRVE LA LUPA ───────────────────────────────
+
+   Va sobre fondo de aviso y no como texto suelto: lo que dice no es una
+   descripción de la pantalla, es una advertencia sobre lo que el sistema NO
+   hace solo. Usa el fondo informativo, que no estrena color. */
+.lupa-para-que {
+  max-width: var(--columna-lista);
+  margin: 16px auto 0;
+  padding: 12px 14px;
+  background: var(--info-fondo);
+  border-radius: var(--radio);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--grafito);
+  text-align: left;
+}
+
+
+/* ── EL RENGLÓN DE LA LUPA ──────────────────────────────────────────────────
+
+   Acá SÍ hay una hora, pero el renglón no copia a la agenda: en la agenda
+   todos los turnos son del mismo día, así que la columna angosta alcanza. En
+   esta lista cada turno es de un día distinto —uno la semana que viene y otro
+   en marzo—, y una fecha completa no entra en 76 px. Va arriba, en su propio
+   renglón, como título de la tarjeta. */
+.fila-lupa {
+  padding: 14px 16px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  text-align: left;
+}
+
+.fila-lupa .lupa-cuando {
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h3);
+  line-height: 1.2;
+  color: var(--grafito);
+}
+
+.fila-lupa .lupa-quien {
+  margin-top: 6px;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+/* EL CONTACTO ES EL DATO QUE SE VA A USAR —hay que llamar— así que no se
+   esconde entre los detalles: va en el color de lectura, no en el callado. */
+.fila-lupa .lupa-contacto {
+  overflow-wrap: anywhere;
+  margin-top: 2px;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  color: var(--grafito);
+}
+
+.fila-lupa .lupa-detalle {
+  overflow-wrap: anywhere;
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+/* LO QUE EL PACIENTE ESCRIBIÓ AL RESERVAR, separado del resto por una línea.
+   No es un detalle más: es lo que decide a quién se llama primero, y puede
+   traer algo que la persona contó de su salud. Se distingue para que quien
+   llama lo lea, y porque un dato así no se mezcla con el tratamiento. */
+.fila-lupa .lupa-motivo {
+  overflow-wrap: anywhere;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--borde);
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+
+@media (max-width: 767px) {
+
+  /* El botón ocupa el ancho entero de su renglón y arranca a la izquierda,
+     alineado con el nombre y no con el borde. Mismo criterio que la agenda: a
+     390 no hay ancho para el nombre, el estado y un botón en una línea. */
+  .fila-plantel .plantel-acciones {
+    flex: 1 1 100%;
+    margin-left: 0;
+    align-self: stretch;
+  }
+}
