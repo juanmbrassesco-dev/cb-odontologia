@@ -150,6 +150,15 @@
         -->
         <button class="btn btn-2" type="button" id="ir-al-plantel" hidden>
           Altas y bajas</button>
+
+        <!--
+          🔑 ÉSTE NO SE ESCONDE, al contrario del de arriba, y es el requisito
+          que precisó Juan el 8-oct: la agenda propia la setea el PROFESIONAL.
+          Cada uno carga sus ausencias; lo que es sólo de la admin es el
+          interruptor «toda la clínica» de adentro de la pantalla.
+        -->
+        <button class="btn btn-2" type="button" id="ir-a-ausencias">
+          Mis ausencias</button>
       </div>
 
     </section>
@@ -364,6 +373,171 @@
       ve todo de golpe, pero tampoco hay un «siguiente» que cruzar para
       corregir a quién se le está cargando.
     -->
+    <!--
+      LA SOLAPA DE LAS AUSENCIAS — la etapa ⑤.5, rebanada A.
+
+      🔑 POR QUÉ UNA SOLA PANTALLA Y NO DOS. El plan de la fase hablaba de tres
+      pantallas: la agenda semanal, las ausencias de cada uno y los cierres de
+      clínica. Las dos últimas son la MISMA tabla, el mismo formulario y el
+      mismo cálculo de turnos afectados: lo único que cambia es el alcance, y
+      eso entra como un interruptor. Dos pantallas separadas duplicarían el
+      formulario para no duplicar un `select`.
+
+      ⚠ VOCABULARIO, y ya se prestó a confusión una vez: `horarios_base` es LA
+      AGENDA —la regla semanal, «los martes de 11 a 12:30»— y `excepciones` es
+      lo que la PISA en fechas concretas. Esta pantalla es de las segundas; la
+      agenda semanal es la rebanada C y todavía no existe.
+    -->
+    <section class="paso" id="paso-ausencias" hidden>
+
+      <h1>Ausencias</h1>
+
+      <p class="ayuda-pantalla" id="ausencias-ayuda">Cargando las ausencias…</p>
+
+      <!-- Los renglones los cuelga `js/panel.js`. -->
+      <div class="lista-ausencias" id="ausencias-lista" hidden></div>
+
+      <!--
+        EL ALTA — un bloque que se despliega, mismo tratamiento que el alta de
+        un profesional y que la ficha de un paciente: algo nuevo que se carga
+        sin salir de donde estabas.
+      -->
+      <div class="alta-ausencia" id="alta-ausencia" hidden>
+
+        <h2>Ausencia nueva</h2>
+
+        <div class="campo">
+          <label class="etiqueta" for="ausencia-descripcion">Qué es</label>
+          <input class="caja" id="ausencia-descripcion" type="text"
+                 autocomplete="off">
+          <p class="ayuda-campo">Lo que va a leer quien mire esta lista en seis
+            meses: «Vacaciones de verano», «Congreso en Rosario».</p>
+        </div>
+
+        <!--
+          EL SELECTOR DE FORMA. Las dos formas que la base acepta son
+          distintas de verdad —una tapa fechas concretas, la otra una semana de
+          CADA mes— y cada una se lee con campos propios, así que el selector
+          no es cosmético: decide qué campos tienen sentido abajo.
+        -->
+        <div class="campo">
+          <label class="etiqueta" for="ausencia-forma">Cómo se repite</label>
+          <select class="caja" id="ausencia-forma">
+            <option value="unica">Un rango de fechas</option>
+            <option value="recurrente">Una semana de cada mes</option>
+          </select>
+        </div>
+
+        <div id="ausencia-campos-fechas">
+
+          <div class="campo">
+            <label class="etiqueta" for="ausencia-desde">Desde</label>
+            <input class="caja" id="ausencia-desde" type="date">
+          </div>
+
+          <!--
+            🔑 VACÍO SIGNIFICA «UN SOLO DÍA», y la ayuda lo dice porque si no
+            el campo parece obligatorio y a medio llenar. Es como se carga un
+            feriado.
+          -->
+          <div class="campo">
+            <label class="etiqueta" for="ausencia-hasta">Hasta</label>
+            <input class="caja" id="ausencia-hasta" type="date">
+            <p class="ayuda-campo">Se puede dejar vacío: tapa un solo día.</p>
+          </div>
+
+        </div>
+
+        <div id="ausencia-campos-semana" hidden>
+
+          <div class="campo">
+            <label class="etiqueta" for="ausencia-semana">Qué semana</label>
+            <select class="caja" id="ausencia-semana"></select>
+
+            <!--
+              🔴 ESTE RENGLÓN ES LA PIEZA QUE EVITA UN ERROR CARO, y lo llena
+              `js/panel.js` con lo que devuelve el portero: «la tercera semana»
+              es ambiguo en castellano y el proyecto eligió UNA lectura —la
+              fila del almanaque que contiene el día 7N − 6—, escrita en una
+              migración que nadie va a leer antes de cargar una ausencia. Acá
+              se muestran LAS DOS PRÓXIMAS FECHAS REALES que tapa, para que se
+              verifique de un vistazo.
+
+              ⚠ Y las calcula el PORTERO. Rehacer la cuenta acá sería una
+              segunda copia de `esSemanaDelMes( )`, y el día que se separen la
+              pantalla prometería tapar una semana distinta de la que el
+              sistema tapa.
+            -->
+            <p class="ayuda-campo" id="ausencia-semana-ayuda"></p>
+          </div>
+
+        </div>
+
+        <!--
+          🔒 EL ALCANCE NACE ESCONDIDO Y LO DESTAPA EL JS SÓLO PARA UN ADMIN.
+          Una ausencia sin profesional tapa a TODO el plantel, así que es el
+          único control de esta pantalla que no es de cada uno.
+
+          ⚠ Y el `hidden` no es la cerradura: `cargar-ausencia` contesta 403 a
+          un no-admin que mande `alcance: 'clinica'`. Esto evita ofrecer una
+          puerta que va a dar en la cara.
+        -->
+        <div class="campo" id="ausencia-campo-alcance" hidden>
+          <label class="etiqueta" for="ausencia-alcance">A quién afecta</label>
+          <select class="caja" id="ausencia-alcance">
+            <option value="propio">Sólo a mí</option>
+            <option value="clinica">A toda la clínica</option>
+          </select>
+          <p class="ayuda-campo">«A toda la clínica» es para un feriado o un
+            cierre: tapa esos días para todo el plantel.</p>
+        </div>
+
+        <div class="acciones">
+
+          <button class="btn btn-1" type="button" id="alta-ausencia-guardar">
+            Cargar la ausencia</button>
+
+          <button class="btn btn-2" type="button" id="alta-ausencia-cancelar">
+            Cancelar</button>
+
+        </div>
+
+      </div>
+
+      <!--
+        EL CARTEL DE LOS TURNOS QUE QUEDARON TAPADOS — lo más importante de la
+        pantalla.
+
+        🔴 POR QUÉ ES UNA LISTA CON TELÉFONOS Y NO UN AVISO DE UNA LÍNEA: el
+        sistema NO cancela esos turnos, a propósito —un correo no se desmanda, y
+        un dedo mal puesto en una fecha cancelaría turnos de pacientes reales—.
+        Entonces lo único que hace útil al aviso es poder llamar a cada una, y
+        para eso el número tiene que estar acá, no en otra pantalla.
+      -->
+      <div class="turnos-tapados" id="turnos-tapados" hidden>
+
+        <h2>Turnos que quedaron tapados</h2>
+
+        <p class="tapados-ayuda" id="tapados-ayuda"></p>
+
+        <div class="lista-tapados" id="tapados-lista"></div>
+
+      </div>
+
+      <p class="entrar-aviso" id="ausencias-aviso" hidden></p>
+
+      <div class="acciones">
+
+        <button class="btn btn-1" type="button" id="abrir-alta-ausencia">
+          Cargar una ausencia</button>
+
+        <button class="btn btn-2" type="button" id="volver-de-ausencias">
+          Volver a la agenda</button>
+
+      </div>
+
+    </section>
+
     <section class="paso" id="paso-cargar" hidden>
 
       <h1>Cargar un turno</h1>

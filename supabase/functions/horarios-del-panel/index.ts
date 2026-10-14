@@ -190,8 +190,15 @@ export default {
         hasta: fecha,
         ahora: new Date(),
 
-        // Acá está la diferencia con el canal del paciente, en una línea.
+        // Acá están las dos diferencias con el canal del paciente, en dos
+        // líneas: el piso de horas no corre para quien atiende, y el día
+        // cerrado sí dice por qué.
         conPisoDeHoras: false,
+
+        // 🔒 EL MOTIVO ES SÓLO DE ESTE LADO —lo pidió Juan el 14-oct-2026— y el
+        // endpoint del paciente no lo manda, así que allá ni se calcula. Ver el
+        // porqué en `grilla.ts`, al lado del parámetro.
+        conMotivo: true,
 
         exceptoTurnoId: excepto,
       } )
@@ -203,11 +210,17 @@ export default {
       // El día sin agenda viaja igual, con la lista vacía: así la pantalla
       // distingue «ese día no se atiende» de «ese día no vino en la
       // respuesta».
+      //
+      // 🔑 Y `tapado_por` VIAJA SÓLO CUANDO HAY UNA AUSENCIA QUE LO TAPE. Un
+      // domingo llega con la lista vacía y sin este campo, y esa diferencia es
+      // la que deja decir «no se atiende» en un caso y «Vacaciones de verano»
+      // en el otro — con cero bloques en los dos.
       return Response.json( {
         fecha: fecha,
         profesional: profesionalId,
         duracion_min: duracion,
         bloques: dias[ 0 ] ? dias[ 0 ].bloques : [],
+        tapado_por: dias[ 0 ] ? dias[ 0 ].tapadoPor : undefined,
       } )
     },
   ),

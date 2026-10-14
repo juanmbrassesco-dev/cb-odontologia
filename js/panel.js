@@ -814,7 +814,13 @@ async function pedirLasHoras( fecha, duracion, profesionalId, excepto ) {
 
   const datos = await respuesta.json();
 
-  return datos.bloques;
+  // 🔑 SE DEVUELVE EL DÍA ENTERO Y NO SÓLO LOS BLOQUES, desde el 14-oct-2026:
+  // un día cerrado por una ausencia viene con cero bloques Y con el motivo, y
+  // el motivo es justo lo que no se puede deducir de una lista vacía.
+  return {
+    bloques: datos.bloques,
+    tapadoPor: datos.tapado_por
+  };
 }
 
 
@@ -868,6 +874,42 @@ function casillaDeLaHora( bloque, grilla ) {
 
 
 /**
+ * Por qué no hay horarios ese día, en una frase.
+ *
+ * 🔴 ES LA PIEZA QUE PIDIÓ JUAN EL 14-oct-2026, y el motivo es concreto: ver
+ * «ese día no se atiende» no distingue el domingo de las vacaciones de la
+ * profesional, y lo que hay que hacer es distinto. Con la ausencia a la vista,
+ * quien atiende el teléfono puede explicarle a la paciente por qué y ofrecerle
+ * otra cosa.
+ *
+ * 🔑 Y LA DIFERENCIA ENTRE LAS DOS CLASES DE AUSENCIA NO ES UN ADORNO: si es de
+ * toda la clínica, cambiar de profesional no sirve de nada; si es de una
+ * persona, OTRA puede atender ese día. La frase lo dice para que no haya que
+ * razonarlo con la paciente esperando.
+ *
+ * 🔒 El motivo sólo llega por el endpoint del panel. El del paciente no lo pide
+ * y ni se calcula: «Vacaciones de verano» es información interna.
+ */
+function porQueNoSeAtiende( tapadoPor ) {
+
+  // Sin ausencia que lo tape, el día simplemente no tiene agenda: es el
+  // domingo, o un día de la semana en el que esa persona no atiende.
+  if ( !tapadoPor ) {
+    return 'Ese día no se atiende.';
+  }
+
+  if ( tapadoPor.esDeLaClinica ) {
+    return 'El consultorio está cerrado ese día: ' + tapadoPor.descripcion
+      + ' Tapa a todo el plantel, así que elegir otro profesional no cambia'
+      + ' nada.';
+  }
+
+  return 'Ese profesional no atiende ese día: ' + tapadoPor.descripcion
+    + ' Si hay alguien más en el plantel, puede tomarlo otro.';
+}
+
+
+/**
  * Vuelve a pedir y a dibujar UNA grilla — la de cargar o la de mover.
  *
  * `grilla` es uno de los dos objetos descriptores (`grillaDeCarga`,
@@ -904,14 +946,14 @@ async function dibujarLasHoras( grilla ) {
     return;
   }
 
-  const bloques = await pedirLasHoras(
+  const dia = await pedirLasHoras(
     fecha,
     duracion,
     grilla.profesionalId,
     grilla.excepto
   );
 
-  if ( bloques === null ) {
+  if ( dia === null ) {
 
     caja.hidden = true;
     ayuda.hidden = false;
@@ -920,13 +962,16 @@ async function dibujarLasHoras( grilla ) {
     return;
   }
 
-  // Un día sin bloques es el domingo, o el feriado, o una ausencia cargada.
-  // No es un error y se dice con sus palabras.
+  const bloques = dia.bloques;
+
+  // Un día sin bloques puede ser el domingo —que no tiene agenda— o una
+  // ausencia cargada. Con cero bloques los dos se ven IGUAL, y lo que hay que
+  // hacer con el pedido es distinto, así que el motivo se dice cuando existe.
   if ( bloques.length === 0 ) {
 
     caja.hidden = true;
     ayuda.hidden = false;
-    ayuda.textContent = 'Ese día no se atiende.';
+    ayuda.textContent = porQueNoSeAtiende( dia.tapadoPor );
 
     return;
   }
@@ -2462,4 +2507,635 @@ document.querySelector( '#volver-de-mover' ).addEventListener( 'click', () => {
 
     dibujarLasHoras( grillaDeMover );
   } );
+} );
+
+
+// ── LA SOLAPA DE LAS AUSENCIAS — etapa ⑤.5, rebanada A ────────────────────────
+//
+// QUÉ HACE, en una línea: lista las ausencias de quien entró —más los cierres
+// de clínica que lo afectan—, deja cargar una nueva y prenderlas o apagarlas.
+//
+// 🔑 LO QUE ESTA PANTALLA NO DECIDE, y es la mitad del diseño: el portero ya
+// resolvió quién puede tocar qué, y la respuesta trae `puedoTocar` fila por
+// fila. Acá eso sólo decide si se DIBUJA el interruptor. La cerradura vuelve a
+// aplicarse en `estado-de-ausencia`, que no le cree nada a lo que salió de acá.
+
+const DIRECCION_DE_LAS_AUSENCIAS =
+  SUPABASE_URL + '/functions/v1/ausencias-del-panel';
+
+const DIRECCION_DE_CARGAR_AUSENCIA =
+  SUPABASE_URL + '/functions/v1/cargar-ausencia';
+
+const DIRECCION_DEL_ESTADO_DE_AUSENCIA =
+  SUPABASE_URL + '/functions/v1/estado-de-ausencia';
+
+
+// Las fechas de cada semana del mes, tal como las devuelve el portero. Se
+// guardan para una sola cosa: escribir la ayuda del selector sin volver a
+// pedirlas en cada cambio del desplegable.
+let semanasDelMes = [];
+
+
+/**
+ * Qué tapa una ausencia, en palabras.
+ *
+ * 🔴 ES LA PIEZA QUE HACE VERIFICABLE LA LISTA. La fila cruda dice
+ * «recurrente · semana 3», que no se puede chequear contra el almanaque; acá
+ * dice «la semana que contiene el día 15, todos los meses». Y para las de
+ * fechas dice el rango escrito como se lee.
+ */
+function queTapaLaAusencia( fila ) {
+
+  if ( fila.tipo === 'recurrente' ) {
+
+    const dia = 7 * fila.semanaDelMes - 6;
+
+    return 'todos los meses, la semana que contiene el día ' + dia;
+  }
+
+  // Sin fecha de fin tapa un solo día, que es como se carga un feriado.
+  if ( !fila.fechaHasta || fila.fechaHasta === fila.fechaDesde ) {
+    return diaEnPalabras( fila.fechaDesde );
+  }
+
+  return 'del ' + diaEnPalabras( fila.fechaDesde ) +
+    ' al ' + diaEnPalabras( fila.fechaHasta );
+}
+
+
+/**
+ * El renglón callado de una ausencia: qué tapa, de quién es y si está apagada.
+ *
+ * 🔑 LOS TRES DATOS VAN EN LA MISMA FRASE, igual que en el plantel: es la
+ * combinación la que decide si hay algo que hacer con esa fila.
+ */
+function queDiceLaAusencia( fila ) {
+
+  const partes = [ queTapaLaAusencia( fila ) ];
+
+  if ( fila.esDeLaClinica ) {
+    partes.push( 'toda la clínica' );
+  }
+
+  // 🔑 «Apagada» SE DICE, no se deja sólo al color: el gris distingue las filas
+  // de un vistazo y no sirve para quien no ve bien los contrastes.
+  if ( !fila.activa ) {
+    partes.push( 'apagada' );
+  }
+
+  return partes.join( ' · ' );
+}
+
+
+/**
+ * Arma UN renglón de la lista de ausencias.
+ *
+ * 🔴 TODO LO QUE VIENE DE LA BASE VA CON `textContent`, nunca pegando HTML: la
+ * descripción la escribió una persona. Misma defensa contra XSS
+ * (Cross-Site Scripting) que el resto de las pantallas.
+ */
+function renglonDeAusencia( fila ) {
+
+  const renglon = document.createElement( 'div' );
+  renglon.className = 'fila-ausencia';
+
+  if ( !fila.activa ) {
+    renglon.classList.add( 'ausencia-apagada' );
+  }
+
+  if ( fila.esDeLaClinica ) {
+    renglon.classList.add( 'ausencia-de-la-clinica' );
+  }
+
+  const datos = document.createElement( 'div' );
+  datos.className = 'ausencia-datos';
+
+  const que = document.createElement( 'p' );
+  que.className = 'ausencia-que';
+  que.textContent = fila.descripcion;
+
+  const tapa = document.createElement( 'p' );
+  tapa.className = 'ausencia-tapa';
+  tapa.textContent = queDiceLaAusencia( fila );
+
+  datos.append( que, tapa );
+  renglon.appendChild( datos );
+
+  // 🔒 EL INTERRUPTOR SÓLO SI EL PORTERO DIJO QUE SE PUEDE. Para un no-admin,
+  // los cierres de clínica vienen con `puedoTocar: false`: los ve —si no, su
+  // agenda aparece cerrada sin explicación— y no los puede destapar.
+  if ( fila.puedoTocar ) {
+
+    const acciones = document.createElement( 'div' );
+    acciones.className = 'ausencia-acciones';
+
+    const boton = document.createElement( 'button' );
+    boton.type = 'button';
+    boton.className = 'btn btn-2';
+
+    if ( fila.activa ) {
+      boton.textContent = 'Apagar';
+      boton.setAttribute( 'aria-label', 'Apagar: ' + fila.descripcion );
+    }
+    else {
+      boton.textContent = 'Prender';
+      boton.setAttribute( 'aria-label', 'Prender: ' + fila.descripcion );
+    }
+
+    // 🔑 LOS DOS VAN DIRECTO, SIN CARTEL QUE PREGUNTE, y es la diferencia con
+    // dar de baja a un profesional: ninguna de las dos direcciones le saca un
+    // turno a nadie —el sistema no cancela nada acá— y las dos se deshacen con
+    // el mismo botón. Preguntar donde no hace falta enseña a contestar que sí
+    // sin leer, que es lo que arruina la pregunta del lado que importa.
+    boton.addEventListener( 'click', () => {
+      cambiarElEstadoDeLaAusencia( fila, !fila.activa );
+    } );
+
+    acciones.appendChild( boton );
+    renglon.appendChild( acciones );
+  }
+
+  return renglon;
+}
+
+
+/** Pide las ausencias. Devuelve los datos, 'sin-acceso' o null. */
+async function pedirLasAusencias() {
+
+  const respuesta = await fetch(
+    DIRECCION_DE_LAS_AUSENCIAS,
+    { headers: cabecerasConSesion() }
+  );
+
+  if ( respuesta.status === 403 ) {
+    return 'sin-acceso';
+  }
+
+  if ( !respuesta.ok ) {
+    console.error( 'No se pudieron leer las ausencias. Estado:', respuesta.status );
+    return null;
+  }
+
+  return await respuesta.json();
+}
+
+
+/**
+ * Llena el desplegable de semanas con sus fechas reales.
+ *
+ * 🔴 ES LA PIEZA QUE EVITA EL ERROR CARO DE ESTA PANTALLA. «La tercera semana»
+ * es ambiguo en castellano, el proyecto eligió UNA lectura —la fila del
+ * almanaque que contiene el día 7N − 6— y está escrita en una migración que
+ * nadie va a abrir antes de cargar una ausencia. Las fechas las calcula el
+ * portero y acá sólo se muestran.
+ */
+function llenarLasSemanas( semanas ) {
+
+  const selector = document.querySelector( '#ausencia-semana' );
+
+  selector.replaceChildren();
+
+  for ( const semana of semanas ) {
+
+    const opcion = document.createElement( 'option' );
+    opcion.value = semana.semana;
+    opcion.textContent = 'La que contiene el día ' + semana.diaAncla;
+
+    selector.appendChild( opcion );
+  }
+
+  escribirLaAyudaDeLaSemana();
+}
+
+
+/** La ayuda del selector: las dos próximas fechas que tapa la semana elegida. */
+function escribirLaAyudaDeLaSemana() {
+
+  const ayuda = document.querySelector( '#ausencia-semana-ayuda' );
+
+  const elegida = Number( document.querySelector( '#ausencia-semana' ).value );
+
+  const semana = semanasDelMes.find( ( fila ) => fila.semana === elegida );
+
+  if ( !semana || semana.proximos.length === 0 ) {
+    ayuda.textContent = '';
+    return;
+  }
+
+  const tramos = semana.proximos.map( ( tramo ) => {
+
+    if ( tramo.desde === tramo.hasta ) {
+      return diaEnPalabras( tramo.desde );
+    }
+
+    return 'del ' + diaEnPalabras( tramo.desde ) +
+      ' al ' + diaEnPalabras( tramo.hasta );
+  } );
+
+  ayuda.textContent = 'Las próximas que tapa: ' + tramos.join( ' · ' ) + '.';
+}
+
+
+/** Abre o cierra el alta, y de paso esconde el botón de salir. */
+function mostrarElAltaDeAusencia( abierta ) {
+
+  document.querySelector( '#alta-ausencia' ).hidden = !abierta;
+
+  // Mismo criterio que el alta de ficha y la de profesional: con el alta
+  // abierta había DOS botones «Volver» uno debajo del otro, iguales de forma, y
+  // ninguno decía a dónde iba.
+  document.querySelector( '#volver-de-ausencias' ).hidden = abierta;
+  document.querySelector( '#abrir-alta-ausencia' ).hidden = abierta;
+
+  if ( !abierta ) {
+    return;
+  }
+
+  // Se vacía al abrir, no al cerrar: así un error de carga deja los datos a la
+  // vista para corregirlos en vez de hacer tipear todo de nuevo.
+  document.querySelector( '#ausencia-descripcion' ).value = '';
+  document.querySelector( '#ausencia-desde' ).value = '';
+  document.querySelector( '#ausencia-hasta' ).value = '';
+  document.querySelector( '#ausencia-forma' ).value = 'unica';
+
+  cambiarLaFormaDeLaAusencia();
+
+  document.querySelector( '#ausencia-descripcion' ).focus();
+}
+
+
+/** Qué campos se ven según la forma elegida. */
+function cambiarLaFormaDeLaAusencia() {
+
+  const forma = document.querySelector( '#ausencia-forma' ).value;
+
+  document.querySelector( '#ausencia-campos-fechas' ).hidden =
+    forma !== 'unica';
+
+  document.querySelector( '#ausencia-campos-semana' ).hidden =
+    forma !== 'recurrente';
+}
+
+
+/**
+ * Dibuja el cartel de los turnos que quedaron tapados.
+ *
+ * 🔴 EL BOTÓN DE CADA RENGLÓN LLEVA A LA AGENDA DE ESE DÍA, NO CANCELA ACÁ, y
+ * es una desviación deliberada del plan —que decía «el botón de cancelar de
+ * cada uno»—. Dos motivos, y el segundo es el que decide:
+ *
+ *   · La agenda del día YA tiene cancelar con su cartel que pregunta y su
+ *     recarga probada. Un segundo camino de cancelación son dos lugares que
+ *     hay que mantener sincronizados, y el día que se separen, el que quede
+ *     viejo cancela sin avisar a la paciente.
+ *   · Y sobre todo: en la agenda está TAMBIÉN el botón de MOVER. Antes de
+ *     cancelarle el turno a alguien casi siempre conviene ofrecerle otro
+ *     horario, y esta lista no puede hacerlo. Llevar al día deja las dos
+ *     salidas a la vista en vez de empujar a la peor.
+ */
+function mostrarLosTapados( turnos ) {
+
+  const cartel = document.querySelector( '#turnos-tapados' );
+  const lista = document.querySelector( '#tapados-lista' );
+  const ayuda = document.querySelector( '#tapados-ayuda' );
+
+  if ( turnos.length === 0 ) {
+    cartel.hidden = true;
+    return;
+  }
+
+  if ( turnos.length === 1 ) {
+    ayuda.textContent =
+      'Hay 1 turno agendado en esos días. El sistema NO lo canceló: hay que '
+      + 'llamar a la paciente.';
+  }
+  else {
+    ayuda.textContent =
+      'Hay ' + turnos.length + ' turnos agendados en esos días. El sistema NO '
+      + 'los canceló: hay que llamar a cada paciente.';
+  }
+
+  lista.replaceChildren();
+
+  for ( const turno of turnos ) {
+
+    const renglon = document.createElement( 'div' );
+    renglon.className = 'fila-tapado';
+
+    const datos = document.createElement( 'div' );
+    datos.className = 'tapado-datos';
+
+    const cuando = document.createElement( 'p' );
+    cuando.className = 'tapado-cuando';
+    cuando.textContent = turnoEnPalabras( turno.inicio );
+
+    // 🔒 EL TELÉFONO ENTERO Y A LA VISTA: es el dato que se va a copiar para
+    // llamar. Y si no hay teléfono cargado se dice, porque entonces no hay por
+    // dónde avisarle y alguien tiene que buscar otra vía.
+    const quien = document.createElement( 'p' );
+    quien.className = 'tapado-quien';
+
+    const partes = [ turno.paciente.nombre + ' ' + turno.paciente.apellido ];
+
+    if ( turno.paciente.telefono ) {
+      partes.push( turno.paciente.telefono );
+    }
+    else {
+      partes.push( 'sin teléfono cargado' );
+    }
+
+    partes.push( turno.profesional.nombre + ' ' + turno.profesional.apellido );
+
+    quien.textContent = partes.join( ' · ' );
+
+    datos.append( cuando, quien );
+    renglon.appendChild( datos );
+
+    const acciones = document.createElement( 'div' );
+    acciones.className = 'tapado-acciones';
+
+    const ir = document.createElement( 'button' );
+    ir.type = 'button';
+    ir.className = 'btn btn-2';
+    ir.textContent = 'Ver en la agenda';
+
+    ir.setAttribute(
+      'aria-label',
+      'Ver en la agenda el turno de ' + turno.paciente.nombre + ' '
+        + turno.paciente.apellido
+    );
+
+    ir.addEventListener( 'click', async () => {
+      await irAlDia( diaDeUnInstante( turno.inicio ) );
+      reemplazarPor( '#paso-agenda' );
+    } );
+
+    acciones.appendChild( ir );
+    renglon.appendChild( acciones );
+
+    lista.appendChild( renglon );
+  }
+
+  cartel.hidden = false;
+}
+
+
+async function mostrarLasAusencias() {
+
+  const ayuda = document.querySelector( '#ausencias-ayuda' );
+  const lista = document.querySelector( '#ausencias-lista' );
+  const aviso = document.querySelector( '#ausencias-aviso' );
+
+  aviso.hidden = true;
+  lista.hidden = true;
+  document.querySelector( '#turnos-tapados' ).hidden = true;
+  ayuda.hidden = false;
+  ayuda.textContent = 'Cargando las ausencias…';
+
+  const datos = await pedirLasAusencias();
+
+  if ( datos === 'sin-acceso' ) {
+    ayuda.hidden = true;
+    aviso.hidden = false;
+    aviso.textContent = 'Esta solapa es sólo para el personal del consultorio.';
+    return;
+  }
+
+  if ( !datos ) {
+    ayuda.hidden = true;
+    aviso.hidden = false;
+    aviso.textContent = 'No pudimos cargar las ausencias. Probá de nuevo.';
+    return;
+  }
+
+  semanasDelMes = datos.semanasDelMes;
+
+  llenarLasSemanas( datos.semanasDelMes );
+
+  // 🔒 EL SELECTOR DE ALCANCE SÓLO PARA QUIEN ADMINISTRA. Una ausencia sin
+  // profesional tapa a TODO el plantel. Y esto no es la cerradura: el portero
+  // contesta 403 a un no-admin que mande `alcance: 'clinica'`.
+  document.querySelector( '#ausencia-campo-alcance' ).hidden = !datos.esAdmin;
+
+  // Se vacía antes de colgar: sin esto, entrar dos veces a la solapa APILA la
+  // lista debajo de la anterior. No falla con error — muestra el doble.
+  lista.replaceChildren();
+
+  if ( datos.ausencias.length === 0 ) {
+    ayuda.hidden = false;
+    ayuda.textContent =
+      'No tenés ninguna ausencia cargada. Mientras no haya ninguna, el sitio '
+      + 'ofrece turnos todos los días que tengas agenda.';
+    return;
+  }
+
+  for ( const fila of datos.ausencias ) {
+    lista.appendChild( renglonDeAusencia( fila ) );
+  }
+
+  ayuda.hidden = true;
+  lista.hidden = false;
+}
+
+
+/** Prende o apaga una ausencia. */
+async function cambiarElEstadoDeLaAusencia( fila, prender ) {
+
+  const aviso = document.querySelector( '#ausencias-aviso' );
+
+  aviso.hidden = true;
+
+  let respuesta;
+
+  try {
+    respuesta = await fetch(
+      DIRECCION_DEL_ESTADO_DE_AUSENCIA,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_CLAVE_PUBLICA,
+          'Authorization': 'Bearer ' + tokenDeLaSesion(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify( { id: fila.id, activa: prender } )
+      }
+    );
+  }
+  catch {
+    respuesta = null;
+  }
+
+  if ( !respuesta || !respuesta.ok ) {
+    aviso.hidden = false;
+    aviso.textContent = 'No pudimos cambiar esa ausencia. Probá de nuevo.';
+    return;
+  }
+
+  const datos = await respuesta.json();
+
+  // 🔴 SE RECARGA LA LISTA EN VEZ DE CAMBIAR EL RENGLÓN A MANO, por el mismo
+  // motivo que la agenda al cancelar: lo que se vuelve a dibujar es lo que la
+  // base dice AHORA, no lo que esta pantalla supone que quedó.
+  await mostrarLasAusencias();
+
+  // 🔑 PRENDER TAPA DÍAS IGUAL QUE CARGAR, así que vuelve el mismo aviso.
+  // Apagar destapa: ahí no hay a quién llamar y la lista viene vacía.
+  mostrarLosTapados( datos.turnosTapados );
+
+  if ( datos.sePudoContar === false ) {
+    aviso.hidden = false;
+    aviso.textContent =
+      'La ausencia quedó prendida, pero no pudimos revisar si tapa turnos ya '
+      + 'agendados. Conviene mirar la agenda de esos días.';
+  }
+}
+
+
+/** Carga la ausencia que está escrita en el alta. */
+async function guardarLaAusencia() {
+
+  const aviso = document.querySelector( '#ausencias-aviso' );
+  const boton = document.querySelector( '#alta-ausencia-guardar' );
+
+  aviso.hidden = true;
+
+  const forma = document.querySelector( '#ausencia-forma' ).value;
+
+  const cuerpo = {
+    descripcion: document.querySelector( '#ausencia-descripcion' ).value,
+    tipo: forma
+  };
+
+  // 🔒 EL ALCANCE VIAJA EXPLÍCITO, nunca por omisión de un campo. El portero
+  // rechaza lo que no sea 'propio' o 'clinica', y el selector está escondido
+  // para quien no administra, así que acá el default es el seguro.
+  const alcance = document.querySelector( '#ausencia-alcance' );
+
+  cuerpo.alcance = alcance.value;
+
+  if ( document.querySelector( '#ausencia-campo-alcance' ).hidden ) {
+    cuerpo.alcance = 'propio';
+  }
+
+  if ( forma === 'unica' ) {
+    cuerpo.fecha_desde = document.querySelector( '#ausencia-desde' ).value;
+    cuerpo.fecha_hasta = document.querySelector( '#ausencia-hasta' ).value;
+  }
+  else {
+    cuerpo.semana_del_mes =
+      Number( document.querySelector( '#ausencia-semana' ).value );
+  }
+
+  // 🔴 EL BOTÓN SE APAGA MIENTRAS VIAJA EL PEDIDO. Sin esto, dos toques cargan
+  // la ausencia DOS VECES: la tabla no tiene unique y las dos filas entran,
+  // tapando lo mismo y dejando la lista con un duplicado que hay que apagar de
+  // a uno. Mismo recurso que el cartel de cancelar.
+  boton.disabled = true;
+
+  let respuesta;
+
+  try {
+    respuesta = await fetch(
+      DIRECCION_DE_CARGAR_AUSENCIA,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_CLAVE_PUBLICA,
+          'Authorization': 'Bearer ' + tokenDeLaSesion(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify( cuerpo )
+      }
+    );
+  }
+  catch {
+    respuesta = null;
+  }
+
+  boton.disabled = false;
+
+  if ( !respuesta ) {
+    aviso.hidden = false;
+    aviso.textContent = 'No pudimos cargar la ausencia. Probá de nuevo.';
+    return;
+  }
+
+  // 🔑 EL 400 DEL PORTERO TRAE UN TEXTO QUE SE PUEDE MOSTRAR TAL CUAL —«falta
+  // la descripción», «la fecha de fin es anterior a la de arranque»— y eso es
+  // a propósito: son errores de carga, no de sistema, y quien los lee es quien
+  // los puede corregir. El alta QUEDA ABIERTA con lo tipeado adentro.
+  if ( respuesta.status === 400 ) {
+
+    const datos = await respuesta.json();
+
+    aviso.hidden = false;
+    aviso.textContent = datos.error;
+    return;
+  }
+
+  if ( respuesta.status === 403 ) {
+    aviso.hidden = false;
+    aviso.textContent = 'No tenés permiso para cargar esa ausencia.';
+    return;
+  }
+
+  if ( !respuesta.ok ) {
+    aviso.hidden = false;
+    aviso.textContent = 'No pudimos cargar la ausencia. Probá de nuevo.';
+    return;
+  }
+
+  const datos = await respuesta.json();
+
+  mostrarElAltaDeAusencia( false );
+
+  await mostrarLasAusencias();
+
+  mostrarLosTapados( datos.turnosTapados );
+
+  if ( datos.sePudoContar === false ) {
+    aviso.hidden = false;
+    aviso.textContent =
+      'La ausencia quedó cargada, pero no pudimos revisar si tapa turnos ya '
+      + 'agendados. Conviene mirar la agenda de esos días.';
+  }
+}
+
+
+// ── LOS OYENTES DE LA SOLAPA DE AUSENCIAS ────────────────────────────────────
+
+document.querySelector( '#ir-a-ausencias' ).addEventListener( 'click', async () => {
+  mostrarElAltaDeAusencia( false );
+  avanzarA( '#paso-ausencias' );
+  await mostrarLasAusencias();
+} );
+
+
+document.querySelector( '#volver-de-ausencias' ).addEventListener( 'click', () => {
+  reemplazarPor( '#paso-agenda' );
+} );
+
+
+document.querySelector( '#abrir-alta-ausencia' ).addEventListener( 'click', () => {
+  mostrarElAltaDeAusencia( true );
+} );
+
+
+document.querySelector( '#alta-ausencia-cancelar' ).addEventListener( 'click', () => {
+  mostrarElAltaDeAusencia( false );
+} );
+
+
+document.querySelector( '#alta-ausencia-guardar' ).addEventListener( 'click', () => {
+  guardarLaAusencia();
+} );
+
+
+document.querySelector( '#ausencia-forma' ).addEventListener( 'change', () => {
+  cambiarLaFormaDeLaAusencia();
+} );
+
+
+document.querySelector( '#ausencia-semana' ).addEventListener( 'change', () => {
+  escribirLaAyudaDeLaSemana();
 } );

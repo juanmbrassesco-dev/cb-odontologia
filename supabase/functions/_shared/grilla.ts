@@ -25,7 +25,7 @@ import {
   bloquesDelTramo,
   desfaseDeSantaFe,
   diaSemanaISO,
-  diaTapado,
+  excepcionQueTapa,
   fueraDePlazo,
   listarDias,
   sumarDias,
@@ -61,6 +61,16 @@ export type PedidoDeGrilla = {
   // `false`, ningún bloque sale como `fuera_de_plazo`.
   conPisoDeHoras: boolean
 
+  // 🔒 SI EL DÍA TAPADO DICE POR QUÉ. Es una regla de CANAL, igual que el piso
+  // de 12 horas, y por eso entra por parámetro en vez de decidirse acá adentro.
+  //
+  // 🔴 EL MOTIVO NO PUEDE VIAJAR AL PACIENTE. «Vacaciones de verano» o
+  // «Congreso en Rosario» es información interna del consultorio: él tiene que
+  // ver el día cerrado y nada más. Con esto en `false` el campo no se calcula,
+  // así que el endpoint del paciente no tiene nada que acordarse de sacar —el
+  // dato que no existe no se filtra por accidente.
+  conMotivo?: boolean
+
   // 🔑 UN TURNO QUE NO CUENTA COMO OCUPADO, y existe por la pantalla de MOVER.
   // Al mover un turno la pregunta no es «qué horarios están libres» sino «qué
   // horarios habría si ESTE turno no existiera»: sin esto el turno se tapa a sí
@@ -76,6 +86,15 @@ export type PedidoDeGrilla = {
 export type DiaDeLaGrilla = {
   fecha: string
   bloques: { inicio: string, estado: string }[]
+
+  // Por qué está cerrado, cuando se pidió con `conMotivo` y hay una ausencia
+  // que lo tapa. Un domingo NO lo lleva: ahí no hay ausencia ninguna, el día
+  // simplemente no tiene agenda — y la distinción es justo la que la pantalla
+  // necesita para decir algo útil.
+  tapadoPor?: {
+    descripcion: string
+    esDeLaClinica: boolean
+  }
 }
 
 
@@ -119,7 +138,9 @@ export async function armarLaGrilla(
   // es un número, no lo que haya escrito quien arma la dirección.
   const excepciones = await ctx.supabaseAdmin
     .from( 'excepciones' )
-    .select( 'tipo, fecha_desde, fecha_hasta, semana_del_mes' )
+    .select(
+      'tipo, fecha_desde, fecha_hasta, semana_del_mes, descripcion, profesional_id',
+    )
     .eq( 'activa', true )
     .or( `profesional_id.is.null,profesional_id.eq.${ profesionalId }` )
 
@@ -172,10 +193,31 @@ export async function armarLaGrilla(
     // Un día tapado no devuelve bloques, y es una distinción que hay que poder
     // ver: «acá no se atiende» no es lo mismo que «acá está todo tomado», que
     // sí devuelve sus bloques y se pinta distinto.
-    if ( diaTapado( fecha, excepciones.data ) ) {
+    const tapa = excepcionQueTapa( fecha, excepciones.data )
+
+    if ( tapa ) {
+
+      // Sin `conMotivo`, el día sale igual que antes: cerrado y sin explicar.
+      // Es lo que ve el paciente.
+      if ( !pedido.conMotivo ) {
+        return {
+          fecha: fecha,
+          bloques: [],
+        }
+      }
+
       return {
         fecha: fecha,
         bloques: [],
+        tapadoPor: {
+          descripcion: tapa.descripcion,
+
+          // 🔑 LA DISTINCIÓN NO ES UN ADORNO: si la ausencia es de la clínica no
+          // sirve cambiar de profesional, y si es de una persona OTRA puede
+          // atender ese día. Es lo que decide qué hacer con el pedido que se
+          // está cargando.
+          esDeLaClinica: tapa.profesional_id === null,
+        },
       }
     }
 

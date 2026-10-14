@@ -423,16 +423,48 @@ function tapaEsteDia( fecha: string, excepcion: Excepcion ): boolean {
 }
 
 
-// El veredicto sobre un día, mirando todas las excepciones que llegaron.
+// CUÁL excepción tapa ese día, o `null` si ninguna.
 //
 // Las de la clínica (feriados, cierres) y las del profesional vienen mezcladas
 // en la misma lista a propósito: para el paciente que mira el calendario el día
 // está cerrado, y el motivo no le cambia nada.
+//
+// 🔑 DEVUELVE LA PRIMERA QUE TAPA, no todas, y alcanza: el día está cerrado
+// igual lo tape una o tres. Lo que se gana con la fila es poder DECIR por qué
+// —«Vacaciones de verano»— en la pantalla del consultorio, que es la decisión
+// que pidió Juan el 14-oct-2026: ver que no hay horarios no dice si el día no
+// se atiende, si está todo tomado, o si la profesional está de vacaciones, y
+// las tres piden hacer algo distinto.
+//
+// ⚠ EL ORDEN DE LA LISTA DECIDE CUÁL SE DEVUELVE CUANDO HAY VARIAS, y no se
+// fuerza ninguno: la que llega primero es la que explica el día. El caso real
+// —un feriado de clínica el mismo día que las vacaciones de alguien— deja los
+// dos motivos ciertos.
+export function excepcionQueTapa< T extends Excepcion >(
+  fecha: string,
+  excepciones: T[],
+): T | null {
+
+  for ( const excepcion of excepciones ) {
+
+    if ( tapaEsteDia( fecha, excepcion ) ) {
+      return excepcion
+    }
+  }
+
+  return null
+}
+
+
+// El veredicto sobre un día: ¿está tapado, sí o no?
+//
+// 🔑 SE APOYA EN LA FUNCIÓN DE ARRIBA Y NO REPITE EL RECORRIDO, que es la regla
+// del proyecto: que dos cálculos den el mismo resultado hoy no alcanza, tiene
+// que haber UNA sola manera de hacer la cosa. Con dos recorridos, el día que
+// alguien arregle un borde en uno, el otro sigue contestando lo viejo.
 export function diaTapado( fecha: string, excepciones: Excepcion[] ): boolean {
 
-  return excepciones.some(
-    ( excepcion ) => tapaEsteDia( fecha, excepcion ),
-  )
+  return excepcionQueTapa( fecha, excepciones ) !== null
 }
 
 

@@ -3716,7 +3716,8 @@ textarea.caja {
    más. `.estado`, `.quien` y `.motivo` a secas eran candidatos a chocar. */
 
 .lista-plantel,
-.lista-lupa {
+.lista-lupa,
+.lista-ausencias {
   display: grid;
   gap: 10px;
   max-width: var(--columna-lista);
@@ -3907,13 +3908,209 @@ textarea.caja {
 }
 
 
+/* ════════════════════════════════════════════════════════════════════════════
+   LA SOLAPA DE LAS AUSENCIAS — etapa ⑤.5, rebanada A
+   ════════════════════════════════════════════════════════════════════════════
+
+   🔑 EL CONTENEDOR COMPARTE EL MECANISMO de `.lista-plantel` —está sumado a su
+   selector, arriba— y el RENGLÓN es pieza propia. No es una distinción
+   ceremonial: lo que manda en una fila del plantel es un NOMBRE corto, y acá
+   es una DESCRIPCIÓN que puede ocupar dos líneas, así que la alineación de los
+   botones no puede ser la misma.
+
+   🔴 TODAS LAS CLASES LLEVAN PREFIJO `ausencia-`, por lo mismo que el plantel:
+   en una hoja de 3.900 líneas un nombre genérico ya está tomado, y la colisión
+   no falla — decora de más. */
+
+.fila-ausencia {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  text-align: left;
+}
+
+/* ⚠ NO lleva `align-items: baseline` como el plantel, y es la diferencia que
+   justifica la pieza propia: con una descripción de dos líneas, la base
+   compartida alinea el botón con el PRIMER renglón del texto y lo deja
+   flotando arriba del centro de la tarjeta. */
+.fila-ausencia .ausencia-datos {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.fila-ausencia .ausencia-que {
+  overflow-wrap: anywhere;
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+/* QUÉ TAPA, en palabras y no en fechas crudas. Es el renglón que convierte
+   «recurrente · semana 3» en algo que alguien puede verificar de un vistazo. */
+.fila-ausencia .ausencia-tapa {
+  overflow-wrap: anywhere;
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+/* Una ausencia APAGADA no tapa nada, así que el renglón entero se dice en
+   gris: es la fila sobre la que no hay nada que leer con atención. Mismo
+   criterio que `.plantel-sin-nada`. */
+.fila-ausencia.ausencia-apagada .ausencia-que,
+.fila-ausencia.ausencia-apagada .ausencia-tapa {
+  color: var(--apagado);
+}
+
+/* LA DE LA CLÍNICA SE DISTINGUE POR UNA BARRA, no por un color de fondo: tapa
+   a todo el plantel y eso es una diferencia de ALCANCE, no de estado. Un fondo
+   distinto competiría con el gris del apagado, que sí es estado. */
+.fila-ausencia.ausencia-de-la-clinica {
+  /* `--dorado` es el acento de la marca y ya es el que marca «esto es de la
+     clínica» en el resto del sitio. No entra ningún color nuevo a la paleta. */
+  border-left: 3px solid var(--dorado);
+}
+
+.fila-ausencia .ausencia-acciones {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  align-self: center;
+}
+
+/* Los márgenes automáticos de `.btn` se pisan por el motivo que Juan midió el
+   13-oct en el plantel: con un botón solo en la fila, el `margin: auto` lo
+   centra en la tarjeta en vez de dejarlo alineado con el texto. */
+.fila-ausencia .ausencia-acciones .btn {
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 7px 14px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  width: auto;
+}
+
+
+/* ── EL CARTEL DE LOS TURNOS QUE QUEDARON TAPADOS ───────────────────────────
+
+   🔴 ES LO MÁS IMPORTANTE DE LA PANTALLA y por eso NO es un aviso de una
+   línea: cada renglón es una paciente a la que hay que llamar, con su teléfono
+   a la vista. Un texto del tipo «hay 6 turnos afectados» obligaría a ir a
+   buscarlos a otra pantalla, y ahí es donde se pierde uno. */
+.turnos-tapados {
+  max-width: var(--columna-lista);
+  margin: 20px auto 0;
+  padding: 16px;
+  background: var(--blanco);
+  /* ⚠ EL BORDE ES EL DE SIEMPRE Y NO UN COLOR DE ALERTA, a propósito: la
+     paleta tiene `--error` y esto NO es un error —la ausencia se guardó bien—.
+     Lo que distingue a este cartel es el título y el teléfono de cada
+     paciente, no un color que diga que algo salió mal. */
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  text-align: left;
+}
+
+.turnos-tapados h2 {
+  margin: 0 0 4px;
+  font-family: Marcellus, Georgia, serif;
+  font-size: var(--tipo-h3);
+  line-height: 1.2;
+  color: var(--grafito);
+}
+
+.turnos-tapados .tapados-ayuda {
+  margin: 0 0 12px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.turnos-tapados .lista-tapados {
+  display: grid;
+  gap: 10px;
+}
+
+.fila-tapado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--borde);
+  text-align: left;
+}
+
+.fila-tapado .tapado-datos {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.fila-tapado .tapado-cuando {
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+/* EL TELÉFONO VA EN EL RENGLÓN CALLADO Y ENTERO, sin abreviar: es el dato que
+   se va a copiar para llamar, y un número cortado con puntos suspensivos es
+   peor que no mostrarlo. */
+.fila-tapado .tapado-quien {
+  overflow-wrap: anywhere;
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+.fila-tapado .tapado-acciones {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  align-self: center;
+}
+
+.fila-tapado .tapado-acciones .btn {
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 7px 14px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  width: auto;
+}
+
+
+@media (max-width: 767px) {
+
+  /* Mismo criterio que el plantel: a 390 no hay ancho para el texto y un botón
+     en la misma línea. */
+  .fila-ausencia .ausencia-acciones,
+  .fila-tapado .tapado-acciones {
+    flex: 1 1 100%;
+    margin-left: 0;
+    align-self: stretch;
+  }
+}
+
+
 /* ── EL ALTA DE UN PROFESIONAL — etapa ⑤.6, rebanada B ──────────────────────
 
    Mismo mecanismo que `.alta-paciente`: un bloque que se despliega dentro de
    la pantalla, separado del resto por una línea. No es una pieza reusada sino
    el mismo tratamiento aplicado a otro formulario — los dos son «algo nuevo
    que se carga sin salir de donde estabas». */
-.alta-profesional {
+.alta-profesional,
+.alta-ausencia {
   max-width: var(--columna-lista);
   margin: 24px auto 0;
   padding-top: 20px;
@@ -3921,7 +4118,8 @@ textarea.caja {
   text-align: left;
 }
 
-.alta-profesional h2 {
+.alta-profesional h2,
+.alta-ausencia h2 {
   margin: 0 0 4px;
   font-family: Marcellus, Georgia, serif;
   font-size: var(--tipo-h3);

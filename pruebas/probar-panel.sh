@@ -1756,6 +1756,87 @@ if [ -n "${AUSENCIA_DE_PRUEBA:-}" ] && [ "$AUSENCIA_DE_PRUEBA" != "null" ]; then
 fi
 
 
+
+# ── 65 y 66. EL MOTIVO DE UN DÍA CERRADO — etapa ⑤.5, pedido de Juan ─────────
+#
+# 🔴 QUÉ MIDEN, Y SON DOS CARAS DE LA MISMA DECISIÓN. Un día tapado por una
+# ausencia devuelve CERO BLOQUES, igual que un domingo, así que de la lista
+# vacía no se puede deducir por qué: quien carga un turno a mano necesita saber
+# si no se atiende, si está todo tomado o si la profesional está de vacaciones.
+#
+# 🔒 Y EL MOTIVO ES SÓLO DEL LADO DEL PANEL. «Vacaciones de verano» es
+# información interna del consultorio; el paciente ve el día cerrado y nada
+# más. El caso 66 es el que lo mide, y por eso pega contra el OTRO endpoint con
+# el token del PACIENTE.
+
+echo
+echo "▶ 65 y 66. Un día tapado por una ausencia, visto por los dos canales"
+
+# El día se saca de la base y no se escribe a mano: una fecha fija vence y el
+# caso pasa a medir nada sin avisar.
+DIA_TAPADO=$(
+  supabase db query --linked --output csv \
+    "select fecha_desde::text as dia
+       from public.excepciones
+      where activa = true
+        and tipo = 'unica'
+        and fecha_desde is not null
+        and fecha_desde >= current_date
+      order by fecha_desde
+      limit 1;" \
+    2>/dev/null | tail -1 | tr -d '"\r'
+)
+
+if [ -n "$DIA_TAPADO" ] && [ "$DIA_TAPADO" != "dia" ]; then
+
+  echo "   (el día tapado que había cargado: $DIA_TAPADO)"
+
+  echo
+  echo "   65. el PANEL — tiene que traer tapado_por con su descripción:"
+
+  PANEL_TAPADO=$(
+    curl -s \
+      "$FUNCIONES/horarios-del-panel?fecha=$DIA_TAPADO&duracion=30" \
+      -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+      -H "Authorization: Bearer $TOKEN_SOPORTE"
+  )
+
+  echo "       $( echo "$PANEL_TAPADO" | head -c 300 )"
+
+  echo
+  echo "       🔴 bloques tiene que venir VACÍO y tapado_por CON la descripción."
+  echo "          Sin ese campo, la pantalla dice «ese día no se atiende» y"
+  echo "          quien atiende el teléfono no sabe qué ofrecerle a la paciente."
+
+  echo
+  echo "   66. el PACIENTE, el mismo día — NO puede traer tapado_por:"
+
+  PACIENTE_TAPADO=$(
+    curl -s \
+      "$FUNCIONES/horarios-disponibles?profesional=1&tratamiento=1&desde=$DIA_TAPADO&hasta=$DIA_TAPADO" \
+      -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+      -H "Authorization: Bearer $TOKEN_PACIENTE"
+  )
+
+  echo "       $( echo "$PACIENTE_TAPADO" | head -c 300 )"
+
+  if echo "$PACIENTE_TAPADO" | grep -q "tapado_por\|tapadoPor\|descripcion"; then
+    echo
+    echo "       🔴 PARÁ: el motivo de la ausencia viajó al canal del PACIENTE."
+    echo "          Es information disclosure (divulgación de información): el"
+    echo "          nombre de la ausencia es interno del consultorio."
+  else
+    echo
+    echo "       ✅ El motivo NO viajó, que es lo que tiene que pasar. Y no es"
+    echo "          que se filtre al salir: el canal del paciente no manda"
+    echo "          conMotivo, así que el campo ni se calcula."
+  fi
+
+else
+  echo "   ❌ NO SE PUDO MEDIR: no hay ninguna ausencia de fecha activa a futuro."
+fi
+
+
 # Los dos turnos de prueba se APAGAN, no se borran — la regla del proyecto. Y
 # con `aviso_estado` vacío, así que la repesca no le manda ninguna cancelación
 # a nadie.
@@ -1793,6 +1874,8 @@ echo "   Y TRES casos más de la ⑤.5 se leen por el CUERPO: el 54 (semanasDelM
 echo "   con sus cinco entradas), el 54.b (al menos UNA recurrente con"
 echo "   ?profesional=1), el 59 (turnosTapados con AL MENOS UNO) y el 61"
 echo "   (al volver a prender, los tapados VUELVEN)."
+echo "   Y los DOS últimos también: el 65 (tapado_por con su descripción en el"
+echo "   panel) y el 66 (el mismo día, por el canal del paciente, SIN motivo)."
 echo
 echo "   Y el cuerpo del caso 3 tiene que traer \"esAdmin\": true. Si trae"
 echo "   false, la fila existe pero el update del es_admin no entró: la puerta"
