@@ -1467,6 +1467,295 @@ supabase db query --linked \
   "update public.profesionales set es_admin = true where email_de_acceso = '$SOPORTE_EMAIL';" \
   > /dev/null 2>&1
 
+
+
+# ── 52 a 64. LAS AUSENCIAS — etapa ⑤.5, rebanada A ───────────────────────────
+#
+# 🔴 QUÉ MIDEN ESTOS CASOS Y NINGUNO DE LOS 51 ANTERIORES MIDE: la tabla
+# `excepciones` guarda DOS cosas con la misma forma —la ausencia de una persona,
+# que es suya, y el cierre de toda la clínica, que no es de nadie— y por eso es
+# la primera puerta del panel donde conviven el chequeo de PROPIEDAD y el de
+# NIVEL. El caso 62 es el que mide esa mezcla.
+#
+# 🔴 Y EL 59 ES EL QUE JUSTIFICA LA ETAPA, y no se lee por el código sino por el
+# CUERPO: cargar una ausencia sobre un día que ya tiene turnos tiene que
+# DEVOLVER esos turnos. Si vuelve lista vacía, Cecilia se va de vacaciones sin
+# saber a quién llamar, que es exactamente el agujero que la etapa viene a
+# tapar.
+
+echo
+echo "▶ 52. Las ausencias sin token — 401"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/ausencias-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY"
+
+echo
+echo "▶ 53. Las ausencias como PACIENTE — 403"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/ausencias-del-panel" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_PACIENTE"
+
+echo
+echo "▶ 54. Las ausencias como ADMIN — 200"
+
+AUSENCIAS=$(
+  curl -s -w '\n%{http_code}' \
+    "$FUNCIONES/ausencias-del-panel" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE"
+)
+
+echo "   obtenido: $( echo "$AUSENCIAS" | tail -1 )"
+echo "   cuerpo:   $( echo "$AUSENCIAS" | sed '$d' | head -c 400 )"
+
+echo
+echo "   ✅ semanasDelMes tiene que traer CINCO entradas, cada una con las dos"
+echo "      próximas fechas que tapa. Si viene vacía, la pantalla no puede"
+echo "      mostrar qué significa «la tercera semana»."
+echo
+echo "   ⚠ Y 'ausencias' VIENE VACÍA, que acá es lo correcto: la recurrente de"
+echo "      la tercera semana es del profesional 1 y esta cuenta es la 16. Lo"
+echo "      que se pide sin parámetro son LAS PROPIAS más las de la clínica."
+
+echo
+echo "▶ 54.b Las de OTRO profesional, como ADMIN — 200 y ahí SÍ aparece"
+
+AJENAS=$(
+  curl -s -w '\n%{http_code}' \
+    "$FUNCIONES/ausencias-del-panel?profesional=1" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE"
+)
+
+echo "   obtenido: $( echo "$AJENAS" | tail -1 )"
+echo "   recurrentes que trae: $( echo "$AJENAS" | sed '$d' | jq -r '[ .ausencias[] | select( .tipo == "recurrente" ) ] | length' 2>/dev/null )"
+
+echo
+echo "   🔴 TIENE QUE TRAER AL MENOS UNA: es la tercera semana de Cecilia, la"
+echo "      única fila que la tabla tenía antes de esta etapa. Un 0 acá"
+echo "      significa que el ?profesional= de un admin no se obedece, y"
+echo "      entonces Cecilia no puede ver ni tocar la agenda de nadie."
+
+echo
+echo "▶ 55. Cargar una ausencia sin token — 401"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/cargar-ausencia" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "descripcion": "x", "tipo": "unica", "alcance": "propio", "fecha_desde": "2027-01-11" }'
+
+echo
+echo "▶ 56. Cargar una ausencia como PACIENTE — 403"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/cargar-ausencia" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_PACIENTE" \
+  -H "Content-Type: application/json" \
+  -d '{ "descripcion": "x", "tipo": "unica", "alcance": "propio", "fecha_desde": "2027-01-11" }'
+
+echo
+echo "▶ 57. Sin descripción — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/cargar-ausencia" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H "Content-Type: application/json" \
+  -d '{ "descripcion": "   ", "tipo": "unica", "alcance": "propio", "fecha_desde": "2027-01-11" }'
+
+echo "   ✅ Tres espacios, no vacío: es el caso que not null NO cubre y que"
+echo "      cierra el check excepciones_descripcion_con_texto."
+
+echo
+echo "▶ 58. Fechas al revés — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/cargar-ausencia" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H "Content-Type: application/json" \
+  -d '{ "descripcion": "Vacaciones al reves", "tipo": "unica", "alcance": "propio", "fecha_desde": "2027-01-30", "fecha_hasta": "2027-01-20" }'
+
+echo "   ✅ Dos dígitos invertidos al tipear. Sin esta regla la fila entra y no"
+echo "      tapa NI UN DÍA, sin error y sin aviso."
+
+
+# ── 59. EL CASO QUE JUSTIFICA LA ETAPA ───────────────────────────────────────
+#
+# Se carga la ausencia SOBRE EL DÍA DE UN TURNO QUE YA EXISTE, y lo que se mide
+# es el cuerpo: tiene que devolver ese turno con el teléfono del paciente.
+
+DIA_CON_TURNO=$(
+  supabase db query --linked --output csv \
+    "select to_char( t.inicio at time zone 'America/Argentina/Cordoba', 'YYYY-MM-DD' ) as dia
+       from public.turnos t
+      where t.activo = true
+        and t.inicio >= now()
+      order by t.inicio
+      limit 1;" \
+    2>/dev/null | tail -1 | tr -d '"\r'
+)
+
+echo
+echo "▶ 59. Una ausencia SOBRE un día con turnos — 201 y la lista de a quién llamar"
+
+if [ -n "$DIA_CON_TURNO" ] && [ "$DIA_CON_TURNO" != "dia" ]; then
+
+  echo "   (el día elegido, que tiene al menos un turno activo: $DIA_CON_TURNO)"
+
+  CARGADA=$(
+    curl -s -w '\n%{http_code}' \
+      -X POST "$FUNCIONES/cargar-ausencia" \
+      -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+      -H "Authorization: Bearer $TOKEN_SOPORTE" \
+      -H "Content-Type: application/json" \
+      -d "{ \"descripcion\": \"PRUEBA de la bateria - se borra al final\", \"tipo\": \"unica\", \"alcance\": \"clinica\", \"fecha_desde\": \"$DIA_CON_TURNO\" }"
+  )
+
+  echo "   obtenido: $( echo "$CARGADA" | tail -1 )"
+  echo "   cuerpo:   $( echo "$CARGADA" | sed '$d' | head -c 500 )"
+
+  AUSENCIA_DE_PRUEBA=$( echo "$CARGADA" | sed '$d' | jq -r '.ausencia.id' 2>/dev/null )
+
+  CUANTOS_TAPADOS=$( echo "$CARGADA" | sed '$d' | jq -r '.turnosTapados | length' 2>/dev/null )
+
+  echo
+  echo "   🔴 turnosTapados tiene que traer AL MENOS UNO (trajo: ${CUANTOS_TAPADOS:-?})."
+  echo "      Un 0 acá es el agujero que esta etapa viene a tapar: la ausencia"
+  echo "      se guardó y nadie sabe a quién hay que llamar."
+
+else
+  echo "   ❌ NO SE PUDO MEDIR: no hay ningún turno activo a futuro en la base."
+fi
+
+
+# ── 60 y 61. PRENDER Y APAGAR ────────────────────────────────────────────────
+
+echo
+echo "▶ 60. Apagar la ausencia recién creada — 200, y la lista va VACÍA"
+
+if [ -n "${AUSENCIA_DE_PRUEBA:-}" ] && [ "$AUSENCIA_DE_PRUEBA" != "null" ]; then
+
+  APAGADA=$(
+    curl -s -w '\n%{http_code}' \
+      -X POST "$FUNCIONES/estado-de-ausencia" \
+      -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+      -H "Authorization: Bearer $TOKEN_SOPORTE" \
+      -H "Content-Type: application/json" \
+      -d "{ \"id\": $AUSENCIA_DE_PRUEBA, \"activa\": false }"
+  )
+
+  echo "   obtenido: $( echo "$APAGADA" | tail -1 )"
+  echo "   cuerpo:   $( echo "$APAGADA" | sed '$d' | head -c 200 )"
+
+  echo "   ✅ Apagar DESTAPA, así que no hay a quién avisar: turnosTapados va []."
+
+  echo
+  echo "▶ 61. Volver a prenderla — 200, y los turnos tapados VUELVEN"
+
+  PRENDIDA=$(
+    curl -s -w '\n%{http_code}' \
+      -X POST "$FUNCIONES/estado-de-ausencia" \
+      -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+      -H "Authorization: Bearer $TOKEN_SOPORTE" \
+      -H "Content-Type: application/json" \
+      -d "{ \"id\": $AUSENCIA_DE_PRUEBA, \"activa\": true }"
+  )
+
+  echo "   obtenido: $( echo "$PRENDIDA" | tail -1 )"
+  echo "   tapados:  $( echo "$PRENDIDA" | sed '$d' | jq -r '.turnosTapados | length' 2>/dev/null )"
+
+  echo "   🔴 Este es el caso que la primera versión del plan no tenía: sin un"
+  echo "      endpoint que PRENDA, una ausencia apagada por error sólo se"
+  echo "      recupera desde el Table Editor."
+
+else
+  echo "   ❌ NO SE PUDO MEDIR: el caso 59 no devolvió el id de la ausencia."
+fi
+
+echo
+echo "▶ 62. Un id que no existe — 403 (no 404)"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/estado-de-ausencia" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H "Content-Type: application/json" \
+  -d '{ "id": 999999, "activa": false }'
+
+echo "   ✅ 403 y no 404 a propósito: distinguir «no existe» de «no es tuya»"
+echo "      le dice a quien prueba ids al azar cuáles existen."
+
+
+# ── 63 y 64. EL CHEQUEO DE NIVEL — los dos casos más caros del bloque ────────
+
+echo
+echo "▶ 63 y 64. Como NO-ADMIN — los dos tienen que dar 403"
+echo "     (se le baja es_admin a la cuenta de soporte y se le devuelve al final)"
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = false where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+echo
+echo "   63. cargar un cierre de CLÍNICA siendo un profesional cualquiera:"
+
+curl -s -o /dev/null -w "       obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/cargar-ausencia" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H "Content-Type: application/json" \
+  -d '{ "descripcion": "Cierro el consultorio", "tipo": "unica", "alcance": "clinica", "fecha_desde": "2027-01-11" }'
+
+echo
+echo "       🔴 ÉSTE ES EL HUECO QUE LA AUDITORÍA DEL PLAN DE LA FASE HABÍA"
+echo "          MARCADO: una fila sin profesional_id tapa a TODO el plantel. Si"
+echo "          da 201, cualquier profesional logueado cierra la clínica."
+
+echo
+echo "   64. apagar el cierre de clínica que cargó la admin:"
+
+if [ -n "${AUSENCIA_DE_PRUEBA:-}" ] && [ "$AUSENCIA_DE_PRUEBA" != "null" ]; then
+
+  curl -s -o /dev/null -w "       obtenido: %{http_code}\n" \
+    -X POST "$FUNCIONES/estado-de-ausencia" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    -H "Content-Type: application/json" \
+    -d "{ \"id\": $AUSENCIA_DE_PRUEBA, \"activa\": false }"
+
+  echo
+  echo "       🔴 Y ÉSTE ES EL OTRO LADO DE LA MISMA PUERTA: destapar un feriado"
+  echo "          también es de nivel. Si da 200, un profesional vuelve a abrir"
+  echo "          un día que la clínica cerró."
+
+else
+  echo "       ❌ no se pudo medir: no hay ausencia de prueba."
+fi
+
+supabase db query --linked \
+  "update public.profesionales set es_admin = true where email_de_acceso = '$SOPORTE_EMAIL';" \
+  > /dev/null 2>&1
+
+# La ausencia de prueba SE BORRA, y acá sí se puede: nada la apunta con una
+# foreign key y es una fila que inventó la batería, no un dato del consultorio.
+# Es el mismo criterio que el profesional de prueba del caso 31.
+if [ -n "${AUSENCIA_DE_PRUEBA:-}" ] && [ "$AUSENCIA_DE_PRUEBA" != "null" ]; then
+
+  supabase db query --linked \
+    "delete from public.excepciones where id = $AUSENCIA_DE_PRUEBA;" \
+    > /dev/null 2>&1
+
+  echo
+  echo "   ausencia de prueba $AUSENCIA_DE_PRUEBA borrada"
+fi
+
+
 # Los dos turnos de prueba se APAGAN, no se borran — la regla del proyecto. Y
 # con `aviso_estado` vacío, así que la repesca no le manda ninguna cancelación
 # a nadie.
@@ -1491,13 +1780,19 @@ echo "✅ EN VERDE ES: 401 · 403 · 200 · 200 · 400 · 403 · 403 · 401 · 4
 echo "   401 · 403 · 400 · 401 · 403 · 200 · 400 · 400 · 200 · 403 · 403 ·"
 echo "   401 · 403 · 400 · 201 · 409 · 409 · 200 · 403 · 403 ·"
 echo "   401 · 403 · 200 · 200 · 403 · 403 · 200 · 400 ·"
-echo "   401 · 403 · 400 · 400 · 200 · 409 · 403, en ese orden."
+echo "   401 · 403 · 400 · 400 · 200 · 409 · 403 ·"
+echo "   401 · 403 · 200 · 401 · 403 · 400 · 400 · 201 · 200 · 200 · 403 · 403 · 403,"
+echo "   en ese orden."
 echo "   Y SIETE casos se leen por el CUERPO, no por el código: el 11 (lista vacía),"
 echo "   el 14 (el profesional de la respuesta), el 19 (dos conteos distintos),"
 echo "   el 19.b (la grilla tiene que decir el id del que pide, nunca 0),"
 echo "   el 20 (los tres tienen que encontrar a alguien) y el 25 (los dos conteos"
 echo "   IGUALES: el del plantel y el de la lupa) y el 44 (más bloques libres CON"
 echo "   ?excepto= que sin él: si son iguales, el parámetro no se obedece)."
+echo "   Y TRES casos más de la ⑤.5 se leen por el CUERPO: el 54 (semanasDelMes"
+echo "   con sus cinco entradas), el 54.b (al menos UNA recurrente con"
+echo "   ?profesional=1), el 59 (turnosTapados con AL MENOS UNO) y el 61"
+echo "   (al volver a prender, los tapados VUELVEN)."
 echo
 echo "   Y el cuerpo del caso 3 tiene que traer \"esAdmin\": true. Si trae"
 echo "   false, la fila existe pero el update del es_admin no entró: la puerta"
