@@ -11,14 +11,17 @@
 // deja un poco más vieja, y una foto vencida es peor que no tenerla porque se
 // lee como un hecho verificado.
 //
-// GENERADA EL 8-oct-2026, contra la base real, con:
+// GENERADA EL 14-oct-2026, contra la base real, con:
 //
 //   supabase gen types typescript --linked --schema public
 //
-// ⚠ Ese comando escribe el archivo ENTERO, así que se lleva puesto este
-// encabezado: al regenerar hay que volver a pegarlo arriba.
+// ⚠️ EL COMANDO SOBREESCRIBE EL ARCHIVO ENTERO, así que este encabezado se
+// pierde en cada corrida y hay que reponerlo. Se anota acá porque ya pasó: la
+// vez anterior el porqué de arriba se escribió una sola vez y la regeneración
+// del 14-oct se lo llevó.
 //
-// SE REGENERA al aplicar cualquier migración que toque tablas o columnas.
+// Lo que esta foto suma respecto de la del 8-oct: `excepciones` con sus cinco
+// reglas nuevas y `horarios_base.activo` — las dos de la etapa ⑤.5.
 
 export type Json =
   | string
@@ -32,7 +35,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
@@ -82,6 +85,7 @@ export type Database = {
       }
       horarios_base: {
         Row: {
+          activo: boolean
           created_at: string
           dia_semana: number
           fin: string
@@ -91,6 +95,7 @@ export type Database = {
           profesional_id: number
         }
         Insert: {
+          activo?: boolean
           created_at?: string
           dia_semana: number
           fin: string
@@ -100,6 +105,7 @@ export type Database = {
           profesional_id: number
         }
         Update: {
+          activo?: boolean
           created_at?: string
           dia_semana?: number
           fin?: string
@@ -379,10 +385,10 @@ export type Database = {
         Args: { termino: string }
         Returns: {
           apellido: string
-          email: string | null
+          email: string
           id: number
           nombre: string
-          telefono: string | null
+          telefono: string
         }[]
       }
       fin_del_turno: {

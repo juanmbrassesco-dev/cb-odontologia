@@ -159,6 +159,13 @@
         -->
         <button class="btn btn-2" type="button" id="ir-a-ausencias">
           Mis ausencias</button>
+
+        <!--
+          Tampoco se esconde, por el mismo motivo que el de al lado: la agenda
+          propia la setea el profesional.
+        -->
+        <button class="btn btn-2" type="button" id="ir-a-mi-agenda">
+          Mi agenda</button>
       </div>
 
     </section>
@@ -373,6 +380,122 @@
       ve todo de golpe, pero tampoco hay un «siguiente» que cruzar para
       corregir a quién se le está cargando.
     -->
+    <!--
+      LA SOLAPA DE LA AGENDA SEMANAL — la etapa ⑤.5, rebanada C, y la última
+      pieza de la fase ⑤.
+
+      ⚠ VOCABULARIO: acá se edita `horarios_base`, que es LA REGLA SEMANAL —una
+      fila cubre todos los martes del año—. Lo que tapa fechas concretas son las
+      `excepciones`, que viven en la solapa de al lado. Fusionar las dos
+      pantallas obligaría a cargar cada martes del año, uno por uno.
+
+      🔑 LOS SIETE DÍAS SE DIBUJAN SIEMPRE, también los que no tienen ni un
+      tramo: «el viernes no atiendo» pasa a ser un dato que se VE en lugar de
+      una ausencia de datos. El portero los manda a propósito.
+
+      🔴 Y LOS TRAMOS APAGADOS SE MUESTRAN, que es lo que hace útil a la columna
+      `activo`: si se escondieran, no habría desde dónde volver a prenderlos y
+      la única salida sería el Table Editor.
+    -->
+    <section class="paso" id="paso-mi-agenda" hidden>
+
+      <h1>Mi agenda</h1>
+
+      <p class="ayuda-pantalla" id="mi-agenda-ayuda">Cargando la agenda…</p>
+
+      <!-- Los días los cuelga `js/panel.js`. -->
+      <div class="lista-semana" id="mi-agenda-lista" hidden></div>
+
+      <div class="alta-tramo" id="alta-tramo" hidden>
+
+        <h2>Tramo nuevo</h2>
+
+        <div class="campo">
+          <label class="etiqueta" for="tramo-dia">Qué día</label>
+          <select class="caja" id="tramo-dia">
+            <option value="1">Lunes</option>
+            <option value="2">Martes</option>
+            <option value="3">Miércoles</option>
+            <option value="4">Jueves</option>
+            <option value="5">Viernes</option>
+            <option value="6">Sábado</option>
+            <option value="7">Domingo</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="tramo-inicio">Desde</label>
+          <input class="caja" id="tramo-inicio" type="time">
+        </div>
+
+        <div class="campo">
+          <label class="etiqueta" for="tramo-fin">Hasta</label>
+          <input class="caja" id="tramo-fin" type="time">
+          <p class="ayuda-campo">La hora de cierre: después de esta hora no
+            empieza ningún turno.</p>
+        </div>
+
+        <!--
+          🔑 ÉSTE ES EL CAMPO QUE NADIE ENTIENDE SIN AYUDA, y ya está medido que
+          confunde: de los siete tramos de Cecilia, cinco tienen techo y dos no.
+          La ayuda va con el ejemplo real escrito, porque la diferencia entre
+          «hasta qué hora SE EMPIEZA» y «hasta qué hora puede TERMINAR» no se
+          deduce del nombre del campo.
+        -->
+        <div class="campo">
+          <label class="etiqueta" for="tramo-techo">Hasta dónde se puede
+            estirar</label>
+          <input class="caja" id="tramo-techo" type="time">
+          <p class="ayuda-campo">Opcional. Si cerrás 14:00 pero un turno de 60
+            que arranca 13:30 lo atendés igual, poné 14:30. Si después de cerrar
+            no hay nada, dejalo vacío.</p>
+        </div>
+
+        <div class="acciones">
+
+          <button class="btn btn-1" type="button" id="alta-tramo-guardar">
+            Cargar el tramo</button>
+
+          <button class="btn btn-2" type="button" id="alta-tramo-cancelar">
+            Cancelar</button>
+
+        </div>
+
+      </div>
+
+      <!--
+        EL CARTEL DE LOS TURNOS QUE QUEDAN FUERA DE LA AGENDA — la misma pieza
+        que el de las ausencias, con otro texto.
+
+        ⚠ Y ACÁ EL TEXTO IMPORTA MÁS QUE ALLÁ, porque lo que pasa es distinto:
+        apagar un tramo saca horarios de la OFERTA, no de la agenda. Los turnos
+        que ya estaban agendados siguen en pie y se atienden igual; lo que ya no
+        se puede es reservar en esa franja.
+      -->
+      <div class="turnos-tapados" id="turnos-del-tramo" hidden>
+
+        <h2>Turnos agendados en esa franja</h2>
+
+        <p class="tapados-ayuda" id="tramo-ayuda-turnos"></p>
+
+        <div class="lista-tapados" id="tramo-lista-turnos"></div>
+
+      </div>
+
+      <p class="entrar-aviso" id="mi-agenda-aviso" hidden></p>
+
+      <div class="acciones">
+
+        <button class="btn btn-1" type="button" id="abrir-alta-tramo">
+          Agregar un tramo</button>
+
+        <button class="btn btn-2" type="button" id="volver-de-mi-agenda">
+          Volver a la agenda</button>
+
+      </div>
+
+    </section>
+
     <!--
       LA SOLAPA DE LAS AUSENCIAS — la etapa ⑤.5, rebanada A.
 

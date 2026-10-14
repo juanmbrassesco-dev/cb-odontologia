@@ -1837,6 +1837,235 @@ else
 fi
 
 
+
+# ── 67 a 78. LA AGENDA SEMANAL — etapa ⑤.5, rebanada C ───────────────────────
+#
+# 🔴 QUÉ MIDE ESTE BLOQUE Y NO MIDE NINGUNO DE LOS 66 ANTERIORES: la agenda
+# semanal es la ÚNICA tabla de esta etapa que el camino del PACIENTE lee para
+# decidir qué ofrecer. Un tramo apagado tiene que desaparecer de la grilla de
+# los dos canales, y eso lo prueba `probar-reservar.sh` además de esta batería.
+#
+# 🔴 Y EL 75 ES EL QUE MIDE LA ÚNICA REGLA QUE LA BASE NO PUEDE APLICAR: dos
+# tramos del mismo día que se pisan NO fallan —`unificarBloques( )` los fusiona
+# y la grilla sale bien—, así que si ese caso da 201 el error queda invisible y
+# aparece meses después como una agenda que nadie entiende.
+#
+# ⏰ El tramo que crea el 74 se BORRA al final. Es la segunda fila de toda la
+# batería que se limpia sola, y se puede por lo mismo que el profesional del
+# caso 31: nada la apunta con una foreign key.
+
+echo
+echo "▶ 67. La agenda semanal sin token — 401"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/agenda-del-profesional" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY"
+
+echo
+echo "▶ 68. La agenda semanal como PACIENTE — 403"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  "$FUNCIONES/agenda-del-profesional" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_PACIENTE"
+
+echo
+echo "▶ 69. La agenda semanal del ADMIN — 200, y los SIETE días"
+
+SEMANA=$(
+  curl -s -w '\n%{http_code}' \
+    "$FUNCIONES/agenda-del-profesional" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE"
+)
+
+echo "   obtenido: $( echo "$SEMANA" | tail -1 )"
+echo "   días que trae: $( echo "$SEMANA" | sed '$d' | jq -r '.semana | length' 2>/dev/null )"
+
+echo
+echo "   🔴 TIENEN QUE SER SIETE, también los que no tienen ni un tramo. Si"
+echo "      vinieran sólo los días con agenda, la pantalla no podría mostrar"
+echo "      «el viernes no atiende» y ese dato se perdería."
+
+echo
+echo "▶ 70. Cargar un tramo sin token — 401"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/cargar-tramo" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "dia_semana": 7, "inicio": "06:00", "fin": "07:00" }'
+
+echo
+echo "▶ 71. Un día de la semana que no existe (8) — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/cargar-tramo" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H "Content-Type: application/json" \
+  -d '{ "dia_semana": 8, "inicio": "06:00", "fin": "07:00" }'
+
+echo
+echo "▶ 72. El cierre ANTES del inicio — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/cargar-tramo" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H "Content-Type: application/json" \
+  -d '{ "dia_semana": 7, "inicio": "14:00", "fin": "08:00" }'
+
+echo "   ✅ Un tramo al revés no da error en la base: devuelve cero bloques, o"
+echo "      sea un día entero desaparecido de la agenda sin un solo aviso."
+
+echo
+echo "▶ 73. El techo ANTERIOR al cierre — 400"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/cargar-tramo" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H "Content-Type: application/json" \
+  -d '{ "dia_semana": 7, "inicio": "06:00", "fin": "07:00", "fin_maximo": "06:30" }'
+
+echo "   ✅ Un techo anterior al cierre le ACORTA el día a la profesional en"
+echo "      silencio, que es la clase de bug que se descubre cuando una"
+echo "      paciente se queja de que no consigue turno."
+
+echo
+echo "▶ 74. Un tramo válido — 201"
+
+TRAMO=$(
+  curl -s -w '\n%{http_code}' \
+    -X POST "$FUNCIONES/cargar-tramo" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    -H "Content-Type: application/json" \
+    -d '{ "dia_semana": 7, "inicio": "06:00", "fin": "07:00", "fin_maximo": "07:30" }'
+)
+
+echo "   obtenido: $( echo "$TRAMO" | tail -1 )"
+echo "   cuerpo:   $( echo "$TRAMO" | sed '$d' | head -c 220 )"
+
+TRAMO_DE_PRUEBA=$( echo "$TRAMO" | sed '$d' | jq -r '.tramo.id' 2>/dev/null )
+
+echo
+echo "   ✅ El cuerpo tiene que traer \"activo\": true aunque no se haya mandado:"
+echo "      lo pone la base con su default. Un tramo nace atendiendo."
+
+echo
+echo "▶ 75. EL MISMO HORARIO OTRA VEZ — 400   ← la regla que la base no puede"
+
+curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+  -X POST "$FUNCIONES/cargar-tramo" \
+  -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+  -H "Authorization: Bearer $TOKEN_SOPORTE" \
+  -H "Content-Type: application/json" \
+  -d '{ "dia_semana": 7, "inicio": "06:30", "fin": "08:00" }'
+
+echo
+echo "   🔴 SI DA 201, el solapamiento entró y NO VA A FALLAR NUNCA: la grilla"
+echo "      fusiona los dos tramos y se ve bien. El error aparece el día que"
+echo "      alguien tenga que corregir esa agenda y no entienda qué dice."
+
+echo
+echo "▶ 76 y 77. Apagar el tramo y volver a prenderlo — 200 los dos"
+
+if [ -n "${TRAMO_DE_PRUEBA:-}" ] && [ "$TRAMO_DE_PRUEBA" != "null" ]; then
+
+  APAGADO=$(
+    curl -s -w '\n%{http_code}' \
+      -X POST "$FUNCIONES/estado-del-tramo" \
+      -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+      -H "Authorization: Bearer $TOKEN_SOPORTE" \
+      -H "Content-Type: application/json" \
+      -d "{ \"id\": $TRAMO_DE_PRUEBA, \"activo\": false }"
+  )
+
+  echo "   76. apagar: $( echo "$APAGADO" | tail -1 )"
+  echo "       cuerpo: $( echo "$APAGADO" | sed '$d' | head -c 200 )"
+
+  curl -s -o /dev/null -w "   77. prender: %{http_code}\n" \
+    -X POST "$FUNCIONES/estado-del-tramo" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    -H "Content-Type: application/json" \
+    -d "{ \"id\": $TRAMO_DE_PRUEBA, \"activo\": true }"
+
+  echo
+  echo "   🔴 QUE PRENDA ES LA MITAD QUE JUSTIFICA LA COLUMNA: sin eso, un tramo"
+  echo "      apagado por error sólo se recupera desde el Table Editor, que es"
+  echo "      lo que esta etapa viene a sacar del medio."
+
+else
+  echo "   ❌ NO SE PUDO MEDIR: el caso 74 no devolvió el id del tramo."
+fi
+
+
+# ── 78. EL IDOR DE ESCRITURA SOBRE LA AGENDA DE OTRO ─────────────────────────
+
+echo
+echo "▶ 78. Un NO-admin apagando un tramo AJENO — 403"
+echo "     (se le baja es_admin a la cuenta de soporte y se le devuelve al final)"
+
+TRAMO_AJENO=$(
+  supabase db query --linked --output csv \
+    "select id from public.horarios_base
+      where profesional_id <> ( select id from public.profesionales where email_de_acceso = '$SOPORTE_EMAIL' )
+      order by id
+      limit 1;" \
+    2>/dev/null | tail -1 | tr -d '"\r'
+)
+
+if [ -n "$TRAMO_AJENO" ] && [ "$TRAMO_AJENO" != "id" ]; then
+
+  supabase db query --linked \
+    "update public.profesionales set es_admin = false where email_de_acceso = '$SOPORTE_EMAIL';" \
+    > /dev/null 2>&1
+
+  echo "   tramo ajeno elegido: $TRAMO_AJENO"
+
+  curl -s -o /dev/null -w "   obtenido: %{http_code}\n" \
+    -X POST "$FUNCIONES/estado-del-tramo" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    -H "Content-Type: application/json" \
+    -d "{ \"id\": $TRAMO_AJENO, \"activo\": false }"
+
+  supabase db query --linked \
+    "update public.profesionales set es_admin = true where email_de_acceso = '$SOPORTE_EMAIL';" \
+    > /dev/null 2>&1
+
+  echo
+  echo "   🔴 TIENE QUE DAR 403. Si da 200, un profesional le apagó medio día de"
+  echo "      atención a otro — y los pacientes dejan de poder reservar ahí sin"
+  echo "      que nadie se entere."
+
+  echo
+  echo "▶ ¿quedó activo el tramo ajeno? (tiene que decir TRUE)"
+
+  supabase db query --linked --output csv \
+    "select id, activo from public.horarios_base where id = $TRAMO_AJENO;" \
+    2>/dev/null | tail -2
+
+else
+  echo "   ❌ NO SE PUDO MEDIR: no hay ningún tramo de otro profesional."
+fi
+
+# El tramo de prueba se BORRA: nada lo apunta, y dejarlo activo le daría a la
+# cuenta de soporte una agenda de domingo que las otras pruebas no esperan.
+if [ -n "${TRAMO_DE_PRUEBA:-}" ] && [ "$TRAMO_DE_PRUEBA" != "null" ]; then
+
+  supabase db query --linked \
+    "delete from public.horarios_base where id = $TRAMO_DE_PRUEBA;" \
+    > /dev/null 2>&1
+
+  echo
+  echo "   tramo de prueba $TRAMO_DE_PRUEBA borrado"
+fi
+
+
 # Los dos turnos de prueba se APAGAN, no se borran — la regla del proyecto. Y
 # con `aviso_estado` vacío, así que la repesca no le manda ninguna cancelación
 # a nadie.
@@ -1876,6 +2105,11 @@ echo "   ?profesional=1), el 59 (turnosTapados con AL MENOS UNO) y el 61"
 echo "   (al volver a prender, los tapados VUELVEN)."
 echo "   Y los DOS últimos también: el 65 (tapado_por con su descripción en el"
 echo "   panel) y el 66 (el mismo día, por el canal del paciente, SIN motivo)."
+echo
+echo "   Y la rebanada C suma: 401 · 403 · 200 · 401 · 400 · 400 · 400 · 201 ·"
+echo "   400 · 200 · 200 · 403. El 69 se lee por el cuerpo (SIETE días), el 74"
+echo "   también (activo: true sin haberlo mandado), y el 75 es el que mide la"
+echo "   única regla que la base no puede aplicar: dos tramos que se pisan."
 echo
 echo "   Y el cuerpo del caso 3 tiene que traer \"esAdmin\": true. Si trae"
 echo "   false, la fila existe pero el update del es_admin no entró: la puerta"

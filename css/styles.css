@@ -3717,7 +3717,8 @@ textarea.caja {
 
 .lista-plantel,
 .lista-lupa,
-.lista-ausencias {
+.lista-ausencias,
+.lista-semana {
   display: grid;
   gap: 10px;
   max-width: var(--columna-lista);
@@ -3999,6 +4000,89 @@ textarea.caja {
 }
 
 
+/* ── EL DÍA DE LA SEMANA, en la agenda semanal — etapa ⑤.5, rebanada C ──────
+
+   🔑 ES UNA PIEZA PROPIA Y NO EL RENGLÓN DE UNA AUSENCIA, y la diferencia es
+   estructural: acá cada renglón AGRUPA —un día con sus tramos adentro—, así que
+   tiene un título y una lista, no un texto y un botón. El día sin tramos es el
+   caso que lo prueba: no hay nada que listar y el renglón igual tiene que decir
+   algo. */
+
+.fila-dia {
+  padding: 14px 16px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  text-align: left;
+}
+
+.fila-dia .dia-nombre {
+  font-size: var(--tipo-cuerpo);
+  line-height: var(--alto-cuerpo);
+  font-weight: 500;
+  color: var(--grafito);
+}
+
+/* «No atiende» va en el renglón callado y NO se omite: un día vacío sin una
+   línea que lo diga se lee como un error de carga. */
+.fila-dia .dia-vacio {
+  margin-top: 2px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--apagado);
+}
+
+.fila-dia .dia-tramos {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* EL TRAMO: la hora manda, así que arranca el renglón y el botón va al final.
+   Es la misma forma que el renglón del plantel, con una diferencia que la hace
+   pieza propia: acá el texto de la izquierda es CORTO y de ancho parejo —son
+   horas—, así que no necesita `min-width: 0` ni cortar palabras. */
+.tramo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--borde);
+}
+
+.tramo .tramo-horas {
+  flex: 1 1 auto;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  color: var(--texto-segundo);
+}
+
+/* Un tramo apagado no ofrece ni un turno, así que se dice en gris: es la fila
+   sobre la que no hay nada que leer con atención. Mismo criterio que
+   `.ausencia-apagada` y `.plantel-sin-nada`. */
+.tramo.tramo-apagado .tramo-horas {
+  color: var(--apagado);
+}
+
+.tramo .tramo-acciones {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.tramo .tramo-acciones .btn {
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 6px 12px;
+  font-size: var(--tipo-chico);
+  line-height: var(--alto-chico);
+  width: auto;
+}
+
+
 /* ── EL CARTEL DE LOS TURNOS QUE QUEDARON TAPADOS ───────────────────────────
 
    🔴 ES LO MÁS IMPORTANTE DE LA PANTALLA y por eso NO es un aviso de una
@@ -4100,6 +4184,13 @@ textarea.caja {
     margin-left: 0;
     align-self: stretch;
   }
+
+  /* ⚠ EL DEL TRAMO NO BAJA, y es la excepción medida: su texto son dos horas
+     —«08:00 a 14:00»—, que a 390 deja ancho de sobra para un botón chico al
+     lado. Bajarlo sumaría un renglón por tramo, y un día puede tener dos. */
+  .tramo .tramo-acciones {
+    flex: 0 0 auto;
+  }
 }
 
 
@@ -4110,7 +4201,8 @@ textarea.caja {
    el mismo tratamiento aplicado a otro formulario — los dos son «algo nuevo
    que se carga sin salir de donde estabas». */
 .alta-profesional,
-.alta-ausencia {
+.alta-ausencia,
+.alta-tramo {
   max-width: var(--columna-lista);
   margin: 24px auto 0;
   padding-top: 20px;
@@ -4119,7 +4211,8 @@ textarea.caja {
 }
 
 .alta-profesional h2,
-.alta-ausencia h2 {
+.alta-ausencia h2,
+.alta-tramo h2 {
   margin: 0 0 4px;
   font-family: Marcellus, Georgia, serif;
   font-size: var(--tipo-h3);

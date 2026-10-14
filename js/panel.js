@@ -2777,6 +2777,55 @@ function cambiarLaFormaDeLaAusencia() {
 }
 
 
+// Los dos carteles de turnos que existen en el panel. Son la MISMA pieza —una
+// lista de turnos con su teléfono y un botón que lleva al día— y lo único que
+// cambia es qué le pasó a esos turnos, que es contenido y no forma.
+//
+// 🔑 ES EL MISMO RECURSO QUE `grillaDeCarga` / `grillaDeMover`: un descriptor
+// por pantalla en vez de dos copias de la función. Copiada, el día que se
+// arregle un modo de falla del cartel hay que acordarse de arreglarlo dos veces
+// — y acá el modo de falla sería no mostrar a quién llamar.
+const cartelDeAusencias = {
+  caja: '#turnos-tapados',
+  lista: '#tapados-lista',
+  ayuda: '#tapados-ayuda',
+
+  texto: function ( cuantos ) {
+
+    if ( cuantos === 1 ) {
+      return 'Hay 1 turno agendado en esos días. El sistema NO lo canceló: hay'
+        + ' que llamar a la paciente.';
+    }
+
+    return 'Hay ' + cuantos + ' turnos agendados en esos días. El sistema NO'
+      + ' los canceló: hay que llamar a cada paciente.';
+  }
+};
+
+
+// ⚠ EL TEXTO DE ESTE ES DISTINTO PORQUE LO QUE PASA ES DISTINTO, y la
+// diferencia no es de tono: apagar un tramo saca horarios de la OFERTA, no de
+// la agenda. Los turnos que ya estaban agendados se atienden igual.
+const cartelDeLaAgenda = {
+  caja: '#turnos-del-tramo',
+  lista: '#tramo-lista-turnos',
+  ayuda: '#tramo-ayuda-turnos',
+
+  texto: function ( cuantos ) {
+
+    const cola = ' en esa franja. Siguen en pie y se atienden igual: lo que ya'
+      + ' no se puede es reservar ahí. Si no vas a atenderlos, hay que llamar'
+      + ' o moverlos.';
+
+    if ( cuantos === 1 ) {
+      return 'Hay 1 turno agendado' + cola;
+    }
+
+    return 'Hay ' + cuantos + ' turnos agendados' + cola;
+  }
+};
+
+
 /**
  * Dibuja el cartel de los turnos que quedaron tapados.
  *
@@ -2793,27 +2842,18 @@ function cambiarLaFormaDeLaAusencia() {
  *     horario, y esta lista no puede hacerlo. Llevar al día deja las dos
  *     salidas a la vista en vez de empujar a la peor.
  */
-function mostrarLosTapados( turnos ) {
+function mostrarLosTapados( descriptor, turnos ) {
 
-  const cartel = document.querySelector( '#turnos-tapados' );
-  const lista = document.querySelector( '#tapados-lista' );
-  const ayuda = document.querySelector( '#tapados-ayuda' );
+  const cartel = document.querySelector( descriptor.caja );
+  const lista = document.querySelector( descriptor.lista );
+  const ayuda = document.querySelector( descriptor.ayuda );
 
   if ( turnos.length === 0 ) {
     cartel.hidden = true;
     return;
   }
 
-  if ( turnos.length === 1 ) {
-    ayuda.textContent =
-      'Hay 1 turno agendado en esos días. El sistema NO lo canceló: hay que '
-      + 'llamar a la paciente.';
-  }
-  else {
-    ayuda.textContent =
-      'Hay ' + turnos.length + ' turnos agendados en esos días. El sistema NO '
-      + 'los canceló: hay que llamar a cada paciente.';
-  }
+  ayuda.textContent = descriptor.texto( turnos.length );
 
   lista.replaceChildren();
 
@@ -2888,7 +2928,7 @@ async function mostrarLasAusencias() {
 
   aviso.hidden = true;
   lista.hidden = true;
-  document.querySelector( '#turnos-tapados' ).hidden = true;
+  document.querySelector( cartelDeAusencias.caja ).hidden = true;
   ayuda.hidden = false;
   ayuda.textContent = 'Cargando las ausencias…';
 
@@ -2980,7 +3020,7 @@ async function cambiarElEstadoDeLaAusencia( fila, prender ) {
 
   // 🔑 PRENDER TAPA DÍAS IGUAL QUE CARGAR, así que vuelve el mismo aviso.
   // Apagar destapa: ahí no hay a quién llamar y la lista viene vacía.
-  mostrarLosTapados( datos.turnosTapados );
+  mostrarLosTapados( cartelDeAusencias, datos.turnosTapados );
 
   if ( datos.sePudoContar === false ) {
     aviso.hidden = false;
@@ -3091,7 +3131,7 @@ async function guardarLaAusencia() {
 
   await mostrarLasAusencias();
 
-  mostrarLosTapados( datos.turnosTapados );
+  mostrarLosTapados( cartelDeAusencias, datos.turnosTapados );
 
   if ( datos.sePudoContar === false ) {
     aviso.hidden = false;
@@ -3138,4 +3178,424 @@ document.querySelector( '#ausencia-forma' ).addEventListener( 'change', () => {
 
 document.querySelector( '#ausencia-semana' ).addEventListener( 'change', () => {
   escribirLaAyudaDeLaSemana();
+} );
+
+
+// ── LA SOLAPA DE LA AGENDA SEMANAL — etapa ⑤.5, rebanada C ───────────────────
+//
+// QUÉ HACE: muestra los siete días con sus tramos de atención y deja agregar,
+// apagar y volver a prender.
+//
+// ⚠ VOCABULARIO: acá se edita LA REGLA SEMANAL —una fila cubre todos los martes
+// del año—. Lo que tapa fechas concretas son las ausencias, que son la solapa
+// de al lado.
+
+const DIRECCION_DE_MI_AGENDA =
+  SUPABASE_URL + '/functions/v1/agenda-del-profesional';
+
+const DIRECCION_DE_CARGAR_TRAMO =
+  SUPABASE_URL + '/functions/v1/cargar-tramo';
+
+const DIRECCION_DEL_ESTADO_DEL_TRAMO =
+  SUPABASE_URL + '/functions/v1/estado-del-tramo';
+
+
+// Los nombres de los días en el orden ISO que usa la tabla: la posición 0 es
+// lunes, porque el portero manda del 1 al 7.
+//
+// 🔑 EL NÚMERO NO SE MUESTRA NUNCA. La base guarda 1..7 —el porqué está en la
+// migración `numerar_dias_de_semana`— y la traducción a palabras vive en UN
+// solo lugar, acá.
+const NOMBRES_DE_LOS_DIAS = [
+  'Lunes',
+  'Martes',
+  'Miércoles',
+  'Jueves',
+  'Viernes',
+  'Sábado',
+  'Domingo'
+];
+
+
+/**
+ * Las horas de un tramo, escritas: «08:00 a 14:00 · se estira hasta 14:30».
+ *
+ * 🔑 LA HORA SE CORTA A 'HH:MM' porque Postgres devuelve `time` como
+ * '08:00:00', y los segundos no dicen nada en una agenda de consultorio.
+ *
+ * ⚠ Y EL TECHO SE NOMBRA CON LO QUE HACE, no con el nombre de la columna: «se
+ * estira hasta» explica el dato, «fin_maximo» lo repite. Es el campo que ya se
+ * midió que confunde.
+ */
+function horasDelTramo( tramo ) {
+
+  const partes = [
+    tramo.inicio.slice( 0, 5 ) + ' a ' + tramo.fin.slice( 0, 5 )
+  ];
+
+  if ( tramo.finMaximo ) {
+    partes.push( 'se estira hasta ' + tramo.finMaximo.slice( 0, 5 ) );
+  }
+
+  if ( !tramo.activo ) {
+    partes.push( 'apagado' );
+  }
+
+  return partes.join( ' · ' );
+}
+
+
+/** Arma el renglón de UN tramo, con su interruptor. */
+function renglonDelTramo( tramo ) {
+
+  const renglon = document.createElement( 'div' );
+  renglon.className = 'tramo';
+
+  if ( !tramo.activo ) {
+    renglon.classList.add( 'tramo-apagado' );
+  }
+
+  const horas = document.createElement( 'p' );
+  horas.className = 'tramo-horas';
+  horas.textContent = horasDelTramo( tramo );
+
+  renglon.appendChild( horas );
+
+  const acciones = document.createElement( 'div' );
+  acciones.className = 'tramo-acciones';
+
+  const boton = document.createElement( 'button' );
+  boton.type = 'button';
+  boton.className = 'btn btn-2';
+
+  if ( tramo.activo ) {
+    boton.textContent = 'Apagar';
+    boton.setAttribute(
+      'aria-label',
+      'Apagar el tramo de ' + horasDelTramo( tramo )
+    );
+  }
+  else {
+    boton.textContent = 'Prender';
+    boton.setAttribute(
+      'aria-label',
+      'Prender el tramo de ' + horasDelTramo( tramo )
+    );
+  }
+
+  // 🔴 APAGAR VA DIRECTO Y NO ABRE UN CARTEL QUE PREGUNTE, al contrario de la
+  // baja de un profesional, y el motivo es el mismo que en las ausencias: NO
+  // CANCELA NADA. Los turnos que ya estaban agendados en esa franja siguen en
+  // pie; lo que cambia es que ahí ya no se puede reservar. Y se deshace con el
+  // botón de al lado.
+  boton.addEventListener( 'click', () => {
+    cambiarElEstadoDelTramo( tramo, !tramo.activo );
+  } );
+
+  acciones.appendChild( boton );
+  renglon.appendChild( acciones );
+
+  return renglon;
+}
+
+
+/** Arma el bloque de UN día, con sus tramos adentro. */
+function renglonDelDia( dia ) {
+
+  const renglon = document.createElement( 'div' );
+  renglon.className = 'fila-dia';
+
+  const nombre = document.createElement( 'p' );
+  nombre.className = 'dia-nombre';
+  nombre.textContent = NOMBRES_DE_LOS_DIAS[ dia.dia - 1 ];
+
+  renglon.appendChild( nombre );
+
+  // 🔑 EL DÍA SIN TRAMOS LO DICE, no se queda en blanco: un renglón vacío se
+  // lee como un error de carga, y «no atiendo los viernes» es un dato que la
+  // pantalla tiene que poder mostrar.
+  if ( dia.tramos.length === 0 ) {
+
+    const vacio = document.createElement( 'p' );
+    vacio.className = 'dia-vacio';
+    vacio.textContent = 'No atiende';
+
+    renglon.appendChild( vacio );
+
+    return renglon;
+  }
+
+  const tramos = document.createElement( 'div' );
+  tramos.className = 'dia-tramos';
+
+  for ( const tramo of dia.tramos ) {
+    tramos.appendChild( renglonDelTramo( tramo ) );
+  }
+
+  renglon.appendChild( tramos );
+
+  return renglon;
+}
+
+
+/** Pide la agenda semanal. Devuelve los datos, 'sin-acceso' o null. */
+async function pedirMiAgenda() {
+
+  const respuesta = await fetch(
+    DIRECCION_DE_MI_AGENDA,
+    { headers: cabecerasConSesion() }
+  );
+
+  if ( respuesta.status === 403 ) {
+    return 'sin-acceso';
+  }
+
+  if ( !respuesta.ok ) {
+    console.error( 'No se pudo leer la agenda. Estado:', respuesta.status );
+    return null;
+  }
+
+  return await respuesta.json();
+}
+
+
+async function mostrarMiAgenda() {
+
+  const ayuda = document.querySelector( '#mi-agenda-ayuda' );
+  const lista = document.querySelector( '#mi-agenda-lista' );
+  const aviso = document.querySelector( '#mi-agenda-aviso' );
+
+  aviso.hidden = true;
+  lista.hidden = true;
+  document.querySelector( cartelDeLaAgenda.caja ).hidden = true;
+  ayuda.hidden = false;
+  ayuda.textContent = 'Cargando la agenda…';
+
+  const datos = await pedirMiAgenda();
+
+  if ( datos === 'sin-acceso' ) {
+    ayuda.hidden = true;
+    aviso.hidden = false;
+    aviso.textContent = 'Esta solapa es sólo para el personal del consultorio.';
+    return;
+  }
+
+  if ( !datos ) {
+    ayuda.hidden = true;
+    aviso.hidden = false;
+    aviso.textContent = 'No pudimos cargar la agenda. Probá de nuevo.';
+    return;
+  }
+
+  // Se vacía antes de colgar: sin esto, entrar dos veces APILA la semana debajo
+  // de la anterior. No falla con error — muestra el doble.
+  lista.replaceChildren();
+
+  for ( const dia of datos.semana ) {
+    lista.appendChild( renglonDelDia( dia ) );
+  }
+
+  // 🔑 SI NO HAY NI UN TRAMO EN TODA LA SEMANA SE DICE APARTE, porque los siete
+  // «No atiende» en fila se leen como una pantalla rota y no como el estado de
+  // alguien recién dado de alta. Es el caso del profesional nuevo.
+  const algunTramo = datos.semana.some( ( dia ) => dia.tramos.length > 0 );
+
+  if ( !algunTramo ) {
+    ayuda.hidden = false;
+    ayuda.textContent =
+      'Todavía no hay ningún tramo cargado: mientras la agenda esté vacía, '
+      + 'nadie puede reservar un turno.';
+  }
+  else {
+    ayuda.hidden = true;
+  }
+
+  lista.hidden = false;
+}
+
+
+/** Abre o cierra el alta de un tramo. */
+function mostrarElAltaDeTramo( abierta ) {
+
+  document.querySelector( '#alta-tramo' ).hidden = !abierta;
+
+  // Mismo criterio que las otras tres altas del panel: con el alta abierta
+  // había dos botones «Volver» uno debajo del otro.
+  document.querySelector( '#volver-de-mi-agenda' ).hidden = abierta;
+  document.querySelector( '#abrir-alta-tramo' ).hidden = abierta;
+
+  if ( !abierta ) {
+    return;
+  }
+
+  document.querySelector( '#tramo-inicio' ).value = '';
+  document.querySelector( '#tramo-fin' ).value = '';
+  document.querySelector( '#tramo-techo' ).value = '';
+
+  document.querySelector( '#tramo-dia' ).focus();
+}
+
+
+/** Prende o apaga un tramo. */
+async function cambiarElEstadoDelTramo( tramo, prender ) {
+
+  const aviso = document.querySelector( '#mi-agenda-aviso' );
+
+  aviso.hidden = true;
+
+  let respuesta;
+
+  try {
+    respuesta = await fetch(
+      DIRECCION_DEL_ESTADO_DEL_TRAMO,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_CLAVE_PUBLICA,
+          'Authorization': 'Bearer ' + tokenDeLaSesion(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify( { id: tramo.id, activo: prender } )
+      }
+    );
+  }
+  catch {
+    respuesta = null;
+  }
+
+  if ( !respuesta || !respuesta.ok ) {
+    aviso.hidden = false;
+    aviso.textContent = 'No pudimos cambiar ese tramo. Probá de nuevo.';
+    return;
+  }
+
+  const datos = await respuesta.json();
+
+  // Se recarga en vez de cambiar el renglón a mano: lo que se vuelve a dibujar
+  // es lo que la base dice ahora.
+  await mostrarMiAgenda();
+
+  mostrarLosTapados( cartelDeLaAgenda, datos.turnosAfectados );
+
+  if ( datos.sePudoContar === false ) {
+    aviso.hidden = false;
+    aviso.textContent =
+      'El tramo se apagó, pero no pudimos revisar si había turnos agendados en '
+      + 'esa franja. Conviene mirar la agenda de esos días.';
+  }
+}
+
+
+/** Carga el tramo que está escrito en el alta. */
+async function guardarElTramo() {
+
+  const aviso = document.querySelector( '#mi-agenda-aviso' );
+  const boton = document.querySelector( '#alta-tramo-guardar' );
+
+  aviso.hidden = true;
+
+  const cuerpo = {
+    dia_semana: Number( document.querySelector( '#tramo-dia' ).value ),
+    inicio: document.querySelector( '#tramo-inicio' ).value,
+    fin: document.querySelector( '#tramo-fin' ).value
+  };
+
+  // 🔑 EL TECHO VIAJA SÓLO SI SE ESCRIBIÓ. Vacío significa «este tramo no se
+  // estira», no «se estira cero minutos», y el portero lo guarda en `null`.
+  const techo = document.querySelector( '#tramo-techo' ).value;
+
+  if ( techo ) {
+    cuerpo.fin_maximo = techo;
+  }
+
+  // 🔴 EL BOTÓN SE APAGA MIENTRAS VIAJA EL PEDIDO: sin esto, dos toques cargan
+  // el tramo dos veces. El segundo rebotaría con 400 por solaparse consigo
+  // mismo, pero quien mira vería un error donde no hubo ninguno.
+  boton.disabled = true;
+
+  let respuesta;
+
+  try {
+    respuesta = await fetch(
+      DIRECCION_DE_CARGAR_TRAMO,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_CLAVE_PUBLICA,
+          'Authorization': 'Bearer ' + tokenDeLaSesion(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify( cuerpo )
+      }
+    );
+  }
+  catch {
+    respuesta = null;
+  }
+
+  boton.disabled = false;
+
+  if ( !respuesta ) {
+    aviso.hidden = false;
+    aviso.textContent = 'No pudimos cargar el tramo. Probá de nuevo.';
+    return;
+  }
+
+  // 🔑 EL TEXTO DEL 400 SE MUESTRA TAL CUAL —«el cierre tiene que ser posterior
+  // al inicio», «ese horario se pisa con el tramo de 08:00 a 14:00»— y el alta
+  // queda ABIERTA con lo tipeado adentro: son errores de carga, y quien los lee
+  // es quien los puede corregir.
+  if ( respuesta.status === 400 ) {
+
+    const datos = await respuesta.json();
+
+    aviso.hidden = false;
+    aviso.textContent = datos.error;
+    return;
+  }
+
+  if ( respuesta.status === 403 ) {
+    aviso.hidden = false;
+    aviso.textContent = 'No tenés permiso para tocar esa agenda.';
+    return;
+  }
+
+  if ( !respuesta.ok ) {
+    aviso.hidden = false;
+    aviso.textContent = 'No pudimos cargar el tramo. Probá de nuevo.';
+    return;
+  }
+
+  mostrarElAltaDeTramo( false );
+
+  await mostrarMiAgenda();
+}
+
+
+// ── LOS OYENTES DE LA AGENDA SEMANAL ─────────────────────────────────────────
+
+document.querySelector( '#ir-a-mi-agenda' ).addEventListener( 'click', async () => {
+  mostrarElAltaDeTramo( false );
+  avanzarA( '#paso-mi-agenda' );
+  await mostrarMiAgenda();
+} );
+
+
+document.querySelector( '#volver-de-mi-agenda' ).addEventListener( 'click', () => {
+  reemplazarPor( '#paso-agenda' );
+} );
+
+
+document.querySelector( '#abrir-alta-tramo' ).addEventListener( 'click', () => {
+  mostrarElAltaDeTramo( true );
+} );
+
+
+document.querySelector( '#alta-tramo-cancelar' ).addEventListener( 'click', () => {
+  mostrarElAltaDeTramo( false );
+} );
+
+
+document.querySelector( '#alta-tramo-guardar' ).addEventListener( 'click', () => {
+  guardarElTramo();
 } );

@@ -278,6 +278,43 @@ export function fechaEnSantaFe( instante: Date ): string {
 }
 
 
+// La HORA de un instante en Santa Fe, como 'HH:MM'.
+//
+// 🔑 ES LA HERMANA DE `fechaEnSantaFe` y va al lado por eso: las dos convierten
+// un instante a la zona del consultorio, una devuelve el día y la otra la hora.
+// Separadas en dos archivos, la segunda se escribe de nuevo con otra convención
+// el día que haga falta.
+//
+// 🔴 POR QUÉ NO SE CORTA EL TEXTO DEL `inicio`, que sería más corto: la base
+// guarda y devuelve en UTC, así que un turno de las 08:00 de Santa Fe llega
+// como '…T11:00:00+00:00'. Cortar los caracteres 11 a 16 devuelve «11:00», que
+// es una hora que existe, está bien escrita y es la equivocada. *Es el mismo
+// error que `fechas.js` tiene documentado del lado del navegador.*
+//
+// Apareció con la etapa ⑤.5, rebanada C: para avisar qué turnos deja fuera de
+// la agenda un tramo que se apaga, hay que comparar la hora del turno contra
+// las del tramo — y las del tramo son horas locales del consultorio.
+export function horaEnSantaFe( instante: Date ): string {
+
+  const formato = new Intl.DateTimeFormat(
+    'en-GB',
+    {
+      timeZone: ZONA,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    },
+  )
+
+  const partes = formato.formatToParts( instante )
+
+  const hora = parteDelFormato( partes, 'hour' )
+  const minuto = parteDelFormato( partes, 'minute' )
+
+  return `${ hora }:${ minuto }`
+}
+
+
 // ── Horas ───────────────────────────────────────────────────────────────────
 
 // Postgres devuelve las horas como '08:00:00'. Adentro del cálculo se trabajan

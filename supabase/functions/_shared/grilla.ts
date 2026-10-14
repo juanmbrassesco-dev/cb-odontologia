@@ -119,6 +119,17 @@ export async function armarLaGrilla(
     .from( 'horarios_base' )
     .select( 'dia_semana, inicio, fin, fin_maximo' )
     .eq( 'profesional_id', profesionalId )
+
+    // 🔴 ESTA LÍNEA ES LO QUE HACE QUE `activo` SIRVA DE ALGO, y entró con la
+    // etapa ⑤.5: sin ella, un tramo apagado desde el panel sigue ofreciendo
+    // turnos y la columna es decoración. No falla con error — contesta mal.
+    //
+    // ⚠ TOCA LOS DOS CANALES, porque este cálculo lo comparten: el que reserva
+    // por la web y el que carga a mano desde el panel. Por eso el día que se
+    // cerró la rebanada C se corrió `probar-reservar.sh` entera, que es la
+    // batería que mide que el camino del paciente no se rompió.
+    .eq( 'activo', true )
+
     .order( 'dia_semana' )
     .order( 'inicio' )
 
