@@ -284,7 +284,7 @@ p {
    dos columnas de 162 con su hueco de 12 piden 336, así que `auto-fit` baja a
    UNA columna y el pie vuelve a apilarse entero. `1fr` no tiene ese problema
    justamente porque se adapta en vez de pedir una medida. */
-.acciones-grilla {
+.paso .acciones.acciones-grilla {
   grid-template-columns: repeat( auto-fit, minmax( 150px, 1fr ) );
 
   /* 🔴 LAS FILAS TAMBIÉN SE IGUALAN, Y ESTO NO ES ADORNO: medido el
@@ -310,6 +310,17 @@ p {
      así que los CUATRO partían el texto en dos renglones. Con 860 la columna
      da 206 y el texto entra en uno. */
   max-width: var(--columna-lista);
+
+  /* 🔴 LA SEPARACIÓN DE ARRIBA LA PONE EL PIE, Y SÓLO EL PIE. Anular el margen
+     de cada botón (abajo) dejó el pie PEGADO al campo de encima —visto en la
+     captura de 1280 del 15-oct-2026—, porque `.paso .acciones` lo tenía en
+     cero contando con que lo pusiera el botón.
+
+     🔑 Son 28 px, el mismo aire que usa el resto de estas pantallas, y vive
+     en UN solo dueño. Es la regla que este archivo ya tenía escrita y que se
+     había roto en las dos puntas: «si las dos dueñas ponen su margen, el total
+     vuelve a ser una suma que nadie eligió». Acá la dueña es la fila. */
+  margin-top: 28px;
 }
 
 /* EL RELLENO LATERAL BAJA SÓLO ACÁ ADENTRO —autorizado por Juan el
@@ -327,7 +338,24 @@ p {
    lo exige el CONTRASTE — blanco sobre el dorado del brief mide 3,09 y ese
    número sólo alcanza para texto grande). Bajar cualquiera de los dos para
    ganar lugar sería comprar forma con accesibilidad. */
-.acciones-grilla .btn {
+.paso .acciones-grilla .btn {
+
+  /* 🔴 EL MARGEN DE ARRIBA SE ANULA, Y SIN ESTO EL PIE MIDE 139 px DE MÁS.
+     Medido el 15-oct-2026, apilando los cinco botones en el teléfono: cada
+     botón mide 47 px y cinco con sus huecos tendrían que dar 267, y daban 406.
+
+     🔑 LA CAUSA ES LA MISMA QUE ESTE ARCHIVO YA CAZÓ UNA VEZ —«el 52 no lo
+     decidió nadie: era la SUMA de dos dueños»—: `.paso .btn` le pone 28 px de
+     margen arriba a todo botón de una pantalla, y adentro de una grilla ese
+     margen vive DENTRO de la celda, así que cada fila crecía 28. La regla
+     `.acciones .btn { margin: 0 }` no lo tapaba porque pesa lo mismo y está
+     ANTES en el archivo: entre dos reglas del mismo peso gana la última, y
+     depender de ese orden es depender de que nadie mueva un bloque.
+
+     Por eso este selector lleva `.paso` adelante: pesa más, y entonces gana
+     por PRIORIDAD y no por posición. */
+  margin-top: 0;
+
   padding-left: 16px;
   padding-right: 16px;
 
@@ -797,6 +825,39 @@ textarea.caja {
   border: 1px solid var(--grafito);
   border-radius: var(--radio);
   pointer-events: none;
+}
+
+/* 🔴 EN EL TELÉFONO VAN APILADOS, EN UNA SOLA COLUMNA —decidido por Juan el
+   15-oct-2026, mirando el pie con los cinco botones—.
+
+   QUÉ LO OBLIGÓ: con cinco botones y dos columnas siempre sobra uno. Caían
+   2 + 2 + 1 y el quinto quedaba solo y pegado a la izquierda, que se lee como
+   un error de maquetado y no como una decisión.
+
+   🔑 Y APILADOS NO SALEN MÁS ALTOS, QUE ES LO CONTRA-INTUITIVO: en una sola
+   columna el botón tiene el ancho del rótulo más largo entero, así que «Cargar
+   un turno» entra en UN renglón en vez de partirse en dos. Cinco botones de un
+   renglón miden menos que tres filas de botones de dos.
+
+   El hueco baja de 12 a 8 por el mismo motivo: en una columna el hueco sólo
+   separa botones entre sí, no filas de una grilla, y 8 alcanza para que no se
+   toquen sin estirar el pie.
+
+   ⚠️ LA COLUMNA ES `max-content` Y NO `1fr` A PROPÓSITO: con `1fr` el botón
+   ocuparía los 335 px del contenedor, o sea de borde a borde, y este archivo
+   tiene escrito que eso no se hace en ningún ancho. Con `max-content` mide lo
+   que mide el rótulo más largo —y los otros cuatro se estiran a esa medida,
+   así que siguen siendo todos iguales—. */
+@media (max-width: 767px) {
+
+  /* El selector repite el peso de la regla de arriba —`.paso` + las dos
+     clases— y no por gusto: con `.acciones-grilla` a secas esta regla pesa
+     menos y el teléfono volvía a mostrar DOS columnas. Medido con el valor
+     computado el 15-oct-2026. */
+  .paso .acciones.acciones-grilla {
+    grid-template-columns: max-content;
+    gap: 8px;
+  }
 }
 
 /* En escritorio el problema no existe —el logo crece a 52 y el botón se queda
