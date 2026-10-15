@@ -2575,6 +2575,28 @@ textarea.caja {
   text-wrap: balance;
 }
 
+/* EL TÍTULO DE UN BLOQUE DENTRO DE UNA PANTALLA — puesto el 15-oct-2026,
+   cuando «Mi agenda» pasó a tener DOS listas (los turnos que vienen y los
+   horarios de la semana) y hubo que decir cuál es cuál.
+
+   🔑 POR QUÉ NO ALCANZA CON UN `<h2>` PELADO, que es lo que usan los otros
+   títulos del panel: aquéllos viven adentro de un bloque que ya trae su propio
+   aire (`.alta-paciente`, `.cartel`), y éstos van sueltos en la pantalla. Sin
+   un margen propio quedarían pegados a la lista de arriba, que es justo lo que
+   hace que dos listas se lean como una sola.
+
+   Los 28 px son el mismo aire que `.paso .btn` usa para separarse de lo que
+   tiene encima: una sola medida de separación en estas pantallas. */
+.titulo-bloque {
+  margin-top: 28px;
+  margin-bottom: 4px;
+}
+
+/* El primero no lleva el aire de arriba: el título de la pantalla ya lo puso. */
+.paso > .titulo-bloque:first-of-type {
+  margin-top: 18px;
+}
+
 .paso .ayuda-pantalla {
   margin-top: 12px;
   color: var(--texto-segundo);

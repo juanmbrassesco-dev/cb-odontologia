@@ -709,13 +709,26 @@ fi
 #
 # 🔴 LO QUE ESTOS CASOS MIDEN Y NINGUNO DE LOS 20 ANTERIORES MIDE: el chequeo de
 # NIVEL. Hasta acá la pregunta del panel era «¿este turno es tuyo?»
-# (propiedad); estos dos endpoints preguntan «¿sos admin?». Un profesional con
-# sesión válida tiene que recibir 403 AUNQUE PIDA SU PROPIA FILA.
+# (propiedad); `plantel-del-panel` pregunta «¿sos admin?».
 #
-# 🔴 Y EL 26 ES EL MÁS CARO DE TODA LA BATERÍA: `turnos-del-profesional` es el
-# único endpoint del proyecto que devuelve `observaciones_paciente`, que puede
-# traer datos de salud. Si ese caso da 200, cualquier profesional logueado lee
-# el motivo de consulta de los pacientes de todos los demás.
+# 🔀 Y LOS DOS ENDPOINTS DEJARON DE PREGUNTAR LO MISMO EL 15-oct-2026. Este
+# bloque decía «estos dos endpoints preguntan ¿sos admin?» y «un profesional
+# tiene que recibir 403 AUNQUE PIDA SU PROPIA FILA». Eso sigue valiendo para el
+# plantel y YA NO para `turnos-del-profesional`, que ahora contesta NIVEL **O**
+# PROPIEDAD: cada profesional ve sus propios turnos desde «Mi agenda».
+#
+# 🔴 POR ESO EL 27 SE PARTIÓ EN DOS, y la parte que importa es la primera: un
+# no-admin pidiendo los turnos de OTRO tiene que seguir recibiendo 403. Ese es
+# el IDOR (Insecure Direct Object Reference) de lectura, y acá vale doble
+# porque `turnos-del-profesional` es el único endpoint del proyecto que
+# devuelve `observaciones_paciente`, que puede traer datos de salud. Si el 27
+# da 200, cualquier profesional logueado lee el motivo de consulta de los
+# pacientes de todos los demás.
+#
+# ⚠️ UNA PRUEBA QUE SE AFLOJA SOLA ES PEOR QUE NINGUNA: si al 27 se le pasara
+# el id propio, daría 200 por diseño y nadie se enteraría de que dejó de medir
+# nada. Por eso elige explícitamente un id que NO sea el de quien prueba, y si
+# no lo encuentra, lo dice en vez de pasar.
 
 echo
 echo "▶ 21. El plantel sin token — 401"
@@ -824,10 +837,50 @@ curl -s -o /dev/null -w "       obtenido: %{http_code}\n" \
   -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
   -H "Authorization: Bearer $TOKEN_SOPORTE"
 
-echo "   27. la lupa (la que trae observaciones_paciente):"
+# Quién es el que está probando. Lo contesta la agenda del día, que lo devuelve
+# junto con esAdmin desde el 15-oct-2026 — y pedirlo acá prueba de paso que ese
+# dato viaja, que es de lo que depende «Mis próximos turnos» para saber qué id
+# mandar.
+YO=$(
+  curl -s "$FUNCIONES/agenda-del-dia?fecha=$( date +%F )" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE" \
+    | jq -r '.yo' 2>/dev/null
+)
+
+# El id de OTRO: el primero del plantel que no sea el de quien prueba. Si todos
+# son el mismo —un plantel de uno— el caso no se puede medir y se dice.
+AJENO=$(
+  echo "$CUERPO_PLANTEL" \
+    | jq -r --arg yo "$YO" '.plantel[] | select( .id != ( $yo | tonumber ) ) | .id' 2>/dev/null \
+    | head -1
+)
+
+echo "   27. la lupa (la que trae observaciones_paciente) sobre un AJENO — 403:"
+
+if [ -z "$AJENO" ] || [ "$AJENO" = "null" ]; then
+  echo "       ⚠ NO SE PUDO MEDIR: no hay otro profesional en el plantel."
+  echo "         El caso NO pasó — simplemente no corrió. (yo = $YO)"
+else
+  curl -s -o /dev/null -w "       obtenido: %{http_code}\n" \
+    "$FUNCIONES/turnos-del-profesional?profesional=$AJENO" \
+    -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+    -H "Authorization: Bearer $TOKEN_SOPORTE"
+
+  echo "       (yo soy $YO, pedí los de $AJENO)"
+  echo
+  echo "       🔴 ÉSTE ES EL CASO QUE VALE DE TODO EL GRUPO. Si da 200,"
+  echo "          cualquier profesional lee el motivo de consulta de los"
+  echo "          pacientes de los demás mandando un id que no es suyo."
+fi
+
+echo
+echo "   27.b la lupa sobre LOS PROPIOS, sin ser admin — 200:"
+echo "        (lo que habilita «Mis próximos turnos» en Mi agenda —15-oct-2026—;"
+echo "         hasta ese día este mismo pedido tenía que dar 403)"
 
 curl -s -o /dev/null -w "       obtenido: %{http_code}\n" \
-  "$FUNCIONES/turnos-del-profesional?profesional=$PRIMERO" \
+  "$FUNCIONES/turnos-del-profesional?profesional=$YO" \
   -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
   -H "Authorization: Bearer $TOKEN_SOPORTE"
 

@@ -271,6 +271,12 @@ async function mostrarElDia( fecha ) {
   // contestan 403 a un no-admin. Esto sólo evita ofrecer una puerta cerrada.
   document.querySelector( '#ir-al-plantel' ).hidden = !datos.esAdmin;
 
+  // 🔑 ACÁ SE SABE QUIÉN ES, Y ES EL PRIMER MOMENTO EN QUE SE PUEDE SABER.
+  // Hasta el 15-oct-2026 `yoSoy` sólo se llenaba al abrir el plantel, que es
+  // sólo de admin: un profesional común nunca tenía su propio id en el front.
+  // «Mis próximos turnos» lo necesita, y lo necesita sin ser admin.
+  yoSoy = datos.yo;
+
   // Se vacía antes de colgar: sin esto, cambiar de día APILA los turnos del
   // día nuevo debajo de los del anterior. No falla con error — muestra el
   // doble.
@@ -1569,7 +1575,14 @@ async function mostrarElPlantel() {
 
 
 /**
- * Arma UN renglón de la lupa.
+ * Arma UN renglón de una lista de turnos futuros.
+ *
+ * 🔑 LO USAN DOS PANTALLAS y por eso dejó de llamarse `renglonDeLaLupa`: la
+ * LUPA de «Altas y bajas» —Cecilia mirando a cualquiera— y «MIS PRÓXIMOS
+ * TURNOS» de «Mi agenda» —cada uno mirándose a sí mismo—. Es la misma lista
+ * de los mismos datos; lo que cambia es quién tiene derecho a pedirla, y eso
+ * se decide en el portero, no acá. *(Mismo criterio que `dibujarLasHoras`, que
+ * dejó de nombrar adentro los ids de una sola pantalla.)*
  *
  * 🔒 ES EL ÚNICO LUGAR DEL FRONT QUE MUESTRA `observaciones_paciente`, que
  * puede traer datos de salud. Va separado por una línea y al final del
@@ -1580,7 +1593,7 @@ async function mostrarElPlantel() {
  * la agenda: acá el teléfono no es un detalle de la ficha, es LA ACCIÓN de
  * esta pantalla.
  */
-function renglonDeLaLupa( turno ) {
+function renglonDeTurnoFuturo( turno ) {
 
   const renglon = document.createElement( 'div' );
   renglon.className = 'fila-lupa';
@@ -1714,7 +1727,7 @@ async function irALaLupa( fila ) {
   lista.replaceChildren();
 
   for ( const turno of datos.turnos ) {
-    lista.appendChild( renglonDeLaLupa( turno ) );
+    lista.appendChild( renglonDeTurnoFuturo( turno ) );
   }
 
   ayuda.hidden = true;
@@ -3579,10 +3592,69 @@ async function guardarElTramo() {
 
 // ── LOS OYENTES DE LA AGENDA SEMANAL ─────────────────────────────────────────
 
+/**
+ * Cuelga «Mis próximos turnos»: los que este profesional todavía no atendió,
+ * sin importar la fecha.
+ *
+ * 🔑 PARA QUÉ EXISTE, y no es una lista más: la agenda del día se mira POR
+ * FECHA, así que un turno de la semana que viene no existe para el profesional
+ * hasta que adivine el día. Ésta no tiene fecha.
+ *
+ * 🔒 PIDE SUS PROPIOS TURNOS Y NADA MÁS. Manda `yoSoy`, y si mandara otro id
+ * el portero contesta 403 — el chequeo vive allá, no acá. Esconder o no
+ * mandar no es la cerradura.
+ */
+async function mostrarMisProximosTurnos() {
+
+  const ayuda = document.querySelector( '#mis-turnos-ayuda' );
+  const lista = document.querySelector( '#mis-turnos-lista' );
+
+  lista.hidden = true;
+  ayuda.hidden = false;
+  ayuda.textContent = 'Cargando los turnos…';
+
+  // Sin id no hay a quién pedirle. Pasa si la agenda del día falló antes.
+  if ( yoSoy === null ) {
+    ayuda.textContent = 'No pudimos cargar tus turnos. Probá de nuevo.';
+    return;
+  }
+
+  const datos = await pedirLosTurnosDe( yoSoy );
+
+  if ( datos === 'sin-acceso' || !datos ) {
+    ayuda.textContent = 'No pudimos cargar tus turnos. Probá de nuevo.';
+    return;
+  }
+
+  // Se vacía antes de colgar: sin esto, entrar dos veces APILA la lista
+  // debajo de la anterior. No falla con error — muestra el doble.
+  lista.replaceChildren();
+
+  if ( datos.turnos.length === 0 ) {
+    ayuda.textContent = 'No tenés turnos pendientes.';
+    return;
+  }
+
+  for ( const turno of datos.turnos ) {
+    lista.appendChild( renglonDeTurnoFuturo( turno ) );
+  }
+
+  ayuda.hidden = true;
+  lista.hidden = false;
+}
+
+
 document.querySelector( '#ir-a-mi-agenda' ).addEventListener( 'click', async () => {
   mostrarElAltaDeTramo( false );
   avanzarA( '#paso-mi-agenda' );
-  await mostrarMiAgenda();
+
+  // Las dos listas se piden EN PARALELO y no una después de la otra: son dos
+  // viajes al portero que no dependen entre sí, y en serie la pantalla tarda
+  // la suma en vez del más lento.
+  await Promise.all( [
+    mostrarMisProximosTurnos(),
+    mostrarMiAgenda(),
+  ] );
 } );
 
 

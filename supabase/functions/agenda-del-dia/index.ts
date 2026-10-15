@@ -143,8 +143,18 @@ export default {
 
       // El día vacío es una respuesta válida, no un error: es el domingo, o el
       // feriado. La pantalla que lo reciba dibuja el estado vacío.
+      // 🔑 `yo` VIAJA CON LA AGENDA Y NO EN UNA CONSULTA APARTE, igual que
+      // `esAdmin` y por el mismo motivo: éste es el primer pedido que hace la
+      // pantalla, y los dos datos salen del mismo `quien` que ya se resolvió
+      // para la cerradura. Preguntarlo después sería un viaje de ida y vuelta
+      // para un dato que ya estaba en la mano.
+      //
+      // Para qué hace falta: «Mis próximos turnos» pide la lista de un
+      // profesional POR ID, y sin esto el front no sabe cuál es el suyo —hasta
+      // hoy ese id sólo aparecía al abrir el plantel, que es sólo de admin—.
       return Response.json( {
         fecha,
+        yo: quien.id,
         esAdmin: quien.esAdmin,
         turnos: turnos.data,
       } )

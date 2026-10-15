@@ -410,6 +410,33 @@
 
       <h1>Mi agenda</h1>
 
+      <!--
+        🔴 LOS TURNOS VAN ARRIBA DE LOS HORARIOS, y el orden lo decide para qué
+        se entra acá. Lo levantó Juan el 15-oct-2026: «entrás y en mi agenda
+        sólo tenés cargar tramos, pero en ningún lugar tenés para ver los
+        turnos que tenés activos; si no lo ves de entrada lo perdés para
+        siempre».
+
+        🔑 EL HUECO QUE TAPA, que no es de forma: la agenda del día se mira POR
+        FECHA, así que un turno de la semana que viene no existe para el
+        profesional hasta que adivine el día. Esta lista no tiene fecha: son
+        todos los suyos que faltan, estén el martes o en marzo.
+
+        ⚠️ Y SE LLAMA «MIS PRÓXIMOS TURNOS», no «Mis turnos»: eso último ya es
+        la página del PACIENTE (`mis-turnos.html`) y significa otra cosa. Dos
+        pantallas distintas con el mismo rótulo es una colisión que no falla
+        con error — confunde, y encima en el idioma del que la usa.
+      -->
+      <h2 class="titulo-bloque">Mis próximos turnos</h2>
+
+      <p class="ayuda-pantalla" id="mis-turnos-ayuda">Cargando los turnos…</p>
+
+      <!-- Los renglones los cuelga `js/panel.js`, con la misma pieza que la
+           lupa de «Altas y bajas»: es la misma lista. -->
+      <div class="lista-lupa" id="mis-turnos-lista" hidden></div>
+
+      <h2 class="titulo-bloque">Mis horarios de la semana</h2>
+
       <p class="ayuda-pantalla" id="mi-agenda-ayuda">Cargando la agenda…</p>
 
       <!-- Los días los cuelga `js/panel.js`. -->

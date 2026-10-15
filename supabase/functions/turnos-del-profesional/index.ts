@@ -1,8 +1,14 @@
 // Portero de CB Odontología — endpoint GET /turnos-del-profesional?profesional=<id>
 //
-// LA LUPA de la solapa «Altas y bajas»: los turnos que ese profesional todavía
-// no atendió, con los datos que hacen falta para llamar a cada paciente uno
-// por uno.
+// Los turnos que ese profesional todavía no atendió, con los datos que hacen
+// falta para llamar a cada paciente uno por uno.
+//
+// LO PIDEN DOS PANTALLAS, y conviene saber las dos antes de tocar este archivo:
+//   · LA LUPA de la solapa «Altas y bajas» — Cecilia, sobre CUALQUIER
+//     profesional. Para eso nació.
+//   · «MIS PRÓXIMOS TURNOS», adentro de «Mi agenda» — cada profesional, sobre
+//     SÍ MISMO. Sumada el 15-oct-2026.
+// Quién puede cuál lo decide el bloque 2.b, no la pantalla.
 //
 // 🔴 PARA QUÉ EXISTE, y el porqué no es de pantalla: si Cecilia da de baja a
 // alguien que tenía seis turnos reservados, apagarlo NO los cancela ni avisa a
@@ -24,9 +30,15 @@
 //   · Acá sale porque esta pantalla la USA: el motivo por el que alguien pidió
 //     el turno es lo que decide a quién se llama primero. Mínimo privilegio no
 //     es «que nadie lo vea», es «cada pantalla devuelve lo que usa».
-//   · Y lo que sostiene que salga es el chequeo de NIVEL de abajo. Si este
-//     endpoint se reusara alguna vez en una pantalla de profesional, la
-//     columna saldría con él: ahí está el riesgo, no en que Cecilia la lea.
+//   · Y lo que sostiene que salga es el chequeo del bloque 2.b.
+//     🔀 ESTE RENGLÓN DECÍA, HASTA EL 15-oct-2026: «si este endpoint se
+//     reusara alguna vez en una pantalla de profesional, la columna saldría
+//     con él: ahí está el riesgo». PASÓ — y la decisión la tomó Juan ese día,
+//     con el riesgo sobre la mesa: que el profesional vea el motivo de
+//     consulta de SUS turnos es para lo que la columna existe. Lo que el
+//     renglón viejo anticipaba bien, y sigue vigente, es que la columna viaja
+//     con el endpoint: por eso el chequeo pasó a mirar también la PROPIEDAD,
+//     y no se afloja ninguno de los dos.
 //
 // ⚠ LO QUE ESTO NO RESUELVE, para que nadie lo lea como resuelto: el
 // consentimiento y el aviso de privacidad de la Ley 25.326 siguen pendientes
@@ -92,17 +104,17 @@ export default {
         return sinAcceso()
       }
 
-      // 🔴 ESTA ES LA LÍNEA QUE NO SE PUEDE BORRAR, y acá vale doble: lo que
-      // sale de este endpoint incluye `observaciones_paciente`. Sin ella,
-      // cualquier profesional logueado lee el motivo de consulta de los
-      // pacientes de todos los demás mandando un id que no es suyo.
+      // 🔴 EL CHEQUEO DE QUIÉN PUEDE VER ESTA LISTA NO ESTÁ ACÁ, Y EL MOTIVO
+      // ESTÁ ESCRITO DONDE SÍ ESTÁ: necesita el id pedido ya convertido, así
+      // que vive después del bloque 2. Lo único que se decide en este punto es
+      // que el que pide sea personal de la clínica, y eso ya lo contestó el
+      // `if ( !quien )` de arriba.
       //
-      // 🔑 Y es de NIVEL, no de propiedad: no alcanza con «que sea el suyo».
-      // Un profesional no abre esta solapa ni para verse a sí mismo, porque la
-      // solapa entera es de Cecilia.
-      if ( !quien.esAdmin ) {
-        return sinAcceso()
-      }
+      // ⚠️ EL ORDEN IMPORTA Y NO ES ESTÉTICO: dejando el parseo antes, un
+      // profesional que manda un parámetro mal formado recibe 400 y no 403.
+      // Eso está bien porque a esta altura YA SE SABE que es de la casa; lo
+      // que no puede pasar es que un 400 le conteste algo a alguien de afuera,
+      // y de ésos no queda ninguno después del `if ( !quien )`.
 
       // ── 2. De quién ───────────────────────────────────────────────────────
 
@@ -138,6 +150,39 @@ export default {
           { error: 'profesional no es un número entero válido' },
           { status: 400 },
         )
+      }
+
+      // ── 2.b La cerradura de verdad: nivel O propiedad ─────────────────────
+      //
+      // 🔴 ESTAS SON LAS LÍNEAS QUE NO SE PUEDEN BORRAR, y acá valen doble: lo
+      // que sale de este endpoint incluye `observaciones_paciente`. Sin ellas,
+      // cualquier profesional logueado lee el motivo de consulta de los
+      // pacientes de todos los demás mandando un id que no es suyo. Eso tiene
+      // nombre: IDOR (Insecure Direct Object Reference) de lectura.
+      //
+      // 🔀 HASTA EL 15-oct-2026 ESTE CHEQUEO ERA SÓLO DE NIVEL, y el comentario
+      // que lo explicaba decía: «un profesional no abre esta solapa ni para
+      // verse a sí mismo, porque la solapa entera es de Cecilia». Era cierto
+      // mientras la única pantalla que pedía acá fuera la lupa de «Altas y
+      // bajas». Dejó de serlo: lo levantó Juan mirando el panel —un
+      // profesional entra, ve el día que tiene en el campo de fecha, y un
+      // turno de la semana que viene no existe para él hasta que adivine la
+      // fecha—.
+      //
+      // 🔑 POR QUÉ SE AMPLÍA ESTE ENDPOINT EN VEZ DE ESCRIBIR OTRO: la lista
+      // que las dos pantallas necesitan es la misma —los turnos futuros y
+      // activos de un profesional—, y la pregunta no cambia según quién la
+      // haga. Lo que cambia es quién tiene derecho a hacerla, y eso es
+      // exactamente lo que decide este bloque. Un segundo endpoint sería un
+      // segundo `select` con la columna sensible adentro: dos lugares que
+      // auditar en vez de uno, para la única columna del proyecto que puede
+      // traer datos de salud.
+      //
+      // ⚠️ LO QUE SIGUE SIENDO SÓLO DE CECILIA no es esta lista: es la solapa
+      // de «Altas y bajas» desde donde se abre la lupa, y eso lo cierran sus
+      // propios endpoints (`plantel-del-panel`, `baja-de-profesional`).
+      if ( !quien.esAdmin && quien.id !== pedido ) {
+        return sinAcceso()
       }
 
       // ── 3. Los turnos, con lo que hace falta para llamar ──────────────────
