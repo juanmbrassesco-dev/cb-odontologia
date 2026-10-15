@@ -724,11 +724,37 @@ textarea.caja {
 
   /* El piso táctil, igual que el resto de lo que se toca en la barra. */
   min-height: 44px;
-  padding: 0 4px;
+  padding: 0 14px;
 
   background: transparent;
-  border: 0;
   cursor: pointer;
+
+  /* 🔴 EL FILETE ES LO QUE LO HACE LEER COMO BOTÓN —elegido por Juan el
+     15-oct-2026 sobre las otras tres formas—. Primero salió sin borde ni
+     fondo, copiándole la letra a `.barra-turnos`, y él lo cortó: «parece solo
+     texto encima, no parece un botón».
+
+     🔑 Y TENÍA RAZÓN POR UN MOTIVO QUE SE PUEDE NOMBRAR: `.barra-turnos` es un
+     ENLACE —lleva a otro lado— y esto es un CONTROL: cambia el estado de la
+     sesión. Reusar su forma fue clasificar la pieza por DÓNDE está (la barra)
+     en vez de por QUÉ HACE.
+
+     ⚠️ POR QUÉ GRAFITO Y NO DORADO, que era la variante linda: el filete
+     dorado mide 2,89 contra el marfil y un borde que DEFINE un control pide
+     3,0 —es contraste de elemento no textual, WCAG 2.1 SC 1.4.11—. O sea que
+     el filete que tiene que decir «esto es un botón» era justo lo que no se
+     veía. El grafito mide 12,00. *Medido, no estimado.*
+
+     ⚠️ Y POR QUÉ NO EL SÓLIDO GRAFITO, que es la pieza que ya existía
+     (`.btn-2`): en este panel ese cuerpo ya significa «acción de la pantalla»
+     —«Modificar», «Cancelar», «Altas y bajas»—. Salir con ese mismo peso
+     compite desde la barra con lo que la pantalla vino a ofrecer, y salir no
+     es una acción frecuente. El filete dice «soy un control» sin pedir el
+     mismo lugar.
+
+     EL FOCO NO SE ESCRIBE ACÁ: lo da la pieza global `:focus-visible`. */
+  border: 1px solid var(--grafito);
+  border-radius: var(--radio);
 
   color: var(--grafito);
   font-family: Jost, sans-serif;
