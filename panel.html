@@ -29,6 +29,15 @@
            alt="CB Odontología y Estética"
            width="247" height="40">
     </a>
+
+    <!--
+      🔒 NACE ESCONDIDO Y LO DESTAPA EL JS AL ENTRAR. No es una cerradura
+      —esconder un botón no cierra nada—: es que mientras nadie entró no hay
+      sesión que cerrar, así que ofrecerlo sería ofrecer una puerta a ningún
+      lado.
+    -->
+    <button class="barra-salir" type="button" id="salir" hidden>
+      Salir</button>
   </header>
 
   <main>
@@ -137,7 +146,7 @@
         después de haber mirado. Arriba competiría con la lista, que es lo que
         se vino a ver.
       -->
-      <div class="acciones">
+      <div class="acciones acciones-grilla">
         <button class="btn btn-1" type="button" id="ir-a-cargar">
           Cargar un turno</button>
 

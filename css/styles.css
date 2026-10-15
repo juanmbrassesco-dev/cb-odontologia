@@ -242,6 +242,93 @@ p {
   grid-template-columns: max-content max-content;
 }
 
+/* 🔴 LOS PIES DE BOTONES DEL PANEL VAN EN FILA Y TODOS DEL MISMO ANCHO
+   —decidido por Juan el 15-oct-2026, mirando la agenda del día: «en vertical
+   se hace larguísimo»—.
+
+   EL CASO QUE LO PIDIÓ: de los catorce pies del panel, trece tienen uno o dos
+   botones y UNO tiene cuatro —«Cargar un turno», «Altas y bajas», «Mis
+   ausencias», «Mi agenda»—. Apilados, el pie medía más que la lista que se
+   vino a leer.
+
+   🔴 POR QUÉ NO SE TOCA `.acciones` NI ALCANZA `.acciones-fila`: `.acciones`
+   apila a propósito y eso es decisión del HERO —está escrito arriba, con su
+   porqué: ahí los rótulos son largos y a 390 no entran de a dos—. Y
+   `.acciones-fila` fija DOS columnas exactas: sirve para una pareja, no para
+   cuatro. Esta regla vale sólo para el panel, que es la única página con pies
+   de más de dos botones.
+
+   POR QUÉ `1fr` Y NO `max-content`: `max-content` le da a cada columna el
+   ancho de SU texto, así que «Mi agenda» saldría más angosto que «Cargar un
+   turno». Con `1fr` las columnas se reparten el ancho en partes iguales, y el
+   número no lo elige nadie: los botones quedan iguales porque la grilla los
+   iguala.
+
+   🔴 POR QUÉ ES UNA CLASE QUE SE PIDE, Y NO `body.panel .acciones`: así se
+   escribió primero y se midió el 15-oct-2026 — alcanzaba los CATORCE pies del
+   panel, y los cinco que tienen UN botón solo quedaban de 335 px a 390 y de
+   860 px a 1280, o sea de borde a borde. Eso rompe el FORMATO ÚNICO que este
+   archivo declara más arriba («del ancho de su texto, centrado en su caja,
+   nunca de borde a borde, en ningún ancho»). Un pie de uno o dos botones ya
+   tenía su forma decidida; el que no la tenía es el de cuatro.
+
+   Y `auto-fit` es lo que hace que una sola regla sirva en los tres anchos:
+   entran las columnas que quepan de 150 px para arriba, así que en escritorio
+   salen las cuatro en fila y en el teléfono se parten en 2×2. Sin media query,
+   porque acá el ancho que manda es el del CONTENEDOR, no el de la pantalla. */
+.acciones-grilla {
+  grid-template-columns: repeat( auto-fit, minmax( 150px, 1fr ) );
+
+  /* 🔴 LAS FILAS TAMBIÉN SE IGUALAN, Y ESTO NO ES ADORNO: medido el
+     15-oct-2026, sin esta línea los cuatro botones NO quedaban iguales a 390.
+     «Cargar un turno» y «Altas y bajas» parten el texto en dos renglones y
+     medían 70 px de alto; «Mis ausencias» y «Mi agenda» entraban en uno y
+     medían 47. `1fr` reparte el alto en partes iguales entre las filas, así
+     que el que necesita dos renglones fija la medida y los otros la copian.
+
+     ⚠️ `1fr` acá iguala el ALTO porque son filas; arriba, en
+     `grid-template-columns`, el mismo `1fr` iguala el ancho. Es el mismo
+     reparto en los dos ejes. */
+  grid-auto-rows: 1fr;
+
+  /* 🔴 Y EL PIE DEL PANEL SE MIDE CONTRA `--columna-lista`, NO CONTRA
+     `--columna`. No es una licencia: es el criterio que `tokens.css` ya tiene
+     escrito —«`--columna` es hasta dónde puede crecer una LÍNEA de texto sin
+     perder legibilidad · `--columna-lista`, cuánto necesita una lista de
+     controles»—. Un pie de cuatro botones es una lista de controles.
+
+     EL NÚMERO QUE LO OBLIGA, medido: con los 640 px de `--columna`, cuatro
+     columnas salen de 151 px y a 1280 el rótulo entra en 87 px de ancho útil,
+     así que los CUATRO partían el texto en dos renglones. Con 860 la columna
+     da 206 y el texto entra en uno. */
+  max-width: var(--columna-lista);
+}
+
+/* EL RELLENO LATERAL BAJA SÓLO ACÁ ADENTRO —autorizado por Juan el
+   15-oct-2026: «si no entran sacá relleno leve, pero que queden todos los
+   botones iguales»—.
+
+   EL NÚMERO Y DE DÓNDE SALE, medido: a 1280 la columna da 206 px y el botón
+   pone 32 de relleno por lado, así que al rótulo le quedan 142. «Cargar un
+   turno» mide ~165 a 22 px, y era el único de los cuatro que partía el texto
+   en dos renglones mientras los otros tres entraban en uno. Con 16 por lado
+   quedan 174 y entra.
+
+   🔴 LO QUE NO SE TOCA, y por eso el recorte es sólo lateral: el alto mínimo
+   (44 px, piso táctil; 56 en escritorio) y el cuerpo de la letra (19 px, que
+   lo exige el CONTRASTE — blanco sobre el dorado del brief mide 3,09 y ese
+   número sólo alcanza para texto grande). Bajar cualquiera de los dos para
+   ganar lugar sería comprar forma con accesibilidad. */
+.acciones-grilla .btn {
+  padding-left: 16px;
+  padding-right: 16px;
+
+  /* Y el quiebre se reparte en vez de cortar donde caiga: sin esto, a 390
+     «Cargar un turno» parte como «Cargar un / turno» y deja una palabra
+     colgando. Es el mismo recurso que ya usan los títulos de este archivo. */
+  text-wrap: balance;
+}
+
 .btn-1 {
   background: var(--boton-fondo);
   color: var(--boton-texto);

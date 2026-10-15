@@ -7,8 +7,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
-  <link rel="stylesheet" href="../css/tokens.css?v=1791928175">
-  <link rel="stylesheet" href="../css/styles.css?v=1791928175">
+  <link rel="stylesheet" href="../css/tokens.css?v=1792067158">
+  <link rel="stylesheet" href="../css/styles.css?v=1792067158">
   <style>
     /* Lo de abajo NO es parte del sitio: es el tablero de mandos de la prueba. */
     .mandos {
@@ -105,7 +105,7 @@
         después de haber mirado. Arriba competiría con la lista, que es lo que
         se vino a ver.
       -->
-      <div class="acciones">
+      <div class="acciones acciones-grilla">
         <button class="btn btn-1" type="button" id="ir-a-cargar">
           Cargar un turno</button>
 
@@ -118,6 +118,22 @@
         -->
         <button class="btn btn-2" type="button" id="ir-al-plantel" hidden>
           Altas y bajas</button>
+
+        <!--
+          🔑 ÉSTE NO SE ESCONDE, al contrario del de arriba, y es el requisito
+          que precisó Juan el 8-oct: la agenda propia la setea el PROFESIONAL.
+          Cada uno carga sus ausencias; lo que es sólo de la admin es el
+          interruptor «toda la clínica» de adentro de la pantalla.
+        -->
+        <button class="btn btn-2" type="button" id="ir-a-ausencias">
+          Mis ausencias</button>
+
+        <!--
+          Tampoco se esconde, por el mismo motivo que el de al lado: la agenda
+          propia la setea el profesional.
+        -->
+        <button class="btn btn-2" type="button" id="ir-a-mi-agenda">
+          Mi agenda</button>
       </div>
 
     </section>
@@ -1382,15 +1398,15 @@
   }
 
 </script>
-<script src="../js/fechas.js?v=1791928175"></script>
-<script src="../js/pasos.js?v=1791928175"></script>
+<script src="../js/fechas.js?v=1792067158"></script>
+<script src="../js/pasos.js?v=1792067158"></script>
 <script>
   // `pasos.js` arranca guardando la pantalla que está a la vista, y en la
   // página de verdad ésa es la de entrar. Acá no está, así que la de la agenda
   // ocupa su lugar: sin esto, el primer cambio de pantalla se cae.
   pantallaALaVista = document.querySelector( '#paso-agenda' );
 </script>
-<script src="../js/panel.js?v=1791928175"></script>
+<script src="../js/panel.js?v=1792067158"></script>
 <script>
   const PACIENTES_PUESTOS = [{"id": 101, "nombre": "Marta", "apellido": "Brassesco", "email": "marta.brassesco@ejemplo.test", "telefono": "3425550101"}, {"id": 102, "nombre": "Rodrigo", "apellido": "Brassesco", "email": "rodri.brassesco@ejemplo.test", "telefono": null}, {"id": 103, "nombre": "Valentina", "apellido": "Bravo", "email": null, "telefono": "3425550103"}];
 
@@ -1411,7 +1427,7 @@
   // problema no está en el código. Un diagnóstico que antes costaba una ronda
   // de mensajes ahora se lee de la pantalla.
   avisar(
-    'versión ' + 1791928175 + ' · prueba de fecha: "' +
+    'versión ' + 1792067158 + ' · prueba de fecha: "' +
     diaDeUnInstante( '2026-08-12T18:30:00+00:00' ) +
     '" ← tiene que decir «12 de agosto de 2026»'
   );
