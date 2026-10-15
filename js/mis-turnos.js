@@ -476,6 +476,11 @@ if ( haySesion() ) {
 }
 
 
+
+// EL BOTÓN DE SALIR DE LA BARRA. Una línea y nada más: `auth.js` decide
+// cuándo se ve, porque es el que sabe si hay sesión.
+prepararElSalir( document.querySelector( '#salir' ) );
+
 prepararElBoton( {
 
   contenedor: document.querySelector( '#boton-google' ),

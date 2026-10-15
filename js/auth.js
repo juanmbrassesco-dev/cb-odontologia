@@ -213,6 +213,12 @@ function prepararElBoton( { contenedor, alEntrar, alFallar } ) {
       const entro = await canjearElPapel( respuestaDeGoogle.credential );
 
       if ( entro ) {
+
+        // Antes de que la pantalla dibuje nada: ya hay sesión, así que la
+        // barra tiene que ofrecer la salida. Puesto acá y no en cada página
+        // para que no haya dos lugares que puedan olvidarse de hacerlo.
+        acomodarElSalir();
+
         alEntrar();
 
       } else {
@@ -239,4 +245,86 @@ function prepararElBoton( { contenedor, alEntrar, alFallar } ) {
       locale: 'es'
     }
   );
+}
+
+
+/**
+ * PASO ③ — SALIR. Es la contracara exacta de `prepararElBoton( … )`.
+ *
+ * 🔒 POR QUÉ NO ALCANZA CON BORRAR NUESTRA SESIÓN, que es lo que haría
+ * `olvidarLaSesion( )` solo. Son TRES cosas distintas y hay que cerrar las
+ * tres, o el botón dice «salir» y no saca:
+ *
+ *   ① El permiso que guardamos nosotros — eso sí lo borra `olvidarLaSesion`.
+ *   ② La ELECCIÓN DE CUENTA que recuerda Google. Sin apagarla, el que toque
+ *      «Continuar con Google» después vuelve a entrar SOLO, sin que Google
+ *      pregunte de quién es la cuenta. Lo apaga `disableAutoSelect( )`, que
+ *      es lo que la documentación de Google indica para un «cerrar sesión».
+ *   ③ Lo que quedó DIBUJADO en la pantalla — la agenda del día, la ficha que
+ *      se estaba mirando, la lista de pacientes del buscador. Nada de eso se
+ *      borra solo al cambiar de pantalla: sigue en el documento.
+ *
+ * 🔴 POR ESO EL ÚLTIMO PASO ES RECARGAR, y no «volver a la pantalla de
+ * entrar»: recargar tira TODO el estado de una vez, así que no hay que
+ * acordarse de limpiar cada lista — y la lista que alguien se olvide de
+ * limpiar es justo la que deja datos de un paciente a la vista.
+ *
+ * ⚠ LO QUE ESTO NO HACE, para que nadie lo lea como que sí: no cierra la
+ * sesión de Google en el navegador, que es de Google y no nuestra. Cierra la
+ * de ESTE sitio. El que quiera salir también de Google lo hace desde Google.
+ */
+/**
+ * El botón de salir de la barra, cuando la página tiene uno. Lo guarda este
+ * archivo —y no la pantalla— porque la pregunta que decide si se ve o no es
+ * «¿hay sesión?», y eso se contesta acá adentro.
+ */
+let botonDeSalir = null;
+
+
+/** Muestra u oculta el botón de salir según si hay alguien adentro. */
+function acomodarElSalir() {
+
+  if ( botonDeSalir === null ) {
+    return;
+  }
+
+  botonDeSalir.hidden = !haySesion();
+}
+
+
+/**
+ * PASO ② Y MEDIO — engancha el botón de salir de la barra.
+ *
+ * La página lo llama UNA sola vez, al arrancar. No hace falta volver a
+ * llamarlo después de entrar: `prepararElBoton( … )` acomoda el botón solo
+ * cuando el login sale bien, que es el otro único momento en que la respuesta
+ * a «¿hay sesión?» cambia.
+ */
+function prepararElSalir( boton ) {
+
+  botonDeSalir = boton;
+
+  if ( botonDeSalir === null ) {
+    return;
+  }
+
+  botonDeSalir.addEventListener( 'click', salirDeLaSesion );
+
+  acomodarElSalir();
+}
+
+
+function salirDeLaSesion() {
+
+  olvidarLaSesion();
+
+  // Si el script de Google no llegó a cargar, `google` no existe y esto
+  // tiraría. No es motivo para dejar de salir: lo nuestro ya se borró.
+  try {
+    google.accounts.id.disableAutoSelect();
+  } catch ( falla ) {
+    console.warn( 'No se pudo apagar la elección de cuenta de Google:', falla );
+  }
+
+  location.reload();
 }

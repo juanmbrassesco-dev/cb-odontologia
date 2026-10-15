@@ -699,6 +699,49 @@ textarea.caja {
   .barra-turnos { font-size: 15px; }
 }
 
+/* EL BOTÓN DE SALIR DE LA BARRA — puesto el 15-oct-2026, lo pidió Juan: las
+   dos páginas con sesión no tenían por dónde salir.
+
+   Vive en `panel.html` y en `mis-turnos.html`, que son las dos que entran con
+   Google. La landing no lo lleva: ahí no hay sesión que cerrar.
+
+   🔴 ACÁ SÍ ESTÁ EN LOS TRES ANCHOS, al revés que `.barra-turnos`, y el motivo
+   es el de aquella regla leído al derecho: allá se escondía a 390 porque «la
+   barra tiene lugar para el logo y una cosa más, y esa cosa es el menú». En
+   estas dos páginas NO HAY MENÚ —la barra lleva el logo y nada más—, así que
+   el lugar está libre. Y un botón de salir que no aparece en el teléfono es un
+   botón de salir que no existe, justo donde más se comparte la pantalla.
+
+   La letra es la misma de los enlaces de la barra, a propósito: es una acción
+   de la barra, no un botón de acción de la pantalla. Si llevara `.btn` pesaría
+   como «Reservar» y competiría con lo que la pantalla vino a hacer. */
+.barra-salir {
+  flex: none;
+  white-space: nowrap;
+
+  display: flex;
+  align-items: center;
+
+  /* El piso táctil, igual que el resto de lo que se toca en la barra. */
+  min-height: 44px;
+  padding: 0 4px;
+
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+
+  color: var(--grafito);
+  font-family: Jost, sans-serif;
+  font-size: var(--tipo-rotulo);
+  line-height: var(--alto-rotulo);
+  letter-spacing: var(--letra-rotulo);
+  text-transform: uppercase;
+}
+
+@media (min-width: 1280px) {
+  .barra-salir { font-size: 15px; }
+}
+
 
 /* LA MISMA SEPARACIÓN QUE ADENTRO DEL MENÚ, para que los cuatro enlaces de la
    barra se lean como una sola fila y no como tres más uno. */
