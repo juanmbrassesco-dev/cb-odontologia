@@ -273,9 +273,17 @@ p {
    tenía su forma decidida; el que no la tenía es el de cuatro.
 
    Y `auto-fit` es lo que hace que una sola regla sirva en los tres anchos:
-   entran las columnas que quepan de 150 px para arriba, así que en escritorio
-   salen las cuatro en fila y en el teléfono se parten en 2×2. Sin media query,
-   porque acá el ancho que manda es el del CONTENEDOR, no el de la pantalla. */
+   entran las columnas que quepan, así que en escritorio salen todas en fila y
+   en el teléfono se parten de a dos. Sin media query, porque acá el ancho que
+   manda es el del CONTENEDOR, no el de la pantalla.
+
+   ⛔ PROBADO Y DESCARTADO EL 15-oct-2026, con su medición, para que nadie lo
+   vuelva a intentar: columnas de ANCHO FIJO (`repeat( auto-fit, 162px )`) más
+   `justify-content: center`, que era la forma de centrar la última fila cuando
+   queda incompleta. **No entra a 390 por UN PÍXEL**: el contenedor mide 335 y
+   dos columnas de 162 con su hueco de 12 piden 336, así que `auto-fit` baja a
+   UNA columna y el pie vuelve a apilarse entero. `1fr` no tiene ese problema
+   justamente porque se adapta en vez de pedir una medida. */
 .acciones-grilla {
   grid-template-columns: repeat( auto-fit, minmax( 150px, 1fr ) );
 
@@ -3912,6 +3920,37 @@ textarea.caja {
   margin-top: 20px;
   padding-top: 20px;
   border-top: 1px solid var(--borde);
+}
+
+/* 🔴 LO QUE CUELGA DE UN BLOQUE INTERMEDIO TAMBIÉN SE CENTRA —lo levantó Juan
+   el 15-oct-2026 mirando la pantalla: «están esos botones desalineados»—.
+
+   QUÉ PASABA, medido a 1280: «Agendar» quedaba centrado en x=410 y «Volver a
+   la agenda» en x=633. **223 px de desfasaje**, y sólo en pantalla grande: a
+   390 los dos caían en el mismo lugar, que es por lo que nadie lo había visto.
+
+   🔑 LA CAUSA, y es la misma trampa que este archivo ya documenta dos veces:
+   `.paso > *` centra lo que cuelga DIRECTO de la pantalla, y el selector no
+   alcanza a un nieto. «Volver» cuelga de la pantalla y se centraba; «Agendar»
+   cuelga de `.datos-del-turno`, así que lo que se centraba era ese bloque
+   —que ocupa el ancho entero— y adentro sus hijos de 640 quedaban contra el
+   borde izquierdo.
+
+   ⚠️ SE CENTRAN TODOS LOS HIJOS Y NO SÓLO `.acciones`: centrando sólo el
+   botón, el desfasaje se da vuelta —el botón pasa al centro de la pantalla y
+   los campos se quedan en 410—. Lo que alinea no es mover el botón, es que el
+   bloque entero comparta eje.
+
+   🔑 Y EL ARREGLO VA DONDE ESTÁ LA CAUSA, no en la cáscara: es el mismo
+   criterio que la nota de `.quien .btn` —«no es volver a centrarlo desde
+   afuera, es que la regla que lo descentra deje de valer donde la pantalla se
+   centra»—. */
+@media (min-width: 768px) {
+
+  .datos-del-turno > * {
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 

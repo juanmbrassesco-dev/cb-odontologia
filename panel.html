@@ -170,11 +170,19 @@
           Mis ausencias</button>
 
         <!--
-          Tampoco se esconde, por el mismo motivo que el de al lado: la agenda
-          propia la setea el profesional.
+          Tampoco se esconden, por el mismo motivo que el de al lado: lo propio
+          lo mira y lo setea cada profesional.
+
+          🔀 ERAN UNO SOLO —«Mi agenda»— hasta el 15-oct-2026. Se partió en dos
+          porque adentro había dos cosas distintas, y mientras compartían
+          pantalla la que se consulta todos los días quedaba debajo de la que
+          se configura una vez.
         -->
-        <button class="btn btn-2" type="button" id="ir-a-mi-agenda">
-          Mi agenda</button>
+        <button class="btn btn-2" type="button" id="ir-a-mis-turnos">
+          Mis turnos</button>
+
+        <button class="btn btn-2" type="button" id="ir-a-mis-horarios">
+          Mis horarios</button>
       </div>
 
     </section>
@@ -406,28 +414,24 @@
       `activo`: si se escondieran, no habría desde dónde volver a prenderlos y
       la única salida sería el Table Editor.
     -->
-    <section class="paso" id="paso-mi-agenda" hidden>
+    <!--
+      MIS TURNOS — los que este profesional todavía no atendió, sin importar
+      la fecha.
 
-      <h1>Mi agenda</h1>
+      🔴 PANTALLA PROPIA Y NO UN BLOQUE DENTRO DE «MIS HORARIOS», y lo decidió
+      Juan el 15-oct-2026 después de verlas juntas: «estamos mezclando dos
+      cosas que deben ir separadas».
+      🔑 Y son dos cosas, no una vista en dos partes: esto es A QUIÉN atiende
+      —cambia solo, con cada reserva— y aquello es CUÁNDO atiende —lo edita él
+      y casi nunca cambia—. Una se consulta, la otra se configura.
 
-      <!--
-        🔴 LOS TURNOS VAN ARRIBA DE LOS HORARIOS, y el orden lo decide para qué
-        se entra acá. Lo levantó Juan el 15-oct-2026: «entrás y en mi agenda
-        sólo tenés cargar tramos, pero en ningún lugar tenés para ver los
-        turnos que tenés activos; si no lo ves de entrada lo perdés para
-        siempre».
+      ⚠️ SE LLAMA IGUAL QUE LA PÁGINA DEL PACIENTE (`mis-turnos.html`) y está
+      bien que así sea: es el mismo concepto desde los dos lados del
+      mostrador. Lo que las separa es quién entró, no el rótulo.
+    -->
+    <section class="paso" id="paso-mis-turnos" hidden>
 
-        🔑 EL HUECO QUE TAPA, que no es de forma: la agenda del día se mira POR
-        FECHA, así que un turno de la semana que viene no existe para el
-        profesional hasta que adivine el día. Esta lista no tiene fecha: son
-        todos los suyos que faltan, estén el martes o en marzo.
-
-        ⚠️ Y SE LLAMA «MIS PRÓXIMOS TURNOS», no «Mis turnos»: eso último ya es
-        la página del PACIENTE (`mis-turnos.html`) y significa otra cosa. Dos
-        pantallas distintas con el mismo rótulo es una colisión que no falla
-        con error — confunde, y encima en el idioma del que la usa.
-      -->
-      <h2 class="titulo-bloque">Mis próximos turnos</h2>
+      <h1>Mis turnos</h1>
 
       <p class="ayuda-pantalla" id="mis-turnos-ayuda">Cargando los turnos…</p>
 
@@ -435,12 +439,31 @@
            lupa de «Altas y bajas»: es la misma lista. -->
       <div class="lista-lupa" id="mis-turnos-lista" hidden></div>
 
-      <h2 class="titulo-bloque">Mis horarios de la semana</h2>
+      <div class="acciones">
+        <button class="btn btn-2" type="button" id="volver-de-mis-turnos">
+          Volver a la agenda</button>
+      </div>
 
-      <p class="ayuda-pantalla" id="mi-agenda-ayuda">Cargando la agenda…</p>
+    </section>
+
+    <!--
+      MIS HORARIOS — los tramos de la semana que este profesional atiende.
+
+      🔀 SE LLAMABA «MI AGENDA» HASTA EL 15-oct-2026, y lo cambió Juan: «agenda
+      es un poco ambiguo, usar algo más descriptivo como mis horarios».
+      🔑 Y la ambigüedad era real y medible: en este mismo panel «agenda» ya
+      nombra OTRA cosa —la agenda del DÍA, que son los turnos—, así que la
+      misma palabra señalaba las dos pantallas. «Horarios» nombra lo que esta
+      pantalla edita: cuándo trabaja, no a quién atiende.
+    -->
+    <section class="paso" id="paso-mis-horarios" hidden>
+
+      <h1>Mis horarios</h1>
+
+      <p class="ayuda-pantalla" id="mis-horarios-ayuda">Cargando los horarios…</p>
 
       <!-- Los días los cuelga `js/panel.js`. -->
-      <div class="lista-semana" id="mi-agenda-lista" hidden></div>
+      <div class="lista-semana" id="mis-horarios-lista" hidden></div>
 
       <div class="alta-tramo" id="alta-tramo" hidden>
 
@@ -518,14 +541,14 @@
 
       </div>
 
-      <p class="entrar-aviso" id="mi-agenda-aviso" hidden></p>
+      <p class="entrar-aviso" id="mis-horarios-aviso" hidden></p>
 
       <div class="acciones">
 
         <button class="btn btn-1" type="button" id="abrir-alta-tramo">
           Agregar un tramo</button>
 
-        <button class="btn btn-2" type="button" id="volver-de-mi-agenda">
+        <button class="btn btn-2" type="button" id="volver-de-mis-horarios">
           Volver a la agenda</button>
 
       </div>

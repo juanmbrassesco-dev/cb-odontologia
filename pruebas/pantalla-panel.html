@@ -7,8 +7,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&display=swap">
-  <link rel="stylesheet" href="../css/tokens.css?v=1792067158">
-  <link rel="stylesheet" href="../css/styles.css?v=1792067158">
+  <link rel="stylesheet" href="../css/tokens.css?v=1792071595">
+  <link rel="stylesheet" href="../css/styles.css?v=1792071595">
   <style>
     /* Lo de abajo NO es parte del sitio: es el tablero de mandos de la prueba. */
     .mandos {
@@ -129,11 +129,19 @@
           Mis ausencias</button>
 
         <!--
-          Tampoco se esconde, por el mismo motivo que el de al lado: la agenda
-          propia la setea el profesional.
+          Tampoco se esconden, por el mismo motivo que el de al lado: lo propio
+          lo mira y lo setea cada profesional.
+
+          🔀 ERAN UNO SOLO —«Mi agenda»— hasta el 15-oct-2026. Se partió en dos
+          porque adentro había dos cosas distintas, y mientras compartían
+          pantalla la que se consulta todos los días quedaba debajo de la que
+          se configura una vez.
         -->
-        <button class="btn btn-2" type="button" id="ir-a-mi-agenda">
-          Mi agenda</button>
+        <button class="btn btn-2" type="button" id="ir-a-mis-turnos">
+          Mis turnos</button>
+
+        <button class="btn btn-2" type="button" id="ir-a-mis-horarios">
+          Mis horarios</button>
       </div>
 
     </section>
@@ -1398,15 +1406,15 @@
   }
 
 </script>
-<script src="../js/fechas.js?v=1792067158"></script>
-<script src="../js/pasos.js?v=1792067158"></script>
+<script src="../js/fechas.js?v=1792071595"></script>
+<script src="../js/pasos.js?v=1792071595"></script>
 <script>
   // `pasos.js` arranca guardando la pantalla que está a la vista, y en la
   // página de verdad ésa es la de entrar. Acá no está, así que la de la agenda
   // ocupa su lugar: sin esto, el primer cambio de pantalla se cae.
   pantallaALaVista = document.querySelector( '#paso-agenda' );
 </script>
-<script src="../js/panel.js?v=1792067158"></script>
+<script src="../js/panel.js?v=1792071595"></script>
 <script>
   const PACIENTES_PUESTOS = [{"id": 101, "nombre": "Marta", "apellido": "Brassesco", "email": "marta.brassesco@ejemplo.test", "telefono": "3425550101"}, {"id": 102, "nombre": "Rodrigo", "apellido": "Brassesco", "email": "rodri.brassesco@ejemplo.test", "telefono": null}, {"id": 103, "nombre": "Valentina", "apellido": "Bravo", "email": null, "telefono": "3425550103"}];
 
@@ -1427,7 +1435,7 @@
   // problema no está en el código. Un diagnóstico que antes costaba una ronda
   // de mensajes ahora se lee de la pantalla.
   avisar(
-    'versión ' + 1792067158 + ' · prueba de fecha: "' +
+    'versión ' + 1792071595 + ' · prueba de fecha: "' +
     diaDeUnInstante( '2026-08-12T18:30:00+00:00' ) +
     '" ← tiene que decir «12 de agosto de 2026»'
   );

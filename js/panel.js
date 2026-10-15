@@ -3357,7 +3357,7 @@ function renglonDelDia( dia ) {
 
 
 /** Pide la agenda semanal. Devuelve los datos, 'sin-acceso' o null. */
-async function pedirMiAgenda() {
+async function pedirMisHorarios() {
 
   const respuesta = await fetch(
     DIRECCION_DE_MI_AGENDA,
@@ -3377,11 +3377,11 @@ async function pedirMiAgenda() {
 }
 
 
-async function mostrarMiAgenda() {
+async function mostrarMisHorarios() {
 
-  const ayuda = document.querySelector( '#mi-agenda-ayuda' );
-  const lista = document.querySelector( '#mi-agenda-lista' );
-  const aviso = document.querySelector( '#mi-agenda-aviso' );
+  const ayuda = document.querySelector( '#mis-horarios-ayuda' );
+  const lista = document.querySelector( '#mis-horarios-lista' );
+  const aviso = document.querySelector( '#mis-horarios-aviso' );
 
   aviso.hidden = true;
   lista.hidden = true;
@@ -3389,7 +3389,7 @@ async function mostrarMiAgenda() {
   ayuda.hidden = false;
   ayuda.textContent = 'Cargando la agenda…';
 
-  const datos = await pedirMiAgenda();
+  const datos = await pedirMisHorarios();
 
   if ( datos === 'sin-acceso' ) {
     ayuda.hidden = true;
@@ -3439,7 +3439,7 @@ function mostrarElAltaDeTramo( abierta ) {
 
   // Mismo criterio que las otras tres altas del panel: con el alta abierta
   // había dos botones «Volver» uno debajo del otro.
-  document.querySelector( '#volver-de-mi-agenda' ).hidden = abierta;
+  document.querySelector( '#volver-de-mis-horarios' ).hidden = abierta;
   document.querySelector( '#abrir-alta-tramo' ).hidden = abierta;
 
   if ( !abierta ) {
@@ -3457,7 +3457,7 @@ function mostrarElAltaDeTramo( abierta ) {
 /** Prende o apaga un tramo. */
 async function cambiarElEstadoDelTramo( tramo, prender ) {
 
-  const aviso = document.querySelector( '#mi-agenda-aviso' );
+  const aviso = document.querySelector( '#mis-horarios-aviso' );
 
   aviso.hidden = true;
 
@@ -3491,7 +3491,7 @@ async function cambiarElEstadoDelTramo( tramo, prender ) {
 
   // Se recarga en vez de cambiar el renglón a mano: lo que se vuelve a dibujar
   // es lo que la base dice ahora.
-  await mostrarMiAgenda();
+  await mostrarMisHorarios();
 
   mostrarLosTapados( cartelDeLaAgenda, datos.turnosAfectados );
 
@@ -3507,7 +3507,7 @@ async function cambiarElEstadoDelTramo( tramo, prender ) {
 /** Carga el tramo que está escrito en el alta. */
 async function guardarElTramo() {
 
-  const aviso = document.querySelector( '#mi-agenda-aviso' );
+  const aviso = document.querySelector( '#mis-horarios-aviso' );
   const boton = document.querySelector( '#alta-tramo-guardar' );
 
   aviso.hidden = true;
@@ -3586,15 +3586,15 @@ async function guardarElTramo() {
 
   mostrarElAltaDeTramo( false );
 
-  await mostrarMiAgenda();
+  await mostrarMisHorarios();
 }
 
 
 // ── LOS OYENTES DE LA AGENDA SEMANAL ─────────────────────────────────────────
 
 /**
- * Cuelga «Mis próximos turnos»: los que este profesional todavía no atendió,
- * sin importar la fecha.
+ * Cuelga «Mis turnos»: los que este profesional todavía no atendió, sin
+ * importar la fecha. Es una pantalla propia desde el 15-oct-2026.
  *
  * 🔑 PARA QUÉ EXISTE, y no es una lista más: la agenda del día se mira POR
  * FECHA, así que un turno de la semana que viene no existe para el profesional
@@ -3604,7 +3604,7 @@ async function guardarElTramo() {
  * el portero contesta 403 — el chequeo vive allá, no acá. Esconder o no
  * mandar no es la cerradura.
  */
-async function mostrarMisProximosTurnos() {
+async function mostrarMisTurnos() {
 
   const ayuda = document.querySelector( '#mis-turnos-ayuda' );
   const lista = document.querySelector( '#mis-turnos-lista' );
@@ -3644,21 +3644,25 @@ async function mostrarMisProximosTurnos() {
 }
 
 
-document.querySelector( '#ir-a-mi-agenda' ).addEventListener( 'click', async () => {
-  mostrarElAltaDeTramo( false );
-  avanzarA( '#paso-mi-agenda' );
-
-  // Las dos listas se piden EN PARALELO y no una después de la otra: son dos
-  // viajes al portero que no dependen entre sí, y en serie la pantalla tarda
-  // la suma en vez del más lento.
-  await Promise.all( [
-    mostrarMisProximosTurnos(),
-    mostrarMiAgenda(),
-  ] );
+document.querySelector( '#ir-a-mis-turnos' ).addEventListener( 'click', async () => {
+  avanzarA( '#paso-mis-turnos' );
+  await mostrarMisTurnos();
 } );
 
 
-document.querySelector( '#volver-de-mi-agenda' ).addEventListener( 'click', () => {
+document.querySelector( '#volver-de-mis-turnos' ).addEventListener( 'click', () => {
+  reemplazarPor( '#paso-agenda' );
+} );
+
+
+document.querySelector( '#ir-a-mis-horarios' ).addEventListener( 'click', async () => {
+  mostrarElAltaDeTramo( false );
+  avanzarA( '#paso-mis-horarios' );
+  await mostrarMisHorarios();
+} );
+
+
+document.querySelector( '#volver-de-mis-horarios' ).addEventListener( 'click', () => {
   reemplazarPor( '#paso-agenda' );
 } );
 
