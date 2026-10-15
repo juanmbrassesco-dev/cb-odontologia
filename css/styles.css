@@ -753,8 +753,8 @@ textarea.caja {
      mismo lugar.
 
      EL FOCO NO SE ESCRIBE ACÁ: lo da la pieza global `:focus-visible`. */
-  border: 1px solid var(--grafito);
-  border-radius: var(--radio);
+  position: relative;
+  border: 0;
 
   color: var(--grafito);
   font-family: Jost, sans-serif;
@@ -762,6 +762,41 @@ textarea.caja {
   line-height: var(--alto-rotulo);
   letter-spacing: var(--letra-rotulo);
   text-transform: uppercase;
+}
+
+/* 🔴 EL FILETE SE DIBUJA MÁS BAJO QUE EL BOTÓN, Y ES A PROPÓSITO —lo levantó
+   Juan el 15-oct-2026: «quedó enorme, le quita jerarquía al logo»—.
+
+   TENÍA RAZÓN Y EL NÚMERO LO DICE: a 390 el logo mide 32 px de alto y el botón
+   medía 44, o sea **1,36 veces el logo**. En una barra, lo que manda es la
+   marca. (A 1280 no pasaba: ahí el logo mide 52 y el botón quedaba en 0,85.)
+
+   🔑 POR QUÉ NO SE BAJA EL BOTÓN Y LISTO: esos 44 px son el PISO TÁCTIL, el
+   tamaño mínimo de algo que se toca con el dedo. Achicarlos es comprar forma
+   con accesibilidad, y acá no hace falta pagar eso: **el botón sigue midiendo
+   44 para el dedo y el filete se dibuja de 32 para el ojo.** Se tocan dos
+   cosas distintas, así que pueden medir distinto.
+
+   Los 6 px de arriba y abajo son lo que descuenta: 44 − 6 − 6 = 32, que es
+   exactamente el alto del logo. El número no se eligió por gusto; iguala.
+
+   ⚠️ Y NO LLEVA FONDO, sólo borde, que es lo que permite que se pinte por
+   encima sin tapar el rótulo. */
+.barra-salir::before {
+  content: '';
+  position: absolute;
+  inset: 6px 0;
+  border: 1px solid var(--grafito);
+  border-radius: var(--radio);
+  pointer-events: none;
+}
+
+/* En escritorio el problema no existe —el logo crece a 52 y el botón se queda
+   en 44—, así que el filete vuelve a ocupar el botón entero. */
+@media (min-width: 1280px) {
+  .barra-salir::before {
+    inset: 0;
+  }
 }
 
 @media (min-width: 1280px) {
