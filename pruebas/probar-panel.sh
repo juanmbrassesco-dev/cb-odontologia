@@ -545,9 +545,26 @@ echo "▶ 19. La MISMA fecha con dos duraciones — tienen que dar distinto"
 #
 # ⚠ Lo que salvó al caso fue el aviso que tenía escrito abajo. Sin esa línea,
 # «0 de 0» se habría leído como verde.
+#
+# 🔴 TERCERA COSA, MEDIDA EL 15-oct-2026, Y ES LA QUE CONVIERTE ESTO EN UN
+# MODO DE FALLA QUE VUELVE TODOS LOS MESES: la ventana era de SIETE días
+# —+30 a +36— y Cecilia tiene una ausencia RECURRENTE que tapa «la tercera
+# semana de cada mes». Siete días consecutivos entran enteros adentro de una
+# semana tapada, así que el caso no pudo medir nada. Los siete devolvieron
+# cero: seis con `tapado_por` y el séptimo por ser sábado.
+#
+# 🔑 Y NO ES MALA SUERTE DE CALENDARIO: +30 días cae siempre en el mismo tramo
+# del mes siguiente, así que mientras esa ausencia exista el caso se apaga solo
+# durante una parte de cada mes. **Por eso la ventana pasa de 7 días a 61**: una
+# ausencia de una semana no puede taparla entera.
+#
+# ⚠ Lo que NO se hizo, y se dice para que no se proponga: preguntar por la
+# cuenta de SOPORTE, que hoy sí tiene agenda los lunes y no tiene esa ausencia.
+# Es volver al error 1 de esta misma lista — la gracia del caso es que el
+# `?profesional=` de un admin se obedezca.
 DIA_GRILLA=""
 
-for SALTO in 30 31 32 33 34 35 36; do
+for SALTO in $( seq 30 90 ); do
 
   CANDIDATO=$( date -v+${SALTO}d +%F 2>/dev/null || date -d "+$SALTO days" +%F )
 
@@ -567,8 +584,9 @@ done
 
 if [ -z "$DIA_GRILLA" ]; then
 
-  echo "   ❌ NO SE PUDO MEDIR: ningún día de la semana probada tiene agenda."
+  echo "   ❌ NO SE PUDO MEDIR: ningún día entre +30 y +90 tiene agenda."
   echo "      Una prueba que no corre se lee como verde."
+  echo "      Para ver POR QUÉ: bash pruebas/diagnosticar-grilla-vacia.sh"
 
 else
 
