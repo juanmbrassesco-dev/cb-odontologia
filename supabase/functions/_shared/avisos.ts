@@ -48,29 +48,38 @@ const FIRMA = 'CB Odontología y Estética — Santa Fe'
 // mismo dato que el sitio publica en su sección de contacto, no una
 // configuración — y un secreto que falta hace desaparecer el renglón sin fallar
 // con error, que es la trampa que este archivo ya tiene documentada dos veces.
-const DIRECCION = '25 de Mayo 3725 — Santa Fe'
+// ⚠ SIN LA CIUDAD: la firma, que va justo arriba en el mismo pie, ya dice
+// «— Santa Fe». Repetirla deja dos renglones seguidos terminando igual.
+const DIRECCION = '25 de Mayo 3725'
 
 
 // El pie del correo del PACIENTE: dónde queda el consultorio.
 //
-// 🔴 LLEVA LA DIRECCIÓN Y NADA MÁS, y hasta el 16-oct-2026 repetía también el
-// WhatsApp. Lo levantó Juan mirando el correo armado: el cierre del cuerpo ya
-// dice *«contactate con nosotros por correo a … o por WhatsApp al …»*, así que
-// el número aparecía dos veces en la misma pantalla. **El dato que el correo no
-// tenía era la DIRECCIÓN —adónde ir el día del turno—, y ése es el que suma.**
-// Los canales de contacto se quedan donde ya estaban, que es donde tienen una
-// función: pedir que te escriban.
-//
-// 🔑 Y así este pie no toca ni una palabra del texto que el cierre ya tenía
-// auditado: saca la repetición quitando lo nuevo que sobraba, no reescribiendo
-// lo viejo.
+// 🔴 ACÁ VIVEN TODOS LOS DATOS DE CONTACTO, y es la mitad de una decisión: la
+// otra mitad es que el cuerpo dejó de enumerarlos (ver `cierreDelCorreo`).
+// Mientras estuvieron en los dos lados, el correo daba el mismo número dos
+// veces en la misma pantalla.
 //
 // 🔴 NO VA EN EL AVISO OPERATIVO, por el mismo motivo por el que ahí tampoco va
 // el cierre: ese correo lo recibe quien trabaja acá. Decirle a Cecilia dónde
 // queda su consultorio es ruido.
 function pieDeContactoDelPaciente(): string[] {
 
-  return [ DIRECCION ]
+  const renglones = [ DIRECCION ]
+
+  const correo = delEntorno( 'CORREO_DEL_CONSULTORIO' )
+
+  if ( correo ) {
+    renglones.push( correo )
+  }
+
+  const whatsapp = delEntorno( 'WHATSAPP_DEL_CONSULTORIO' )
+
+  if ( whatsapp ) {
+    renglones.push( `WhatsApp ${ whatsapp }` )
+  }
+
+  return renglones
 }
 
 // Por qué salió este correo. Es un texto de dos valores y no un `true`/`false`
@@ -395,19 +404,26 @@ function parrafoHtml( texto: string ): string {
 // espacios, y ésa es toda la diferencia.
 function fichaHtml( renglones: RenglonDeFicha[] ): string {
 
-  // 🔴 LAS DOS CELDAS SE ALINEAN POR LÍNEA DE BASE, NO POR ARRIBA, y la
-  // diferencia la cazó Juan mirando la pantalla: la etiqueta mide 13 y el valor
-  // 16, así que alineadas por el borde superior **sus letras se apoyan en dos
-  // ejes distintos** —«Tratamiento» quedaba más arriba que «Limpieza»—. Con
-  // `baseline` las dos se apoyan en la misma línea, que es lo que el ojo lee
-  // como una fila.
+  // 🔴 LAS DOS CELDAS COMPARTEN LA MISMA CAJA DE RENGLÓN —24 px— Y SE ALINEAN
+  // POR LÍNEA DE BASE. Hacen falta las dos cosas, y lo destapó Juan en dos
+  // pasadas mirando la pantalla:
+  //
+  //   · Alineadas por el BORDE DE ARRIBA, la etiqueta de 13 y el valor de 16
+  //     apoyaban sus letras en dos ejes distintos: «Tratamiento» quedaba más
+  //     alto que «Limpieza».
+  //   · Sólo con `baseline` las bases coincidían, pero las CAJAS seguían
+  //     midiendo distinto —19,5 contra 24— así que el renglón se leía desparejo,
+  //     con el valor colgando por debajo de su etiqueta.
+  //
+  // Con la misma caja para las dos, el renglón es uno solo y el texto chico
+  // queda centrado dentro de él en vez de empujado contra un borde.
   // ⚠ Y cuando el valor ocupa dos renglones —pasa con la fecha en un teléfono—
   // la etiqueta se apoya en el PRIMERO, que es el que le corresponde.
   const filas = renglones.map(
     ( renglon ) => `
       <tr>
-        <td style="padding:5px 14px 5px 0;vertical-align:baseline;white-space:nowrap;font:13px/1.5 ${ LETRA };color:${ DORADO_TEXTO }">${ escaparHtml( renglon.etiqueta ) }</td>
-        <td style="padding:5px 0;vertical-align:baseline;font:16px/1.5 ${ LETRA };color:${ GRAFITO }">${ escaparHtml( renglon.valor ) }</td>
+        <td style="padding:5px 14px 5px 0;vertical-align:baseline;white-space:nowrap;font:13px/24px ${ LETRA };color:${ DORADO_TEXTO }">${ escaparHtml( renglon.etiqueta ) }</td>
+        <td style="padding:5px 0;vertical-align:baseline;font:16px/24px ${ LETRA };color:${ GRAFITO }">${ escaparHtml( renglon.valor ) }</td>
       </tr>`,
   )
 
@@ -589,8 +605,6 @@ ${ partes.join( '\n' ) }
 function cierreDelCorreo( motivo: MotivoDelAviso ): Bloque[] {
 
   const pantalla = delEntorno( 'URL_MIS_TURNOS' )
-  const whatsapp = delEntorno( 'WHATSAPP_DEL_CONSULTORIO' )
-  const correo = delEntorno( 'CORREO_DEL_CONSULTORIO' )
 
   const bloques: Bloque[] = []
 
@@ -606,43 +620,33 @@ function cierreDelCorreo( motivo: MotivoDelAviso ): Bloque[] {
     } )
   }
 
-  // Por dónde nos ubican. Las tres formas van escritas enteras y no armadas por
-  // pedazos: lo que se lee es la oración, no el código.
-  let via = ''
-
-  if ( correo && whatsapp ) {
-    via = `por correo a ${ correo } o por WhatsApp al ${ whatsapp }.`
-  }
-
-  if ( correo && !whatsapp ) {
-    via = `por correo a ${ correo }.`
-  }
-
-  if ( !correo && whatsapp ) {
-    via = `por WhatsApp al ${ whatsapp }.`
-  }
-
-  if ( !via ) {
-    return bloques
-  }
-
-  // 🔑 LA APERTURA CAMBIA SEGÚN LO QUE YA SE DIJO ARRIBA, y ahí está toda la
-  // gracia de haberlas juntado. Si el turno está vivo y NO hay pantalla, éste
-  // es el único renglón que le dice cómo cancelar, así que lo nombra. En los
-  // otros dos casos —ya se explicó arriba, o el turno está cancelado— nombrarlo
-  // sería repetir o hablar de un turno que ya no existe.
-  let apertura = 'Para cualquier consulta, contactate con nosotros'
+  // 🔴 ACÁ NO SE ENUMERAN LOS CANALES, Y HASTA EL 16-oct-2026 SÍ. Este párrafo
+  // decía «contactate con nosotros por correo a … o por WhatsApp al …» y el pie
+  // del correo volvía a darlos unos renglones más abajo: **los mismos datos dos
+  // veces en la misma pantalla.** Lo levantó Juan, dos veces, y la primera
+  // reparación fue mala —sacó el WhatsApp del pie y dejó la repetición igual,
+  // sólo que partida—.
+  //
+  // 🔑 LO QUE LA RESUELVE ES DECIDIR UN SOLO LUGAR, y el lugar es el PIE: es la
+  // convención de cualquier correo y es donde el que busca un dato va a
+  // mirarlo. El cuerpo pide que te contacten; el pie dice cómo.
+  //
+  // Si no hay ningún canal cargado, este párrafo igual sirve: pedir que te
+  // escriban no depende de que el dato esté.
+  //
+  // 🔑 LA APERTURA CAMBIA SEGÚN LO QUE YA SE DIJO ARRIBA. Si el turno está vivo
+  // y NO hay pantalla, éste es el único renglón que le dice cómo cancelar, así
+  // que lo nombra. En los otros dos casos —ya se explicó arriba, o el turno está
+  // cancelado— nombrarlo sería repetir o hablar de un turno que ya no existe.
+  let apertura = 'Para cualquier consulta, contactate con nosotros.'
 
   if ( motivo === 'reserva' && !pantalla ) {
-    apertura = 'Si no vas a poder venir o necesitás consultarnos algo, contactate con nosotros'
+    apertura = 'Si no vas a poder venir o necesitás consultarnos algo, contactate con nosotros.'
   }
 
-  // La apertura y la vía son UN párrafo partido en dos renglones, no dos
-  // párrafos: en el correo con diseño van seguidos, envolviendo donde la
-  // pantalla lo pida.
   bloques.push( {
     tipo: 'parrafo',
-    texto: `${ apertura }\n${ via }`,
+    texto: apertura,
   } )
 
   return bloques
