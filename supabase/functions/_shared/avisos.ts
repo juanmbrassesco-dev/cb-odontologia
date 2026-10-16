@@ -263,11 +263,18 @@ export type DatosDelAviso = {
 }
 
 // Un mensaje ya listo para el proveedor.
+//
+// ⚠ EL TEXTO NO ES OPCIONAL Y EL HTML SÍ, y el orden de los dos campos no es
+// casualidad. Un correo se manda con las DOS versiones adentro (se llama
+// MULTIPART) y el que lo recibe elige: el texto es el respaldo de todo lo que no
+// pueda con el diseño, y un correo que viaja sin él puntúa peor en los filtros
+// de spam. Así que el HTML se SUMA al texto, nunca lo reemplaza.
 type Mensaje = {
   from: string
   to: string[]
   subject: string
   text: string
+  html?: string
 }
 
 // QUÉ ES ESTE AVISO PARA EL PACIENTE, deducido de un solo dato.
@@ -642,7 +649,12 @@ function avisoOperativo(
 //   2. SI EL PROFESIONAL Y EL CONSULTORIO COMPARTEN CASILLA —hoy es el caso,
 //      Cecilia es los dos— se manda UNO SOLO. Dos correos idénticos a la misma
 //      persona no informan el doble.
-function armarMensajes( datos: DatosDelAviso, motivo: MotivoDelAviso ): Mensaje[] {
+// 🔧 ESTÁ EXPORTADA PARA EL INSTRUMENTO, no porque algún endpoint la use.
+// `tools/armar-prueba-correos.ts` arma las nueve variantes de correo y las
+// escribe a un archivo para poder mirarlas sin reservar un turno. Importa ESTA
+// función en vez de rearmar los mensajes por su cuenta: un instrumento que
+// reimplementa lo que mide, miente.
+export function armarMensajes( datos: DatosDelAviso, motivo: MotivoDelAviso ): Mensaje[] {
 
   const remitente = delEntorno( 'CORREO_REMITENTE' ) ?? REMITENTE_DE_PRUEBA
   const consultorio = delEntorno( 'CORREO_DEL_CONSULTORIO' )
