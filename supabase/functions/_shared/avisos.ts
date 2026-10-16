@@ -44,6 +44,32 @@ const REMITENTE_DE_PRUEBA = 'CB Odontología y Estética <onboarding@resend.dev>
 
 const FIRMA = 'CB Odontología y Estética — Santa Fe'
 
+// Dónde queda el consultorio. Va clavada y no en el entorno a propósito: es el
+// mismo dato que el sitio publica en su sección de contacto, no una
+// configuración — y un secreto que falta hace desaparecer el renglón sin fallar
+// con error, que es la trampa que este archivo ya tiene documentada dos veces.
+const DIRECCION = '25 de Mayo 3725 — Santa Fe'
+
+
+// El pie del correo del PACIENTE: dónde queda el consultorio y por dónde
+// escribirnos.
+//
+// 🔴 NO VA EN EL AVISO OPERATIVO, por el mismo motivo por el que ahí tampoco va
+// el cierre: ese correo lo recibe quien trabaja acá. Decirle a Cecilia dónde
+// queda su consultorio es ruido.
+function pieDeContactoDelPaciente(): string[] {
+
+  const renglones = [ DIRECCION ]
+
+  const whatsapp = delEntorno( 'WHATSAPP_DEL_CONSULTORIO' )
+
+  if ( whatsapp ) {
+    renglones.push( `WhatsApp: ${ whatsapp }` )
+  }
+
+  return renglones
+}
+
 // Por qué salió este correo. Es un texto de dos valores y no un `true`/`false`
 // a propósito: `enviarAvisos( datos, true )` no se entiende sin ir a leer la
 // función, y `enviarAvisos( datos, 'cancelacion' )` se entiende solo. Misma
@@ -172,6 +198,10 @@ type Bloque =
       antes: string
       url: string
       despues: string
+      // Lo que dice el botón. El texto plano NO lo usa —ahí la dirección se lee
+      // entera— así que es el único campo de esta estructura que existe para una
+      // sola de las dos salidas.
+      rotulo: string
     }
 
 type CuerpoDelCorreo = {
@@ -180,6 +210,13 @@ type CuerpoDelCorreo = {
   titular: string
   bloques: Bloque[]
   pie: string
+  // Dónde queda el consultorio, y va SÓLO en el correo del paciente: el correo
+  // operativo lo lee quien trabaja ahí.
+  //
+  // 🔑 POR QUÉ SE AGREGÓ (16-oct-2026, decisión de Juan): el correo del turno es
+  // lo que la paciente abre el día que viene, y hasta hoy no decía adónde ir —
+  // había que buscarlo en el sitio.
+  pieDeContacto?: string[]
 }
 
 
@@ -229,7 +266,226 @@ function aTexto( cuerpo: CuerpoDelCorreo ): string {
 
   renglones.push( '', cuerpo.pie )
 
+  if ( cuerpo.pieDeContacto ) {
+    renglones.push( '', ...cuerpo.pieDeContacto )
+  }
+
   return renglones.join( '\n' )
+}
+
+
+// ── EL MISMO CORREO, CON LA MARCA PUESTA ────────────────────────────────────
+//
+// 🔴 UN CORREO NO ES UNA PÁGINA, y por eso casi nada del CSS del sitio sirve
+// acá. Las tres reglas que lo gobiernan, y ninguna es opinión:
+//
+//   · El maquetado va con TABLAS y los estilos ADENTRO de cada etiqueta. No hay
+//     hoja de estilos aparte ni `flex` ni `grid`: Outlook dibuja los correos con
+//     el motor de Word, que no entiende nada de eso.
+//   · LAS IMÁGENES VIENEN BLOQUEADAS por defecto en Gmail, así que el banner
+//     tiene que leerse con el logo apagado. El color lo pinta la CELDA, nunca la
+//     imagen, y el `alt` dice el nombre completo.
+//     🔴 Y EL `alt` LLEVA SUS PROPIOS ESTILOS EN LA `<img>`, que es lo que casi
+//     nadie hace: el texto alternativo HEREDA el color de la imagen, no el de la
+//     celda, así que sin esto salía en el gris de la página sobre el banner
+//     oscuro y no se leía. *Se vio en la primera captura, 16-oct-2026.*
+//   · El fondo del banner es OSCURO a propósito. El modo oscuro de Gmail da
+//     vuelta los fondos claros, y un banner blanco con el logo en grafito puede
+//     terminar oscuro sobre oscuro; un fondo que ya es oscuro no se invierte.
+//
+// ⚠ LAS TIPOGRAFÍAS DE LA MARCA NO VIAJAN. Un correo no puede cargar una fuente
+// propia con ninguna garantía, así que acá va una pila del sistema. Es la única
+// parte de la identidad que se resigna, y se resigna porque la alternativa
+// —imágenes con el texto adentro— no se puede leer ni buscar ni agrandar.
+
+const LOGO_DEL_CORREO =
+  'https://cbodontologiayestetica.com.ar/brand/logo/png/cb-apilado-1200-blanco.png'
+
+// Los colores salen de `css/tokens.css` y se repiten acá porque un correo no
+// puede leer ese archivo. Si allá cambian, acá se cambian a mano: no hay nada
+// que avise.
+const MARFIL = '#FAF7F2'
+const BLANCO = '#FFFFFF'
+const GRAFITO = '#33322F'
+const GRAFITO_SUAVE = '#5A5853'
+const DORADO = '#B08D57'
+const DORADO_TEXTO = '#896D41'
+
+const LETRA = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+
+
+// 🔒 ESCAPAR NO ES PROLIJIDAD: ES LA DEFENSA, y el correo de texto no la
+// necesitaba.
+//
+// Hay datos acá que los escribe el PACIENTE —su nombre y el motivo de consulta—
+// y terminan dentro del correo que lee Cecilia. En texto plano un `<` es un `<`;
+// adentro de HTML abre una etiqueta. Sin esta función, alguien que se anote como
+// `<b>` deforma el correo, y con un poco más de trabajo puede meter un enlace
+// que no pusimos nosotros en un mensaje que SÍ viene de nuestro dominio.
+//
+// El nombre del agujero es INYECCIÓN DE HTML (HTML injection); cuando lo que se
+// cuela llega a ejecutarse, se llama CROSS-SITE SCRIPTING (XSS). Un cliente de
+// correo no corre JavaScript, así que acá el riesgo es el del medio: contenido
+// puesto por un tercero que se lee como nuestro.
+//
+// 🔑 SE ESCAPA AL DIBUJAR, NO AL GUARDAR. El dato se guarda como lo escribió la
+// persona y cada salida lo prepara para SU destino: el texto plano no toca nada,
+// el HTML escapa cinco caracteres. Al revés —guardar ya escapado— el nombre
+// queda con `&amp;` para siempre, también en la pantalla y en la base.
+function escaparHtml( texto: string ): string {
+
+  return texto
+    .replaceAll( '&', '&amp;' )
+    .replaceAll( '<', '&lt;' )
+    .replaceAll( '>', '&gt;' )
+    .replaceAll( '"', '&quot;' )
+    .replaceAll( "'", '&#39;' )
+}
+
+
+// Un párrafo del correo. El salto de línea que el texto plano respeta se cambia
+// por un espacio: acá el que envuelve es el que lee.
+function parrafoHtml( texto: string ): string {
+
+  const limpio = escaparHtml( texto ).replaceAll( '\n', ' ' )
+
+  return `<p style="margin:0 0 16px;font:16px/1.6 ${ LETRA };color:${ GRAFITO }">${ limpio }</p>`
+}
+
+
+// La ficha, como tabla de dos columnas: la etiqueta chica y en dorado, el valor
+// grande y en grafito. En texto plano esto son renglones indentados con dos
+// espacios, y ésa es toda la diferencia.
+function fichaHtml( renglones: RenglonDeFicha[] ): string {
+
+  const filas = renglones.map(
+    ( renglon ) => `
+      <tr>
+        <td style="padding:5px 14px 5px 0;vertical-align:top;white-space:nowrap;font:13px/1.5 ${ LETRA };color:${ DORADO_TEXTO }">${ escaparHtml( renglon.etiqueta ) }</td>
+        <td style="padding:5px 0;vertical-align:top;font:16px/1.5 ${ LETRA };color:${ GRAFITO }">${ escaparHtml( renglon.valor ) }</td>
+      </tr>`,
+  )
+
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:0 0 20px">
+    <tbody>${ filas.join( '' ) }
+    </tbody>
+  </table>`
+}
+
+
+// La acción, como botón de verdad.
+//
+// ⚠ ES UN `<a>` CON FONDO, NO UN `<button>`: un botón de formulario no hace nada
+// en un correo. Y el fondo se pinta DOS veces —en el atributo `bgcolor` de la
+// celda y en su `style`— porque los clientes viejos leen uno y los nuevos el
+// otro.
+function accionHtml( antes: string, url: string, despues: string, rotulo: string ): string {
+
+  return `${ parrafoHtml( antes ) }
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px">
+    <tbody>
+      <tr>
+        <td bgcolor="${ DORADO }" style="background:${ DORADO };border-radius:4px">
+          <a href="${ escaparHtml( url ) }" style="display:inline-block;padding:14px 28px;font:600 16px/1 ${ LETRA };color:${ BLANCO };text-decoration:none">${ escaparHtml( rotulo ) }</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="margin:0 0 16px;font:14px/1.6 ${ LETRA };color:${ GRAFITO_SUAVE }">${ escaparHtml( despues ) }</p>`
+}
+
+
+function aHtml( cuerpo: CuerpoDelCorreo ): string {
+
+  const partes: string[] = []
+
+  if ( cuerpo.saludo ) {
+    partes.push( parrafoHtml( cuerpo.saludo ) )
+  }
+
+  partes.push(
+    `<p style="margin:0 0 20px;font:600 20px/1.4 ${ LETRA };color:${ GRAFITO }">${ escaparHtml( cuerpo.titular ) }</p>`,
+  )
+
+  for ( const bloque of cuerpo.bloques ) {
+
+    if ( bloque.tipo === 'parrafo' ) {
+      partes.push( parrafoHtml( bloque.texto ) )
+    }
+
+    if ( bloque.tipo === 'ficha' ) {
+      partes.push( fichaHtml( bloque.renglones ) )
+    }
+
+    if ( bloque.tipo === 'accion' ) {
+      partes.push(
+        accionHtml( bloque.antes, bloque.url, bloque.despues, bloque.rotulo ),
+      )
+    }
+  }
+
+  // La firma, y debajo el pie postal separado por una línea dorada. El pie puede
+  // no estar: el correo operativo no lo lleva.
+  partes.push(
+    `<p style="margin:24px 0 0;font:14px/1.6 ${ LETRA };color:${ GRAFITO_SUAVE }">${ escaparHtml( cuerpo.pie ) }</p>`,
+  )
+
+  if ( cuerpo.pieDeContacto ) {
+    partes.push(
+      `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:20px 0 0">
+        <tbody>
+          <tr>
+            <td style="border-top:1px solid ${ DORADO };padding:16px 0 0;font:13px/1.7 ${ LETRA };color:${ GRAFITO_SUAVE }">${ cuerpo.pieDeContacto.map( escaparHtml ).join( '<br>' ) }</td>
+          </tr>
+        </tbody>
+      </table>`,
+    )
+  }
+
+  // El sobre: una tabla que pinta el fondo de la pantalla y, adentro, la tarjeta
+  // de 600 px, que es el ancho con el que se maqueta un correo desde siempre.
+  //
+  // 🔴 LOS 600 SON UN TECHO, NO UN ANCHO, y la diferencia se vio midiendo: con
+  // `width="600"` el correo NO se achica en un teléfono y se sale de la pantalla
+  // —medido a 390 px el 16-oct-2026, con el banner cortado del lado derecho—.
+  // Va `width:100%` con `max-width:600px`: ocupa lo que haya y nunca pasa de 600.
+  //
+  // ⚠ COSTO ACEPTADO: el Outlook de escritorio ignora `max-width`, así que ahí
+  // el correo se estira a lo ancho de la ventana. Se arregla con un bloque
+  // condicional sólo para él; no se puso porque acá nadie lo usa. *Disparador
+  // para agregarlo: que aparezca una paciente leyendo con Outlook y moleste.*
+  return `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>${ escaparHtml( cuerpo.titular ) }</title>
+</head>
+<body style="margin:0;padding:0;background:${ MARFIL }">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${ MARFIL }">
+  <tbody>
+    <tr>
+      <td align="center" style="padding:24px 12px">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:${ BLANCO }">
+          <tbody>
+            <tr>
+              <td align="center" bgcolor="${ GRAFITO }" style="background:${ GRAFITO };padding:30px 24px">
+                <img src="${ LOGO_DEL_CORREO }" width="240" alt="CB Odontología y Estética" style="display:block;width:240px;max-width:100%;height:auto;border:0;font:600 18px/1.4 ${ LETRA };color:${ MARFIL }">
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px 24px">
+${ partes.join( '\n' ) }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>`
 }
 
 
@@ -277,6 +533,7 @@ function cierreDelCorreo( motivo: MotivoDelAviso ): Bloque[] {
       antes: 'Si no vas a poder venir, podés cancelarlo vos desde:',
       url: pantalla,
       despues: 'Entrá con el mismo correo con el que reservaste.',
+      rotulo: 'Ver mis turnos',
     } )
   }
 
@@ -515,6 +772,7 @@ function correoParaElPaciente(
         ...cierreDelCorreo( motivo ),
       ],
       pie: FIRMA,
+      pieDeContacto: pieDeContactoDelPaciente(),
     }
 
     return {
@@ -522,6 +780,7 @@ function correoParaElPaciente(
       to: [ datos.pacienteCorreo ],
       subject: 'Tu turno quedó cancelado — CB Odontología y Estética',
       text: aTexto( cuerpo ),
+      html: aHtml( cuerpo ),
     }
   }
 
@@ -615,6 +874,7 @@ function correoParaElPaciente(
       ...cierreDelCorreo( motivo ),
     ],
     pie: FIRMA,
+    pieDeContacto: pieDeContactoDelPaciente(),
   }
 
   return {
@@ -622,6 +882,7 @@ function correoParaElPaciente(
     to: [ datos.pacienteCorreo ],
     subject: asunto,
     text: aTexto( cuerpo ),
+    html: aHtml( cuerpo ),
   }
 }
 
@@ -787,6 +1048,7 @@ function avisoOperativo(
     to: [ destino ],
     subject: `${ encabezadoDelAsunto } — ${ cuandoElDia( datos.inicio ) }`,
     text: aTexto( cuerpo ),
+    html: aHtml( cuerpo ),
   }
 }
 

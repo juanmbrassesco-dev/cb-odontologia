@@ -61,8 +61,25 @@
       color: #B08D57;
     }
 
+    /* El iframe NO se ajusta solo al contenido: sin JavaScript no hay forma, y
+       un correo real tampoco se ve de una sola mirada. Alto generoso y scroll
+       propio. */
     .marco {
+      display: block;
+      width: 100%;
+      height: 820px;
       background: #FFF;
+      border: 0;
+    }
+
+    .solo {
+      margin: 6px 0 0;
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .solo a {
+      color: #896D41;
     }
 
     pre {
@@ -87,43 +104,16 @@
     <span>Para</span> rafaela@ejemplo.com<br>
     <span>Asunto</span> Tu turno quedó agendado — CB Odontología y Estética
   </div>
-  <div class="marco"><pre>Hola Rafaela,
-
-Tu turno quedó agendado.
-
-  Tratamiento: Limpieza
-  Profesional: Cecilia Brassesco
-  Cuándo: lunes, 23 de noviembre de 2026, 9:00 a. m.
-
-Si no vas a poder venir, podés cancelarlo vos desde:
-  https://ejemplo.com.ar/mis-turnos
-Entrá con el mismo correo con el que reservaste.
-
-Para cualquier consulta, contactate con nosotros
-por correo a contacto@ejemplo.com.ar o por WhatsApp al +54 342 000-0000.
-
-CB Odontología y Estética — Santa Fe</pre></div>
+  <iframe class="marco" src="correos/A-1-paciente.html" title="Tu turno quedó agendado — CB Odontología y Estética"></iframe>
+  <p class="solo"><a href="correos/A-1-paciente.html">abrir este correo solo →</a></p>
 </div>
 <div class="sobre">
   <div class="cabecera">
     <span>Para</span> contacto@ejemplo.com.ar<br>
     <span>Asunto</span> Nuevo turno — 23/11
   </div>
-  <div class="marco"><pre>Entró un turno nuevo por la web.
-
-  Paciente: Rafaela Giménez
-  Contacto: rafaela@ejemplo.com
-  Tratamiento: Limpieza
-  Profesional: Cecilia Brassesco
-  Cuándo: lunes, 23 de noviembre de 2026, 9:00 a. m.
-  Duración: 60 minutos
-  Vino por: Ortodoncia
-  Cobertura: IAPOS EMBARAZADAS
-  Turno número: 428
-
-El paciente dejó una observación. Se lee en la ficha del turno.
-
-CB Odontología y Estética — Santa Fe</pre></div>
+  <iframe class="marco" src="correos/A-2-operativo.html" title="Nuevo turno — 23/11"></iframe>
+  <p class="solo"><a href="correos/A-2-operativo.html">abrir este correo solo →</a></p>
 </div>
 <h2>B · Turno nuevo, cargado a mano en el panel</h2>
 <p class="porque">Cambia SÓLO el aviso operativo: el titular no puede decir «por la web».</p>
@@ -132,43 +122,16 @@ CB Odontología y Estética — Santa Fe</pre></div>
     <span>Para</span> rafaela@ejemplo.com<br>
     <span>Asunto</span> Tu turno quedó agendado — CB Odontología y Estética
   </div>
-  <div class="marco"><pre>Hola Rafaela,
-
-Tu turno quedó agendado.
-
-  Tratamiento: Limpieza
-  Profesional: Cecilia Brassesco
-  Cuándo: lunes, 23 de noviembre de 2026, 9:00 a. m.
-
-Si no vas a poder venir, podés cancelarlo vos desde:
-  https://ejemplo.com.ar/mis-turnos
-Entrá con el mismo correo con el que reservaste.
-
-Para cualquier consulta, contactate con nosotros
-por correo a contacto@ejemplo.com.ar o por WhatsApp al +54 342 000-0000.
-
-CB Odontología y Estética — Santa Fe</pre></div>
+  <iframe class="marco" src="correos/B-1-paciente.html" title="Tu turno quedó agendado — CB Odontología y Estética"></iframe>
+  <p class="solo"><a href="correos/B-1-paciente.html">abrir este correo solo →</a></p>
 </div>
 <div class="sobre">
   <div class="cabecera">
     <span>Para</span> contacto@ejemplo.com.ar<br>
     <span>Asunto</span> Nuevo turno — 23/11
   </div>
-  <div class="marco"><pre>Se le avisó al paciente de un turno cargado a mano.
-
-  Paciente: Rafaela Giménez
-  Contacto: rafaela@ejemplo.com
-  Tratamiento: Limpieza
-  Profesional: Cecilia Brassesco
-  Cuándo: lunes, 23 de noviembre de 2026, 9:00 a. m.
-  Duración: 60 minutos
-  Vino por: Ortodoncia
-  Cobertura: IAPOS EMBARAZADAS
-  Turno número: 428
-
-El paciente dejó una observación. Se lee en la ficha del turno.
-
-CB Odontología y Estética — Santa Fe</pre></div>
+  <iframe class="marco" src="correos/B-2-operativo.html" title="Nuevo turno — 23/11"></iframe>
+  <p class="solo"><a href="correos/B-2-operativo.html">abrir este correo solo →</a></p>
 </div>
 <h2>C · Le movieron la hora</h2>
 <p class="porque">El correo tiene que dejar claro que REEMPLAZA al anterior, o la paciente cree que tiene dos turnos.</p>
@@ -177,47 +140,16 @@ CB Odontología y Estética — Santa Fe</pre></div>
     <span>Para</span> rafaela@ejemplo.com<br>
     <span>Asunto</span> Cambió el horario de tu turno — CB Odontología y Estética
   </div>
-  <div class="marco"><pre>Hola Rafaela,
-
-El horario de tu turno cambió.
-
-  Tratamiento: Limpieza
-  Profesional: Cecilia Brassesco
-  Cuándo: lunes, 23 de noviembre de 2026, 9:00 a. m.
-  Antes era: lunes, 23 de noviembre de 2026, 7:30 a. m.
-
-El horario anterior ya no está reservado.
-
-Si no vas a poder venir, podés cancelarlo vos desde:
-  https://ejemplo.com.ar/mis-turnos
-Entrá con el mismo correo con el que reservaste.
-
-Para cualquier consulta, contactate con nosotros
-por correo a contacto@ejemplo.com.ar o por WhatsApp al +54 342 000-0000.
-
-CB Odontología y Estética — Santa Fe</pre></div>
+  <iframe class="marco" src="correos/C-1-paciente.html" title="Cambió el horario de tu turno — CB Odontología y Estética"></iframe>
+  <p class="solo"><a href="correos/C-1-paciente.html">abrir este correo solo →</a></p>
 </div>
 <div class="sobre">
   <div class="cabecera">
     <span>Para</span> contacto@ejemplo.com.ar<br>
     <span>Asunto</span> Turno movido — 23/11
   </div>
-  <div class="marco"><pre>Se movió un turno de horario.
-
-  Paciente: Rafaela Giménez
-  Contacto: rafaela@ejemplo.com
-  Tratamiento: Limpieza
-  Profesional: Cecilia Brassesco
-  Cuándo: lunes, 23 de noviembre de 2026, 9:00 a. m.
-  Antes era: lunes, 23 de noviembre de 2026, 7:30 a. m.
-  Duración: 60 minutos
-  Vino por: Ortodoncia
-  Cobertura: IAPOS EMBARAZADAS
-  Turno número: 428
-
-El paciente dejó una observación. Se lee en la ficha del turno.
-
-CB Odontología y Estética — Santa Fe</pre></div>
+  <iframe class="marco" src="correos/C-2-operativo.html" title="Turno movido — 23/11"></iframe>
+  <p class="solo"><a href="correos/C-2-operativo.html">abrir este correo solo →</a></p>
 </div>
 <h2>D · Le cambiaron otro dato</h2>
 <p class="porque">La hora avisada es la misma y algo cambió igual. No sabemos QUÉ, así que no se nombra.</p>
@@ -226,43 +158,16 @@ CB Odontología y Estética — Santa Fe</pre></div>
     <span>Para</span> rafaela@ejemplo.com<br>
     <span>Asunto</span> Cambió tu turno — CB Odontología y Estética
   </div>
-  <div class="marco"><pre>Hola Rafaela,
-
-Hubo un cambio en tu turno. Estos son los datos nuevos:
-
-  Tratamiento: Limpieza
-  Profesional: Cecilia Brassesco
-  Cuándo: lunes, 23 de noviembre de 2026, 9:00 a. m.
-
-Si no vas a poder venir, podés cancelarlo vos desde:
-  https://ejemplo.com.ar/mis-turnos
-Entrá con el mismo correo con el que reservaste.
-
-Para cualquier consulta, contactate con nosotros
-por correo a contacto@ejemplo.com.ar o por WhatsApp al +54 342 000-0000.
-
-CB Odontología y Estética — Santa Fe</pre></div>
+  <iframe class="marco" src="correos/D-1-paciente.html" title="Cambió tu turno — CB Odontología y Estética"></iframe>
+  <p class="solo"><a href="correos/D-1-paciente.html">abrir este correo solo →</a></p>
 </div>
 <div class="sobre">
   <div class="cabecera">
     <span>Para</span> contacto@ejemplo.com.ar<br>
     <span>Asunto</span> Turno modificado — 23/11
   </div>
-  <div class="marco"><pre>Cambió un dato de un turno.
-
-  Paciente: Rafaela Giménez
-  Contacto: rafaela@ejemplo.com
-  Tratamiento: Limpieza
-  Profesional: Cecilia Brassesco
-  Cuándo: lunes, 23 de noviembre de 2026, 9:00 a. m.
-  Duración: 60 minutos
-  Vino por: Ortodoncia
-  Cobertura: IAPOS EMBARAZADAS
-  Turno número: 428
-
-El paciente dejó una observación. Se lee en la ficha del turno.
-
-CB Odontología y Estética — Santa Fe</pre></div>
+  <iframe class="marco" src="correos/D-2-operativo.html" title="Turno modificado — 23/11"></iframe>
+  <p class="solo"><a href="correos/D-2-operativo.html">abrir este correo solo →</a></p>
 </div>
 <h2>E · Cancelado</h2>
 <p class="porque">Ni el motivo de consulta ni la cobertura viajan: lo que importa es el hueco que se libera.</p>
@@ -271,40 +176,16 @@ CB Odontología y Estética — Santa Fe</pre></div>
     <span>Para</span> rafaela@ejemplo.com<br>
     <span>Asunto</span> Tu turno quedó cancelado — CB Odontología y Estética
   </div>
-  <div class="marco"><pre>Hola Rafaela,
-
-Tu turno quedó cancelado.
-
-  Tratamiento: Limpieza
-  Profesional: Cecilia Brassesco
-  Cuándo era: lunes, 23 de noviembre de 2026, 9:00 a. m.
-
-El horario vuelve a estar disponible para quien lo necesite. Si querés
-sacar otro turno, entrá al sitio cuando quieras.
-
-Para cualquier consulta, contactate con nosotros
-por correo a contacto@ejemplo.com.ar o por WhatsApp al +54 342 000-0000.
-
-CB Odontología y Estética — Santa Fe</pre></div>
+  <iframe class="marco" src="correos/E-1-paciente.html" title="Tu turno quedó cancelado — CB Odontología y Estética"></iframe>
+  <p class="solo"><a href="correos/E-1-paciente.html">abrir este correo solo →</a></p>
 </div>
 <div class="sobre">
   <div class="cabecera">
     <span>Para</span> contacto@ejemplo.com.ar<br>
     <span>Asunto</span> Turno cancelado — 23/11
   </div>
-  <div class="marco"><pre>Se canceló un turno desde la web.
-
-  Paciente: Rafaela Giménez
-  Contacto: rafaela@ejemplo.com
-  Tratamiento: Limpieza
-  Profesional: Cecilia Brassesco
-  Cuándo era: lunes, 23 de noviembre de 2026, 9:00 a. m.
-  Duración: 60 minutos
-  Turno número: 428
-
-El horario vuelve a estar disponible en la grilla.
-
-CB Odontología y Estética — Santa Fe</pre></div>
+  <iframe class="marco" src="correos/E-2-operativo.html" title="Turno cancelado — 23/11"></iframe>
+  <p class="solo"><a href="correos/E-2-operativo.html">abrir este correo solo →</a></p>
 </div>
 </body>
 </html>

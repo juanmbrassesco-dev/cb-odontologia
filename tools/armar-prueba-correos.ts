@@ -17,8 +17,18 @@
 //   correos.txt   Los nueve textos, con su asunto y su destinatario adelante.
 //                 Es el lado de arriba del `diff` que prueba que un refactor no
 //                 cambió ni una frase.
-//   correos.html  Los nueve correos enmarcados a 600 px, que es el ancho del
-//                 cuerpo de un correo, para iterar la forma sin mandar nada.
+//   correos.html  El índice: los nueve correos, cada uno dentro de un marco de
+//                 600 px, que es el ancho con el que se maqueta un correo.
+//   correos/*.html  Cada correo SOLO, en su propio archivo, tal cual sale.
+//
+// 🔴 POR QUÉ CADA UNO EN SU ARCHIVO Y METIDO EN UN `<iframe>`, y no pegados
+// adentro de una página: un correo es un documento ENTERO —trae su `<html>`, su
+// `<head>` y su `<body>`—, y pegar diez documentos dentro de otro deja que los
+// estilos del de afuera se mezclen con los de adentro. **El visor dejaría de
+// mostrar lo que se manda**, que es la única cosa que tiene que hacer. Un
+// `<iframe>` lo aísla igual que lo aísla un cliente de correo.
+// 🔑 Y de paso queda lo que hace falta para juzgar una forma: **cada correo
+// solo, en un archivo que se abre a tamaño real.**
 //
 // CÓMO SE CORRE, parado en la raíz del repo:
 //
@@ -174,7 +184,11 @@ const ESCENARIOS: Escenario[] = [
 // `avisos.ts`, esta constante se cambia con ella. No hay nada que avise.
 
 const LOGO_EN_LA_NUBE = 'https://cbodontologiayestetica.com.ar/brand/logo/png/'
-const LOGO_EN_EL_REPO = '../brand/logo/png/'
+// ⚠ DOS niveles, no uno: los correos viven en `pruebas/correos/`, así que para
+// llegar a `brand/` hay que subir dos veces. Con uno solo la imagen no carga y
+// el correo se ve con el ícono de imagen rota — que es, de paso, exactamente lo
+// que ve quien tiene las imágenes bloqueadas.
+const LOGO_EN_EL_REPO = '../../brand/logo/png/'
 
 
 // ── Armar los textos ─────────────────────────────────────────────────────────
@@ -303,8 +317,25 @@ const ESTILO_DEL_VISOR = `  <style>
       color: #B08D57;
     }
 
+    /* El iframe NO se ajusta solo al contenido: sin JavaScript no hay forma, y
+       un correo real tampoco se ve de una sola mirada. Alto generoso y scroll
+       propio. */
     .marco {
+      display: block;
+      width: 100%;
+      height: 820px;
       background: #FFF;
+      border: 0;
+    }
+
+    .solo {
+      margin: 6px 0 0;
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .solo a {
+      color: #896D41;
     }
 
     pre {
@@ -316,7 +347,20 @@ const ESTILO_DEL_VISOR = `  <style>
   </style>`
 
 
-function comoPagina(): string {
+// El nombre de archivo de un correo: `A-1-paciente.html`. Lleva la letra del
+// escenario adelante para que el orden alfabético sea el orden de la lista.
+function nombreDelArchivo( escenario: Escenario, numero: number, destino: string ): string {
+
+  const letra = escenario.nombre.slice( 0, 1 )
+  const quien = destino.includes( 'rafaela' ) ? 'paciente' : 'operativo'
+
+  return `${ letra }-${ numero }-${ quien }.html`
+}
+
+
+async function comoPagina(): Promise< string > {
+
+  await Deno.mkdir( 'pruebas/correos', { recursive: true } )
 
   const bloques: string[] = []
 
@@ -329,19 +373,36 @@ function comoPagina(): string {
       `<p class="porque">${ escaparHtml( escenario.porQue ) }</p>`,
     )
 
+    let numero = 0
+
     for ( const mensaje of mensajes ) {
 
-      const cuerpo = mensaje.html
+      numero = numero + 1
+
+      const archivo = nombreDelArchivo( escenario, numero, mensaje.to[ 0 ] )
+
+      // Mientras no haya HTML, el archivo lleva el texto preformateado. Así el
+      // visor sirve desde el primer día y no hay dos caminos que mantener.
+      const documento = mensaje.html
         ? mensaje.html.replaceAll( LOGO_EN_LA_NUBE, LOGO_EN_EL_REPO )
-        : `<pre>${ escaparHtml( mensaje.text ) }</pre>`
+        : `<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Sin diseño todavía</title></head>
+<body style="margin:0;background:#FFF">
+<pre style="margin:0;padding:20px;white-space:pre-wrap;font:13px/1.6 ui-monospace,monospace">${ escaparHtml( mensaje.text ) }</pre>
+</body>
+</html>`
+
+      await Deno.writeTextFile( `pruebas/correos/${ archivo }`, documento )
 
       bloques.push(
         '<div class="sobre">',
-        `  <div class="cabecera">`,
+        '  <div class="cabecera">',
         `    <span>Para</span> ${ escaparHtml( mensaje.to.join( ', ' ) ) }<br>`,
         `    <span>Asunto</span> ${ escaparHtml( mensaje.subject ) }`,
-        `  </div>`,
-        `  <div class="marco">${ cuerpo }</div>`,
+        '  </div>',
+        `  <iframe class="marco" src="correos/${ archivo }" title="${ escaparHtml( mensaje.subject ) }"></iframe>`,
+        `  <p class="solo"><a href="correos/${ archivo }">abrir este correo solo →</a></p>`,
         '</div>',
       )
     }
@@ -373,10 +434,11 @@ function comoPagina(): string {
 // ── Escribir los dos archivos ────────────────────────────────────────────────
 
 await Deno.writeTextFile( 'pruebas/correos.txt', comoTexto() )
-await Deno.writeTextFile( 'pruebas/correos.html', comoPagina() )
+await Deno.writeTextFile( 'pruebas/correos.html', await comoPagina() )
 
 console.log( '✓ pruebas/correos.txt' )
 console.log( '✓ pruebas/correos.html' )
+console.log( '✓ pruebas/correos/ — un archivo por correo' )
 console.log( '' )
 console.log( `  ${ ESCENARIOS.length } escenarios · abrilos con:` )
 console.log( '    code pruebas/correos.txt' )
