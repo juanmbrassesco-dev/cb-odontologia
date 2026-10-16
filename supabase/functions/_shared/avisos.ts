@@ -379,10 +379,17 @@ function fichaHtml( renglones: RenglonDeFicha[] ): string {
 // en un correo. Y el fondo se pinta DOS veces —en el atributo `bgcolor` de la
 // celda y en su `style`— porque los clientes viejos leen uno y los nuevos el
 // otro.
+//
+// 🔑 VA CENTRADO, y lo pidió Juan el 16-oct-2026 mirando la primera versión:
+// pegado a la izquierda se leía como parte del párrafo que lo precede, cuando es
+// la única cosa del correo que hay que TOCAR.
+// ⚠ El centrado se pide DOS veces por lo mismo que el fondo: `align="center"`
+// para los clientes que no entienden `margin:auto`, y `margin:0 auto 16px` para
+// los que sí.
 function accionHtml( antes: string, url: string, despues: string, rotulo: string ): string {
 
   return `${ parrafoHtml( antes ) }
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px">
+  <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 16px">
     <tbody>
       <tr>
         <td bgcolor="${ DORADO }" style="background:${ DORADO };border-radius:4px">
@@ -424,23 +431,29 @@ function aHtml( cuerpo: CuerpoDelCorreo ): string {
     }
   }
 
-  // La firma, y debajo el pie postal separado por una línea dorada. El pie puede
-  // no estar: el correo operativo no lo lleva.
-  partes.push(
-    `<p style="margin:24px 0 0;font:14px/1.6 ${ LETRA };color:${ GRAFITO_SUAVE }">${ escaparHtml( cuerpo.pie ) }</p>`,
-  )
+  // 🔑 LA FIRMA Y EL PIE NO VAN EN EL CUERPO: van en una FRANJA propia abajo de
+  // todo, igual que el banner de arriba. Lo pidió Juan el 16-oct-2026 mirando la
+  // primera versión —*«el footer tendría que ser banner también, capaz con menos
+  // jerarquía que el de arriba pero banner al fin»*— y cierra el sobre en vez de
+  // dejar los datos flotando sobre el blanco.
+  //
+  // ⚠ LA MENOR JERARQUÍA LA DAN EL ALTO Y LA LETRA, NO EL COLOR, y el motivo es
+  // medible: el fondo de la página ya es marfil, así que una franja marfil no se
+  // leería como franja — se confundiría con lo que la rodea. Mismo grafito,
+  // mitad de alto y letra de 13.
+  //
+  // El renglón del medio puede no estar: el correo operativo lleva la firma y
+  // nada más, porque decirle a Cecilia dónde queda su consultorio es ruido.
+  const renglonesDelPie = [ escaparHtml( cuerpo.pie ) ]
 
   if ( cuerpo.pieDeContacto ) {
-    partes.push(
-      `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:20px 0 0">
-        <tbody>
-          <tr>
-            <td style="border-top:1px solid ${ DORADO };padding:16px 0 0;font:13px/1.7 ${ LETRA };color:${ GRAFITO_SUAVE }">${ cuerpo.pieDeContacto.map( escaparHtml ).join( '<br>' ) }</td>
-          </tr>
-        </tbody>
-      </table>`,
-    )
+    renglonesDelPie.push( ...cuerpo.pieDeContacto.map( escaparHtml ) )
   }
+
+  const pieDelSobre = `
+            <tr>
+              <td align="center" bgcolor="${ GRAFITO }" style="background:${ GRAFITO };padding:18px 24px;font:13px/1.8 ${ LETRA };color:${ MARFIL }">${ renglonesDelPie.join( '<br>' ) }</td>
+            </tr>`
 
   // El sobre: una tabla que pinta el fondo de la pantalla y, adentro, la tarjeta
   // de 600 px, que es el ancho con el que se maqueta un correo desde siempre.
@@ -477,7 +490,7 @@ function aHtml( cuerpo: CuerpoDelCorreo ): string {
               <td style="padding:32px 24px">
 ${ partes.join( '\n' ) }
               </td>
-            </tr>
+            </tr>${ pieDelSobre }
           </tbody>
         </table>
       </td>
