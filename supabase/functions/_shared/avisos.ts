@@ -129,6 +129,110 @@ function cuandoElDia( inicio: string ): string {
   ).format( new Date( inicio ) )
 }
 
+// ── CÓMO SE DESCRIBE UN CORREO, UNA SOLA VEZ ────────────────────────────────
+//
+// 🔴 POR QUÉ UNA ESTRUCTURA Y NO TEXTO ARMADO. Hasta el 16-oct-2026 cada correo
+// se armaba como una lista de renglones que terminaba en `.join( '\n' )`: el
+// contenido y su FORMA salían pegados, así que el día que hubo que mandar los
+// mismos avisos con diseño no había dónde entrar. Las dos salidas obvias eran
+// malas: adivinar la estructura leyendo el texto —clasificar por la forma, o sea
+// adivinar con cara de saber— o escribir una segunda versión en paralelo, que
+// duplica el contenido y **olvidarse de tocar una de las dos NO FALLA CON
+// ERROR**, que es el modo de falla contra el que está escrito este archivo.
+//
+// Así que cada correo se describe UNA vez y dos funciones lo convierten:
+// `aTexto( … )` y `aHtml( … )`. Mismo criterio con el que la grilla de horarios
+// se mudó a `_shared/grilla.ts`: el cálculo se comparte, la presentación no.
+//
+// UN BLOQUE ES UN PEDAZO DEL CORREO QUE SABE QUÉ CLASE DE PEDAZO ES. Eso es lo
+// que permite que el que dibuja no tenga que deducirlo: una ficha se dibuja como
+// tabla, un párrafo como párrafo, y una acción como botón.
+
+type RenglonDeFicha = {
+  etiqueta: string
+  valor: string
+}
+
+type Bloque =
+  | {
+      tipo: 'parrafo'
+      // Puede traer saltos de línea adentro: el texto plano los respeta y el
+      // HTML los cambia por un espacio, porque ahí envuelve el que lee.
+      texto: string
+    }
+  | {
+      tipo: 'ficha'
+      renglones: RenglonDeFicha[]
+    }
+  | {
+      tipo: 'accion'
+      // Lo que se dice antes de la dirección, la dirección, y lo que se aclara
+      // después. En texto van en tres renglones; en HTML, el del medio es un
+      // botón.
+      antes: string
+      url: string
+      despues: string
+    }
+
+type CuerpoDelCorreo = {
+  // El operativo no saluda a nadie: lo recibe quien trabaja acá.
+  saludo?: string
+  titular: string
+  bloques: Bloque[]
+  pie: string
+}
+
+
+// El correo escrito como texto plano.
+//
+// 🔴 ESTA FUNCIÓN TIENE UN CONTRATO MEDIBLE: produce EXACTAMENTE lo que producía
+// el armado viejo, carácter por carácter. Así se verificó el refactor del
+// 16-oct-2026 —`tools/armar-prueba-correos.ts` escribió los nueve textos antes,
+// y después el `diff` tenía que venir vacío— y así se verifica cualquier cambio
+// de acá en adelante.
+//
+// 🔑 LA REGLA QUE SOSTIENE TODO EL FORMATO ES UNA SOLA: entre dos bloques va una
+// línea vacía. No hay casos especiales, y por eso los nueve correos salen
+// iguales a los de antes sin que ninguno traiga su propia excepción.
+function aTexto( cuerpo: CuerpoDelCorreo ): string {
+
+  const renglones: string[] = []
+
+  if ( cuerpo.saludo ) {
+    renglones.push( cuerpo.saludo, '' )
+  }
+
+  renglones.push( cuerpo.titular )
+
+  for ( const bloque of cuerpo.bloques ) {
+
+    renglones.push( '' )
+
+    if ( bloque.tipo === 'parrafo' ) {
+      renglones.push( bloque.texto )
+    }
+
+    if ( bloque.tipo === 'ficha' ) {
+      for ( const renglon of bloque.renglones ) {
+        renglones.push( `  ${ renglon.etiqueta }: ${ renglon.valor }` )
+      }
+    }
+
+    if ( bloque.tipo === 'accion' ) {
+      renglones.push(
+        bloque.antes,
+        `  ${ bloque.url }`,
+        bloque.despues,
+      )
+    }
+  }
+
+  renglones.push( '', cuerpo.pie )
+
+  return renglones.join( '\n' )
+}
+
+
 // EL CIERRE DEL CORREO DEL PACIENTE — cómo cancela y por dónde nos ubica, en
 // un solo lugar.
 //
@@ -157,23 +261,23 @@ function cuandoElDia( inicio: string ): string {
 // pantalla, el correo cae en la frase que pide avisar; sin correo y sin
 // WhatsApp, el cierre DESAPARECE ENTERO. Es la trampa de siempre: lo que no
 // está cargado no se nota hasta que alguien lee un correo.
-function cierreDelCorreo( motivo: MotivoDelAviso ): string[] {
+function cierreDelCorreo( motivo: MotivoDelAviso ): Bloque[] {
 
   const pantalla = delEntorno( 'URL_MIS_TURNOS' )
   const whatsapp = delEntorno( 'WHATSAPP_DEL_CONSULTORIO' )
   const correo = delEntorno( 'CORREO_DEL_CONSULTORIO' )
 
-  const renglones: string[] = []
+  const bloques: Bloque[] = []
 
   // Cómo cancelar solo. Sólo si el turno sigue vivo —a un turno cancelado no se
   // lo cancela de nuevo— y sólo si la pantalla existe.
   if ( motivo === 'reserva' && pantalla ) {
-    renglones.push(
-      '',
-      'Si no vas a poder venir, podés cancelarlo vos desde:',
-      `  ${ pantalla }`,
-      'Entrá con el mismo correo con el que reservaste.',
-    )
+    bloques.push( {
+      tipo: 'accion',
+      antes: 'Si no vas a poder venir, podés cancelarlo vos desde:',
+      url: pantalla,
+      despues: 'Entrá con el mismo correo con el que reservaste.',
+    } )
   }
 
   // Por dónde nos ubican. Las tres formas van escritas enteras y no armadas por
@@ -193,7 +297,7 @@ function cierreDelCorreo( motivo: MotivoDelAviso ): string[] {
   }
 
   if ( !via ) {
-    return renglones
+    return bloques
   }
 
   // 🔑 LA APERTURA CAMBIA SEGÚN LO QUE YA SE DIJO ARRIBA, y ahí está toda la
@@ -207,9 +311,15 @@ function cierreDelCorreo( motivo: MotivoDelAviso ): string[] {
     apertura = 'Si no vas a poder venir o necesitás consultarnos algo, contactate con nosotros'
   }
 
-  renglones.push( '', apertura, via )
+  // La apertura y la vía son UN párrafo partido en dos renglones, no dos
+  // párrafos: en el correo con diseño van seguidos, envolviendo donde la
+  // pantalla lo pida.
+  bloques.push( {
+    tipo: 'parrafo',
+    texto: `${ apertura }\n${ via }`,
+  } )
 
-  return renglones
+  return bloques
 }
 
 // Todo lo que hace falta para escribir los tres correos. Lo arma el endpoint,
@@ -331,7 +441,7 @@ function queEsEsteAviso(
 // información (information disclosure) de baja gravedad, y la regla que la
 // corrige es la misma que ordena los permisos: cada destinatario recibe lo que
 // necesita y nada más.
-function fichaDelTurno( datos: DatosDelAviso, motivo: MotivoDelAviso ): string[] {
+function fichaDelTurno( datos: DatosDelAviso, motivo: MotivoDelAviso ): RenglonDeFicha[] {
 
   let cuando = 'Cuándo'
 
@@ -339,10 +449,19 @@ function fichaDelTurno( datos: DatosDelAviso, motivo: MotivoDelAviso ): string[]
     cuando = 'Cuándo era'
   }
 
-  const renglones = [
-    `  Tratamiento: ${ datos.tratamiento }`,
-    `  Profesional: ${ datos.profesionalNombre } ${ datos.profesionalApellido }`,
-    `  ${ cuando }: ${ cuandoEnPalabras( datos.inicio ) }`,
+  const renglones: RenglonDeFicha[] = [
+    {
+      etiqueta: 'Tratamiento',
+      valor: datos.tratamiento,
+    },
+    {
+      etiqueta: 'Profesional',
+      valor: `${ datos.profesionalNombre } ${ datos.profesionalApellido }`,
+    },
+    {
+      etiqueta: cuando,
+      valor: cuandoEnPalabras( datos.inicio ),
+    },
   ]
 
   // El cuarto renglón aparece SÓLO cuando el turno se movió de hora, y va en
@@ -362,7 +481,10 @@ function fichaDelTurno( datos: DatosDelAviso, motivo: MotivoDelAviso ): string[]
     && horaAvisada
     && queEsEsteAviso( datos ) === 'hora-nueva'
   ) {
-    renglones.push( `  Antes era: ${ cuandoEnPalabras( horaAvisada ) }` )
+    renglones.push( {
+      etiqueta: 'Antes era',
+      valor: cuandoEnPalabras( horaAvisada ),
+    } )
   }
 
   return renglones
@@ -378,25 +500,28 @@ function correoParaElPaciente(
 
   if ( motivo === 'cancelacion' ) {
 
-    const texto = [
-      `Hola ${ datos.pacienteNombre },`,
-      '',
-      'Tu turno quedó cancelado.',
-      '',
-      ...ficha,
-      '',
-      'El horario vuelve a estar disponible para quien lo necesite. Si querés',
-      'sacar otro turno, entrá al sitio cuando quieras.',
-      ...cierreDelCorreo( motivo ),
-      '',
-      FIRMA,
-    ].join( '\n' )
+    const cuerpo: CuerpoDelCorreo = {
+      saludo: `Hola ${ datos.pacienteNombre },`,
+      titular: 'Tu turno quedó cancelado.',
+      bloques: [
+        {
+          tipo: 'ficha',
+          renglones: ficha,
+        },
+        {
+          tipo: 'parrafo',
+          texto: 'El horario vuelve a estar disponible para quien lo necesite. Si querés\nsacar otro turno, entrá al sitio cuando quieras.',
+        },
+        ...cierreDelCorreo( motivo ),
+      ],
+      pie: FIRMA,
+    }
 
     return {
       from: remitente,
       to: [ datos.pacienteCorreo ],
       subject: 'Tu turno quedó cancelado — CB Odontología y Estética',
-      text: texto,
+      text: aTexto( cuerpo ),
     }
   }
 
@@ -446,19 +571,19 @@ function correoParaElPaciente(
   let titular = 'Tu turno quedó agendado.'
   let asunto = 'Tu turno quedó agendado — CB Odontología y Estética'
 
-  // Renglones que se agregan debajo de la ficha, o ninguno. Empieza vacío
-  // porque el correo de un turno nuevo no aclara nada: no hay nada anterior.
-  const aclaracion: string[] = []
+  // Lo que se agrega debajo de la ficha, o nada. Empieza vacío porque el correo
+  // de un turno nuevo no aclara nada: no hay nada anterior.
+  const aclaracion: Bloque[] = []
 
   if ( queEsEsteAviso( datos ) === 'hora-nueva' ) {
 
     titular = 'El horario de tu turno cambió.'
     asunto = 'Cambió el horario de tu turno — CB Odontología y Estética'
 
-    aclaracion.push(
-      '',
-      'El horario anterior ya no está reservado.',
-    )
+    aclaracion.push( {
+      tipo: 'parrafo',
+      texto: 'El horario anterior ya no está reservado.',
+    } )
   }
 
   // 🔴 NO SABEMOS QUÉ CAMBIÓ, así que no se nombra: el trigger borra la marca
@@ -478,23 +603,25 @@ function correoParaElPaciente(
     asunto = 'Cambió tu turno — CB Odontología y Estética'
   }
 
-  const texto = [
-    `Hola ${ datos.pacienteNombre },`,
-    '',
-    titular,
-    '',
-    ...ficha,
-    ...aclaracion,
-    ...cierreDelCorreo( motivo ),
-    '',
-    FIRMA,
-  ].join( '\n' )
+  const cuerpo: CuerpoDelCorreo = {
+    saludo: `Hola ${ datos.pacienteNombre },`,
+    titular: titular,
+    bloques: [
+      {
+        tipo: 'ficha',
+        renglones: ficha,
+      },
+      ...aclaracion,
+      ...cierreDelCorreo( motivo ),
+    ],
+    pie: FIRMA,
+  }
 
   return {
     from: remitente,
     to: [ datos.pacienteCorreo ],
     subject: asunto,
-    text: texto,
+    text: aTexto( cuerpo ),
   }
 }
 
@@ -561,10 +688,13 @@ function avisoOperativo(
   //
   // Y sólo cuando DIFIERE de lo que se agenda: al que pidió una limpieza y se
   // agendó una limpieza, repetírselo es ruido.
-  const motivoAnotado: string[] = []
+  const motivoAnotado: RenglonDeFicha[] = []
 
   if ( datos.motivoConsulta && datos.motivoConsulta !== datos.tratamiento ) {
-    motivoAnotado.push( `  Vino por: ${ datos.motivoConsulta }` )
+    motivoAnotado.push( {
+      etiqueta: 'Vino por',
+      valor: datos.motivoConsulta,
+    } )
   }
 
   // 🔴 LA COBERTURA VA ACÁ POR EL MISMO MOTIVO QUE EL RENGLÓN DE ARRIBA, y hay
@@ -584,31 +714,54 @@ function avisoOperativo(
   // vacía. Lo que sí falta es el dato en la MANO de quien arma el aviso — la
   // cancelación no lo manda a propósito—, y un renglón que dijera
   // «Cobertura: null» sería peor que no estar.
-  const coberturaAnotada: string[] = []
+  const coberturaAnotada: RenglonDeFicha[] = []
 
   if ( datos.obraSocial ) {
-    coberturaAnotada.push( `  Cobertura: ${ datos.obraSocial }` )
+    coberturaAnotada.push( {
+      etiqueta: 'Cobertura',
+      valor: datos.obraSocial,
+    } )
   }
 
-  const renglones = [
-    titular,
-    '',
-    `  Paciente: ${ datos.pacienteNombre } ${ datos.pacienteApellido }`,
-    `  Contacto: ${ datos.pacienteCorreo }`,
+  // La ficha del operativo es UNA sola lista con la del paciente en el medio:
+  // el paciente y su contacto van arriba, y lo que sólo le sirve al consultorio
+  // —duración, motivo, cobertura y número— abajo.
+  const ficha: RenglonDeFicha[] = [
+    {
+      etiqueta: 'Paciente',
+      valor: `${ datos.pacienteNombre } ${ datos.pacienteApellido }`,
+    },
+    {
+      etiqueta: 'Contacto',
+      valor: datos.pacienteCorreo,
+    },
     ...fichaDelTurno( datos, motivo ),
     // La duración va SOLO acá: es lo que el consultorio necesita para armar la
     // agenda, y no viaja al correo del paciente.
-    `  Duración: ${ datos.duracionMin } minutos`,
+    {
+      etiqueta: 'Duración',
+      valor: `${ datos.duracionMin } minutos`,
+    },
     ...motivoAnotado,
     ...coberturaAnotada,
-    `  Turno número: ${ datos.turnoId }`,
+    {
+      etiqueta: 'Turno número',
+      valor: String( datos.turnoId ),
+    },
+  ]
+
+  const bloques: Bloque[] = [
+    {
+      tipo: 'ficha',
+      renglones: ficha,
+    },
   ]
 
   if ( motivo === 'cancelacion' ) {
-    renglones.push(
-      '',
-      'El horario vuelve a estar disponible en la grilla.',
-    )
+    bloques.push( {
+      tipo: 'parrafo',
+      texto: 'El horario vuelve a estar disponible en la grilla.',
+    } )
   }
 
   // Se avisa QUE HAY una observación y no CUÁL es. El motivo está arriba de
@@ -617,19 +770,23 @@ function avisoOperativo(
   // Va sólo en la reserva: una vez cancelado el turno, recordar que había una
   // observación no le sirve a nadie para nada.
   if ( motivo === 'reserva' && datos.tieneObservaciones ) {
-    renglones.push(
-      '',
-      'El paciente dejó una observación. Se lee en la ficha del turno.',
-    )
+    bloques.push( {
+      tipo: 'parrafo',
+      texto: 'El paciente dejó una observación. Se lee en la ficha del turno.',
+    } )
   }
 
-  renglones.push( '', FIRMA )
+  const cuerpo: CuerpoDelCorreo = {
+    titular: titular,
+    bloques: bloques,
+    pie: FIRMA,
+  }
 
   return {
     from: remitente,
     to: [ destino ],
     subject: `${ encabezadoDelAsunto } — ${ cuandoElDia( datos.inicio ) }`,
-    text: renglones.join( '\n' ),
+    text: aTexto( cuerpo ),
   }
 }
 
