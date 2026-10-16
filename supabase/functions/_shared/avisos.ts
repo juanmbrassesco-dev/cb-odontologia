@@ -51,23 +51,26 @@ const FIRMA = 'CB Odontología y Estética — Santa Fe'
 const DIRECCION = '25 de Mayo 3725 — Santa Fe'
 
 
-// El pie del correo del PACIENTE: dónde queda el consultorio y por dónde
-// escribirnos.
+// El pie del correo del PACIENTE: dónde queda el consultorio.
+//
+// 🔴 LLEVA LA DIRECCIÓN Y NADA MÁS, y hasta el 16-oct-2026 repetía también el
+// WhatsApp. Lo levantó Juan mirando el correo armado: el cierre del cuerpo ya
+// dice *«contactate con nosotros por correo a … o por WhatsApp al …»*, así que
+// el número aparecía dos veces en la misma pantalla. **El dato que el correo no
+// tenía era la DIRECCIÓN —adónde ir el día del turno—, y ése es el que suma.**
+// Los canales de contacto se quedan donde ya estaban, que es donde tienen una
+// función: pedir que te escriban.
+//
+// 🔑 Y así este pie no toca ni una palabra del texto que el cierre ya tenía
+// auditado: saca la repetición quitando lo nuevo que sobraba, no reescribiendo
+// lo viejo.
 //
 // 🔴 NO VA EN EL AVISO OPERATIVO, por el mismo motivo por el que ahí tampoco va
 // el cierre: ese correo lo recibe quien trabaja acá. Decirle a Cecilia dónde
 // queda su consultorio es ruido.
 function pieDeContactoDelPaciente(): string[] {
 
-  const renglones = [ DIRECCION ]
-
-  const whatsapp = delEntorno( 'WHATSAPP_DEL_CONSULTORIO' )
-
-  if ( whatsapp ) {
-    renglones.push( `WhatsApp: ${ whatsapp }` )
-  }
-
-  return renglones
+  return [ DIRECCION ]
 }
 
 // Por qué salió este correo. Es un texto de dos valores y no un `true`/`false`
@@ -392,11 +395,19 @@ function parrafoHtml( texto: string ): string {
 // espacios, y ésa es toda la diferencia.
 function fichaHtml( renglones: RenglonDeFicha[] ): string {
 
+  // 🔴 LAS DOS CELDAS SE ALINEAN POR LÍNEA DE BASE, NO POR ARRIBA, y la
+  // diferencia la cazó Juan mirando la pantalla: la etiqueta mide 13 y el valor
+  // 16, así que alineadas por el borde superior **sus letras se apoyan en dos
+  // ejes distintos** —«Tratamiento» quedaba más arriba que «Limpieza»—. Con
+  // `baseline` las dos se apoyan en la misma línea, que es lo que el ojo lee
+  // como una fila.
+  // ⚠ Y cuando el valor ocupa dos renglones —pasa con la fecha en un teléfono—
+  // la etiqueta se apoya en el PRIMERO, que es el que le corresponde.
   const filas = renglones.map(
     ( renglon ) => `
       <tr>
-        <td style="padding:5px 14px 5px 0;vertical-align:top;white-space:nowrap;font:13px/1.5 ${ LETRA };color:${ DORADO_TEXTO }">${ escaparHtml( renglon.etiqueta ) }</td>
-        <td style="padding:5px 0;vertical-align:top;font:16px/1.5 ${ LETRA };color:${ GRAFITO }">${ escaparHtml( renglon.valor ) }</td>
+        <td style="padding:5px 14px 5px 0;vertical-align:baseline;white-space:nowrap;font:13px/1.5 ${ LETRA };color:${ DORADO_TEXTO }">${ escaparHtml( renglon.etiqueta ) }</td>
+        <td style="padding:5px 0;vertical-align:baseline;font:16px/1.5 ${ LETRA };color:${ GRAFITO }">${ escaparHtml( renglon.valor ) }</td>
       </tr>`,
   )
 
