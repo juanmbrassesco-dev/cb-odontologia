@@ -44,7 +44,7 @@ set -euo pipefail
 cd "$( dirname "$0" )/.."
 
 rm -rf dist
-mkdir -p dist/css dist/js dist/brand/fotos dist/brand/logo/curvas dist/brand/fonts
+mkdir -p dist/css dist/js dist/brand/fotos dist/brand/logo/curvas dist/brand/logo/png dist/brand/fonts
 
 cp index.html reservar.html mis-turnos.html panel.html dist/
 
@@ -55,6 +55,14 @@ cp brand/fotos/entrar-ejemplo.jpg brand/fotos/hero-ejemplo.jpg dist/brand/fotos/
 cp brand/fotos/iconos-del-brief.png dist/brand/fotos/
 cp brand/fonts/*.ttf dist/brand/fonts/
 cp brand/logo/curvas/cb-apilado-curvas.svg brand/logo/curvas/cb-wordmark-curvas.svg dist/brand/logo/curvas/
+
+# 🔴 ESTE PNG NO LO USA EL SITIO: LO USAN LOS CORREOS, y por eso se publica acá.
+# Un correo no puede traer la imagen adentro —Gmail bloquea las `data:` URI— ni
+# puede pedirla en SVG, que no renderiza: necesita un PNG en una dirección
+# pública, y conviene que sea la del MISMO dominio que firma el correo, porque
+# una imagen traída de otra parte es una señal más para los filtros de spam.
+# La versión blanca es la que va sobre el banner oscuro (`_shared/avisos.ts`).
+cp brand/logo/png/cb-apilado-1200-blanco.png dist/brand/logo/png/
 
 echo "✓ dist/ armado"
 du -sh dist
