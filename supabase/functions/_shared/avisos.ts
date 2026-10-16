@@ -293,6 +293,16 @@ function aTexto( cuerpo: CuerpoDelCorreo ): string {
 //     vuelta los fondos claros, y un banner blanco con el logo en grafito puede
 //     terminar oscuro sobre oscuro; un fondo que ya es oscuro no se invierte.
 //
+// 🔴 LOS 52 px DE AIRE DEL BANNER SON EL ESPACIO DE RESERVA DEL LOGO, que
+// `brand/COMO-USAR-EL-LOGO.md` declara regla que no se negocia: alrededor tiene
+// que quedar libre **por lo menos la altura de la letra C**. Medido el
+// 16-oct-2026 sobre el propio archivo —las iniciales ocupan 259 de sus 633 px de
+// alto— y a los 240 px a los que se muestra, eso da 51,8. La primera versión
+// tenía 30.
+// ⚠ Y SE MIDE PORQUE EL ARCHIVO NO TRAE AIRE PROPIO: su tinta llega a los cuatro
+// bordes del lienzo, así que todo el aire lo tiene que poner la celda. Los
+// `-avatar` del pack sí lo traen adentro; éste no.
+//
 // ⚠ LAS TIPOGRAFÍAS DE LA MARCA NO VIAJAN. Un correo no puede cargar una fuente
 // propia con ninguna garantía, así que acá va una pila del sistema. Es la única
 // parte de la identidad que se resigna, y se resigna porque la alternativa
@@ -307,11 +317,35 @@ const LOGO_DEL_CORREO =
 const MARFIL = '#FAF7F2'
 const BLANCO = '#FFFFFF'
 const GRAFITO = '#33322F'
-const GRAFITO_SUAVE = '#5A5853'
 const DORADO = '#B08D57'
 const DORADO_TEXTO = '#896D41'
 
-const LETRA = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+// 🔴 EL GRIS DEL TEXTO SECUNDARIO SALE DE LA PALETA Y NO SE ELIGE A OJO. La
+// primera versión de este archivo usaba un `#5A5853` inventado: medía 7,11 sobre
+// blanco, o sea que PASABA el piso de 4,5 — y aun así estaba mal, porque el
+// proyecto ya había rechazado un gris de 6,97 por costar de leer, con una
+// persona leyéndolo y no un medidor. El de la paleta mide 9,6.
+const TEXTO_SEGUNDO = '#464541'
+
+// Las DOS pilas de la marca, copiadas de `css/styles.css` tal cual.
+//
+// ⚠ NINGUNA DE LAS DOS FUENTES PROPIAS VA A LLEGAR: un correo no puede cargar
+// tipografías con ninguna garantía. Lo que llega es el RESPALDO —Georgia y
+// Helvetica—, y por eso se copian las pilas enteras en vez de inventar una: los
+// respaldos ya los eligió la marca. El titular cae en una serif y el texto en
+// una de palo seco, que es la misma pareja que tiene el sitio.
+const LETRA_TITULO = 'Marcellus, Georgia, serif'
+// 🔴 LAS COMILLAS DE ADENTRO SON SIMPLES, Y NO ES COSMÉTICA. Esta pila se
+// interpola dentro de un atributo `style="…"`, así que una comilla DOBLE en
+// `"Helvetica Neue"` cierra el atributo ahí mismo: el resto del estilo se
+// descarta y el elemento pierde color, peso y todo lo demás. Se vio en la
+// captura del 16-oct-2026 —el botón salió azul y subrayado, o sea sin ningún
+// estilo— y es el mismo agujero que `escaparHtml` tapa para los datos del
+// paciente, metido a mano desde una constante nuestra.
+const LETRA = "Jost, 'Helvetica Neue', Arial, sans-serif"
+
+// El radio de los bordes, `--radio` en `css/tokens.css`.
+const RADIO = '3px'
 
 
 // 🔒 ESCAPAR NO ES PROLIJIDAD: ES LA DEFENSA, y el correo de texto no la
@@ -380,6 +414,13 @@ function fichaHtml( renglones: RenglonDeFicha[] ): string {
 // celda y en su `style`— porque los clientes viejos leen uno y los nuevos el
 // otro.
 //
+// 🔴 EL ROTULO MIDE 19 px Y ÉSE ES UN PISO QUE NO BAJA, por el mismo motivo que
+// en el sitio: blanco sobre el dorado de la marca mide 3,09, que SÓLO alcanza
+// para texto grande. La primera versión de este correo lo puso en 16 —medido el
+// 16-oct-2026— y ahí ese par deja de pasar: no es un botón más chico, es un
+// botón que no se lee. El resto del formato también sale de la pieza `.btn`:
+// Jost 600, `letter-spacing` de 0.01em y el alto táctil de 44 px.
+//
 // 🔑 VA CENTRADO, y lo pidió Juan el 16-oct-2026 mirando la primera versión:
 // pegado a la izquierda se leía como parte del párrafo que lo precede, cuando es
 // la única cosa del correo que hay que TOCAR.
@@ -392,13 +433,13 @@ function accionHtml( antes: string, url: string, despues: string, rotulo: string
   <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 16px">
     <tbody>
       <tr>
-        <td bgcolor="${ DORADO }" style="background:${ DORADO };border-radius:4px">
-          <a href="${ escaparHtml( url ) }" style="display:inline-block;padding:14px 28px;font:600 16px/1 ${ LETRA };color:${ BLANCO };text-decoration:none">${ escaparHtml( rotulo ) }</a>
+        <td bgcolor="${ DORADO }" style="background:${ DORADO };border-radius:${ RADIO }">
+          <a href="${ escaparHtml( url ) }" style="display:inline-block;padding:14px 28px;font:600 19px/1.2 ${ LETRA };letter-spacing:0.01em;color:${ BLANCO };text-decoration:none">${ escaparHtml( rotulo ) }</a>
         </td>
       </tr>
     </tbody>
   </table>
-  <p style="margin:0 0 16px;font:14px/1.6 ${ LETRA };color:${ GRAFITO_SUAVE }">${ escaparHtml( despues ) }</p>`
+  <p style="margin:0 0 16px;font:14px/1.6 ${ LETRA };color:${ TEXTO_SEGUNDO }">${ escaparHtml( despues ) }</p>`
 }
 
 
@@ -410,8 +451,12 @@ function aHtml( cuerpo: CuerpoDelCorreo ): string {
     partes.push( parrafoHtml( cuerpo.saludo ) )
   }
 
+  // 🔴 EL TITULAR NO VA EN NEGRITA, Y NO ES UNA PREFERENCIA: la tipografía de
+  // los títulos de la marca —Marcellus— TIENE UN SOLO PESO, así que la jerarquía
+  // de esta marca se hace por TAMAÑO y por familia, nunca por peso
+  // (`css/tokens.css`). La primera versión de este correo lo ponía en 600.
   partes.push(
-    `<p style="margin:0 0 20px;font:600 20px/1.4 ${ LETRA };color:${ GRAFITO }">${ escaparHtml( cuerpo.titular ) }</p>`,
+    `<p style="margin:0 0 20px;font:24px/1.3 ${ LETRA_TITULO };color:${ GRAFITO }">${ escaparHtml( cuerpo.titular ) }</p>`,
   )
 
   for ( const bloque of cuerpo.bloques ) {
@@ -482,7 +527,7 @@ function aHtml( cuerpo: CuerpoDelCorreo ): string {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:${ BLANCO }">
           <tbody>
             <tr>
-              <td align="center" bgcolor="${ GRAFITO }" style="background:${ GRAFITO };padding:30px 24px">
+              <td align="center" bgcolor="${ GRAFITO }" style="background:${ GRAFITO };padding:52px 24px">
                 <img src="${ LOGO_DEL_CORREO }" width="240" alt="CB Odontología y Estética" style="display:block;width:240px;max-width:100%;height:auto;border:0;font:600 18px/1.4 ${ LETRA };color:${ MARFIL }">
               </td>
             </tr>
