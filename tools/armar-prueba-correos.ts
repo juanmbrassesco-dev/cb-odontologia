@@ -473,6 +473,8 @@ async function comoPagina(): Promise< string > {
 const ENTORNO_PARA_MANDAR: Record< string, string > = {
   'CORREO_REMITENTE': 'CB Odontología y Estética <turnos@avisos.cbodontologiayestetica.com.ar>',
   'URL_MIS_TURNOS': 'https://cbodontologiayestetica.com.ar/mis-turnos',
+  'CORREO_DEL_CONSULTORIO': 'contacto@cbodontologiayestetica.com.ar',
+  'WHATSAPP_DEL_CONSULTORIO': '+54 9 342 629-3920',
 }
 
 const RESEND_LOTE = 'https://api.resend.com/emails/batch'
@@ -503,11 +505,22 @@ async function mandarLosNueve(): Promise< void > {
 
   Deno.env.set( 'CORREO_DE_PRUEBA', casilla )
 
+  // 🔴 EL CORREO DEL PROFESIONAL TAMBIÉN PASA A SER EL REAL, y no es una cosa
+  // de destinatarios: `avisos.ts` manda la copia al consultorio SÓLO si difiere
+  // del correo del profesional. Hoy en producción los dos son el mismo valor,
+  // así que sale UN aviso operativo y no dos. Con el de mentira acá, la prueba
+  // mandaría QUINCE mensajes donde el sistema manda diez.
+
   const lote = []
 
   for ( const escenario of ESCENARIOS ) {
 
-    for ( const mensaje of armarMensajes( escenario.datos, escenario.motivo ) ) {
+    const datos = {
+      ...escenario.datos,
+      profesionalCorreo: ENTORNO_PARA_MANDAR[ 'CORREO_DEL_CONSULTORIO' ],
+    }
+
+    for ( const mensaje of armarMensajes( datos, escenario.motivo ) ) {
       lote.push( mensaje )
     }
   }
