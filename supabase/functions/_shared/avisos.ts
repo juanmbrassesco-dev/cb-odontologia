@@ -539,11 +539,41 @@ function aHtml( cuerpo: CuerpoDelCorreo ): string {
   // el correo se estira a lo ancho de la ventana. Se arregla con un bloque
   // condicional sólo para él; no se puso porque acá nadie lo usa. *Disparador
   // para agregarlo: que aparezca una paciente leyendo con Outlook y moleste.*
+  // 🔴 `color-scheme: light only` PIDE QUE GMAIL NO INVIERTA — Y EN LA PRUEBA
+  // DEL 19-oct-2026 NO ALCANZÓ. Se deja puesta igual, y el porqué está abajo.
+  //
+  // Qué pasaba sin esto, visto en un teléfono real el 19-oct-2026: la app de
+  // Gmail en modo oscuro no oscurece, INVIERTE POR LUMINANCIA — lo claro se
+  // vuelve oscuro Y LO OSCURO SE VUELVE CLARO. El banner de grafito salía gris
+  // claro y el logo, que es blanco, quedaba casi ilegible encima.
+  //
+  // 🔑 Y ESO DERRIBA LA PREMISA CON LA QUE SE ELIGIÓ EL BANNER OSCURO el
+  // 16-oct —«un fondo que ya es oscuro no se invierte»—, que resultó falsa.
+  // El banner sigue siendo oscuro por las otras razones escritas arriba; lo
+  // que cambió es que ya no se defiende solo.
+  //
+  // 🔴 LO QUE SE MIDIÓ, Y ES LO QUE HAY QUE SABER ANTES DE TOCAR ESTO: la
+  // documentación dice que la app de Gmail respeta esta declaración desde el
+  // 31-ago-2026 para cuentas de Google. Se probó con una cuenta de Google, en
+  // un teléfono real, y la inversión siguió pasando igual. *La hipótesis sin
+  // confirmar es que esa app todavía no tenía la actualización.*
+  //
+  // ✅ POR QUÉ SE DEJA PUESTA IGUAL: no cuesta nada, no rompe nada, y el día
+  // que esa actualización llegue al teléfono de una paciente, el correo ya la
+  // tiene. Sacarla sería pagar el mismo problema dos veces.
+  //
+  // ⬜ QUÉ QUEDA ABIERTO, con su costo, para no re-pensarlo: meter el fondo
+  // oscuro ADENTRO del PNG del logo —Gmail no invierte el contenido de las
+  // imágenes—. Son ~40 min, EMPEORA el caso de imágenes bloqueadas, que hoy
+  // está resuelto, y se apoya en una premisa que todavía NO se midió.
+  // Decisión de Juan el 19-oct-2026: se deja como está.
+
   return `<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
+<meta name="color-scheme" content="light only">
 <title>${ escaparHtml( cuerpo.titular ) }</title>
 </head>
 <body style="margin:0;padding:0;background:${ MARFIL }">
