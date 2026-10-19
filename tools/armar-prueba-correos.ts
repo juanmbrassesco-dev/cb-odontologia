@@ -430,16 +430,151 @@ async function comoPagina(): Promise< string > {
   ].join( '\n' )
 }
 
+// ── MODO MANDAR — los nueve, a una casilla real ──────────────────────────────
+//
+// PARA QUÉ EXISTE. El visor de arriba lo dice con todas las letras: no es
+// Gmail. No recorta estilos, no bloquea imágenes y no da vuelta los colores.
+// La forma de un correo se APRUEBA con el correo recibido, y hasta hoy la única
+// manera de recibir uno era reservar un turno de verdad.
+//
+// 🔑 LO MANDA EL MISMO ARCHIVO QUE LO ARMA, Y NO ES COMODIDAD. Un instrumento
+// que manda algo distinto de lo que muestra hace aprobar una forma que no es la
+// que sale. Acá los nueve salen de `armarMensajes( … )`, igual que en
+// producción, y de la respuesta sólo se mira si el proveedor los aceptó.
+//
+// 🔴 QUÉ CAMBIA RESPECTO DEL MODO NORMAL, y es TODO lo que cambia:
+//
+//   CORREO_REMITENTE   pasa a ser el REAL. No es un lujo: el proveedor sólo
+//                      entrega desde un dominio verificado, así que con el de
+//                      mentira el pedido entero rebota.
+//   URL_MIS_TURNOS     pasa a ser el REAL, porque A DÓNDE APUNTA EL BOTÓN es
+//                      una de las cosas que se van a mirar en Gmail.
+//   CORREO_DE_PRUEBA   SE SETEA — al revés que en el modo normal, que lo deja
+//                      vacío a propósito. Con él puesto, `armarMensajes`
+//                      redirige los nueve a una sola casilla: es el mismo
+//                      mecanismo que hoy desvía los avisos en producción, y
+//                      por eso no hay que escribir ni una línea para lograrlo.
+//
+// ⚠ LOS DOS VALORES REALES ESTÁN ESCRITOS ACÁ Y NO SON UN SECRETO FILTRADO: el
+// remitente va en cada correo que recibe una paciente y la URL es una página
+// del sitio. Lo que NO se escribe nunca es la casilla que recibe —una dirección
+// de una persona—, y por eso sale del entorno.
+//
+// ⚠ Y NO escribe los archivos del visor. Con los destinatarios redirigidos a
+// una sola casilla, `nombreDelArchivo( … )` ya no puede distinguir el correo
+// del paciente del operativo y los nombraría mal. Un modo manda, el otro
+// muestra.
+//
+// CÓMO SE CORRE, parado en la raíz del repo:
+//
+//   set -a && source .env && set +a
+//   deno run --allow-env --allow-net tools/armar-prueba-correos.ts --mandar
 
-// ── Escribir los dos archivos ────────────────────────────────────────────────
+const ENTORNO_PARA_MANDAR: Record< string, string > = {
+  'CORREO_REMITENTE': 'CB Odontología y Estética <turnos@avisos.cbodontologiayestetica.com.ar>',
+  'URL_MIS_TURNOS': 'https://cbodontologiayestetica.com.ar/mis-turnos',
+}
 
-await Deno.writeTextFile( 'pruebas/correos.txt', comoTexto() )
-await Deno.writeTextFile( 'pruebas/correos.html', await comoPagina() )
+const RESEND_LOTE = 'https://api.resend.com/emails/batch'
 
-console.log( '✓ pruebas/correos.txt' )
-console.log( '✓ pruebas/correos.html' )
-console.log( '✓ pruebas/correos/ — un archivo por correo' )
-console.log( '' )
-console.log( `  ${ ESCENARIOS.length } escenarios · abrilos con:` )
-console.log( '    code pruebas/correos.txt' )
-console.log( '    open pruebas/correos.html' )
+
+async function mandarLosNueve(): Promise< void > {
+
+  const clave = Deno.env.get( 'RESEND_API_KEY' )
+  const casilla = Deno.env.get( 'CORREO_DE_PRUEBA' )
+
+  if ( clave === undefined ) {
+    console.error( '🔴 Falta RESEND_API_KEY en el entorno.' )
+    console.error( '   Corré primero:  set -a && source .env && set +a' )
+    Deno.exit( 1 )
+  }
+
+  if ( casilla === undefined ) {
+    console.error( '🔴 Falta CORREO_DE_PRUEBA en el entorno — es la casilla que va a recibir los nueve.' )
+    console.error( '   Corré primero:  set -a && source .env && set +a' )
+    Deno.exit( 1 )
+  }
+
+  // El entorno de verdad se instala ENCIMA del de mentira, y tiene que pasar
+  // antes de llamar a `armarMensajes( … )`: ahí adentro se leen los tres.
+  for ( const [ nombre, valor ] of Object.entries( ENTORNO_PARA_MANDAR ) ) {
+    Deno.env.set( nombre, valor )
+  }
+
+  Deno.env.set( 'CORREO_DE_PRUEBA', casilla )
+
+  const lote = []
+
+  for ( const escenario of ESCENARIOS ) {
+
+    for ( const mensaje of armarMensajes( escenario.datos, escenario.motivo ) ) {
+      lote.push( mensaje )
+    }
+  }
+
+  console.log( `Mandando ${ lote.length } correos a la casilla de prueba…` )
+  console.log( '' )
+
+  const respuesta = await fetch(
+    RESEND_LOTE,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${ clave }`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify( lote ),
+    },
+  )
+
+  const cuerpo = await respuesta.text()
+
+  if ( respuesta.ok === false ) {
+    console.error( `🔴 El proveedor rechazó el lote — HTTP ${ respuesta.status }` )
+    console.error( cuerpo )
+    Deno.exit( 1 )
+  }
+
+  console.log( `✓ HTTP ${ respuesta.status } — el proveedor aceptó el lote` )
+  console.log( '' )
+  console.log( 'QUÉ MIRAR EN GMAIL, y en este orden:' )
+  console.log( '  1. En la lista, SIN abrir: el remitente y el asunto.' )
+  console.log( '  2. Abierto en el teléfono: que el logo cargue y que nada se salga de ancho.' )
+  console.log( '  3. Con las imágenes BLOQUEADAS: que el banner se siga entendiendo.' )
+  console.log( '  4. En modo oscuro: que no quede texto oscuro sobre fondo oscuro.' )
+  console.log( '  5. El botón «ver mis turnos»: a dónde apunta de verdad.' )
+  console.log( '' )
+  console.log( '⚠ Gmail AGRUPA por asunto: tres asuntos se repiten entre los nueve,' )
+  console.log( '  así que algunos van a entrar dentro de una conversación ya abierta.' )
+}
+
+
+// ── Qué hace cuando se lo corre ──────────────────────────────────────────────
+//
+// Dos modos, y el flag los separa. El de mandar NO escribe los archivos del
+// visor, por el motivo que está escrito arriba.
+
+const HAY_QUE_MANDAR = Deno.args.includes( '--mandar' )
+
+if ( HAY_QUE_MANDAR ) {
+
+  await mandarLosNueve()
+
+}
+else {
+
+  await Deno.writeTextFile( 'pruebas/correos.txt', comoTexto() )
+  await Deno.writeTextFile( 'pruebas/correos.html', await comoPagina() )
+
+  console.log( '✓ pruebas/correos.txt' )
+  console.log( '✓ pruebas/correos.html' )
+  console.log( '✓ pruebas/correos/ — un archivo por correo' )
+  console.log( '' )
+  console.log( `  ${ ESCENARIOS.length } escenarios · abrilos con:` )
+  console.log( '    code pruebas/correos.txt' )
+  console.log( '    open pruebas/correos.html' )
+  console.log( '' )
+  console.log( '  Para MANDARLOS a una casilla real:' )
+  console.log( '    set -a && source .env && set +a' )
+  console.log( '    deno run --allow-env --allow-net tools/armar-prueba-correos.ts --mandar' )
+}
