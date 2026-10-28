@@ -6,9 +6,9 @@
 proporción de este documento la pide una pantalla concreta** — no son
 preferencias. Donde dice «el hueco es 4:5» es literal: el sitio recorta a 4:5.
 
-**Son TRES tomas.** Hoy esos tres lugares del sitio están ocupados por fotos
-compradas de otros consultorios, o directamente vacíos. **Con estas tres el
-sitio queda listo para promocionarse.**
+**Son TRES tomas, una por cada lugar donde el sitio muestra una foto.** Hoy
+dos de esos lugares tienen fotos compradas de banco de imágenes y el tercero
+está vacío. **Con estas tres el sitio queda listo para promocionarse.**
 
 ---
 
@@ -37,34 +37,43 @@ eso.**
 
 | # | Qué | Orientación | Proporción | Cuántas |
 |---|---|---|---|---|
-| **1** | **El espacio** — es la portada del sitio | Vertical | 2:3 o más alta | 10+ |
+| **1** | **La portada** — una persona sonriendo | Vertical | 2:3 o más alta | 20+ |
 | **2** | **Retrato de Cecilia** | Vertical | 4:5 | 15+ |
 | **3** | **La entrada / sala de espera** | **Horizontal** | **16:9** | 8+ |
 
 ---
 
-### 1 · EL ESPACIO — la portada
+### 1 · LA PORTADA — una persona sonriendo
 
-**El consultorio o la sala de espera, SIN NADIE ADENTRO.**
+**Es lo primero que se ve al entrar al sitio, a pantalla completa.** El titular
+que va encima dice *«…con la calma que tu sonrisa merece»*, **y la foto es esa
+sonrisa**.
 
-- **Vertical, con lugar de sobra a los CUATRO lados.**
-- 🔴 **Lo importante va en el TERCIO DE ARRIBA.** El sitio muestra la foto
-  anclada cerca del borde superior *(el encuadre visible arranca al 10 % desde
-  arriba)*, y **sobre la mitad de abajo apoya un velo gris oscuro** con el
-  título y los botones. **Todo lo que quede en la mitad inferior no se va a
-  ver.**
+- **Una persona sonriendo, de frente, mirando a cámara. Media figura**, no un
+  primer plano de la cara y mucho menos de la boca.
+- 🔴 **No es Cecilia** *(ella tiene su propio retrato, la toma 2)*. **Es alguien
+  que podría ser paciente** — una persona real, no un modelo de catálogo.
+  **Quien sea, firma la autorización de imagen** *(ver «Derechos»)*.
+- **Ropa lisa y clara, sin logos ni estampados.** Fondo neutro y cálido, sin
+  nada que distraiga: una pared, una cortina, el propio consultorio desenfocado.
+- 🔴 **Lo importante va en el TERCIO DE ARRIBA: la cara.** El sitio muestra la
+  foto anclada cerca del borde superior *(el encuadre visible arranca al 10 %
+  desde arriba)*, y **sobre la mitad de abajo apoya un velo gris oscuro** con el
+  título y los botones. **Todo lo que quede en la mitad inferior se va a tapar.**
 - 🔴 **La misma foto se recorta de dos maneras muy distintas**, y tiene que
   funcionar en las dos:
   - **en un teléfono**, una franja **vertical angosta** *(aprox. 390 × 660 px)*;
   - **en una computadora**, una franja **horizontal ancha y baja** *(todo el
     ancho de la pantalla por 660 px de alto)*.
 
-  ⇒ **Por eso el aire a los costados no es un lujo: lo que esté pegado a un
+  ⇒ **Por eso hace falta aire a los costados y arriba: lo que esté pegado a un
   borde se pierde en uno de los dos recortes.**
-- Que entre **la ventana o la luz que entra**, y algo de **madera, planta o
-  tela**. Es lo que separa «consultorio» de «sala de hospital».
-- **Diez encuadres distintos, no diez disparos del mismo**: desde la puerta,
-  desde un rincón, más cerca, más lejos.
+- ⚠️ **La sonrisa tiene que ser natural, no una exhibición de dientes.** Es la
+  cara de alguien que está cómoda, no la foto de un resultado — **y esa
+  diferencia no es estética, es legal** *(ver «Lo que NO se puede
+  fotografiar»)*.
+- **Veinte como mínimo**, cambiando el gesto y la distancia. **Un retrato no le
+  sale a nadie a la primera.**
 
 ### 2 · EL RETRATO DE CECILIA
 
@@ -178,10 +187,10 @@ pedir permiso cada vez, **conviene que el presupuesto o la factura diga**:
 cubra esos cuatro usos y no venza.* **El crédito al autor se acuerda aparte — no
 cuesta nada darlo.**
 
-**2 — Autorización de imagen, de las personas.** Firmada por **Cecilia** y por
-cualquier otra persona reconocible que aparezca. **Alcanza con un papel corto**
-que diga que autoriza el uso de su imagen en el sitio, las redes y el material
-del consultorio.
+**2 — Autorización de imagen, de las personas.** Firmada por **Cecilia**, por
+**la persona de la toma 1**, y por cualquier otra que aparezca reconocible.
+**Alcanza con un papel corto** que diga que autoriza el uso de su imagen en el
+sitio, las redes y el material del consultorio.
 
 🔴 **Sin el punto 2 la foto no se puede publicar, por linda que salga.** Es
 publicidad de un servicio de salud.
@@ -196,7 +205,8 @@ publicidad de un servicio de salud.
 - Vidrios y superficies brillantes limpios.
 - Identificado cómo se apagan las luces de techo.
 - Cecilia con **ropa lisa sin logos**, y **una muda de recambio**.
-- **La autorización impresa, para firmar.**
+- 🔴 **Definida y confirmada la persona de la toma 1**, con ropa lisa y clara.
+- **Las autorizaciones impresas, para firmar — una por persona.**
 - El día elegido **por la luz**: media mañana o media tarde.
 
 **Del fotógrafo:**
