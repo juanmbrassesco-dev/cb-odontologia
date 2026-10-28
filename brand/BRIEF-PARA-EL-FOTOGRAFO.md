@@ -39,7 +39,7 @@ eso.**
 |---|---|---|---|---|
 | **1** | **La portada** — una persona sonriendo | Vertical | 2:3 o más alta | 20+ |
 | **2** | **Retrato de Cecilia** | Vertical | 4:5 | 15+ |
-| **3** | **La entrada / sala de espera** | **Horizontal** | **16:9** | 8+ |
+| **3** | **La sala de espera** | **Horizontal** | **16:9** | 8+ |
 
 ---
 
@@ -91,14 +91,15 @@ y una matrícula una foto de otra persona se lee como si fuera ella. **Es la
 - **Ropa lisa, sin logos ni estampados. Mirando a cámara** *(acá sí)*.
 - **Quince como mínimo**, cambiando de lugar y de gesto.
 
-### 3 · LA ENTRADA — la única HORIZONTAL
+### 3 · LA SALA DE ESPERA — la única HORIZONTAL
 
 **Va en las tres pantallas del sistema de turnos.** Quien llega ahí **ya decidió
 sacar turno**: lo que necesita ver es **dónde va a ir**, no el sillón.
 
 - 🔴 **HORIZONTAL, 16:9.** Si sale vertical no se puede usar: habría que
   recortarla hasta perder la escena.
-- **La sala de espera o la entrada, con luz cálida.**
+- **La sala de espera, con luz cálida.** *(Si la entrada y la sala son el
+  mismo ambiente, entra todo junto.)*
 - 🔴 **SIN equipamiento clínico a la vista** — ni sillón, ni instrumental, ni
   aparatos. **Esta foto es para tranquilizar, no para mostrar la práctica.**
 - 🔴 **SIN texto ni marcas en el encuadre:** carteles, folletos, pizarras
