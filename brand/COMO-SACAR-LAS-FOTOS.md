@@ -1,5 +1,16 @@
 # Cómo sacar las fotos del sitio
 
+> 🔀 **CAMBIÓ LA PREMISA EL 28-oct-2026: Cecilia va a contratar un fotógrafo.**
+> **El pedido que se le pasa a él vive en `brand/BRIEF-PARA-EL-FOTOGRAFO.md`**,
+> que tiene además lo que este archivo no podía tener porque no hacía falta:
+> **la cesión de derechos y la autorización de imagen**.
+>
+> **Este archivo NO se borra y sigue valiendo entero para dos cosas:** el
+> **encuadre y las proporciones de cada foto** —que no dependen de quién las
+> saque—, y **el día que haya que sacar una con el teléfono** *(una foto suelta
+> para Instagram, un reemplazo rápido)*. **Lo que caducó es sólo la premisa de
+> la línea de abajo.**
+
 **Se sacan con celular, sin fotógrafo y sin equipo.** Un teléfono moderno saca
 esto mejor que la mayoría de las fotos de banco. **Lo que arruina una foto de
 interior no es la cámara: es la luz y el desorden**, y las dos se controlan sin
