@@ -95,6 +95,21 @@ aire ahora mismo** con una foto que no es del consultorio, o con un hueco.)*
 
 ### 1 · EL ESPACIO — es la que lanza el sitio
 
+> 🔴 **CORRECCIÓN DEL 28-oct-2026, Y ESTE RENGLÓN YA HIZO SALIR UN PEDIDO MAL:
+> «Es la portada» está escrito acá como un hecho, y NO LO ES.** La portada del
+> sitio publicado **es una persona sonriendo** —el titular que va encima dice
+> *«…con la calma que tu sonrisa merece»*— y **la § 14 del doc de estado tiene
+> esa decisión como ABIERTA**: *«la portada (¿el espacio o una persona?), que no
+> se decide a ciegas»*. **Lo cazó Juan.**
+>
+> 🔑 **La regla que deja: cuando un documento del proyecto y el sitio publicado
+> pueden discrepar, manda el sitio.** Se mira el HTML y el archivo, no el
+> renglón.
+>
+> **Lo de abajo NO se borra** —el encuadre, los recortes y la cuenta de los dos
+> anchos valen igual para cualquier foto que ocupe ese lugar—, **pero la foto
+> que va en la portada es la de una persona.**
+
 **Es la portada.** El consultorio o la sala de espera, **sin nadie adentro**.
 
 - **Vertical, y sacada con lugar de sobra.** La portada la recorta a **2:3 o más
